@@ -1,0 +1,4 @@
+这是一个示例知识库文件。
+LangChain 是一个用于开发由语言模型驱动的应用程序的框架。
+LangGraph 是 LangChain 的一个扩展，用于构建有状态、多参与者的应用程序。
+FastAPI 是一个用于构建 API 的现代、快速（高性能）的 Python Web 框架。
