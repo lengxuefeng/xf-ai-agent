@@ -23,11 +23,11 @@ CREATE TABLE `t_model_setting` (
 -- 用户信息表
 CREATE TABLE `t_user_info` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `token` varchar(50) NOT NULL COMMENT 'token',
+   `token` varchar(255) DEFAULT NULL,
   `nick_name` varchar(50) NOT NULL COMMENT '昵称',
   `user_name` varchar(50) NOT NULL COMMENT '用户名',
-   `phone` varchar(50) NOT NULL COMMENT '手机号',
-  `password` varchar(50) NOT NULL COMMENT '密码',
+   `phone` varchar(255) NOT NULL COMMENT '手机号',
+    `password` varchar(255) NOT NULL COMMENT '密码',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)

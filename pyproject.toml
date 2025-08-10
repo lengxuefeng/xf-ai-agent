@@ -43,7 +43,7 @@ dependencies = [
     # Mysql相关
     "pymysql>=1.1.1",
     # 密码加密
-    "passlib>=1.7.4",
+    "passlib[bcrypt]>=1.7.4",
     # token加密
     "pyjwt>=2.10.1",
 ]

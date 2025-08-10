@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.v1.chat_api import chat_router
 from api.v1.user_info_api import user_router
-from app.api.v1 import chat_api as v1_endpoints
+from app.core.logger import setup_logger
+
+# 配置日志
+setup_logger()
 
 app = FastAPI(
     title="LangGraph Agent FastAPI",
@@ -22,9 +25,13 @@ app.add_middleware(
     allow_headers=["*"],  # 允许所有请求头
 )
 
-# 包含 API 路由
-app.include_router(user_router)
-app.include_router(chat_router)
+# 创建 v1 版本的 API 路由
+api_v1_router = APIRouter(prefix="/api/v1")
+api_v1_router.include_router(user_router)
+api_v1_router.include_router(chat_router)
+
+# 在主应用中包含 v1 路由
+app.include_router(api_v1_router)
 
 
 @app.get("/", include_in_schema=False)

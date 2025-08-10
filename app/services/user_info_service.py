@@ -1,4 +1,5 @@
 # app/services/service_user.py (修改后)
+import logging
 import uuid
 
 from fastapi import HTTPException, status
@@ -23,14 +24,37 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
             order_by=[UserInfo.id.desc()]
         )
 
-    def create_user(self, db: Session, user_create: UserInfoCreate) -> UserInfoRead:
-        # 业务逻辑：给用户生成token
-        user_create.token = encryption_utils.verify_token(user_create.token)
-        user_create.password = encryption_utils.encrypt_password(user_create.password)
-        # 调用基类create方法保存数据
-        user = self.create(db, user_create)
-        # 返回验证后的 Pydantic 读模型
-        return UserInfoRead.model_validate(user)
+    def create_user(self, db: Session, user_create: UserInfoCreate) -> UserInfoResp:
+        # 1. 检查用户是否已存在
+        db_user = self.query(db).filter(self.model.user_name == user_create.user_name).first()
+        if db_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="用户名已存在")
+
+        # 2. 加密密码
+        hashed_password = encryption_utils.encrypt_password(user_create.password)
+
+        # 3. 创建ORM对象，此时不含token
+        new_user = self.model(
+            password=hashed_password,
+            user_name=user_create.user_name,
+            nick_name=user_create.nick_name,
+            phone=user_create.phone
+        )
+
+        # 4. 添加到会话并flush，以获取数据库生成的ID
+        db.add(new_user)
+        db.flush()
+
+        # 5. 使用新ID生成Token
+        token = encryption_utils.token_encode(user_id=new_user.id)
+
+        # 6. 将Token赋给ORM对象，然后提交整个事务
+        new_user.token = token
+        db.commit()
+        db.refresh(new_user)
+
+        # 7. 返回Pydantic模型
+        return UserInfoResp.model_validate(new_user)
 
     def login(self, db: Session, user: UserInfoBase) -> UserInfoRead:
         # 业务逻辑：根据用户名和密码查询用户
@@ -42,12 +66,12 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
         # 业务逻辑：如果用户存在，返回用户信息
         return UserInfoRead.model_validate(db_user)
 
-    def get_user_by_token(self, db: Session, token: str) -> UserInfoResp:
-        # 业务逻辑：根据token查询用户
-        db_user = user_info_db.get_by_token(db, token=token)
+    def get_user_by_id(self, db: Session, user_id: int) -> UserInfoResp:
+        # 业务逻辑：根据id查询用户
+        db_user = user_info_db.get(db, id=user_id)
         if db_user is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="token不存在")
-        # 业务逻辑：如果token存在，返回用户信息
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
+        # 业务逻辑：如果用户存在，返回用户信息
         return UserInfoResp.model_validate(db_user)
 
 

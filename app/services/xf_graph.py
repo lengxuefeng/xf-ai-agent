@@ -1,3 +1,4 @@
+
 import json
 import logging
 from typing import Generator
@@ -14,7 +15,6 @@ from app.utils.config import Settings
 from tools.search_tools import get_weather
 from utils.agent_utils import AgentUtils
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 

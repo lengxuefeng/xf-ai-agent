@@ -8,9 +8,8 @@ from schemas.base import BaseSchema
 
 class UserModelBase(BaseModel):
     """
-    用户模型基础模型
+    用户模型基础模型 - 不含user_id，用于创建
     """
-    user_id: int
     model_setting_id: int
     model_name: str
     api_key: str
@@ -26,9 +25,8 @@ class UserModelCreate(UserModelBase):
 
 class UserModelUpdate(BaseModel):
     """
-    更新用户模型
+    更新用户模型 - 不允许更新user_id
     """
-    user_id: Optional[int] = None
     model_setting_id: Optional[int] = None
     model_name: Optional[str] = None
     api_key: Optional[str] = None
@@ -37,8 +35,19 @@ class UserModelUpdate(BaseModel):
 
 class UserModel(BaseSchema):
     """
-    用户模型
+    数据库模型对应的Pydantic模型
     """
     id: int
+    user_id: int
+    create_time: datetime
+    update_time: datetime
+
+
+class UserModelOut(BaseSchema):
+    """
+    用户模型输出模型 - 包含所有字段
+    """
+    id: int
+    user_id: int
     create_time: datetime
     update_time: datetime

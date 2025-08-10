@@ -34,9 +34,9 @@ def login_user_info(user_info_req: UserInfoLogin, db: Session = Depends(get_db))
 
 @user_router.post("/user_info", response_model=ResponseModel)
 def get_user_info(db: Session = Depends(get_db),
-                  Authorization: str = Depends(verify_token)):
+                  user_id: int = Depends(verify_token)):
     """
     获取用户信息
     """
-    user_info_resp = user_info_service.get_user_by_token(db, token=Authorization)
+    user_info_resp = user_info_service.get_user_by_id(db, user_id=user_id)
     return ResponseModel(data=user_info_resp)

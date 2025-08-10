@@ -26,7 +26,7 @@ class UserInfoLogin(BaseModel):
     password: str
 
 
-class UserInfoCreate(UserInfoBase):
+class UserInfoCreate(BaseModel):
     """
     创建用户模型，必填字段不能为空
     """

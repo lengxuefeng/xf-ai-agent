@@ -1,3 +1,4 @@
+# app/services/base_service.py
 from typing import Any, Generic, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
@@ -61,12 +62,12 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     # ======== 分页查询（MyBatis-Plus style） ========
     def page(
-        self,
-        db: Session,
-        page: int = 1,
-        size: int = 10,
-        filters: Optional[list] = None,
-        order_by: Optional[list] = None
+            self,
+            db: Session,
+            page: int = 1,
+            size: int = 10,
+            filters: Optional[list] = None,
+            order_by: Optional[list] = None
     ) -> dict:
         """
         分页查询

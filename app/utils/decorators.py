@@ -7,8 +7,6 @@ from typing import Callable, Any
 
 import streamlit as st
 
-# 配置日志
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 

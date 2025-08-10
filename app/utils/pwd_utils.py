@@ -1,3 +1,4 @@
+import logging
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -6,6 +7,8 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from starlette import status
+
+logger = logging.getLogger(__name__)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -59,28 +62,28 @@ class EncryptionUtils:
         return pwd_context.verify(plain_password, hashed_password)
 
     # token加密
-    def token_encode(member_id: int):
+    def token_encode(self, user_id: int):
         token_expires = datetime.now(timezone.utc) + timedelta(days=7)  # 设置 token 有效期为 2天
         token_data = {
-            "member_id": member_id,
+            "user_id": user_id,
             "exp": token_expires.timestamp()
         }
         return jwt.encode(token_data, SECURITY_KEY, ALGORITHMS)
 
     # token解密
     def token_decode(self, token: str = Depends(oauth2_scheme)) -> int:
-        invalid_token =  HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token无效")
-        member_id = None
+        invalid_token = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token无效")
+        user_id = None
         try:
             token_data = jwt.decode(token, SECURITY_KEY, ALGORITHMS)
             if token_data:
-                member_id = token_data.get('member_id', None)
+                user_id = token_data.get('user_id', None)
         except Exception as error:
-            print('token_decode error', error)
+            logging.info(f"token 解密失败, token: {token}, error: {error}")
             raise invalid_token
-        if member_id is None:
+        if user_id is None:
             raise invalid_token
-        return member_id
+        return user_id
 
 
 encryption_utils = EncryptionUtils()
