@@ -2,6 +2,10 @@
 
 这是一个基于 LangChain、LangGraph 和 FastAPI 构建的智能代理后端项目。它提供了一个 HTTP API 接口，用于与 LangGraph 驱动的智能代理进行交互，并支持知识库问答 (RAG)。
 
+[langchain文档](https://python.langchain.com/docs)  
+[langgraph文档](https://langchain-ai.github.io/langgraph/)
+
+
 ## 项目结构
 
 ```

@@ -13,4 +13,7 @@ pypdf==3.10.0
 langchain-mcp-adapters==0.1.9
 mcp==1.12.1
 httpx==0.28.1
-faiss-cpu==1.11.0
+faiss-cpu==1.11.0.post1
+pymysql>=1.1.1
+passlib>=1.7.4
+pyjwt>=2.10.1

@@ -1,4 +1,9 @@
 api
+core
+db
+llm
 models
+schemas
 services
+tools
 utils
