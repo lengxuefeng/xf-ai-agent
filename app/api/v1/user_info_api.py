@@ -1,10 +1,10 @@
-from fastapi import Depends, APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from core.security import verify_token
 from db import get_db
-from schemas.schemas import ResponseModel
-from schemas.user_info_schemas import UserInfoCreate, UserInfoLogin
+from schemas.response_model import ResponseModel
+from schemas.user_info_schemas import UserInfoLogin, UserInfoCreate
 from services.user_info_service import user_info_service
 
 user_router = APIRouter(prefix="/user", tags=["用户信息"])
@@ -29,7 +29,7 @@ def login_user_info(user_info_req: UserInfoLogin, db: Session = Depends(get_db))
     用户登录
     """
     user_info_resp = user_info_service.login(db, user_info_req)
-    return ResponseModel(data=user_info_resp)
+    return ResponseModel.success(data=user_info_resp)
 
 
 @user_router.post("/user_info", response_model=ResponseModel)

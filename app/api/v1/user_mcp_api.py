@@ -5,12 +5,11 @@ from sqlalchemy.orm import Session
 
 from core.security import verify_token
 from db import get_db
-from schemas.schemas import ResponseModel
+from schemas.chat_schemas import ResponseModel
 from schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate, UserMCPOut
 from services.user_mcp_service import user_mcp_service
 
-# 创建一个APIRouter实例，用于定义用户MCP配置相关的路由
-router = APIRouter()
+router = APIRouter(prefix="/user_mcp", tags=["用户MCP配置"])
 
 """
 用户MCP配置接口

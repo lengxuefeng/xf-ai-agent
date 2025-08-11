@@ -46,6 +46,8 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     # token加密
     "pyjwt>=2.10.1",
+    # 模板引擎
+    "jinja2>=3.1.6",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

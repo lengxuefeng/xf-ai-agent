@@ -13,10 +13,10 @@ def verify_token(
     :param auth_token: 来自请求头的Bearer Token
     :return: user_id
     """
-    if not auth_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token不能为空")
-
-    # 假设 token_decode 失败会返回 None 或 False
+    # 校验 token 格式
+    if not auth_token.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token格式错误")
+    # 提取 token 中的用户 ID
     user_id = encryption_utils.token_decode(auth_token)
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token无效")

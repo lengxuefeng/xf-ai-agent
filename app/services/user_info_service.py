@@ -1,11 +1,12 @@
 # app/services/service_user.py (修改后)
 import logging
-import uuid
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from db.user_info_db import user_info_db
+from exceptions.business_exception import BusinessException
 from models.user_info import UserInfo
 from schemas.user_info_schemas import UserInfoBase, UserInfoRead, UserInfoCreate, UserInfoUpdate, UserInfoResp
 from services.base_service import BaseService
@@ -56,15 +57,17 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
         # 7. 返回Pydantic模型
         return UserInfoResp.model_validate(new_user)
 
-    def login(self, db: Session, user: UserInfoBase) -> UserInfoRead:
+    def login(self, db: Session, user: UserInfoBase) -> UserInfoResp:
         # 业务逻辑：根据用户名和密码查询用户
-
-        db_user = user_info_db.get(db, user_name=user.user_name, password=user.password)
+        db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
         # 业务逻辑：如果用户不存在或密码错误，抛出异常
         if db_user is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在或密码错误")
+            raise BusinessException(code=HTTP_401_UNAUTHORIZED, message="用户不存在")
+        hashed_password = encryption_utils.verify_password(user.password, db_user.password)
+        if not hashed_password:
+            raise BusinessException(code=HTTP_401_UNAUTHORIZED, message="密码错误")
         # 业务逻辑：如果用户存在，返回用户信息
-        return UserInfoRead.model_validate(db_user)
+        return UserInfoResp.model_validate(db_user)
 
     def get_user_by_id(self, db: Session, user_id: int) -> UserInfoResp:
         # 业务逻辑：根据id查询用户

@@ -1,16 +1,15 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 
 from core.security import verify_token
 from db import get_db
-from schemas.schemas import ResponseModel
+from schemas.chat_schemas import ResponseModel
 from schemas.model_setting_schemas import ModelSettingCreate, ModelSettingUpdate, ModelSettingOut
 from services.model_setting_service import model_setting_service
-from services.user_info_service import user_info_service
 
-# 创建一个APIRouter实例，用于定义模型配置相关的路由
-router = APIRouter()
+router = APIRouter(prefix="/user_setting", tags=["用户设置"])
 
 """
 模型配置接口

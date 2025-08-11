@@ -5,12 +5,11 @@ from sqlalchemy.orm import Session
 
 from core.security import verify_token
 from db import get_db
-from schemas.schemas import ResponseModel
+from schemas.chat_schemas import ResponseModel
 from schemas.user_model_schemas import UserModelCreate, UserModelUpdate, UserModelOut
 from services.user_model_service import user_model_service
 
-# 创建一个APIRouter实例，用于定义用户模型相关的路由
-router = APIRouter()
+router = APIRouter(prefix="/user_model", tags=["用户模型配置"])
 
 """
 用户模型接口

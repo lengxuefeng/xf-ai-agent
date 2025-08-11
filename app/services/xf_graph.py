@@ -1,4 +1,3 @@
-
 import json
 import logging
 from typing import Generator
@@ -10,6 +9,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 from app.llm.loader_llm_multi import load_chat_model, load_open_router, load_zhipu_model, load_tongyi_model
 from app.llm.ollama_model import load_ollama_model
+from schemas.chat_schemas import ChatRequest
 from schemas.graph_state import GraphState
 from app.utils.config import Settings
 from tools.search_tools import get_weather
@@ -77,7 +77,7 @@ class XfGraph:
         # 编译图
         return graph.compile()
 
-    def _load_llm(self, ):
+    def _load_llm(self):
         """
         加载指定类型的LLM模型
 
@@ -139,7 +139,16 @@ class XfGraph:
 
         return "对不起，我无法处理您的问题。"
 
-    def stream_agent(self, message: str) -> Generator[str, None, None]:
+    def stream_agent_handle(self, req: ChatRequest) -> Generator[str, None, None]:
+        """
+        处理聊天请求，执行智能体流程并返回流式响应。
+        """
+        self.model_name = req.settings.modelName
+        self.model_type = req.settings.modelType
+        self.llm = self._load_llm()
+        return self._stream_agent(req.message)
+
+    def _stream_agent(self, message: str) -> Generator[str, None, None]:
         """
         执行整个 LangGraph 流程，从用户输入到最终回复，支持流式输出。
         思考阶段使用thinking类型输出，最终回复使用response类型输出。

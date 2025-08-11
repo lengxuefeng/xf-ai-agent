@@ -1,6 +1,7 @@
 import logging
 import sys
 
+
 def setup_logger():
     """
     设置应用程序的根日志记录器。
