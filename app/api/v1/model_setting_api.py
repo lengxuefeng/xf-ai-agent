@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from core.security import verify_token
-from db import get_db
-from schemas.chat_schemas import ResponseModel
+from db.mysql import get_db
+from schemas.response_model import ResponseModel
 from schemas.model_setting_schemas import ModelSettingCreate, ModelSettingUpdate, ModelSettingOut
 from services.model_setting_service import model_setting_service
 

@@ -4,7 +4,7 @@ from typing import Any, Generic, List, Optional, Type, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, Query
 
-from db import Base
+from db.mysql import Base
 
 # 泛型类型
 ModelType = TypeVar("ModelType", bound=Base)

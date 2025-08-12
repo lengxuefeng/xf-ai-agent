@@ -1,6 +1,6 @@
 # app/services/user_model_service.py
 from sqlalchemy.orm import Session
-from db.user_model_db import user_model_db
+from db.mysql.user_model_db import user_model_db
 from schemas.user_model_schemas import UserModelCreate, UserModelUpdate
 
 

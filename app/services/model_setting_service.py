@@ -1,7 +1,7 @@
 # app/services/model_setting_service.py
 from sqlalchemy.orm import Session
 
-from db.model_setting_db import model_setting_db
+from db.mysql.model_setting_db import model_setting_db
 from schemas.model_setting_schemas import ModelSettingCreate, ModelSettingUpdate
 
 

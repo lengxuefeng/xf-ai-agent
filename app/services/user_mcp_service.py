@@ -1,6 +1,6 @@
 # app/services/user_mcp_service.py
 from sqlalchemy.orm import Session
-from db.user_mcp_db import user_mcp_db
+from db import user_mcp_db
 from schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate
 
 

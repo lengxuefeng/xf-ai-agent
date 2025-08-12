@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from app.services.xf_graph import xf_graph
-from core.security import verify_token
 from schemas.chat_schemas import ChatRequest
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])

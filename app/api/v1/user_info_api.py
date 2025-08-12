@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from core.security import verify_token
-from db import get_db
+from db.mysql import get_db
 from schemas.response_model import ResponseModel
 from schemas.user_info_schemas import UserInfoLogin, UserInfoCreate
 from services.user_info_service import user_info_service
