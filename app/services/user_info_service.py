@@ -7,7 +7,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from db.mysql.user_info_db import user_info_db
 from exceptions.business_exception import BusinessException
 from models.user_info import UserInfo
-from schemas.user_info_schemas import UserInfoBase, UserInfoCreate, UserInfoUpdate, UserInfoResp
+from schemas.user_info_schemas import UserInfoBase, UserInfoCreate, UserInfoUpdate, UserInfoResp, UserInfoChangePassword
 from services.base_service import BaseService
 from utils.pwd_utils import encryption_utils
 
@@ -70,11 +70,29 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
 
     def get_user_by_id(self, db: Session, user_id: int) -> UserInfoResp:
         # 业务逻辑：根据id查询用户
+        db_user = self._check_info(db, user_id)
+        # 业务逻辑：如果用户存在，返回用户信息
+        return UserInfoResp.model_validate(db_user)
+
+    def update_user(self, db: Session, user_id: int, user_update: UserInfoUpdate) -> bool:
+        db_update_user = self.update(db, self._check_info(db, user_id), user_update)
+        return True if db_update_user else False
+
+    def _check_info(self, db: Session, user_id: int) -> UserInfo:
+        # 业务逻辑：根据id查询用户
         db_user = user_info_db.get(db, id=user_id)
         if db_user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
-        # 业务逻辑：如果用户存在，返回用户信息
-        return UserInfoResp.model_validate(db_user)
+        return db_user
+
+
+    def change_password(self, db: Session, user_id: int, user_update: UserInfoChangePassword) -> bool:
+        db_user = self._check_info(db, user_id)
+        if not encryption_utils.verify_password(user_update.old_password, db_user.password):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="旧密码错误")
+        db_user.password = encryption_utils.encrypt_password(user_update.new_password)
+        db.commit()
+        return True
 
 
 user_info_service = UserInfoService()

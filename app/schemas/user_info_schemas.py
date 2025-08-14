@@ -15,7 +15,7 @@ class UserInfoBase(BaseModel):
     token: str
     nick_name: str
     user_name: str
-    password: str
+    password: str   
 
 
 class UserInfoLogin(BaseModel):
@@ -30,10 +30,10 @@ class UserInfoCreate(BaseModel):
     """
     创建用户模型，必填字段不能为空
     """
-    nick_name: constr(min_length=1) = Field(..., description="昵称，不能为空")
-    user_name: constr(min_length=1) = Field(..., description="用户名，不能为空")
-    password: constr(min_length=1) = Field(..., description="密码，不能为空")
-    phone: constr(min_length=1) = Field(..., description="手机号，不能为空")
+    nick_name: constr(min_length=2) = Field(..., description="昵称，不能为空")
+    user_name: constr(min_length=2) = Field(..., description="用户名，不能为空")
+    password: constr(min_length=6) = Field(..., description="密码，不能为空")
+    phone: constr(min_length=11) = Field(..., description="手机号，不能为空")
 
 
 class UserInfoUpdate(BaseModel):
@@ -45,6 +45,13 @@ class UserInfoUpdate(BaseModel):
     password: Optional[str] = None
     token: Optional[str] = None
 
+
+class UserInfoChangePassword(BaseModel):
+    """
+    修改密码模型
+    """
+    old_password: constr(min_length=6) = Field(..., description="旧密码，不能为空")
+    new_password: constr(min_length=6) = Field(..., description="新密码，不能为空")
 
 class UserInfoQuery(BaseModel):
     nick_name: Optional[str] = None

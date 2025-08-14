@@ -18,7 +18,12 @@ class MongodbBaseSchema(BaseModel):
     Mongodb基础模型 - 包含id字段
     """
     class Config:
-        json_encoders = {ObjectId: str}
+        # 日期格式化
+        json_encoders = {ObjectId: str, datetime.datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S')}
+        # 允许任意类型
+        arbitrary_types_allowed = True
+        # 允许通过字段名填充
+        populate_by_name = True
         schema_extra = {
             "example": {
                 "user_id": 123,
