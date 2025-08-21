@@ -16,6 +16,8 @@ dependencies = [
     "langchain-ollama==0.3.6",
     "langgraph==0.6.2", # 最新稳定版本，与 LangChain 0.3.x 兼容
     "langchain-google-genai==2.1.8", # 最新稳定版本，与 LangChain 0.3.x 兼容
+    "langchain-tavily>=0.2.11",
+    "langsmith>=0.4.13",
     # 环境变量加载
     "python-dotenv==1.1.0",
     # Tavily 搜索客户端
@@ -50,6 +52,11 @@ dependencies = [
     "jinja2>=3.1.6",
     # MongoDB 相关
     "pymongo>=4.14.0",
+    # 可视化
+    "ipython>=9.4.0",
+    # 图片处理
+    "pillow>=11.3.0",
+    "redis>=6.4.0",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

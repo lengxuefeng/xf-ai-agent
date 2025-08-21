@@ -15,6 +15,8 @@ Requires-Dist: langchain-community==0.3.27
 Requires-Dist: langchain-ollama==0.3.6
 Requires-Dist: langgraph==0.6.2
 Requires-Dist: langchain-google-genai==2.1.8
+Requires-Dist: langchain-tavily>=0.2.11
+Requires-Dist: langsmith>=0.4.13
 Requires-Dist: python-dotenv==1.1.0
 Requires-Dist: tavily-python==0.7.3
 Requires-Dist: pypdf==3.10.0
@@ -23,8 +25,13 @@ Requires-Dist: mcp==1.12.1
 Requires-Dist: httpx==0.28.1
 Requires-Dist: faiss-cpu==1.11.0.post1
 Requires-Dist: pymysql>=1.1.1
-Requires-Dist: passlib>=1.7.4
+Requires-Dist: passlib[bcrypt]>=1.7.4
 Requires-Dist: pyjwt>=2.10.1
+Requires-Dist: jinja2>=3.1.6
+Requires-Dist: pymongo>=4.14.0
+Requires-Dist: ipython>=9.4.0
+Requires-Dist: pillow>=11.3.0
+Requires-Dist: redis>=6.4.0
 
 # xf-ai-agent 项目
 

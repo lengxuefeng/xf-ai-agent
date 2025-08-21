@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-from app.services.xf_graph import xf_graph
+from agent.xf_graph import xf_graph
 from schemas.chat_schemas import ChatRequest
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
