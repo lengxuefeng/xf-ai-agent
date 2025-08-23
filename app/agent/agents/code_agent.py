@@ -1,7 +1,7 @@
 import logging
 import os
 import re
-from typing import TypedDict, Annotated, Dict
+from typing import TypedDict, Annotated, Dict, Generator
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
@@ -43,15 +43,38 @@ class CodeAgentState(TypedDict):
     out: str
 
 
+from agent.agent_builder import create_interruptable_agent_executor
+
+
 class CodeAgent:
+    """
+    代码编写 Agent。
+
+    本 Agent 的核心是实现一个带有人工审核环节（Human-in-the-loop）的图。
+    它首先生成代码，然后暂停等待用户审核，并根据用户的反馈决定下一步操作。
+
+    图的构建过程被抽象到了 `create_interruptable_agent_executor` 中，
+    而本类则专注于实现各个节点（agent, interrupt, router）的具体业务逻辑。
+    """
+
     def __init__(self, req: AgentRequest, max_threads: int = 2):
+        """
+        初始化代码 Agent。
+
+        Args:
+            req (AgentRequest): 包含模型、会话 ID 等信息的请求对象。
+            max_threads (int): 并发执行器线程数。
+        """
         if not req.model:
             raise ValueError("代码编写智能体模型加载失败，请检查配置。")
+
         self.model = req.model
         self.state_manager = redis_manager.RedisManager()
         self.session_id = req.session_id
         self.subgraph_id = req.subgraph_id
         self.concurrent_executor = concurrent_executor.ConcurrentExecutor(max_threads=max_threads)
+
+        # 定义 Agent 的核心提示和执行链
         prompt = ChatPromptTemplate.from_messages(
             [
                 (
@@ -62,27 +85,27 @@ class CodeAgent:
                 MessagesPlaceholder(variable_name="messages")
             ]
         )
-
         self.chain = prompt | self.model
-        self.graph = self._build_graph()
+
+        # 使用通用构建器创建可中断的图执行器
+        # 将节点逻辑作为参数传入，实现了逻辑与结构的解耦
+        self.graph = create_interruptable_agent_executor(
+            state_class=CodeAgentState,
+            agent_node=self._agent_node,
+            interrupt_node=self._interrupt_node,
+            router_node=self._router
+        )
 
     def _is_user_confirm(self, message: str, llm=None) -> bool:
         """
         判断用户输入是否表示确认。
         优先用本地关键词匹配，如果没命中，再用 LLM 判断。
-
-        Args:
-            message (str): 用户输入的消息。
-            llm (BaseChatModel, optional): 语言模型，用于兜底判断。
-
-        Returns:
-            bool: 如果用户输入表示确认，则返回 True；否则返回 False。
         """
         if not message:
             return False
         normalized = message.strip().lower()
         # 关键词匹配
-        if normalized in os.getenv("CONFIRM_KEYWORDS"):
+        if normalized in os.getenv("CONFIRM_KEYWORDS").split(","):
             return True
 
         # 关键词匹配失败，用 LLM 判断
@@ -95,37 +118,21 @@ class CodeAgent:
 
     def _agent_node(self, state: CodeAgentState):
         """
-        定义智能体节点（Agent Node）。
+        定义 Agent 节点：调用 LLM 生成代码。
         """
         response = self.chain.invoke({"messages": state["messages"]})
         return {"messages": [response]}
 
     def _interrupt_node(self, state: CodeAgentState):
         """
-        定义中断节点（Interrupt Node）。
-
-        该节点不执行智能操作，而是准备一个中断信号，暂停图的执行，
-        等待用户审核和反馈。
-
-        Args:
-            state (CodeAgentState): 当前图的状态。
-
-        Returns:
-            dict | None: 包含中断提示信息的字典，或者 None 表示不触发中断。
+        定义中断节点：准备中断信息，等待用户审核。
         """
-        # 倒序查找最后一条 HumanMessage（避免最后一条是 AIMessage）
-        last_human_msg = next(
-            (m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)),
-            None
-        )
-        # 用户输入 确认 不触发中断
+        last_human_msg = next((m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)), None)
         if last_human_msg and self._is_user_confirm(message=last_human_msg.content):
-            return None
+            return None  # 用户输入了确认指令，不中断
 
         last_msg = state["messages"][-1]
-        # 如果最后一条是 AIMessage，则生成中断提示
         if getattr(last_msg, "content", None):
-            # 处理 Agent 消息
             content = last_msg.content
             # 清理 <think> 等特殊标记
             clean_content_text = content.replace("<think>", "").replace("</think>", "").strip()
@@ -143,61 +150,34 @@ class CodeAgent:
 
     def _router(self, state: CodeAgentState):
         """
-        定义路由函数，在中断后根据用户的最新反馈决定下一步走向。
-
-        Args:
-            state (CodeAgentState): 当前图的状态。
-
-        Returns:
-            str: 下一个节点的名称。'__end__' 表示结束，'agent' 表示回到 agent 节点。
+        定义路由函数：根据用户反馈决定下一步是结束还是重试。
         """
-        # 找到最新用户输入，只检查最新一条 HumanMessage
         for msg in reversed(state["messages"]):
-            # 判断用户是否输入 表示接受
-            if isinstance(msg, HumanMessage) and self._is_user_confirm(message=msg.content):
-                return "__end__"  # 本轮结束
-            # 注意 break：只看最新一条用户输入，不往前看历史
-            break
-        return "agent"
+            if isinstance(msg, HumanMessage):
+                if self._is_user_confirm(message=msg.content):
+                    return "__end__"  # 用户确认，结束
+                break  # 只检查最新一条用户消息
+        return "agent"  # 用户提出修改意见，返回 agent 节点
 
-    def _build_graph(self):
+    def run(self, req: AgentRequest) -> Generator:
         """
-        构建代码编写子图
+        执行子图一次，支持暂停/中断功能。
+        自动加载历史状态，避免重复追加 user_input。
         """
-        graph = StateGraph(CodeAgentState)
-        graph.add_node("agent", self._agent_node)
-        graph.add_node("interrupt", self._interrupt_node)
-        graph.set_entry_point("agent")
-        graph.add_edge("agent", "interrupt")
-        graph.add_conditional_edges("interrupt", self._router)
-        # 使用 compile 的 interrupt_after 参数设置中断
-        return graph.compile(interrupt_after=["interrupt"])
-
-    def run(self, req: AgentRequest) -> CodeAgentState:
-        """
-        执行子图一次，支持暂停/中断功能
-        自动加载历史状态，避免重复追加 user_input
-        """
-        # 1. 拉取历史
         state = self.state_manager.load_graph_state(req.session_id, req.subgraph_id)
         if not state:
             state = {"messages": [], "interrupt": ""}
         else:
-            # 清理上一次中断，保证新一轮中断独立
-            state["interrupt"] = ""
+            state["interrupt"] = ""  # 清理上一次中断
 
-        # 2. 避免重复追加用户输入
         last_msg = state["messages"][-1] if state["messages"] else None
         if not last_msg or getattr(last_msg, "content", "") != req.user_input:
             state["messages"].append(HumanMessage(content=req.user_input))
 
-        # 3. 执行子图
         result = self.graph.invoke(state)
-
-        # 4. 保存执行结果
         self.state_manager.save_graph_state(result, req.session_id, req.subgraph_id)
+        yield result
 
-        return result
 
 
 if __name__ == '__main__':

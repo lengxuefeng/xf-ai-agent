@@ -1,22 +1,14 @@
-import io
-from tkinter import END
-from typing import Annotated, TypedDict
+# -*- coding: utf-8 -*-
+from typing import Annotated, TypedDict, Generator
 
-from IPython.core.display_functions import display
-from IPython.display import Image as IPyImage  # 重命名为 IPyImage
-from PIL import Image as PILImage  # 重命名为 PILImage，避免冲突
 from dotenv import load_dotenv
-from langchain.agents import Agent
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.graph import add_messages, StateGraph
+from langgraph.graph import add_messages
 
-from agent.agents.code_agent import CodeAgentState
+from agent.agent_builder import create_simple_agent_executor
 from agent.graph_state import AgentRequest
 from agent.llm.loader_llm_multi import load_open_router
-from agent.llm.ollama_model import load_ollama_model
-from utils import concurrent_executor
 from utils import redis_manager
 
 load_dotenv()
@@ -24,10 +16,10 @@ load_dotenv()
 """
 医疗问答子图（Medical Agent）。
 
-特典：
+特点：
 1.  不使用任何外部工具，完全依赖大语言模型（LLM）的内部知识。
 2.  在回答用户关于健康或医疗的问题后，总会自动附加一条免责声明。
-    这是为了强调 AI 的回答不能替代专业的医疗建议，确保使用的安全性。
+3.  使用 `create_simple_agent_executor` 构建器创建，结构简洁。
 """
 
 
@@ -43,14 +35,13 @@ class MedicalAgent:
     医疗问答智能体
     """
 
-    def __init__(self, req: AgentRequest, max_threads: int = 2):
+    def __init__(self, req: AgentRequest):
+        """
+        初始化医疗 Agent
+        """
         if not req.model:
             raise ValueError("医疗模型初始化失败，请检查配置。")
-        self.llm = req.model
-        self.redis_manager = redis_manager.RedisManager()
-        self.session_id = req.session_id
-        self.subgraph_id = req.subgraph_id
-        self.concurrent_executor = concurrent_executor.ConcurrentExecutor(max_threads=max_threads)
+
         # 定义问答提示词模版
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -62,72 +53,68 @@ class MedicalAgent:
                     请注意，你提供的所有信息都不能替代专业的医疗诊断和建议。
                     """
                 ),
-                # 消息占位符，将在这里插入整理对话历史，在对话链中传递历史消息，动态注入上下文，实现多轮对话记忆功能
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
-        # 定义问答链
-        self.chain = prompt | self.llm
-        self.graph = self._build_graph()
 
-    # 定义图的节点
-    def _agent_node(self, state: MedicalAgentState):
-        """
-        定义智能体节点（Agent Node）。
+        # 定义一个后处理函数，用于在模型输出后附加免责声明
+        def add_disclaimer(response: AIMessage) -> AIMessage:
+            disclaimer = (
+                "\n\n---\n"
+                "**免责声明：** 我是一个 AI 助手，以上信息仅供参考，不能作为专业的医疗建议、诊断或治疗方案。"
+                "如有任何健康问题，请务必咨询医生或其他有资质的医疗专业人士。"
+            )
+            response.content += disclaimer
+            return response
 
-        Args:
-            state (MedicalAgentState): 当前图的状态。
-
-        Returns:
-            dict: 包含模型生成的新消息（已附带免责声明）的字典。
-        """
-        response = self.chain.invoke({"messages": state["messages"]})
-        # 附加免责声明
-        disclaimer = (
-            "\n\n---\n"
-            "**免责声明：** 我是一个 AI 助手，以上信息仅供参考，不能作为专业的医疗建议、诊断或治疗方案。"
-            "如有任何健康问题，请务必咨询医生或其他有资质的医疗专业人士。"
+        self.graph = create_simple_agent_executor(
+            model=req.model,
+            prompt=prompt,
+            state_class=MedicalAgentState,
+            post_process_func=add_disclaimer
         )
-        response.content += disclaimer
-        return {"messages": [response]}
+        self.redis_manager = redis_manager.RedisManager()
+        self.session_id = req.session_id
+        self.subgraph_id = "medical_agent"
 
-    def _build_graph(self):
+    def run(self, req: AgentRequest) -> Generator:
         """
-        构建医疗问答子图
+        以流式方式执行 Agent。
         """
-        graph = StateGraph(MedicalAgentState)
-        graph.add_node("agent", self._agent_node)
-        graph.set_entry_point("agent")
-        graph.add_edge("agent", "__end__")
-        return graph.compile()
-
-    def run(self, req: AgentRequest) -> CodeAgentState:
-        """
-        运行医疗问答子图
-        """
-        state = self.redis_manager.load_graph_state(req.session_id, subgraph_id=self.subgraph_id)
+        state = self.redis_manager.load_graph_state(req.session_id, self.subgraph_id)
         if not state:
             state = {"messages": []}
 
         last_msg = state["messages"][-1] if state["messages"] else None
-        if not last_msg or getattr(last_msg, "content", None) != req.user_input:
+        if not last_msg or not isinstance(last_msg, HumanMessage):
             state["messages"].append(HumanMessage(content=req.user_input))
 
-        result = self.graph.invoke(state)
+        final_state = None
+        for event in self.graph.stream(state):
+            final_state = event
+            print(f"===={event}")
+            yield event
 
-        self.redis_manager.save_graph_state(result, req.session_id, req.subgraph_id)
-        return result
+        if final_state:
+            self.redis_manager.save_graph_state(final_state, req.session_id, self.subgraph_id)
 
 
 if __name__ == '__main__':
-    llm = load_open_router("deepseek/deepseek-chat-v3-0324:free")
-    req = AgentRequest(
-        user_input="肚子疼怎么办",
-        model=llm,
-        session_id="123232",
+    agent_llm = load_open_router("deepseek/deepseek-chat-v3-0324:free")
+    agent_req = AgentRequest(
+        user_input="我最近总是头疼，是怎么回事？",
+        model=agent_llm,
+        session_id="session_medical_12345",
         subgraph_id="medical_agent",
     )
-    medical_agent = MedicalAgent(req)
-    result = medical_agent.run(req)
-    # print(json.dumps(result, indent=2))
-    print(result["messages"][-1].content)
+    medical_agent = MedicalAgent(req=agent_req)
+
+    final_state = None
+    for chunk in medical_agent.run(agent_req):
+        final_state = chunk
+        print("---CHUNK START---")
+        print(final_state)
+        print("---CHUNK END---\\n")
+
+    print("\n\n===== FINAL RESPONSE =====")
+    print(final_state["messages"][-1].content)

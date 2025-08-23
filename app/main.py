@@ -72,3 +72,9 @@ templates = Jinja2Templates(directory="app/templates")
 @app.get("/", include_in_schema=False, response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+# 聊天测试页面
+@app.get("/chat", include_in_schema=False, response_class=HTMLResponse)
+async def chat_page(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})

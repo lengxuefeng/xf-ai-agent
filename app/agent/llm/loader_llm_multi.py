@@ -57,6 +57,23 @@ def load_open_router(model_name: str) -> ChatOpenAI:
     )
 
 
+def load_silicon_flow(model_name: str) -> ChatOpenAI:
+    """
+    加载硅基流动模型
+
+    Args:
+        model_name: 模型名称，如 gpt-4、gpt-4o
+
+    Returns:
+        ChatOpenAI: 加载的OpenRouter模型实例
+    """
+    return ChatOpenAI(
+        model=model_name,
+        api_key=os.getenv("SILICONFLOW_API_KEY"),
+        base_url=os.getenv("SILICONFLOW_API_BASE"),
+    )
+
+
 def load_chat_model(
         model: str,
         api_key: str = None,
