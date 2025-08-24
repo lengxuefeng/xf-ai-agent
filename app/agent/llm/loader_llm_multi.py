@@ -45,15 +45,34 @@ def load_open_router(model_name: str) -> ChatOpenAI:
     加载OpenRouter模型
 
     Args:
-        model_name: 模型名称，如 gpt-4、gpt-4o
+        model_name: 模型名称，如 google/gemini-1.5-pro、microsoft/gpt-4o
 
     Returns:
         ChatOpenAI: 加载的OpenRouter模型实例
     """
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    base_url = os.getenv("OPENROUTER_API_BASE")
+    
+    if not api_key:
+        raise ValueError("OPENROUTER_API_KEY 环境变量未设置")
+    
+    if not base_url:
+        raise ValueError("OPENROUTER_API_BASE 环境变量未设置")
+    
+    print(f"🔧 OpenRouter配置: model={model_name}, base_url={base_url}")
+    
     return ChatOpenAI(
         model=model_name,
-        api_key=os.getenv("OPENROUTER_API_KEY"),
-        base_url=os.getenv("OPENROUTER_API_BASE"),
+        api_key=api_key,
+        base_url=base_url,
+        max_retries=2,
+        timeout=30,
+        model_kwargs={
+            "extra_headers": {
+                "HTTP-Referer": "https://localhost:8000",
+                "X-Title": "XF-AI-Agent"
+            }
+        }
     )
 
 

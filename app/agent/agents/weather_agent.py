@@ -44,6 +44,16 @@ class WeatherAgent:
             raise ValueError("天气 Agent 模型加载失败，请检查配置。")
 
         tools = [get_weathers]
+        
+        # 检查是否启用RAG功能
+        llm_config = req.llm_config or {}
+        rag_enabled = llm_config.get('rag_enabled', False)
+        
+        if rag_enabled:
+            # 如果启用RAG，可以在这里添加相关功能
+            # 例如：加载向量数据库、检索工具等
+            print(f"ℹ️ 天气代理已启用RAG功能，相似度阈值: {llm_config.get('similarity_threshold', 0.7)}")
+            print(f"ℹ️ 使用嵌入模型: {llm_config.get('embedding_model', 'bge-m3:latest')}")        
         self.graph = create_tool_agent_executor(
             model=req.model,
             tools=tools,

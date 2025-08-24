@@ -136,11 +136,15 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
     if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
         user_input = state["messages"][-1].content
 
+    # 获取模型配置，如果没有则使用默认配置
+    llm_config = state.get("llm_config", {})
+    
     req = AgentRequest(
         user_input=user_input,
         model=model,
         session_id=state.get("session_id", ""),
-        subgraph_id=agent_name
+        subgraph_id=agent_name,
+        llm_config=llm_config
     )
 
     agent_info = agent_classes[agent_name]
@@ -187,9 +191,39 @@ def _chat_node(state: GraphState, model):
 
 # -------------------------
 # 8️⃣ 创建 Graph
-def create_graph():
-    # model = load_ollama_model("qwen3:8b")
-    model = load_silicon_flow("Qwen/QwQ-32B")
+def create_graph(model_config: dict = None):
+    """
+    创建主图，支持动态模型配置
+    
+    Args:
+        model_config: 模型配置字典，包含模型相关参数
+    """
+    # 导入统一模型加载器
+    from agent.llm.unified_loader import create_model_from_config
+    
+    # 默认模型配置
+    default_config = {
+        'model': 'google/gemini-1.5-pro',
+        'model_service': 'netlify-gemini',
+        'deep_thinking_mode': 'auto',
+        'rag_enabled': False,
+        'similarity_threshold': 0.7,
+        'embedding_model': 'bge-m3:latest'
+    }
+    
+    # 合并配置
+    final_config = {**default_config, **(model_config or {})}
+    
+    try:
+        # 根据配置加载模型
+        model, embedding_model = create_model_from_config(**final_config)
+        print(f"✅ 模型加载成功: {final_config['model_service']} - {final_config['model']}")
+    except Exception as e:
+        print(f"⚠️ 模型加载失败，使用默认模型: {e}")
+        # 回退到默认模型
+        model = load_silicon_flow("Qwen/QwQ-32B")
+        embedding_model = None
+    
     workflow = StateGraph(GraphState)
 
     # 注册节点
@@ -219,3 +253,6 @@ def create_graph():
     workflow.add_edge("chat_node", END)
 
     return workflow.compile()
+
+
+

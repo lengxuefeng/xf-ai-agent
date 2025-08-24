@@ -17,7 +17,11 @@ class GraphState(TypedDict):
         messages (Annotated[list, operator.add]): 对话消息列表
         next (Optional[str]): 指示下一个要调用的节点的名称。
         interrupt (Optional[str]): 存储需要人工干预时的中断信息。
+        session_id (Optional[str]): 会话 ID。
+        llm_config (Optional[dict]): 模型配置参数。
     """
     messages: Annotated[list, operator.add]
     next: Optional[str]
     interrupt: Optional[str]
+    session_id: Optional[str]
+    llm_config: Optional[dict]
