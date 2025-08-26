@@ -10,6 +10,7 @@ from agent.agents.medical_agent import MedicalAgent
 from agent.agents.search_agent import SearchAgent
 from agent.agents.sql_agent import SqlAgent
 from agent.agents.weather_agent import WeatherAgent
+from agent.agents.yunyou_agent import YunyouAgent
 from agent.graph_state import AgentRequest
 from agent.graphs.state import GraphState
 from agent.llm.loader_llm_multi import load_silicon_flow
@@ -37,6 +38,11 @@ class AgentInfo:
 
 # 2️⃣ 定义系统中所有 Agent
 agent_classes: Dict[str, AgentInfo] = {
+    "yunyou_agent": AgentInfo(
+        cls=YunyouAgent,
+        description="处理云柚相关问题",
+        keywords=["云柚", "holter", "智纤", "心电", "审核", "上传", "holter类型"]
+    ),
     "medical_agent": AgentInfo(
         cls=MedicalAgent,
         description="回答医疗健康问题，例如症状、药物咨询，输出附带免责声明",
@@ -61,7 +67,7 @@ agent_classes: Dict[str, AgentInfo] = {
         cls=SearchAgent,
         description="处理通用搜索和信息检索",
         keywords=["搜索", "查找", "信息", "资料"]
-    ),
+    )
 }
 
 MEMBERS = list(agent_classes.keys())
@@ -138,7 +144,7 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
 
     # 获取模型配置，如果没有则使用默认配置
     llm_config = state.get("llm_config", {})
-    
+
     req = AgentRequest(
         user_input=user_input,
         model=model,
@@ -153,7 +159,7 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
     # 收集所有消息
     all_messages = []
     final_subgraph_state = None
-    
+
     for event in agent_instance.run(req):
         final_subgraph_state = event
         # 从事件中提取消息
@@ -164,14 +170,14 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
     # 如果有累积的消息，使用它们；否则检查最终状态
     if all_messages:
         return {"messages": all_messages}
-    
+
     # 备用方案：从最终状态中获取消息
     if final_subgraph_state:
         # 尝试从不同可能的结构中获取消息
         for key, value in final_subgraph_state.items():
             if isinstance(value, dict) and "messages" in value:
                 return {"messages": value["messages"]}
-    
+
     return {"messages": []}
 
 
@@ -200,7 +206,7 @@ def create_graph(model_config: dict = None):
     """
     # 导入统一模型加载器
     from agent.llm.unified_loader import create_model_from_config
-    
+
     # 默认模型配置
     default_config = {
         'model': 'google/gemini-1.5-pro',
@@ -210,10 +216,10 @@ def create_graph(model_config: dict = None):
         'similarity_threshold': 0.7,
         'embedding_model': 'bge-m3:latest'
     }
-    
+
     # 合并配置
     final_config = {**default_config, **(model_config or {})}
-    
+
     try:
         # 根据配置加载模型
         model, embedding_model = create_model_from_config(**final_config)
@@ -223,7 +229,7 @@ def create_graph(model_config: dict = None):
         # 回退到默认模型
         model = load_silicon_flow("Qwen/QwQ-32B")
         embedding_model = None
-    
+
     workflow = StateGraph(GraphState)
 
     # 注册节点
@@ -253,6 +259,3 @@ def create_graph(model_config: dict = None):
     workflow.add_edge("chat_node", END)
 
     return workflow.compile()
-
-
-

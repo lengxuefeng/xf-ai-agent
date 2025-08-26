@@ -1,69 +1,74 @@
 # schemas/model_setting.py
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 from schemas.base import BaseSchema
 
 
-class ModelSettingBase(BaseModel):
+class ModelServiceBase(BaseModel):
     """
-    模型设置基础模型 - 不含user_id
+    模型服务基础模型
     """
-    model_name: str
-    model_type: str
-    model_url: str
-    model_params: str
-    model_desc: str
+    service_name: str
+    service_type: str
+    service_url: str
+    api_key_template: str
+    icon: str = "FiCpu"
+    models: List[str]
+    description: Optional[str] = None
+    is_enabled: bool = True
 
 
-class ModelSettingCreate(ModelSettingBase):
+class ModelServiceCreate(ModelServiceBase):
     """
-    创建模型设置模型
+    创建模型服务模型
     """
     pass
 
 
-class ModelSettingUpdate(BaseModel):
+class ModelServiceUpdate(BaseModel):
     """
-    更新模型设置模型 - 不允许更新user_id
+    更新模型服务模型
     """
-    model_name: Optional[str] = None
-    model_type: Optional[str] = None
-    model_url: Optional[str] = None
-    model_params: Optional[str] = None
-    model_desc: Optional[str] = None
+    service_name: Optional[str] = None
+    service_type: Optional[str] = None
+    service_url: Optional[str] = None
+    api_key_template: Optional[str] = None
+    icon: Optional[str] = None
+    models: Optional[List[str]] = None
+    description: Optional[str] = None
+    is_enabled: Optional[bool] = None
 
 
-class ModelSettingResp(BaseModel):
+class ModelServiceOut(BaseSchema):
     """
-    模型设置响应
-    """
-    id: int
-    model_name: str
-    model_type: str
-    model_url: str
-    model_params: str
-    model_desc: str
-
-
-class ModelSetting(ModelSettingBase):
-    """
-    数据库模型对应的Pydantic模型
+    模型服务输出模型
     """
     id: int
     user_id: int
+    service_name: str
+    service_type: str
+    service_url: str
+    api_key_template: str
+    icon: str
+    models: List[str]
+    description: Optional[str]
+    is_enabled: bool
     create_time: datetime
     update_time: datetime
-    model_config = ConfigDict(from_attributes=True)
 
 
-class ModelSettingOut(BaseSchema):
+class TestConnectionRequest(BaseModel):
     """
-    模型设置输出 - 包含所有字段
+    测试连接请求模型
     """
-    id: int
-    user_id: int
-    create_time: datetime
-    update_time: datetime
+    api_key: str
+
+
+class ToggleServiceRequest(BaseModel):
+    """
+    启用/禁用服务请求模型
+    """
+    is_enabled: bool

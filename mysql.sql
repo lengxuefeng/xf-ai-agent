@@ -8,17 +8,19 @@ USE `xf-ai-agent`;
 
 -- 模型配置表
 CREATE TABLE `t_model_setting` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
-  `model_name` varchar(50) NOT NULL COMMENT '模型名称',
-  `model_type` varchar(50) NOT NULL COMMENT '模型类型',
-  `model_url` varchar(255) NOT NULL COMMENT '模型地址',
-  `model_params` varchar(255) NOT NULL COMMENT '模型参数',
-  `model_desc` varchar(255) NOT NULL COMMENT '模型描述',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='模型配置表';
+    id SERIAL PRIMARY KEY COMMENT '主键ID，自增',
+    user_id INTEGER NOT NULL COMMENT '用户ID，关联用户表',
+    service_name VARCHAR(100) NOT NULL COMMENT '服务名称，如OpenAI、Google Gemini等',
+    service_type VARCHAR(50) NOT NULL COMMENT '服务类型标识，如openai、gemini等，用于程序识别',
+    service_url VARCHAR(500) NOT NULL COMMENT 'API服务基础地址，如https://api.openai.com/v1',
+    api_key_template VARCHAR(100) COMMENT 'API密钥格式模板，如sk-xxx、AIxxx等，用于提示用户',
+    icon VARCHAR(50) DEFAULT 'FiCpu' COMMENT '服务图标名称，使用Feather Icons图标库',
+    models JSON NOT NULL COMMENT '支持的模型列表，JSON格式存储，如["gpt-4","gpt-3.5-turbo"]',
+    description TEXT COMMENT '服务描述信息，可选字段',
+    is_enabled BOOLEAN DEFAULT TRUE COMMENT '是否启用该服务，true为启用，false为禁用',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间，自动记录',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间，自动更新'
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='模型配置表';
 
 -- 用户信息表
 CREATE TABLE `t_user_info` (

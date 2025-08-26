@@ -2,23 +2,48 @@
 from sqlalchemy.orm import Session
 
 from db.mysql.model_setting_db import model_setting_db
-from schemas.model_setting_schemas import ModelSettingCreate, ModelSettingUpdate
+from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 
 
 class ModelSettingService:
-    def get_model_settings(self, db: Session, user_id: int):
+    """模型服务业务逻辑层"""
+
+    def get_model_services(self, db: Session, user_id: int):
+        """获取用户的所有模型服务配置"""
         return model_setting_db.get_by_user_id(db, user_id=user_id)
 
-    def create_model_setting(self, db: Session, model_setting: ModelSettingCreate, user_id: int):
-        create_data = model_setting.model_dump()
+    def create_model_service(self, db: Session, model_service: ModelServiceCreate, user_id: int):
+        """创建新的模型服务配置"""
+        create_data = model_service.model_dump()
         create_data['user_id'] = user_id
         return model_setting_db.create(db, obj_in=create_data)
 
-    def update_model_setting(self, db: Session, id: int, model_setting: ModelSettingUpdate):
-        return model_setting_db.update(db, db_obj=model_setting_db.get(db, id), obj_in=model_setting)
+    def update_model_service(self, db: Session, id: int, model_service: ModelServiceUpdate):
+        """更新指定ID的模型服务配置"""
+        return model_setting_db.update(db, db_obj=model_setting_db.get(db, id), obj_in=model_service)
 
-    def remove_model_setting(self, db: Session, id: int):
+    def remove_model_service(self, db: Session, id: int):
+        """删除指定ID的模型服务配置"""
         return model_setting_db.remove(db, id=id)
+
+    def test_service_connection(self, db: Session, service_id: int, api_key: str):
+        """测试模型服务连接"""
+        service = model_setting_db.get(db, service_id)
+        if not service:
+            return {"success": False, "message": "服务不存在"}
+
+        # 这里可以根据不同服务类型实现具体的连接测试逻辑
+        # 目前返回模拟结果
+        return {"success": True, "message": "连接测试成功"}
+
+    def toggle_service_status(self, db: Session, service_id: int, is_enabled: bool):
+        """启用或禁用模型服务"""
+        service = model_setting_db.get(db, service_id)
+        if not service:
+            return None
+
+        update_data = {"is_enabled": is_enabled}
+        return model_setting_db.update(db, db_obj=service, obj_in=update_data)
 
 
 model_setting_service = ModelSettingService()

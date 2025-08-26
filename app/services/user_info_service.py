@@ -85,7 +85,6 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
         return db_user
 
-
     def change_password(self, db: Session, user_id: int, user_update: UserInfoChangePassword) -> bool:
         db_user = self._check_info(db, user_id)
         if not encryption_utils.verify_password(user_update.old_password, db_user.password):
@@ -93,6 +92,21 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
         db_user.password = encryption_utils.encrypt_password(user_update.new_password)
         db.commit()
         return True
+
+    def refresh_token(self, db: Session, user_id: int) -> str:
+        db_user = self._check_info(db, user_id)
+        db_user.token = encryption_utils.token_encode(user_id=db_user.id)
+        db.commit()
+        return db_user.token
+
+    def get_user_by_token(self, db: Session, token: str) -> UserInfoResp:
+        # 业务逻辑：根据token查询用户
+        user_id = encryption_utils.token_decode(token)
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token 错误")
+        db_user = self._check_info(db, user_id)
+        # 业务逻辑：如果用户存在，返回用户信息
+        return UserInfoResp.model_validate(db_user)
 
 
 user_info_service = UserInfoService()

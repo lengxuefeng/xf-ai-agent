@@ -61,3 +61,12 @@ def get_user_info(req: UserInfoChangePassword, db: Session = Depends(get_db),
     user_info_resp = user_info_service.change_password(db, user_id=user_id, user_update=req)
     return ResponseModel.success(data=user_info_resp)
 
+
+@user_router.post("/refresh-token", response_model=ResponseModel)
+def refresh_token(db: Session = Depends(get_db),
+                  user_id: int = Depends(verify_token)):
+    """
+    token 刷新
+    """
+    token = user_info_service.refresh_token(db, user_id=user_id)
+    return ResponseModel.success(data=token)

@@ -92,7 +92,6 @@ class MedicalAgent:
         final_state = None
         for event in self.graph.stream(state):
             final_state = event
-            print(f"===={event}")
             yield event
 
         if final_state:
