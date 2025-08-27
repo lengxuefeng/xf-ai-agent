@@ -1,12 +1,8 @@
-from typing import Any, Generic, List, Optional, Type, TypeVar
-from pydantic import BaseModel
-from sqlalchemy.orm import Session, Query
-
-
 # crud_base.py
 from typing import Type, TypeVar, Generic, Optional, List, Any, Union
-from sqlalchemy.orm import Session, Query
+
 from pydantic import BaseModel
+from sqlalchemy.orm import Session, Query
 
 from db.mysql import Base
 

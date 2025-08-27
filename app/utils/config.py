@@ -57,5 +57,30 @@ class Settings:
     SUPPORTED_MODEL_TYPES: list[str] = os.getenv("SUPPORTED_MODEL_TYPES",
                                                  [["ollama", "openRouter", "chat", "zhipu", "qwen"]])
 
+    # 7. 安全配置
+    # JWT密钥（从环境变量获取，提供强随机默认值）
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "xf-ai-agent-super-secret-key-change-in-production-2024")
+    # JWT算法
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    # JWT访问令牌过期时间（分钟）
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 1440))  # 24小时
+    # JWT刷新令牌过期时间（天）
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", 30))  # 30天
+    # 密码最小长度
+    PASSWORD_MIN_LENGTH: int = int(os.getenv("PASSWORD_MIN_LENGTH", 8))
+    # 是否开启密码强度验证
+    PASSWORD_STRENGTH_CHECK: bool = os.getenv("PASSWORD_STRENGTH_CHECK", "true").lower() == "true"
+    # bcrypt rounds（加密强度）
+    BCRYPT_ROUNDS: int = int(os.getenv("BCRYPT_ROUNDS", 12))
 
+
+# 创建配置实例
 settings = Settings()
+
+# 验证重要配置
+if not settings.JWT_SECRET_KEY or settings.JWT_SECRET_KEY == "xf-ai-agent-super-secret-key-change-in-production-2024":
+    import warnings
+    warnings.warn(
+        "JWT_SECRET_KEY 使用默认值，请在生产环境中设置环境变量 JWT_SECRET_KEY 为安全的随机字符串！",
+        UserWarning
+    )

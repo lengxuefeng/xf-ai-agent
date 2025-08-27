@@ -53,6 +53,39 @@ class UserInfoChangePassword(BaseModel):
     old_password: constr(min_length=6) = Field(..., description="旧密码，不能为空")
     new_password: constr(min_length=6) = Field(..., description="新密码，不能为空")
 
+
+class TokenResponse(BaseModel):
+    """
+    Token响应模型
+    """
+    access_token: str = Field(..., description="访问令牌")
+    refresh_token: str = Field(..., description="刷新令牌")
+    token_type: str = Field(default="bearer", description="令牌类型")
+    expires_in: int = Field(..., description="令牌过期时间（秒）")
+
+
+class RefreshTokenRequest(BaseModel):
+    """
+    刷新令牌请求模型
+    """
+    refresh_token: str = Field(..., description="刷新令牌")
+
+
+class PasswordResetRequest(BaseModel):
+    """
+    密码重置请求模型
+    """
+    phone: str = Field(..., description="手机号")
+
+
+class PasswordResetConfirm(BaseModel):
+    """
+    密码重置确认模型
+    """
+    phone: str = Field(..., description="手机号")
+    token: str = Field(..., description="重置令牌")
+    new_password: constr(min_length=6) = Field(..., description="新密码")
+
 class UserInfoQuery(BaseModel):
     nick_name: Optional[str] = None
     user_name: Optional[str] = None

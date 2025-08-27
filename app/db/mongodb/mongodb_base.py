@@ -1,9 +1,10 @@
-from typing import TypeVar, Generic, Type, Any, Optional, List, Dict
+from typing import TypeVar, Generic, Type, Any, Optional, List, Dict, Tuple
 
 from pydantic import BaseModel
 from pymongo.collection import Collection
 
 from .mongodb import mongodb_db
+from schemas.common import PageParams
 
 # Pydantic模型类型变量
 ModelType = TypeVar("ModelType", bound=BaseModel)
@@ -104,3 +105,37 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         :return: 文档数量。
         """
         return self.collection.count_documents(query or {})
+    
+    def paginate(
+        self, 
+        *, 
+        query: Dict[str, Any] = None, 
+        page: int = 1, 
+        size: int = 10, 
+        sort: Optional[Any] = None
+    ) -> Tuple[List[ModelType], int, int, int]:
+        """
+        分页查询文档。
+
+        :param query: MongoDB查询字典。
+        :param page: 页码（从1开始）。
+        :param size: 每页大小。
+        :param sort: 排序条件。
+        :return: 元组 (数据列表, 总记录数, 当前页, 总页数)。
+        """
+        # 计算跳过的记录数
+        skip = (page - 1) * size
+        
+        # 执行查询
+        cursor = self.collection.find(query or {}).skip(skip).limit(size)
+        if sort:
+            cursor = cursor.sort(sort)
+        
+        docs = list(cursor)
+        items = [self._to_model(doc) for doc in docs if doc is not None]
+        
+        # 计算总记录数和总页数
+        total = self.count(query=query)
+        pages = (total + size - 1) // size
+        
+        return items, total, page, pages

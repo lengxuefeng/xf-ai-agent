@@ -23,7 +23,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-@contextmanager  # 装饰器，可以更方便地创建自定义的上下文管理器。
 def get_db():
     """
     获取数据库 Session，并统一管理事务：

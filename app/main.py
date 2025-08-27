@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import JSONResponse
 
 from api.v1.chat_api import chat_router
+from api.v1.chat_history_api import chat_history_router
 from api.v1.user_info_api import user_router
 from app.core.logger import setup_logger
 from exceptions.business_exception import BusinessException
@@ -60,6 +61,7 @@ app.add_middleware(
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(user_router)
 api_v1_router.include_router(chat_router)
+api_v1_router.include_router(chat_history_router)
 
 # 在主应用中包含 v1 路由
 app.include_router(api_v1_router)
