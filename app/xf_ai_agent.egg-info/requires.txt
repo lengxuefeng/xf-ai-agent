@@ -18,6 +18,7 @@ httpx==0.28.1
 faiss-cpu==1.11.0.post1
 pymysql>=1.1.1
 passlib[bcrypt]>=1.7.4
+bcrypt<5.0.0,>=4.0.0
 pyjwt>=2.10.1
 jinja2>=3.1.6
 pymongo>=4.14.0

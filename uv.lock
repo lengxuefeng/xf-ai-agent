@@ -2349,6 +2349,7 @@ name = "xf-ai-agent"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "bcrypt" },
     { name = "faiss-cpu" },
     { name = "fastapi" },
     { name = "httpx" },
@@ -2379,6 +2380,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "bcrypt", specifier = ">=4.0.0,<5.0.0" },
     { name = "faiss-cpu", specifier = "==1.11.0.post1" },
     { name = "fastapi", specifier = "~=0.116.0" },
     { name = "httpx", specifier = "==0.28.1" },

@@ -2,10 +2,12 @@ import uuid
 from typing import TypedDict, List, Optional, Dict, Any
 
 from langchain_core.language_models import BaseChatModel
-from pydantic import BaseModel
+
+# 从 schemas.base 导入通用基类
+from schemas.base import ArbitraryTypesBaseSchema
 
 
-class AgentRequest(BaseModel):
+class AgentRequest(ArbitraryTypesBaseSchema):
     """
     代码编写智能体请求
 
@@ -23,12 +25,9 @@ class AgentRequest(BaseModel):
     subgraph_id: str
     model: BaseChatModel
     llm_config: Optional[Dict[str, Any]] = None
-    
-    class Config:
-        arbitrary_types_allowed = True
 
 
-class BatchAgentRequest(BaseModel):
+class BatchAgentRequest(ArbitraryTypesBaseSchema):
     """
     批量智能体请求
 
@@ -40,6 +39,3 @@ class BatchAgentRequest(BaseModel):
     inputs: List[AgentRequest]
     max_threads: int = 2
     model: BaseChatModel
-    
-    class Config:
-        arbitrary_types_allowed = True

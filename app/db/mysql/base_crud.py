@@ -34,9 +34,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_multi(self, db: Session, skip: int = 0, limit: int = 10) -> List[ModelType]:
         return db.query(self.model).offset(skip).limit(limit).all()
 
-    def create(self, db: Session, obj_in: CreateSchemaType) -> ModelType:
+    def create(self, db: Session, obj_in: Union[CreateSchemaType, dict]) -> ModelType:
         """创建对象，不提交事务，由外部上下文管理"""
-        obj_data = obj_in.model_dump()
+        if isinstance(obj_in, dict):
+            obj_data = obj_in
+        else:
+            obj_data = obj_in.model_dump()
         db_obj = self.model(**obj_data)
         db.add(db_obj)
         db.flush()  # 刷新对象

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -8,6 +8,9 @@ from starlette.responses import JSONResponse
 from api.v1.chat_api import chat_router
 from api.v1.chat_history_api import chat_history_router
 from api.v1.user_info_api import user_router
+from api.v1.model_setting_api import router as model_setting_router
+from api.v1.user_model_api import router as user_model_router
+from api.v1.user_mcp_api import router as user_mcp_router
 from app.core.logger import setup_logger
 from exceptions.business_exception import BusinessException
 from schemas.response_model import ResponseModel
@@ -28,22 +31,30 @@ app = FastAPI(
 )
 
 
-
 # ===== 全局异常处理器 =====
 @app.exception_handler(BusinessException)
 async def business_exception_handler(request: Request, exc: BusinessException):
     return JSONResponse(
-        status_code=exc.code,
+        status_code=exc.code,  # 使用业务异常的错误码作为HTTP状态码
         content=ResponseModel.fail(code=exc.code, message=exc.message).model_dump()
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,  # 使用HTTP异常的状态码
+        content=ResponseModel.fail(code=exc.status_code, message=exc.detail).model_dump()
     )
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
-        status_code=500,
+        status_code=500,  # 系统异常返回500状态码
         content=ResponseModel.fail(code=500, message="系统繁忙，请稍后重试").model_dump()
     )
+
 
 # 配置 CORS
 # 这是一个最宽松的 CORS 配置，通常用于开发环境以排除所有 CORS 问题。
@@ -56,12 +67,14 @@ app.add_middleware(
     allow_headers=["*"],  # 允许所有请求头
 )
 
-
 # 创建 v1 版本的 API 路由
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(user_router)
 api_v1_router.include_router(chat_router)
 api_v1_router.include_router(chat_history_router)
+api_v1_router.include_router(model_setting_router)
+api_v1_router.include_router(user_model_router)
+api_v1_router.include_router(user_mcp_router)
 
 # 在主应用中包含 v1 路由
 app.include_router(api_v1_router)

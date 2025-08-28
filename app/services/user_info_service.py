@@ -158,6 +158,28 @@ class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):
         except Exception as e:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="刷新令牌已过期或无效")
     
+    def refresh_token_by_user_id(self, db: Session, user_id: int) -> TokenResponse:
+        """
+        基于用户ID刷新token（适用于已认证的用户）
+        """
+        # 检查用户是否存在
+        db_user = self._check_info(db, user_id)
+        
+        # 生成新的访问令牌和刷新令牌
+        new_access_token = encryption_utils.create_access_token(db_user.id)
+        new_refresh_token = encryption_utils.create_refresh_token(db_user.id)
+        
+        # 更新数据库中的token
+        db_user.token = new_access_token
+        db.commit()
+        
+        return TokenResponse(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer",
+            expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+    
     def revoke_token(self, db: Session, user_id: int) -> bool:
         """
         撤销用户令牌（登出）

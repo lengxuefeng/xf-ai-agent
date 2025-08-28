@@ -44,8 +44,9 @@ dependencies = [
     # "faiss-gpu==1.7.4",
     # Mysql相关
     "pymysql>=1.1.1",
-    # 密码加密
+    # 密码加密 - 使用兼容版本解决bcrypt版本读取警告
     "passlib[bcrypt]>=1.7.4",
+    "bcrypt>=4.0.0,<5.0.0",
     # token加密
     "pyjwt>=2.10.1",
     # 模板引擎

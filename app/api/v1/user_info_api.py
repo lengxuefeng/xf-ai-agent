@@ -14,7 +14,7 @@ user_router = APIRouter(prefix="/user", tags=["用户信息"])
 """
 
 
-@user_router.post("/create", response_model=ResponseModel)
+@user_router.post("/create", response_model=ResponseModel, summary="创建用户")
 def create_user_info(req: UserInfoCreate, db: Session = Depends(get_db)):
     """
     创建用户
@@ -23,7 +23,7 @@ def create_user_info(req: UserInfoCreate, db: Session = Depends(get_db)):
     return ResponseModel(data=user_info_resp)
 
 
-@user_router.post("/login", response_model=ResponseModel)
+@user_router.post("/login", response_model=ResponseModel, summary="用户登录")
 def login_user_info(req: UserInfoLogin, db: Session = Depends(get_db)):
     """
     用户登录
@@ -32,7 +32,7 @@ def login_user_info(req: UserInfoLogin, db: Session = Depends(get_db)):
     return ResponseModel.success(data=user_info_resp)
 
 
-@user_router.get("/detail", response_model=ResponseModel)
+@user_router.get("/detail", response_model=ResponseModel, summary="获取用户信息")
 def get_user_info(db: Session = Depends(get_db),
                   user_id: int = Depends(verify_token)):
     """
@@ -42,7 +42,7 @@ def get_user_info(db: Session = Depends(get_db),
     return ResponseModel(data=user_info_resp)
 
 
-@user_router.put("/{id}", response_model=ResponseModel)
+@user_router.put("/{id}", response_model=ResponseModel, summary="更新用户信息")
 def get_user_info(req: UserInfoUpdate, db: Session = Depends(get_db),
                   user_id: int = Depends(verify_token)):
     """
@@ -52,7 +52,7 @@ def get_user_info(req: UserInfoUpdate, db: Session = Depends(get_db),
     return ResponseModel.success(data=user_info_resp)
 
 
-@user_router.post("/change-password", response_model=ResponseModel)
+@user_router.post("/change-password", response_model=ResponseModel, summary="修改密码")
 def get_user_info(req: UserInfoChangePassword, db: Session = Depends(get_db),
                   user_id: int = Depends(verify_token)):
     """
@@ -62,11 +62,11 @@ def get_user_info(req: UserInfoChangePassword, db: Session = Depends(get_db),
     return ResponseModel.success(data=user_info_resp)
 
 
-@user_router.post("/refresh-token", response_model=ResponseModel)
+@user_router.post("/refresh-token", response_model=ResponseModel, summary="刷新token")
 def refresh_token(db: Session = Depends(get_db),
                   user_id: int = Depends(verify_token)):
     """
     token 刷新
     """
-    token = user_info_service.refresh_token(db, user_id=user_id)
+    token = user_info_service.refresh_token_by_user_id(db, user_id=user_id)
     return ResponseModel.success(data=token)

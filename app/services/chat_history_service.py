@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
+from fastapi import HTTPException
 
 from db.mongodb.chat_history_db import chat_history_db
 from schemas.chat_history_schemas import ChatHistory, ChatHistoryCreate, ChatHistoryUpdate
@@ -20,11 +21,14 @@ class ChatHistoryService:
         """
         return self.db.create_with_user_id(user_id, chat_data)
     
-    def get_chat_by_id(self, user_id: int, chat_id: str) -> Optional[ChatHistory]:
+    def get_chat_by_id(self, user_id: int, chat_id: str) -> ChatHistory:
         """
-        获取单条聊天记录
+        获取单条聊天记录（包含业务逻辑验证）
         """
-        return self.db.get_by_user_and_id(user_id, chat_id)
+        chat = self.db.get_by_user_and_id(user_id, chat_id)
+        if not chat:
+            raise HTTPException(status_code=404, detail="聊天记录不存在")
+        return chat
     
     def get_chat_list(
         self, 
@@ -99,26 +103,38 @@ class ChatHistoryService:
             "keyword": keyword
         }
     
-    def update_chat(self, user_id: int, chat_id: str, update_data: ChatHistoryUpdate) -> Optional[ChatHistory]:
+    def update_chat(self, user_id: int, chat_id: str, update_data: ChatHistoryUpdate) -> ChatHistory:
         """
-        更新聊天记录
+        更新聊天记录（包含业务逻辑验证）
         """
-        return self.db.update_by_user_and_id(user_id, chat_id, update_data)
+        result = self.db.update_by_user_and_id(user_id, chat_id, update_data)
+        if not result:
+            raise HTTPException(status_code=404, detail="聊天记录不存在或更新失败")
+        return result
     
-    def delete_chat(self, user_id: int, chat_id: str, hard_delete: bool = False) -> bool:
+    def delete_chat(self, user_id: int, chat_id: str, hard_delete: bool = False) -> Dict[str, Any]:
         """
-        删除聊天记录
+        删除聊天记录（包含业务逻辑验证）
         """
         if hard_delete:
-            return self.db.hard_delete_by_user_and_id(user_id, chat_id)
+            success = self.db.hard_delete_by_user_and_id(user_id, chat_id)
         else:
-            return self.db.soft_delete_by_user_and_id(user_id, chat_id)
+            success = self.db.soft_delete_by_user_and_id(user_id, chat_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="聊天记录不存在或删除失败")
+        
+        return {"deleted": True, "hard_delete": hard_delete}
     
-    def delete_session(self, user_id: int, session_id: str, hard_delete: bool = False) -> int:
+    def delete_session(self, user_id: int, session_id: str, hard_delete: bool = False) -> Dict[str, Any]:
         """
-        删除整个会话
+        删除整个会话（包含业务逻辑验证）
         """
-        return self.db.delete_session(user_id, session_id, hard_delete)
+        deleted_count = self.db.delete_session(user_id, session_id, hard_delete)
+        if deleted_count == 0:
+            raise HTTPException(status_code=404, detail="会话不存在或已被删除")
+        
+        return {"deleted_count": deleted_count, "hard_delete": hard_delete}
     
     def get_user_sessions(self, user_id: int, limit: int = 20) -> List[Dict[str, Any]]:
         """

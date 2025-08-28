@@ -1,6 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, Depends, Query
 
 from core.security import verify_token
 from schemas.response_model import ResponseModel
@@ -66,8 +65,6 @@ def get_chat_history_detail(
     获取单条聊天记录详情
     """
     result = chat_history_service.get_chat_by_id(user_id, chat_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="聊天记录不存在")
     return ResponseModel.success(data=result, message="获取聊天记录成功")
 
 
@@ -81,8 +78,6 @@ def update_chat_history(
     更新聊天记录
     """
     result = chat_history_service.update_chat(user_id, chat_id, req)
-    if not result:
-        raise HTTPException(status_code=404, detail="聊天记录不存在或更新失败")
     return ResponseModel.success(data=result, message="更新聊天记录成功")
 
 
@@ -96,14 +91,9 @@ def delete_chat_history(
     删除聊天记录
     """
     result = chat_history_service.delete_chat(user_id, chat_id, hard_delete)
-    if not result:
-        raise HTTPException(status_code=404, detail="聊天记录不存在或删除失败")
     
     message = "永久删除成功" if hard_delete else "移至回收站成功"
-    return ResponseModel.success(
-        data={"deleted": True, "hard_delete": hard_delete},
-        message=message
-    )
+    return ResponseModel.success(data=result, message=message)
 
 
 @chat_history_router.delete("/session/{session_id}", response_model=ResponseModel)
@@ -115,15 +105,11 @@ def delete_chat_session(
     """
     删除整个会话
     """
-    deleted_count = chat_history_service.delete_session(user_id, session_id, hard_delete)
-    if deleted_count == 0:
-        raise HTTPException(status_code=404, detail="会话不存在或已被删除")
+    result = chat_history_service.delete_session(user_id, session_id, hard_delete)
     
+    deleted_count = result["deleted_count"]
     message = f"已永久删除 {deleted_count} 条聊天记录" if hard_delete else f"已移至回收站 {deleted_count} 条聊天记录"
-    return ResponseModel.success(
-        data={"deleted_count": deleted_count, "hard_delete": hard_delete},
-        message=message
-    )
+    return ResponseModel.success(data=result, message=message)
 
 
 @chat_history_router.get("/search/keyword", response_model=ResponseModel)

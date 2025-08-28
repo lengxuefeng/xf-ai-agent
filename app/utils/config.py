@@ -59,7 +59,7 @@ class Settings:
 
     # 7. 安全配置
     # JWT密钥（从环境变量获取，提供强随机默认值）
-    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "xf-ai-agent-super-secret-key-change-in-production-2024")
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "xf-ai-agent-super-secret-key-change-in-production-2025")
     # JWT算法
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
     # JWT访问令牌过期时间（分钟）
@@ -78,7 +78,7 @@ class Settings:
 settings = Settings()
 
 # 验证重要配置
-if not settings.JWT_SECRET_KEY or settings.JWT_SECRET_KEY == "xf-ai-agent-super-secret-key-change-in-production-2024":
+if not settings.JWT_SECRET_KEY or settings.JWT_SECRET_KEY == "xf-ai-agent-super-secret-key-change-in-production-2025":
     import warnings
     warnings.warn(
         "JWT_SECRET_KEY 使用默认值，请在生产环境中设置环境变量 JWT_SECRET_KEY 为安全的随机字符串！",

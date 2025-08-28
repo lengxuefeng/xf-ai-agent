@@ -11,6 +11,7 @@ ModelType = TypeVar("ModelType", bound=BaseModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
+
 class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, *, collection_name: str, model: Type[ModelType]):
         """
@@ -53,7 +54,7 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return self._to_model(doc)
 
     def get_multi(
-        self, *, query: Dict[str, Any] = None, skip: int = 0, limit: int = 100, sort: Optional[Any] = None
+            self, *, query: Dict[str, Any] = None, skip: int = 0, limit: int = 100, sort: Optional[Any] = None
     ) -> List[ModelType]:
         """
         获取多个文档。
@@ -67,7 +68,7 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         cursor = self.collection.find(query or {}).skip(skip).limit(limit)
         if sort:
             cursor = cursor.sort(sort)
-        
+
         docs = list(cursor)
         return [self._to_model(doc) for doc in docs if doc is not None]
 
@@ -82,7 +83,7 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         update_data = obj_in.model_dump(exclude_unset=True)
         if not update_data:
             return self.get(query=query)
-            
+
         self.collection.update_one(query, {"$set": update_data})
         updated_doc = self.collection.find_one(query)
         return self._to_model(updated_doc)
@@ -105,14 +106,14 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         :return: 文档数量。
         """
         return self.collection.count_documents(query or {})
-    
+
     def paginate(
-        self, 
-        *, 
-        query: Dict[str, Any] = None, 
-        page: int = 1, 
-        size: int = 10, 
-        sort: Optional[Any] = None
+            self,
+            *,
+            query: Dict[str, Any] = None,
+            page: int = 1,
+            size: int = 10,
+            sort: Optional[Any] = None
     ) -> Tuple[List[ModelType], int, int, int]:
         """
         分页查询文档。
@@ -125,17 +126,17 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         # 计算跳过的记录数
         skip = (page - 1) * size
-        
+
         # 执行查询
         cursor = self.collection.find(query or {}).skip(skip).limit(size)
         if sort:
             cursor = cursor.sort(sort)
-        
+
         docs = list(cursor)
         items = [self._to_model(doc) for doc in docs if doc is not None]
-        
+
         # 计算总记录数和总页数
         total = self.count(query=query)
         pages = (total + size - 1) // size
-        
+
         return items, total, page, pages
