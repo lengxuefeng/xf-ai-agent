@@ -191,7 +191,6 @@ class EncryptionUtils:
         :return: 令牌数据
         :raises TokenError: 令牌无效时抛出
         """
-        print(f"token: {token}")
         try:
             payload = jwt.decode(
                 token,

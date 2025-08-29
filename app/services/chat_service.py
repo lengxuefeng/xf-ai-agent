@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-import time
 import json
+import time
 from typing import Generator, Optional, Dict, Any
-from datetime import datetime
 
-from fastapi import HTTPException
 from starlette.responses import StreamingResponse
 
 from agent.graph_runner import GraphRunner
+from schemas.chat_history_schemas import ChatMessageCreate
+from schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
 from services.exception_service import exception_handler
-from schemas.chat_history_schemas import ChatHistoryCreate
-from schemas.chat_schemas import StreamChatRequest
 
 
 class ChatService:
@@ -25,14 +23,14 @@ class ChatService:
     def process_stream_chat(self, req: StreamChatRequest, user_id: Optional[int] = None) -> StreamingResponse:
         """
         统一处理流式聊天请求，包含所有业务逻辑
-        
+
         Args:
             req: 聊天请求对象
             user_id: 用户ID，可选
-            
+
         Returns:
             StreamingResponse: 流式响应对象
-            
+
         Raises:
             HTTPException: 当发生业务异常时
         """
@@ -45,11 +43,11 @@ class ChatService:
     def _process_stream_chat_internal(self, req: StreamChatRequest, user_id: Optional[int] = None) -> StreamingResponse:
         """
         内部流式聊天处理逻辑
-        
+
         Args:
             req: 聊天请求对象
             user_id: 用户ID
-            
+
         Returns:
             StreamingResponse: 流式响应对象
         """
@@ -88,7 +86,7 @@ class ChatService:
     def _get_stream_headers(self) -> Dict[str, str]:
         """
         获取流式响应头
-        
+
         Returns:
             Dict[str, str]: HTTP响应头字典
         """
@@ -107,13 +105,13 @@ class ChatService:
     ) -> Generator[str, None, None]:
         """
         带历史记录保存的流式聊天
-        
+
         Args:
             user_input: 用户输入
             session_id: 会话ID
             model_config: 模型配置
             user_id: 用户ID，如果为None则不保存历史记录
-            
+
         Yields:
             str: SSE格式的流式响应
         """
@@ -158,12 +156,12 @@ class ChatService:
     ) -> Generator[str, None, None]:
         """
         匿名流式聊天，不保存历史记录
-        
+
         Args:
             user_input: 用户输入
             session_id: 会话ID
             model_config: 模型配置
-            
+
         Yields:
             str: SSE格式的流式响应
         """
@@ -173,10 +171,10 @@ class ChatService:
     def _extract_ai_content_from_chunk(self, chunk: str) -> Optional[str]:
         """
         从SSE chunk中提取AI响应内容
-        
+
         Args:
             chunk: SSE格式的数据块
-            
+
         Returns:
             str: 提取的内容，如果不是stream类型则返回None
         """
@@ -201,7 +199,7 @@ class ChatService:
     ) -> None:
         """
         保存聊天历史记录
-        
+
         Args:
             user_id: 用户ID
             user_input: 用户输入
@@ -219,9 +217,9 @@ class ChatService:
             title = self._generate_chat_title(user_input)
 
             # 创建聊天历史记录
-            chat_data = ChatHistoryCreate(
+            chat_data = ChatMessageCreate(
                 user_id=user_id,
-                title=title,
+                # title=title,
                 session_id=session_id,
                 user_content=user_input,
                 model_content=ai_response,
@@ -240,10 +238,10 @@ class ChatService:
     def _generate_chat_title(self, user_input: str) -> str:
         """
         生成聊天标题
-        
+
         Args:
             user_input: 用户输入
-            
+
         Returns:
             str: 生成的标题
         """
@@ -254,11 +252,11 @@ class ChatService:
     def _estimate_tokens(self, user_input: str, ai_response: str) -> int:
         """
         估算token数量（简单估算）
-        
+
         Args:
             user_input: 用户输入
             ai_response: AI响应
-            
+
         Returns:
             int: 估算的token数量
         """
@@ -278,7 +276,7 @@ class ChatService:
     ) -> Dict[str, Any]:
         """
         构建模型配置字典
-        
+
         Args:
             model: 模型名称
             model_service: 模型服务
@@ -286,7 +284,7 @@ class ChatService:
             rag_enabled: 是否启用RAG
             similarity_threshold: 相似度阈值
             embedding_model: 嵌入模型
-            
+
         Returns:
             Dict: 模型配置字典
         """

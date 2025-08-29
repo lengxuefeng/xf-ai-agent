@@ -1,198 +1,123 @@
-from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime
+from typing import Dict, Any, Optional
+
 from fastapi import HTTPException
 
-from db.mongodb.chat_history_db import chat_history_db
-from schemas.chat_history_schemas import ChatHistory, ChatHistoryCreate, ChatHistoryUpdate
-from services.base_service import BaseService
+from db.mongodb.chat_history_db import chat_session_db, chat_message_db
+from schemas.chat_history_schemas import (
+    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate
+)
+from utils.chat_utils import ChatUtils
 
 
 class ChatHistoryService:
     """
     聊天历史服务层
     """
-    
+
     def __init__(self):
-        self.db = chat_history_db
-    
-    def create_chat(self, user_id: int, chat_data: ChatHistoryCreate) -> ChatHistory:
+        self.session_db = chat_session_db
+        self.message_db = chat_message_db
+
+    def create_session(self, user_id: int, title: Optional[str] = None) -> ChatSession:
         """
-        创建聊天记录
+        创建一个新的聊天会话
         """
-        return self.db.create_with_user_id(user_id, chat_data)
-    
-    def get_chat_by_id(self, user_id: int, chat_id: str) -> ChatHistory:
-        """
-        获取单条聊天记录（包含业务逻辑验证）
-        """
-        chat = self.db.get_by_user_and_id(user_id, chat_id)
-        if not chat:
-            raise HTTPException(status_code=404, detail="聊天记录不存在")
-        return chat
-    
-    def get_chat_list(
-        self, 
-        user_id: int, 
-        session_id: Optional[str] = None, 
-        page: int = 1, 
-        size: int = 10
-    ) -> Dict[str, Any]:
-        """
-        获取聊天列表（分页）
-        """
-        items, total, current_page, pages = self.db.get_user_chat_list(
-            user_id=user_id, 
-            session_id=session_id, 
-            page=page, 
-            size=size
+        session_id = ChatUtils.generate_session_id()
+        if not title:
+            title = "新对话"
+
+        session_create = ChatSessionCreate(
+            user_id=user_id,
+            session_id=session_id,
+            title=title
         )
-        
-        # 转换 ObjectId 为字符串
-        chat_list = []
-        for chat in items:
-            chat_dict = chat.model_dump() if hasattr(chat, 'model_dump') else chat.__dict__
-            if '_id' in chat_dict:
-                chat_dict['_id'] = str(chat_dict['_id'])
-            if chat_dict.get('parent_message_id'):
-                chat_dict['parent_message_id'] = str(chat_dict['parent_message_id'])
-            chat_list.append(chat_dict)
-        
+        return self.session_db.create(session_create)
+
+    def create_chat_message(self, user_id: int, chat_data: ChatMessageCreate) -> ChatMessage:
+        """
+        创建聊天记录, 并在需要时更新会话标题
+        """
+        # 检查会话是否存在
+        session = self.session_db.get(query={"user_id": user_id, "session_id": chat_data.session_id})
+        if not session:
+            raise HTTPException(status_code=404, detail="会话不存在")
+
+        # 如果是新对话，且用户提供了足够内容，则更新标题
+        if session.title == "新对话" and len(chat_data.user_content) > 5:
+            new_title = chat_data.user_content[:50]  # 使用用户输入的前50个字符作为标题
+            self.session_db.update_session_title(user_id, chat_data.session_id, new_title)
+
+        return self.message_db.create_with_user_id(user_id, chat_data)
+
+    def get_user_sessions(self, user_id: int, page: int = 1, size: int = 20) -> Dict[str, Any]:
+        """
+        获取用户会话列表（分页）
+        """
+        items, total, current_page, pages = self.session_db.get_user_sessions(user_id, page, size)
+
+        session_list = [item.model_dump(exclude={'_id'}) for item in items]
+        for session in session_list:
+            session['id'] = str(items[session_list.index(session)].id)
+
         return {
-            "items": chat_list,
+            "items": session_list,
             "total": total,
             "page": current_page,
             "size": size,
             "pages": pages
         }
-    
-    def search_chats(
-        self, 
-        user_id: int, 
-        keyword: str, 
-        session_id: Optional[str] = None, 
-        page: int = 1, 
-        size: int = 10
-    ) -> Dict[str, Any]:
+
+    def get_session_messages(self, user_id: int, session_id: str, page: int = 1, size: int = 50) -> Dict[str, Any]:
         """
-        搜索聊天记录
+        获取指定会话的聊天记录详情
         """
-        items, total, current_page, pages = self.db.search_chat_history(
-            user_id=user_id,
-            keyword=keyword,
-            session_id=session_id,
-            page=page,
-            size=size
-        )
-        
-        # 转换 ObjectId 为字符串
-        chat_list = []
-        for chat in items:
-            chat_dict = chat.model_dump() if hasattr(chat, 'model_dump') else chat.__dict__
-            if '_id' in chat_dict:
-                chat_dict['_id'] = str(chat_dict['_id'])
-            if chat_dict.get('parent_message_id'):
-                chat_dict['parent_message_id'] = str(chat_dict['parent_message_id'])
-            chat_list.append(chat_dict)
-        
+        session = self.session_db.get(query={"user_id": user_id, "session_id": session_id})
+        if not session:
+            raise HTTPException(status_code=404, detail="会话不存在")
+
+        items, total, current_page, pages = self.message_db.get_session_messages(user_id, session_id, page, size)
+
+        message_list = [item.model_dump(exclude={'_id'}) for item in items]
+        for msg in message_list:
+            msg['id'] = str(items[message_list.index(msg)].id)
+
         return {
-            "items": chat_list,
+            "session_id": session_id,
+            "title": session.title,
+            "messages": message_list,
             "total": total,
             "page": current_page,
             "size": size,
-            "pages": pages,
-            "keyword": keyword
+            "pages": pages
         }
-    
-    def update_chat(self, user_id: int, chat_id: str, update_data: ChatHistoryUpdate) -> ChatHistory:
-        """
-        更新聊天记录（包含业务逻辑验证）
-        """
-        result = self.db.update_by_user_and_id(user_id, chat_id, update_data)
-        if not result:
-            raise HTTPException(status_code=404, detail="聊天记录不存在或更新失败")
-        return result
-    
-    def delete_chat(self, user_id: int, chat_id: str, hard_delete: bool = False) -> Dict[str, Any]:
-        """
-        删除聊天记录（包含业务逻辑验证）
-        """
-        if hard_delete:
-            success = self.db.hard_delete_by_user_and_id(user_id, chat_id)
-        else:
-            success = self.db.soft_delete_by_user_and_id(user_id, chat_id)
-        
-        if not success:
-            raise HTTPException(status_code=404, detail="聊天记录不存在或删除失败")
-        
-        return {"deleted": True, "hard_delete": hard_delete}
-    
+
     def delete_session(self, user_id: int, session_id: str, hard_delete: bool = False) -> Dict[str, Any]:
         """
-        删除整个会话（包含业务逻辑验证）
+        删除整个会话及相关消息
         """
-        deleted_count = self.db.delete_session(user_id, session_id, hard_delete)
-        if deleted_count == 0:
+        # TODO: 考虑使用事务
+        session_deleted_count = self.session_db.delete_session(user_id, session_id, hard_delete)
+
+        if session_deleted_count == 0:
             raise HTTPException(status_code=404, detail="会话不存在或已被删除")
-        
-        return {"deleted_count": deleted_count, "hard_delete": hard_delete}
-    
-    def get_user_sessions(self, user_id: int, limit: int = 20) -> List[Dict[str, Any]]:
+
+        messages_deleted_count = self.message_db.delete_messages_by_session(user_id, session_id, hard_delete)
+
+        return {
+            "session_deleted": session_deleted_count > 0,
+            "messages_deleted_count": messages_deleted_count,
+            "hard_delete": hard_delete
+        }
+
+    def update_session_title(self, user_id: int, session_id: str, new_title: str) -> Dict[str, Any]:
         """
-        获取用户会话列表
+        更新会话标题
         """
-        sessions = self.db.get_user_sessions(user_id, limit)
-        
-        # 格式化返回数据
-        result = []
-        for session in sessions:
-            result.append({
-                "session_id": session["_id"],
-                "title": session["title"],
-                "latest_message": session["latest_message"],
-                "latest_response": session["latest_response"],
-                "created_at": session["created_at"],
-                "updated_at": session["updated_at"],
-                "message_count": session["message_count"]
-            })
-        
-        return result
-    
-    def get_user_statistics(self, user_id: int, days: int = 30) -> Dict[str, Any]:
-        """
-        获取用户统计信息
-        """
-        stats = self.db.get_user_statistics(user_id, days)
-        
-        if stats:
-            from datetime import timedelta
-            end_date = datetime.now()
-            start_date = end_date - timedelta(days=days)
-            
-            return {
-                "total_messages": stats["total_messages"],
-                "total_tokens": stats["total_tokens"] or 0,
-                "total_sessions": len(stats["total_sessions"]),
-                "avg_latency_ms": round(stats["avg_latency"] or 0, 2),
-                "models_used": [model for model in stats["models_used"] if model],
-                "period_days": days,
-                "start_date": start_date,
-                "end_date": end_date
-            }
-        else:
-            from datetime import timedelta
-            end_date = datetime.now()
-            start_date = end_date - timedelta(days=days)
-            
-            return {
-                "total_messages": 0,
-                "total_tokens": 0,
-                "total_sessions": 0,
-                "avg_latency_ms": 0,
-                "models_used": [],
-                "period_days": days,
-                "start_date": start_date,
-                "end_date": end_date
-            }
+        updated_count = self.session_db.update_session_title(user_id, session_id, new_title)
+        if updated_count == 0:
+            raise HTTPException(status_code=404, detail="会话不存在或标题更新失败")
+
+        return {"updated_count": updated_count, "new_title": new_title}
 
 
 # 创建全局实例
