@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from core.security import verify_token
-from schemas.chat_history_schemas import ChatMessageCreate, ChatSessionUpdate
+from schemas.chat_history_schemas import ChatMessageCreate, ChatSessionUpdate, ChatSessionCreate
 from schemas.response_model import ResponseModel
 from services.chat_history_service import chat_history_service
 
@@ -10,12 +10,13 @@ chat_history_router = APIRouter(prefix="/chat-history", tags=["聊天历史"])
 
 @chat_history_router.post("/sessions", response_model=ResponseModel)
 def create_chat_session(
+    req: ChatSessionCreate,
     user_id: int = Depends(verify_token)
 ):
     """
     创建新的聊天会话
     """
-    result = chat_history_service.create_session(user_id)
+    result = chat_history_service.create_session(user_id, req)
     return ResponseModel.success(data=result.model_dump(), message="会话创建成功")
 
 

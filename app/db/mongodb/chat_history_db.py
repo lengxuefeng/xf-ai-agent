@@ -76,9 +76,9 @@ class CRUDChatMessage(MongoCRUDBase[ChatMessage, ChatMessageCreate, ChatMessageU
                 self.collection.create_index(index_keys, name=index_name)
 
     def create_with_user_id(self, user_id: int, obj_in: ChatMessageCreate) -> Optional[ChatMessage]:
-        chat_data = obj_in.model_dump(exclude_unset=True)
-        chat_data['user_id'] = user_id
-        return self.create(chat_data)
+        # 创建一个新的 ChatMessageCreate 实例，并设置 user_id
+        chat_data_with_user_id = obj_in.model_copy(update={'user_id': user_id})
+        return self.create(obj_in=chat_data_with_user_id)
 
     def get_session_messages(self, user_id: int, session_id: str, page: int = 1, size: int = 50) -> Tuple[List[ChatMessage], int, int, int]:
         query = {"user_id": user_id, "session_id": session_id, "is_deleted": 0}

@@ -1,10 +1,11 @@
 from typing import Dict, Any, Optional
 
+from bson import ObjectId
 from fastapi import HTTPException
 
 from db.mongodb.chat_history_db import chat_session_db, chat_message_db
 from schemas.chat_history_schemas import (
-    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate
+    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate, ChatMessageUpdate
 )
 from utils.chat_utils import ChatUtils
 
@@ -18,36 +19,29 @@ class ChatHistoryService:
         self.session_db = chat_session_db
         self.message_db = chat_message_db
 
-    def create_session(self, user_id: int, title: Optional[str] = None) -> ChatSession:
+    def get_or_create_session(self, user_id: int, session_id: str, user_input: str = None) -> ChatSession:
         """
-        创建一个新的聊天会话
+        获取或创建会话。如果会话已存在，则返回它。如果不存在，则创建一个新的。
         """
-        session_id = ChatUtils.generate_session_id()
-        if not title:
-            title = "新对话"
+        session = self.session_db.get(query={"user_id": user_id, "session_id": session_id})
+        if session:
+            return session
+
+        # 如果是新对话，使用用户输入的前50个字符作为标题
+        title = user_input[:50] if user_input and len(user_input) > 5 else "新对话"
 
         session_create = ChatSessionCreate(
             user_id=user_id,
             session_id=session_id,
             title=title
         )
-        return self.session_db.create(session_create)
+        return self.session_db.create(obj_in=session_create)
 
     def create_chat_message(self, user_id: int, chat_data: ChatMessageCreate) -> ChatMessage:
         """
-        创建聊天记录, 并在需要时更新会话标题
+        创建聊天记录
         """
-        # 检查会话是否存在
-        session = self.session_db.get(query={"user_id": user_id, "session_id": chat_data.session_id})
-        if not session:
-            raise HTTPException(status_code=404, detail="会话不存在")
-
-        # 如果是新对话，且用户提供了足够内容，则更新标题
-        if session.title == "新对话" and len(chat_data.user_content) > 5:
-            new_title = chat_data.user_content[:50]  # 使用用户输入的前50个字符作为标题
-            self.session_db.update_session_title(user_id, chat_data.session_id, new_title)
-
-        return self.message_db.create_with_user_id(user_id, chat_data)
+        return self.message_db.create_with_user_id(user_id, obj_in=chat_data)
 
     def get_user_sessions(self, user_id: int, page: int = 1, size: int = 20) -> Dict[str, Any]:
         """

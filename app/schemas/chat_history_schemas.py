@@ -66,8 +66,8 @@ class ChatSessionUpdate(BaseModel):
 class ChatSession(ChatSessionBase):
     """从数据库读取的会话模型"""
     id: PyObjectId = Field(alias="_id", description="MongoDB 文档ID")
-    created_at: datetime = Field(..., description="会话创建时间")
-    updated_at: datetime = Field(..., description="会话更新时间")
+    created_at: datetime = Field(default_factory=datetime.now, description="会话创建时间")
+    updated_at: datetime = Field(default_factory=datetime.now, description="会话更新时间")
 
 
 # --- Chat Message Schemas ---

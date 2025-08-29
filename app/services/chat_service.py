@@ -10,6 +10,7 @@ from schemas.chat_history_schemas import ChatMessageCreate
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
 from services.exception_service import exception_handler
+from utils.chat_utils import ChatUtils
 
 
 class ChatService:
@@ -115,13 +116,16 @@ class ChatService:
         Yields:
             str: SSE格式的流式响应
         """
+        # 1. 获取或创建会话
+        chat_history_service.get_or_create_session(user_id, session_id, user_input)
+
         ai_response = ""
         start_time = time.time()
         error_occurred = False
         error_message = ""
 
         try:
-            # 生成流式响应并收集AI回复内容
+            # 2. 生成流式响应并收集AI回复内容
             for chunk in self.graph_runner.stream_run(user_input, session_id, model_config):
                 yield chunk
 
@@ -136,17 +140,18 @@ class ChatService:
             # 重新抛出异常，让上层处理
             raise e
         finally:
-            # 如果用户已认证，保存聊天历史
+            # 3. 如果用户已认证，保存聊天历史
             if user_id:
-                self._save_chat_history(
+                chat_data = ChatMessageCreate(
                     user_id=user_id,
-                    user_input=user_input,
                     session_id=session_id,
-                    ai_response=ai_response if not error_occurred else f"错误: {error_message}",
-                    model_config=model_config,
-                    start_time=start_time,
-                    error_occurred=error_occurred
+                    user_content=user_input,
+                    model_content=ai_response if not error_occurred else f"错误: {error_message}",
+                    model=model_config.get('model'),
+                    latency_ms=int((time.time() - start_time) * 1000),
+                    tokens=ChatUtils.estimate_tokens(user_input + ai_response)
                 )
+                chat_history_service.create_chat_message(user_id, chat_data)
 
     def stream_chat_anonymous(
             self,
@@ -186,84 +191,6 @@ class ChatService:
         except (json.JSONDecodeError, KeyError):
             pass
         return None
-
-    def _save_chat_history(
-            self,
-            user_id: int,
-            user_input: str,
-            session_id: str,
-            ai_response: str,
-            model_config: Dict[str, Any],
-            start_time: float,
-            error_occurred: bool = False
-    ) -> None:
-        """
-        保存聊天历史记录
-
-        Args:
-            user_id: 用户ID
-            user_input: 用户输入
-            session_id: 会话ID
-            ai_response: AI响应
-            model_config: 模型配置
-            start_time: 开始时间
-            error_occurred: 是否发生错误
-        """
-        try:
-            # 计算响应延迟
-            latency_ms = int((time.time() - start_time) * 1000)
-
-            # 生成会话标题（取用户输入的前50个字符）
-            title = self._generate_chat_title(user_input)
-
-            # 创建聊天历史记录
-            chat_data = ChatMessageCreate(
-                user_id=user_id,
-                # title=title,
-                session_id=session_id,
-                user_content=user_input,
-                model_content=ai_response,
-                model=model_config.get('model'),
-                latency_ms=latency_ms,
-                tokens=self._estimate_tokens(user_input, ai_response)
-            )
-
-            # 保存到数据库
-            chat_history_service.create_chat(user_id, chat_data)
-
-        except Exception as e:
-            # 记录错误但不影响用户体验
-            print(f"保存聊天历史失败: {e}")
-
-    def _generate_chat_title(self, user_input: str) -> str:
-        """
-        生成聊天标题
-
-        Args:
-            user_input: 用户输入
-
-        Returns:
-            str: 生成的标题
-        """
-        if len(user_input) > 50:
-            return user_input[:50] + "..."
-        return user_input
-
-    def _estimate_tokens(self, user_input: str, ai_response: str) -> int:
-        """
-        估算token数量（简单估算）
-
-        Args:
-            user_input: 用户输入
-            ai_response: AI响应
-
-        Returns:
-            int: 估算的token数量
-        """
-        # 简单估算：中文字符约等于1个token，英文单词约等于1个token
-        total_chars = len(user_input) + len(ai_response)
-        # 粗略估算
-        return int(total_chars * 0.7)
 
     def build_model_config(
             self,
