@@ -38,7 +38,7 @@ def create_user_model(user_model_req: UserModelCreate, db: Session = Depends(get
 
 
 @router.put("/{model_id}", response_model=ResponseModel[UserModelOut], summary="更新用户模型配置")
-def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Session = Depends(get_db), Authorization: str = Depends(verify_token)):
+def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
     更新指定ID的用户模型配置
     """
@@ -49,7 +49,7 @@ def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Sessio
 
 
 @router.delete("/{model_id}", response_model=ResponseModel, summary="删除用户模型配置")
-def delete_user_model(model_id: int, db: Session = Depends(get_db), Authorization: str = Depends(verify_token)):
+def delete_user_model(model_id: int, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
     删除指定ID的用户模型配置
     """

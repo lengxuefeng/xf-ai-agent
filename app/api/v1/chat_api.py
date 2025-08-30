@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from starlette.responses import StreamingResponse
 
-from core.security import get_optional_user_id
+from core.security import get_optional_user_id, verify_token
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_service import chat_service
 
@@ -17,7 +17,7 @@ chat_router = APIRouter()
 
 
 @chat_router.post("/chat/stream", summary="流式聊天接口")
-def stream_chat(req: StreamChatRequest, user_id: Optional[int] = Depends(get_optional_user_id)) -> StreamingResponse:
+def stream_chat(req: StreamChatRequest, user_id: int = Depends(verify_token)) -> StreamingResponse:
     """
     处理流式聊天请求。
 

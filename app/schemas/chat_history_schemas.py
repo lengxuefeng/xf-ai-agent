@@ -101,4 +101,4 @@ class ChatMessage(ChatMessageBase):
     """从数据库读取的聊天记录模型"""
     id: PyObjectId = Field(alias="_id", description="MongoDB 文档ID")
     user_id: int = Field(..., description="用户ID")
-    created_at: datetime = Field(..., description="消息创建时间")
+    created_at: datetime = Field(default_factory=datetime.now, description="消息创建时间")

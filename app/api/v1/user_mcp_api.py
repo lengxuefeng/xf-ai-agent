@@ -38,7 +38,7 @@ def create_user_mcp(user_mcp_req: UserMCPCreate, db: Session = Depends(get_db), 
 
 
 @router.put("/{mcp_id}", response_model=ResponseModel[UserMCPOut], summary="更新用户MCP配置")
-def update_user_mcp(mcp_id: int, user_mcp_req: UserMCPUpdate, db: Session = Depends(get_db), Authorization: str = Depends(verify_token)):
+def update_user_mcp(mcp_id: int, user_mcp_req: UserMCPUpdate, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
     更新指定ID的用户MCP配置
     """
@@ -49,7 +49,7 @@ def update_user_mcp(mcp_id: int, user_mcp_req: UserMCPUpdate, db: Session = Depe
 
 
 @router.delete("/{mcp_id}", response_model=ResponseModel, summary="删除用户MCP配置")
-def delete_user_mcp(mcp_id: int, db: Session = Depends(get_db), Authorization: str = Depends(verify_token)):
+def delete_user_mcp(mcp_id: int, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
     删除指定ID的用户MCP配置
     """
