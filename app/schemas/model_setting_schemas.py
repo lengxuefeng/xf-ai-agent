@@ -39,15 +39,15 @@ class ModelServiceUpdate(BaseModel):
     icon: Optional[str] = None
     models: Optional[List[str]] = None
     description: Optional[str] = None
+    is_system_default: Optional[bool] = None
     is_enabled: Optional[bool] = None
 
 
 class ModelServiceOut(BaseSchema):
     """
-    模型服务输出模型
+    系统模型服务输出模型
     """
     id: int
-    user_id: int
     service_name: str
     service_type: str
     service_url: str
@@ -55,6 +55,7 @@ class ModelServiceOut(BaseSchema):
     icon: str
     models: List[str]
     description: Optional[str]
+    is_system_default: bool
     is_enabled: bool
     create_time: datetime
     update_time: datetime

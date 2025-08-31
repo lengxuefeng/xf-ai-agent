@@ -48,12 +48,28 @@ def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Sessio
     return ResponseModel(data=updated_model)
 
 
+@router.put("/{model_id}/activate", response_model=ResponseModel[UserModelOut], summary="激活用户模型配置")
+def activate_user_model(model_id: int, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
+    """
+    激活指定ID的用户模型配置，同时将其他配置设为非激活
+    """
+    activated_model = user_model_service.activate_user_model(db, id=model_id, user_id=user_id)
+    return ResponseModel(data=activated_model)
+
+
+@router.get("/active", response_model=ResponseModel[UserModelOut], summary="获取当前激活的用户模型配置")
+def get_active_user_model(db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
+    """
+    获取用户当前激活的模型配置
+    """
+    active_model = user_model_service.get_active_user_model(db, user_id=user_id)
+    return ResponseModel(data=active_model)
+
+
 @router.delete("/{model_id}", response_model=ResponseModel, summary="删除用户模型配置")
 def delete_user_model(model_id: int, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
     删除指定ID的用户模型配置
     """
-    # 从服务层调用删除用户模型的方法
     user_model_service.remove_user_model(db, id=model_id)
-    # 返回成功的响应
     return ResponseModel(data={"message": "删除成功"})

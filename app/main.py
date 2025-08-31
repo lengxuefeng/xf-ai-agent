@@ -50,6 +50,9 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,  # 系统异常返回500状态码
         content=ResponseModel.fail(code=500, message="系统繁忙，请稍后重试").model_dump()

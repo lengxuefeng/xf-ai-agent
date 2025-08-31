@@ -6,20 +6,19 @@ from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 
 
 class ModelSettingService:
-    """模型服务业务逻辑层"""
+    """系统模型服务业务逻辑层"""
 
-    def get_model_services(self, db: Session, user_id: int):
-        """获取用户的所有模型服务配置"""
-        return model_setting_db.get_by_user_id(db, user_id=user_id)
+    def get_model_services(self, db: Session, user_id: int = None):
+        """获取系统预定义的模型服务配置"""
+        # 现在返回所有启用的系统模型服务，不再按用户过滤
+        return model_setting_db.get_all_enabled(db)
 
-    def create_model_service(self, db: Session, service_data: ModelServiceCreate, user_id: int):
-        """创建新的模型服务配置"""
-        # 将用户ID添加到service_data中
-        # 由于Pydantic模型是不可变的，我们需要创建一个包含user_id的字典
+    def create_model_service(self, db: Session, service_data: ModelServiceCreate, user_id: int = None):
+        """创建新的系统模型服务配置（管理员功能）"""
+        # 系统模型配置不再关联特定用户
         create_data = service_data.model_dump()
-        create_data['user_id'] = user_id
+        create_data['is_system_default'] = True
         
-        # 直接传递字典给数据库层
         return model_setting_db.create(db, obj_in=create_data)
 
     def update_model_service(self, db: Session, id: int, service_data: ModelServiceUpdate):

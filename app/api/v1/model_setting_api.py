@@ -17,13 +17,29 @@ router = APIRouter(prefix="/model_setting", tags=["用户设置"])
 """
 
 
-@router.get("/", response_model=ResponseModel[List[ModelServiceOut]], summary="获取当前用户的所有模型服务")
+@router.get("/", response_model=ResponseModel[List[ModelServiceOut]], summary="获取系统预定义的模型服务")
 def get_model_services(db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
-    获取当前用户的所有模型服务配置
+    获取系统预定义的模型服务配置（不再按用户过滤）
     """
-    model_services = model_setting_service.get_model_services(db, user_id=user_id)
-    return ResponseModel(data=model_services)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        model_services = model_setting_service.get_model_services(db)
+        logger.info(f"Retrieved {len(model_services)} model services")
+        
+        # 验证数据完整性
+        for service in model_services:
+            if not isinstance(service.models, list):
+                logger.error(f"Service {service.id} has invalid models field: {service.models} (type: {type(service.models)})")
+                # 修复数据
+                service.models = [] if service.models is None else (service.models if isinstance(service.models, list) else [])
+        
+        return ResponseModel(data=model_services)
+    except Exception as e:
+        logger.error(f"Error retrieving model services: {e}", exc_info=True)
+        raise
 
 
 @router.post("/", response_model=ResponseModel[ModelServiceOut], summary="创建新的模型服务")
