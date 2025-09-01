@@ -29,12 +29,7 @@ def get_model_services(db: Session = Depends(get_db), user_id: int = Depends(ver
         model_services = model_setting_service.get_model_services(db)
         logger.info(f"Retrieved {len(model_services)} model services")
         
-        # 验证数据完整性
-        for service in model_services:
-            if not isinstance(service.models, list):
-                logger.error(f"Service {service.id} has invalid models field: {service.models} (type: {type(service.models)})")
-                # 修复数据
-                service.models = [] if service.models is None else (service.models if isinstance(service.models, list) else [])
+        # 数据格式已在服务层处理，这里直接返回
         
         return ResponseModel(data=model_services)
     except Exception as e:

@@ -13,23 +13,23 @@ class UserModelService:
         """获取用户当前激活的模型配置"""
         return user_model_db.get_active_by_user_id(db, user_id=user_id)
 
-    def create_user_model(self, db: Session, user_model: UserModelCreate, user_id: int):
+    def create_user_model(self, db: Session, user_model: UserModelCreate, user_id: int, allow_multiple: bool = False):
         """创建用户模型配置"""
         create_data = user_model.model_dump()
         create_data['user_id'] = user_id
 
-        # 如果设置为激活状态，需要先将其他配置设为非激活
-        if create_data.get('is_active', False):
+        # 如果设置为激活状态，需要先将其他配置设为非激活（除非允许多个激活）
+        if create_data.get('is_active', False) and not allow_multiple:
             user_model_db.deactivate_all_by_user_id(db, user_id=user_id)
 
         return user_model_db.create(db, obj_in=create_data)
 
-    def update_user_model(self, db: Session, id: int, user_model: UserModelUpdate):
+    def update_user_model(self, db: Session, id: int, user_model: UserModelUpdate, allow_multiple: bool = False):
         """更新用户模型配置"""
         update_data = user_model.model_dump(exclude_unset=True)
 
-        # 如果要激活当前配置，需要先将其他配置设为非激活
-        if update_data.get('is_active', False):
+        # 如果要激活当前配置，需要先将其他配置设为非激活（除非允许多个激活）
+        if update_data.get('is_active', False) and not allow_multiple:
             existing_model = user_model_db.get(db, id)
             if existing_model:
                 user_model_db.deactivate_all_by_user_id(db, user_id=existing_model.user_id)

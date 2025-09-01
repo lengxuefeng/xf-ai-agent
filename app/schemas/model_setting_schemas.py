@@ -1,6 +1,6 @@
 # schemas/model_setting.py
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from pydantic import BaseModel
 
@@ -16,7 +16,12 @@ class ModelServiceBase(BaseModel):
     service_url: str
     api_key_template: str
     icon: str = "FiCpu"
-    models: List[str]
+    models: Dict[str, List[str]] = {
+        "chat": [],
+        "embedding": [],
+        "vision": [],
+        "other": []
+    }
     description: Optional[str] = None
     is_enabled: bool = True
 
@@ -37,7 +42,7 @@ class ModelServiceUpdate(BaseModel):
     service_url: Optional[str] = None
     api_key_template: Optional[str] = None
     icon: Optional[str] = None
-    models: Optional[List[str]] = None
+    models: Optional[Dict[str, List[str]]] = None
     description: Optional[str] = None
     is_system_default: Optional[bool] = None
     is_enabled: Optional[bool] = None
@@ -53,7 +58,7 @@ class ModelServiceOut(BaseSchema):
     service_url: str
     api_key_template: str
     icon: str
-    models: List[str]
+    models: Dict[str, List[str]]
     description: Optional[str]
     is_system_default: bool
     is_enabled: bool
