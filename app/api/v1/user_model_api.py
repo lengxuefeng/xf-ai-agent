@@ -31,8 +31,8 @@ def create_user_model(user_model_req: UserModelCreate, db: Session = Depends(get
     """
     为用户创建一个新的模型配置
     """
-    # 从服务层调用创建用户模型的方法，并传入user_id
-    user_model = user_model_service.create_user_model(db, user_model=user_model_req, user_id=user_id)
+    # 从服务层调用创建用户模型的方法，并传入user_id，支持多个模型激活
+    user_model = user_model_service.create_user_model(db, user_model=user_model_req, user_id=user_id, allow_multiple=True)
     # 返回新创建的模型配置
     return ResponseModel(data=user_model)
 
@@ -42,8 +42,8 @@ def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Sessio
     """
     更新指定ID的用户模型配置
     """
-    # 从服务层调用更新用户模型的方法
-    updated_model = user_model_service.update_user_model(db, id=model_id, user_model=user_model_req)
+    # 从服务层调用更新用户模型的方法，支持多个模型激活
+    updated_model = user_model_service.update_user_model(db, id=model_id, user_model=user_model_req, allow_multiple=True)
     # 返回更新后的模型配置
     return ResponseModel(data=updated_model)
 
@@ -51,10 +51,19 @@ def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Sessio
 @router.put("/{model_id}/activate", response_model=ResponseModel[UserModelOut], summary="激活用户模型配置")
 def activate_user_model(model_id: int, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
     """
-    激活指定ID的用户模型配置，同时将其他配置设为非激活
+    激活指定ID的用户模型配置，支持多个模型同时激活
     """
-    activated_model = user_model_service.activate_user_model(db, id=model_id, user_id=user_id)
+    activated_model = user_model_service.activate_user_model(db, id=model_id, user_id=user_id, allow_multiple=True)
     return ResponseModel(data=activated_model)
+
+
+@router.put("/{model_id}/deactivate", response_model=ResponseModel[UserModelOut], summary="取消激活用户模型配置")
+def deactivate_user_model(model_id: int, db: Session = Depends(get_db), user_id: int = Depends(verify_token)):
+    """
+    取消激活指定ID的用户模型配置
+    """
+    deactivated_model = user_model_service.deactivate_user_model(db, id=model_id, user_id=user_id)
+    return ResponseModel(data=deactivated_model)
 
 
 @router.get("/active", response_model=ResponseModel[UserModelOut], summary="获取当前激活的用户模型配置")
