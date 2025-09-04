@@ -11,38 +11,19 @@ from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 from langchain_core.language_models import BaseChatModel
 
+from .model_config import ModelConfig
 from .ollama_model import load_ollama_model, load_ollama_embeddings
 from .loader_llm_multi import (
     load_open_router,
     load_silicon_flow,
     load_zhipu_model,
     load_tongyi_model,
-    load_chat_model
+    load_chat_model,
+    load_gemini_model, load_openai_model
 )
 
 load_dotenv()
 
-
-class ModelConfig:
-    """模型配置类"""
-
-    def __init__(
-            self,
-            model: str,
-            model_service: str,
-            deep_thinking_mode: str = 'auto',
-            rag_enabled: bool = False,
-            similarity_threshold: float = 0.7,
-            embedding_model: str = 'bge-m3:latest',
-            **kwargs
-    ):
-        self.model = model
-        self.model_service = model_service
-        self.deep_thinking_mode = deep_thinking_mode
-        self.rag_enabled = rag_enabled
-        self.similarity_threshold = similarity_threshold
-        self.embedding_model = embedding_model
-        self.extra_params = kwargs
 
 
 class UnifiedModelLoader:
@@ -73,20 +54,24 @@ class UnifiedModelLoader:
             ValueError: 不支持的模型服务类型
             RuntimeError: 模型加载失败
         """
-        service = config.model_service.lower()
+        service = config.service_type.lower()
         model_name = config.model
 
         try:
             if service == 'ollama':
-                return load_ollama_model(model_name)
+                return load_ollama_model(config.model)
             elif service == 'openrouter':
-                return load_open_router(model_name)
+                return load_open_router(config)
             elif service == 'silicon-flow':
-                return load_silicon_flow(model_name)
+                return load_silicon_flow(config)
             elif service == 'zhipu':
-                return load_zhipu_model(model_name)
+                return load_zhipu_model(config)
             elif service == 'tongyi':
-                return load_tongyi_model(model_name)
+                return load_tongyi_model(config)
+            elif service == 'gemini':
+                return load_gemini_model(config)
+            elif service == 'openai':
+                return load_openai_model(config)
             else:
                 # 尝试使用通用加载器
                 return cls._load_generic_model(config)
@@ -136,7 +121,7 @@ class UnifiedModelLoader:
         }
 
         # 根据服务类型添加特定参数
-        service = config.model_service.lower()
+        service = config.service_type.lower()
         if service == 'openai':
             params['api_key'] = os.getenv('OPENAI_API_KEY')
         elif service == 'anthropic':
@@ -153,10 +138,14 @@ class UnifiedModelLoader:
 def create_model_from_config(
         model: str,
         model_service: str,
+        service_type: str,
         deep_thinking_mode: str = 'auto',
         rag_enabled: bool = False,
         similarity_threshold: float = 0.7,
         embedding_model: str = 'bge-m3:latest',
+        model_key: str = '',
+        model_url: str = '',
+        embedding_model_key: str = '',
         **kwargs
 ) -> tuple[BaseChatModel, Optional[Any]]:
     """
@@ -165,10 +154,14 @@ def create_model_from_config(
     Args:
         model: 模型名称
         model_service: 模型服务类型
+        service_type: 服务类型
         deep_thinking_mode: 深度思考模式
         rag_enabled: 是否启用RAG
         similarity_threshold: 相似度阈值
         embedding_model: 嵌入模型名称
+        model_key: 模型密钥
+        embedding_model_key: 嵌入模型密钥
+        model_url: 模型URL
         **kwargs: 其他参数
         
     Returns:
@@ -177,10 +170,14 @@ def create_model_from_config(
     config = ModelConfig(
         model=model,
         model_service=model_service,
+        service_type=service_type,
         deep_thinking_mode=deep_thinking_mode,
         rag_enabled=rag_enabled,
         similarity_threshold=similarity_threshold,
         embedding_model=embedding_model,
+        model_key=model_key,
+        model_url=model_url,
+        embedding_model_key=embedding_model_key,
         **kwargs
     )
 

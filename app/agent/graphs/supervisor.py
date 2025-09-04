@@ -13,8 +13,6 @@ from agent.agents.weather_agent import WeatherAgent
 from agent.agents.yunyou_agent import YunyouAgent
 from agent.graph_state import AgentRequest
 from agent.graphs.state import GraphState
-from agent.llm.loader_llm_multi import load_silicon_flow
-from agent.llm.ollama_model import load_ollama_model
 
 """
 定义和构建多智能体协作的核心 - 主管图（Supervisor Graph）。

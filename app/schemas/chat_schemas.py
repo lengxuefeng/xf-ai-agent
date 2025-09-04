@@ -36,11 +36,15 @@ class StreamChatRequest(BaseSchema):
 
     # 模型配置参数
     model: Optional[str] = Field(default='google/gemini-1.5-pro', description="当前选择的模型")
+    model_key: Optional[str] = Field(default='', description="当前选择的模型配置的key")
+    model_url: Optional[str] = Field(default='', description="当前选择的模型配置的url")
     model_service: Optional[str] = Field(default='netlify-gemini', description="模型服务")
+    service_type: Optional[str] = Field(default='ollama', description="模型服务类型")
     deep_thinking_mode: Optional[str] = Field(default='auto', description="深度思考模式")
     rag_enabled: Optional[bool] = Field(default=False, description="RAG是否启用")
     similarity_threshold: Optional[float] = Field(default=0.7, description="相似度阈值")
     embedding_model: Optional[str] = Field(default='bge-m3:latest', description="嵌入模型")
+    embedding_model_key: Optional[str] = Field(default='', description="嵌入模型的key")
 
     @field_validator('user_input')
     @classmethod

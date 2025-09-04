@@ -56,10 +56,14 @@ class ChatService:
         model_config = self.build_model_config(
             model=req.model,
             model_service=req.model_service,
+            service_type=req.service_type,
             deep_thinking_mode=req.deep_thinking_mode,
             rag_enabled=req.rag_enabled,
             similarity_threshold=req.similarity_threshold,
-            embedding_model=req.embedding_model
+            embedding_model=req.embedding_model,
+            embedding_model_key=req.embedding_model_key,
+            model_key=req.model_key,
+            model_url=req.model_url,
         )
 
         # 根据是否有用户ID选择处理方式
@@ -205,21 +209,28 @@ class ChatService:
             self,
             model: str = 'google/gemini-1.5-pro',
             model_service: str = 'netlify-gemini',
+            service_type: str = 'ollama',
             deep_thinking_mode: str = 'auto',
             rag_enabled: bool = False,
             similarity_threshold: float = 0.7,
-            embedding_model: str = 'bge-m3:latest'
+            embedding_model: str = 'bge-m3:latest',
+            embedding_model_key: str = '',
+            model_key: str = '',
+            model_url: str = ''
     ) -> Dict[str, Any]:
         """
         构建模型配置字典
-
         Args:
             model: 模型名称
             model_service: 模型服务
+            service_type: 模型服务类型
             deep_thinking_mode: 深度思考模式
             rag_enabled: 是否启用RAG
             similarity_threshold: 相似度阈值
             embedding_model: 嵌入模型
+            embedding_model_key: 嵌入模型密钥
+            model_key: 模型密钥
+            model_url: 模型URL
 
         Returns:
             Dict: 模型配置字典
@@ -227,10 +238,14 @@ class ChatService:
         return {
             'model': model,
             'model_service': model_service,
+            'service_type': service_type,
             'deep_thinking_mode': deep_thinking_mode,
             'rag_enabled': rag_enabled,
             'similarity_threshold': similarity_threshold,
-            'embedding_model': embedding_model
+            'embedding_model': embedding_model,
+            'embedding_model_key': embedding_model_key,
+            'model_key': model_key,
+            'model_url': model_url
         }
 
 

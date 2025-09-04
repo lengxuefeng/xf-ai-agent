@@ -32,14 +32,14 @@ def setup_logger():
     app_handler.setLevel(logging.INFO)
     app_handler.setFormatter(formatter)
     
-    # 创建文件处理器 - 错误日志 (ERROR及以上)
+    # 创建文件处理器 - 错误日志 (WARNING及以上)
     error_handler = RotatingFileHandler(
         'error.log', 
         maxBytes=10*1024*1024,  # 10MB
         backupCount=5,
         encoding='utf-8'
     )
-    error_handler.setLevel(logging.ERROR)
+    error_handler.setLevel(logging.WARNING)
     error_handler.setFormatter(formatter)
     
     # 创建控制台处理器 - 开发环境使用
@@ -55,5 +55,12 @@ def setup_logger():
     # 设置第三方库的日志级别
     logging.getLogger('uvicorn').setLevel(logging.INFO)
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
+    
+    # 确保 langchain 相关库的警告和错误都能被捕获
+    logging.getLogger('langchain_google_genai').setLevel(logging.WARNING)
+    logging.getLogger('langchain').setLevel(logging.WARNING)
+    logging.getLogger('langchain_core').setLevel(logging.WARNING)
+    logging.getLogger('langchain_community').setLevel(logging.WARNING)
+    logging.getLogger('langchain_openai').setLevel(logging.WARNING)
     
     return root_logger

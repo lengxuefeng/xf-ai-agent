@@ -3,66 +3,100 @@ import os
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_community.chat_models import ChatZhipuAI, ChatTongyi
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
+
+from agent.llm.model_config import ModelConfig
 
 load_dotenv(verbose=True)
 
 
-def load_zhipu_model(model_name: str) -> ChatZhipuAI:
+def load_zhipu_model(config: ModelConfig) -> ChatZhipuAI:
     """
     加载ZhipuAI模型
 
     Args:
-        model_name: 模型名称，如 GLM-4-Flash
+        config: 模型配置对象
 
     Returns:
         ChatZhipuAI: 加载的ZhipuAI模型实例
     """
     return ChatZhipuAI(
-        model=model_name,
-        api_key=os.getenv("ZHIPUAI_API_KEY"),
+        model=config.model,
+        api_key=config.model_key,
     )
 
 
-def load_tongyi_model(model_name: str) -> ChatTongyi:
+def load_tongyi_model(config: ModelConfig) -> ChatTongyi:
     """
-    加载ZhipuAI模型
+    加载通义千问模型
 
     Args:
-        model_name: 模型名称，如 GLM-4-Flash
+        config: 模型配置对象
 
     Returns:
-        ChatZhipuAI: 加载的ZhipuAI模型实例
+        ChatTongyi: 加载的通义千问模型实例
     """
     return ChatTongyi(
-        model=model_name,
-        api_key=os.getenv("ZHIPUAI_API_KEY"),
+        model=config.model,
+        api_key=SecretStr(config.model_key),
     )
 
 
-def load_open_router(model_name: str) -> ChatOpenAI:
+def load_gemini_model(config: ModelConfig) -> ChatGoogleGenerativeAI:
+    """
+    加载Gemini模型
+
+    Args:
+        config: 模型配置对象
+
+    Returns:
+        ChatGoogleGenerativeAI: 加载的Gemini模型实例
+    """
+    print(f"🔧 Gemini配置: model={config.model}, api_key={config.model_key}")
+    return ChatGoogleGenerativeAI(
+        model=config.model,
+        api_key=SecretStr(config.model_key),
+        # temperature=0.7,  # 控制输出随机性（0-1）
+        # max_output_tokens=1024  # 最大输出token数
+    )
+
+
+def load_openai_model(config: ModelConfig):
+    """加载OpenAI模型"""
+    print(f"🔧 OpenAI配置: model={config.model}, api_key={config.model_key}")
+    return ChatOpenAI(
+        model=config.model,
+        api_key=SecretStr(config.model_key),
+        # temperature=0.7,
+        # max_tokens=1024
+    )
+
+
+def load_open_router(config: ModelConfig) -> ChatOpenAI:
     """
     加载OpenRouter模型
 
     Args:
-        model_name: 模型名称，如 google/gemini-1.5-pro、microsoft/gpt-4o
+        config: 模型配置对象
 
     Returns:
         ChatOpenAI: 加载的OpenRouter模型实例
     """
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    base_url = os.getenv("OPENROUTER_API_BASE")
-    
+    api_key = SecretStr(config.model_key)
+    base_url = config.model_url
+
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY 环境变量未设置")
-    
+
     if not base_url:
         raise ValueError("OPENROUTER_API_BASE 环境变量未设置")
-    
-    print(f"🔧 OpenRouter配置: model={model_name}, base_url={base_url}")
-    
+
+    print(f"🔧 OpenRouter配置: model={config.model}, base_url={base_url}")
+
     return ChatOpenAI(
-        model=model_name,
+        model=config.model,
         api_key=api_key,
         base_url=base_url,
         max_retries=2,
@@ -76,20 +110,20 @@ def load_open_router(model_name: str) -> ChatOpenAI:
     )
 
 
-def load_silicon_flow(model_name: str) -> ChatOpenAI:
+def load_silicon_flow(config: ModelConfig) -> ChatOpenAI:
     """
     加载硅基流动模型
 
     Args:
-        model_name: 模型名称，如 gpt-4、gpt-4o
+        config: 模型配置对象
 
     Returns:
         ChatOpenAI: 加载的OpenRouter模型实例
     """
     return ChatOpenAI(
-        model=model_name,
-        api_key=os.getenv("SILICONFLOW_API_KEY"),
-        base_url=os.getenv("SILICONFLOW_API_BASE"),
+        model=config.model,
+        api_key=SecretStr(config.model_key),
+        base_url=config.model_url,
     )
 
 

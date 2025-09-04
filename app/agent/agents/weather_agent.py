@@ -8,6 +8,7 @@ from langgraph.graph import add_messages
 from agent.agent_builder import create_tool_agent_executor
 from agent.graph_state import AgentRequest
 from agent.llm.loader_llm_multi import load_open_router
+from agent.llm.model_config import ModelConfig
 from agent.tools.weather_tools import get_weathers
 from utils import redis_manager
 
@@ -96,22 +97,27 @@ class WeatherAgent:
             self.redis_manager.save_graph_state(final_state, req.session_id, self.subgraph_id)
 
 
-if __name__ == '__main__':
-    agent_llm = load_open_router("deepseek/deepseek-chat-v3-0324:free")
-    agent_req = AgentRequest(
-        user_input="上海和北京今天天气怎么样？",
-        model=agent_llm,
-        session_id="session_weather_12345",
-        subgraph_id="weather_agent",
-    )
-    weather_agent = WeatherAgent(req=agent_req)
-    # 流式获取结果
-    final_state = None
-    for chunk in weather_agent.run(agent_req):
-        final_state = chunk
-        print("---CHUNK START---")
-        print(final_state)
-        print("---CHUNK END---\\n")
-
-    print("\n\n===== FINAL RESPONSE =====")
-    print(final_state["messages"][-1].content)
+# if __name__ == '__main__':
+#     config = ModelConfig(
+#         model="deepseek/deepseek-chat-v3-0324:free",
+#         model_key="sk-xxxx",
+#         model_url="https://openrouter.ai/api/v1",
+#     )
+#     agent_llm = load_open_router(config)
+#     agent_req = AgentRequest(
+#         user_input="上海和北京今天天气怎么样？",
+#         model=agent_llm,
+#         session_id="session_weather_12345",
+#         subgraph_id="weather_agent",
+#     )
+#     weather_agent = WeatherAgent(req=agent_req)
+#     # 流式获取结果
+#     final_state = None
+#     for chunk in weather_agent.run(agent_req):
+#         final_state = chunk
+#         print("---CHUNK START---")
+#         print(final_state)
+#         print("---CHUNK END---\\n")
+#
+#     print("\n\n===== FINAL RESPONSE =====")
+#     print(final_state["messages"][-1].content)

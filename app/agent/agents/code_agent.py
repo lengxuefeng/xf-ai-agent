@@ -10,6 +10,7 @@ from langgraph.graph import add_messages, StateGraph
 
 from agent.graph_state import AgentRequest
 from agent.llm.loader_llm_multi import load_open_router
+from agent.llm.model_config import ModelConfig
 from utils import concurrent_executor
 from utils import redis_manager
 
@@ -180,25 +181,30 @@ class CodeAgent:
 
 
 
-if __name__ == '__main__':
-    llm = load_open_router("deepseek/deepseek-chat-v3-0324:free")
-    # llm = load_ollama_model("qwen3:8b")
-    # llm = load_ollama_model("gemma3:270m")
-    req = AgentRequest(
-        # user_input="ok",
-        user_input="可以",
-        # user_input="不对，要重写",
-        # user_input="写一个python的hello world并且需要格式化输出",
-        # user_input="重写",
-        model=llm,
-        session_id="123",
-        subgraph_id="code_agent",
-    )
-    code_agent = CodeAgent(req=req)
-    result = code_agent.run(req)
-    print(result["messages"][-1].content)
-
-    # 中断提示（如果触发暂停）
-    if result.get("interrupt"):
-        print("中断提示:", result["interrupt"])
+# if __name__ == '__main__':
+#     config = ModelConfig(
+#         model="deepseek/deepseek-chat-v3-0324:free",
+#         model_key="sk-xxxx",
+#         model_url="https://openrouter.ai/api/v1",
+#     )
+#     llm = load_open_router(config)
+#     # llm = load_ollama_model("qwen3:8b")
+#     # llm = load_ollama_model("gemma3:270m")
+#     req = AgentRequest(
+#         # user_input="ok",
+#         user_input="可以",
+#         # user_input="不对，要重写",
+#         # user_input="写一个python的hello world并且需要格式化输出",
+#         # user_input="重写",
+#         model=llm,
+#         session_id="123",
+#         subgraph_id="code_agent",
+#     )
+#     code_agent = CodeAgent(req=req)
+#     result = code_agent.run(req)
+#     print(result["messages"][-1].content)
+#
+#     # 中断提示（如果触发暂停）
+#     if result.get("interrupt"):
+#         print("中断提示:", result["interrupt"])
 

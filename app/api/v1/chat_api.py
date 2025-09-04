@@ -24,16 +24,6 @@ def stream_chat(req: StreamChatRequest, user_id: int = Depends(verify_token)) ->
     本接口会实时返回 Agent 的思考过程和最终结果，采用 Server-Sent Events (SSE) 格式。
     支持用户认证，认证用户的聊天记录会自动保存到聊天历史中。
 
-    **参数说明:**
-    - **user_input**: 用户发送的消息内容
-    - **session_id**: 客户端生成的唯一会话ID，用于多轮对话
-    - **model**: 当前选择的模型名称
-    - **model_service**: 模型服务类型
-    - **deep_thinking_mode**: 深度思考模式
-    - **rag_enabled**: 是否启用RAG功能
-    - **similarity_threshold**: 相似度阈值
-    - **embedding_model**: 嵌入模型名称
-
     **返回事件流:**
     - `{"type": "thinking", "content": "..."}`: Agent 的思考过程
     - `{"type": "interrupt", "content": "..."}`: 需要用户输入的暂停事件
