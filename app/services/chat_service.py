@@ -134,9 +134,18 @@ class ChatService:
                 if ai_content:
                     ai_response += ai_content
 
+        except RuntimeError as e:
+            # 模型加载失败的特殊处理
+            error_occurred = True
+            error_message = str(e)
+            print(f"❌ 模型加载失败: {error_message}")
+            # 发送错误消息给前端
+            yield f"data: {json.dumps({'type': 'error', 'content': f'模型加载失败: {error_message}'}, ensure_ascii=False)}\n\n"
+            return
         except Exception as e:
             error_occurred = True
             error_message = str(e)
+            print(f"❌ 聊天处理异常: {error_message}")
             # 重新抛出异常，让上层处理
             raise e
         finally:

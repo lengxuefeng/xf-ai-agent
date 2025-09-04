@@ -1,13 +1,19 @@
+# 数据库连接配置（实际使用时替换为真实地址）
+import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from contextlib import contextmanager
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
 from exceptions.business_exception import BusinessException
 
-# 数据库连接配置（实际使用时替换为真实地址）
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:xiaoleng@localhost:3306/xf-ai-agent?charset=utf8mb4"
+MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "your_mysql_password_here")
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "xf-ai-agent")
+SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}?charset=utf8mb4"
 
 # 创建引擎
 engine = create_engine(

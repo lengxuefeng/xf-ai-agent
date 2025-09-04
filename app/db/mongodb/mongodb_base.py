@@ -38,7 +38,8 @@ class MongoCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         :param obj_in: Pydantic模型实例，包含要创建的数据。
         :return: 创建后的文档对应的Pydantic模型实例。
         """
-        db_obj = obj_in.model_dump(exclude_unset=True)
+        print(f"====={obj_in}")
+        db_obj = obj_in.model_dump()
         result = self.collection.insert_one(db_obj)
         inserted_doc = self.collection.find_one({"_id": result.inserted_id})
         return self._to_model(inserted_doc)

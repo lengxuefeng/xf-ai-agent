@@ -1,13 +1,11 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
-from bson import ObjectId
 from fastapi import HTTPException
 
 from db.mongodb.chat_history_db import chat_session_db, chat_message_db
 from schemas.chat_history_schemas import (
-    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate, ChatMessageUpdate
+    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate
 )
-from utils.chat_utils import ChatUtils
 
 
 class ChatHistoryService:
@@ -112,6 +110,20 @@ class ChatHistoryService:
             raise HTTPException(status_code=404, detail="会话不存在或标题更新失败")
 
         return {"updated_count": updated_count, "new_title": new_title}
+    
+    def delete_single_message(self, user_id: int, message_id: str, hard_delete: bool = False) -> Dict[str, Any]:
+        """
+        删除单条消息
+        """
+        deleted_count = self.message_db.delete_single_message(user_id, message_id, hard_delete)
+        if deleted_count == 0:
+            raise HTTPException(status_code=404, detail="消息不存在或已被删除")
+        
+        return {
+            "message_deleted": deleted_count > 0,
+            "message_id": message_id,
+            "hard_delete": hard_delete
+        }
 
 
 # 创建全局实例

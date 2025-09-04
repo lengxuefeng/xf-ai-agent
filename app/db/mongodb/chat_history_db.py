@@ -94,6 +94,18 @@ class CRUDChatMessage(MongoCRUDBase[ChatMessage, ChatMessageCreate, ChatMessageU
             query["is_deleted"] = 0
             result = self.collection.update_many(query, {"$set": {"is_deleted": 1}})
             return result.modified_count
+    
+    def delete_single_message(self, user_id: int, message_id: str, hard_delete: bool = False) -> int:
+        """删除单条消息"""
+        from bson import ObjectId
+        query = {"user_id": user_id, "_id": ObjectId(message_id)}
+        if hard_delete:
+            result = self.collection.delete_one(query)
+            return result.deleted_count
+        else:
+            query["is_deleted"] = 0
+            result = self.collection.update_one(query, {"$set": {"is_deleted": 1}})
+            return result.modified_count
 
 
 # 创建全局实例

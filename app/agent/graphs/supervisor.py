@@ -225,10 +225,10 @@ def create_graph(model_config: dict = None):
         model, embedding_model = create_model_from_config(**final_config)
         print(f"✅ 模型加载成功: {final_config['model_service']} - {final_config['model']}")
     except Exception as e:
-        print(f"⚠️ 模型加载失败，使用默认模型: {e}")
-        # 回退到默认模型
-        model = load_silicon_flow("Qwen/QwQ-32B")
-        embedding_model = None
+        error_msg = f"加载模型失败 - 服务: {final_config.get('model_service', 'unknown')}, 模型: {final_config.get('model', 'unknown')}, 错误: {str(e)}"
+        print(f"❌ {error_msg}")
+        # 不使用默认模型，直接抛出异常让上层处理
+        raise RuntimeError(error_msg) from e
 
     workflow = StateGraph(GraphState)
 
