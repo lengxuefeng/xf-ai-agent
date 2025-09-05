@@ -201,7 +201,7 @@ if __name__ == '__main__':
         },
         {
             'model': 'gemini-1.5-pro',
-            'model_service': 'netlify-gemini'
+            'model_service': 'gemini'
         },
         {
             'model': 'Qwen/QwQ-32B',

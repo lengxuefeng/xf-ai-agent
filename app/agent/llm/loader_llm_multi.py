@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_community.chat_models import ChatZhipuAI, ChatTongyi
+from langchain_core.messages import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
@@ -159,7 +160,14 @@ def load_chat_model(
         raise RuntimeError(f"加载模型失败: {model}\n{e}")
 
 # if __name__ == '__main__':
-#     llm = load_open_router("qwen/qwen3-coder:free")
+#     config = ModelConfig(
+#         model="deepseek/deepseek-chat-v3.1:free",
+#         model_key="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",
+#         model_url="https://openrouter.ai/api/v1",
+#         model_service="openrouter",
+#         service_type="openrouter",
+#     )
+#     llm = load_open_router(config)
 #     message = llm.invoke("你好")
 #     if isinstance(message, AIMessage):
 #         print("模型回复：", message.content)

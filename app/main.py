@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +19,7 @@ from schemas.response_model import ResponseModel
 
 # 配置日志
 setup_logger()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="LangGraph Agent FastAPI",
@@ -31,30 +34,56 @@ app = FastAPI(
 )
 
 
-# ===== 全局异常处理器 =====
+# ====== 辅助函数：获取请求体 ======
+async def get_request_body(request: Request):
+    try:
+        body = await request.body()
+        return body.decode("utf-8") if body else "{}"
+    except Exception:
+        return "{}"
+
+
+# ===== 业务异常处理 =====
 @app.exception_handler(BusinessException)
 async def business_exception_handler(request: Request, exc: BusinessException):
+    body = await get_request_body(request)
+    logger.error(
+        f"BusinessException | method={request.method} | url={request.url} "
+        f"| code={exc.code} | message={exc.message} | body={body}",
+        exc_info=True
+    )
     return JSONResponse(
-        status_code=exc.code,  # 使用业务异常的错误码作为HTTP状态码
+        status_code=exc.code,
         content=ResponseModel.fail(code=exc.code, message=exc.message).model_dump()
     )
 
 
+# ===== HTTP 异常处理 (400/404/422 等) =====
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
+    body = await get_request_body(request)
+    logger.error(
+        f"HTTPException | method={request.method} | url={request.url} "
+        f"| status_code={exc.status_code} | detail={exc.detail} | body={body}",
+        exc_info=True
+    )
     return JSONResponse(
-        status_code=exc.status_code,  # 使用HTTP异常的状态码
+        status_code=exc.status_code,
         content=ResponseModel.fail(code=exc.status_code, message=exc.detail).model_dump()
     )
 
 
+# ===== 全局异常处理 (500) =====
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    body = await get_request_body(request)
+    logger.error(
+        f"Unhandled Exception | method={request.method} | url={request.url} "
+        f"| error={str(exc)} | body={body}",
+        exc_info=True
+    )
     return JSONResponse(
-        status_code=500,  # 系统异常返回500状态码
+        status_code=500,
         content=ResponseModel.fail(code=500, message="系统繁忙，请稍后重试").model_dump()
     )
 
