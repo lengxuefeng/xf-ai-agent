@@ -10,21 +10,24 @@
 - create_interruptable_agent_executor: 创建一个支持人工中断和反馈的 Agent 执行器。
 - create_simple_agent_executor: 创建一个简单的、无工具的 Agent 执行器。
 """
-from typing import List, Type, Callable, Optional, Union
+import uuid
+from typing import List, Type, Callable, Optional, Union, Dict, Any
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import ToolMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 
+from utils.date_utils import DateUtils
+
 
 def create_tool_agent_executor(
-    model: BaseChatModel = None, 
-    tools: List = None, 
-    state_class: Type[dict] = None,
-    chain: Optional[Runnable] = None
+        model: BaseChatModel = None,
+        tools: List = None,
+        state_class: Type[dict] = None,
+        chain: Optional[Runnable] = None
 ):
     """
     工厂函数：创建一个具备工具使用能力的 Agent 执行器（编译后的图）。
@@ -49,10 +52,10 @@ def create_tool_agent_executor(
     # 参数验证
     if not chain and not model:
         raise ValueError("必须提供 model 或 chain 参数中的一个")
-    
+
     if not tools:
         tools = []
-    
+
     if not state_class:
         raise ValueError("必须提供 state_class 参数")
 
@@ -179,4 +182,118 @@ def create_simple_agent_executor(
     graph.add_node("agent", agent_node)
     graph.set_entry_point("agent")
     graph.add_edge("agent", END)
+    return graph.compile()
+
+
+def create_yunyou_agent_executor(
+        model: BaseChatModel = None,
+        tools: List = None,
+        state_class: Type[dict] = None,
+        chain: Optional[Runnable] = None
+):
+    """
+    工厂函数：创建一个具备工具使用能力的 Agent 执行器（编译后的图）。
+
+    该函数封装了标准的 "Agent -> Tool -> Agent" 循环。
+
+    工作流程：
+    1. Agent 节点 (agent_node): 调用 LLM 或自定义 chain 决定是直接回答还是使用工具。
+    2. 条件路由 (router): 检查 LLM 的输出，如果包含工具调用，则路由到工具节点；否则结束。
+    3. 工具节点 (ToolNode): 执行具体的工具调用。
+    4. 工具节点执行完毕后，将结果返回给 Agent 节点，由其整合信息并生成最终回复。
+
+    Args:
+        model (BaseChatModel, optional): 用于驱动 Agent 的语言模型。
+        tools (List): Agent 可用的工具列表。
+        state_class (Type[dict]): 图的状态类 (TypedDict)，必须包含 'messages' 字段。
+        chain (Optional[Runnable]): 自定义的处理链，如果提供则优先使用，否则使用 model。
+
+    Returns:
+        A compiled LangGraph executor.
+    """
+    # 参数验证
+    if not chain and not model:
+        raise ValueError("必须提供 model 或 chain 参数中的一个")
+
+    if not tools:
+        tools = []
+
+    if not state_class:
+        raise ValueError("必须提供 state_class 参数")
+
+    # 1. 定义 Agent 节点
+    def agent_node(state):
+        """
+        定义智能体节点（Agent Node）。
+
+        这个节点是决策点。它调用模型或chain，会根据对话历史决定：
+        1.  直接生成一个回答（如果信息足够）。
+        2.  生成一个工具调用请求（如果需要搜索）。
+        3.  在工具执行后，根据工具返回的结果生成最终回答。
+        """
+        # 检查最后一条消息是否是工具消息
+        if isinstance(state["messages"][-1], ToolMessage):
+            # 如果是，调用模型或chain生成回复
+            if chain:
+                response = chain.invoke({"messages": state["messages"]})
+            else:
+                response = model.invoke(state["messages"])
+        else:
+            # 否则，将工具绑定到模型，让模型决定是否调用工具
+            if chain:
+                # 如果使用自定义chain，假设它已经处理了工具绑定逻辑
+                response = chain.invoke({"messages": state["messages"]})
+            else:
+                model_with_tools = model.bind_tools(tools)
+                response = model_with_tools.invoke(state["messages"])
+        return {"messages": [response]}
+
+    # 2. 定义路由逻辑
+
+    def holter_router(state: Dict[str, Any]) -> Dict[str, Any]:
+        """根据用户输入选择工具并补全参数"""
+        user_input = getattr(state["messages"][-1], "content", str(state["messages"][-1]))
+        start, end = DateUtils.parse_date_input(user_input)
+
+        params = {"startUseDay": start, "endUseDay": end}
+
+        if "列表" in user_input or "holter_list" in user_input:
+            tool = "holter_list"
+        elif "类型" in user_input or "holter_type_count" in user_input:
+            tool = "holter_type_count"
+        elif "审核" in user_input or "报告" in user_input or "holter_report_count" in user_input:
+            tool = "holter_report_count"
+        else:
+            tool = "holter_list"
+
+        # 生成唯一调用 ID
+        tool_call_id = str(uuid.uuid4())
+
+        return {
+            "messages": [
+                ToolMessage(
+                    content=f"调用 {tool} 工具",
+                    tool_name=tool,
+                    tool_input=params,
+                    tool_call_id=tool_call_id
+                )
+            ]
+        }
+
+    # 3. 创建图
+    graph = StateGraph(state_class)
+    graph.add_node("agent", agent_node)
+    graph.add_node("router", holter_router)
+    graph.add_node("tools", ToolNode(tools))
+
+    # 4. 设置入口点和边
+    graph.set_entry_point("router")
+    graph.add_edge("router", "agent")
+    graph.add_conditional_edges(
+        "agent",
+        lambda s: "tools" if isinstance(s["messages"][-1], ToolMessage) else END
+    )
+    graph.add_edge("tools", "agent")
+
+    # 5. 编译图并返回
     return graph.compile()

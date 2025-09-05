@@ -12,7 +12,7 @@ class YunYouTools:
     def __init__(self):
         self.base_url = os.getenv("YY_BASE_URL")
 
-    def _common_post(self, url: str, params: Dict) -> Dict:
+    def common_post(self, url: str, params: Dict) -> Dict:
         """执行 API 请求并处理错误"""
         try:
             headers = {
@@ -52,7 +52,7 @@ def holter_list(params: Dict) -> Dict:
         Dict: 响应数据
     """
     print(f"params: {params}")
-    return YunYouTools()._common_post("/holter/list", params)
+    return YunYouTools().common_post("/holter/list", params)
 
 
 @tool
@@ -70,7 +70,7 @@ def holter_type_count(params: Dict) -> Dict:
             "holterType": 0, # holter类型 0:24小时 1:2小时 2:24小时（夜间）3:48小时
         }]
     """
-    return YunYouTools()._common_post("/holter/holterTypeCount", params)
+    return YunYouTools().common_post("/holter/holterTypeCount", params)
 
 
 @tool
@@ -88,7 +88,7 @@ def holter_report_count(params: Dict) -> Dict:
             "reportStatus": 0, # 报告审核状态 -1:无数据 0:待审核 1:审核中 2:人工审核完成 3:自动审核完成
         }]
     """
-    return YunYouTools()._common_post("/holter/holterReportCount", params)
+    return YunYouTools().common_post("/holter/holterReportCount", params)
 
 
 if __name__ == '__main__':
