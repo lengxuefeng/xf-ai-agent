@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, Optional
 
 import requests
 from dotenv import load_dotenv
@@ -18,10 +18,11 @@ class YunYouTools:
             headers = {
                 "Content-Type": "application/json"
             }
-            params = {**params}
+            # 过滤掉值为 None 的参数
+            filtered_params = {k: v for k, v in params.items() if v is not None}
 
             url = f"{self.base_url}{url}"
-            response = requests.post(url, json=params, headers=headers)
+            response = requests.post(url, json=filtered_params, headers=headers)
             response.raise_for_status()
             data = response.json()
             return data.get("data")
@@ -37,63 +38,60 @@ class YunYouTools:
 
 
 @tool
-def holter_list(params: Dict) -> Dict:
+def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = None, reportStatus: Optional[int] = None, holterType: Optional[int] = None) -> Dict:
     """
     云柚 holter 数据列表，根据具体参数查询holter信息
     Args:
-        params (Dict): 请求参数，参数包含{
-        "startUseDay": "2020-07-30", # 开始日期-必须
-        "endUseDay": "2020-07-30", # 解释日期-必须
-        "isUploaded": 0, # 数据是否传完 0：否 1：是  -1：没有数据
-        "reportStatus": 0, # 报告审核状态 -1:无数据 0:待审核 1:审核中 2:人工审核完成 3:自动审核完成
-        "holterType": 0, # holter类型 0:24小时 1:2小时 2:24小时（夜间）3:48小时
-    }
-    Returns:
-        Dict: 响应数据
+        startUseDay (str): 开始日期，格式如 "2020-07-30"
+        endUseDay (str): 结束日期，格式如 "2020-07-30"
+        isUploaded (Optional[int]): 数据是否传完 0：否 1：是。如果不需要则忽略。
+        reportStatus (Optional[int]): 报告审核状态 0:待审核 1:审核中 2:人工审核完成 3:自动审核完成。如果不需要则忽略。
+        holterType (Optional[int]): holter类型 0:24小时 1:2小时 2:24小时（夜间）3:48小时。如果不需要则忽略。
     """
-    print(f"params: {params}")
+    params = {
+        "startUseDay": startUseDay,
+        "endUseDay": endUseDay,
+        "isUploaded": isUploaded,
+        "reportStatus": reportStatus,
+        "holterType": holterType,
+    }
     return YunYouTools().common_post("/holter/list", params)
 
 
 @tool
-def holter_type_count(params: Dict) -> Dict:
+def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter类型统计，根据时间范围查询holter类型统计
     Args:
-        params (Dict): 请求参数，参数包含{
-        "startUseDay": "2020-07-30", # 开始日期-必须
-        "endUseDay": "2020-07-30", # 解释日期-必须
-    }
+        startUseDay (str): 开始日期，格式如 "2020-07-30"
+        endUseDay (str): 结束日期，格式如 "2020-07-30"
     Returns:
-        Dict: 响应数据，包含holter报告状态统计，参数包含[{
-            "count": 0, # 总数量
-            "holterType": 0, # holter类型 0:24小时 1:2小时 2:24小时（夜间）3:48小时
-        }]
+        Dict: 响应数据，包含holter报告状态统计
     """
+    params = {
+        "startUseDay": startUseDay,
+        "endUseDay": endUseDay,
+    }
     return YunYouTools().common_post("/holter/holterTypeCount", params)
 
 
 @tool
-def holter_report_count(params: Dict) -> Dict:
+def holter_report_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter报告状态统计，根据时间范围查询holter报告状态统计
     Args:
-        params (Dict): 请求参数，参数包含{
-        "startUseDay": "2020-07-30", # 开始日期-必须
-        "endUseDay": "2020-07-30", # 解释日期-必须
-    }
+        startUseDay (str): 开始日期，格式如 "2020-07-30"
+        endUseDay (str): 结束日期，格式如 "2020-07-30"
     Returns:
-        Dict: 响应数据，包含holter报告状态统计，参数包含[{
-            "count": 0, # 总数量
-            "reportStatus": 0, # 报告审核状态 -1:无数据 0:待审核 1:审核中 2:人工审核完成 3:自动审核完成
-        }]
+        Dict: 响应数据，包含holter报告状态统计
     """
+    params = {
+        "startUseDay": startUseDay,
+        "endUseDay": endUseDay,
+    }
     return YunYouTools().common_post("/holter/holterReportCount", params)
 
 
 if __name__ == '__main__':
-    params = {
-        "startUseDay": "2025-07-30",
-        "endUseDay": "2025-08-30",
-    }
-    print(holter_list(params))
+    # 测试时需要直接提供参数，而不是包裹在字典里
+    print(holter_type_count(startUseDay="2025-07-30", endUseDay="2025-08-30"))

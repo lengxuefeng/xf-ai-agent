@@ -29,22 +29,22 @@ def stream_text(text: str, delay: float = 0.03) -> Generator[str, None, None]:
     """
     if not text:
         return
-    
+
     # 解析文本，分离 thinking 和正常内容
     import re
-    
+
     # 查找所有 <think>...</think> 块
     think_pattern = r'<think>(.*?)</think>'
     parts = re.split(think_pattern, text, flags=re.DOTALL)
-    
+
     for i, part in enumerate(parts):
         if not part.strip():  # 跳过空白部分
             continue
-            
+
         # 奇数索引是 <think> 标签内的内容（思考过程）
         is_thinking = (i % 2 == 1)
         content_type = "thinking" if is_thinking else "stream"
-        
+
         # 逐字符流式输出
         for j, char in enumerate(part):
             # 如果是中文字符、标点或空格，可以稍微快一点
@@ -52,12 +52,12 @@ def stream_text(text: str, delay: float = 0.03) -> Generator[str, None, None]:
                 current_delay = delay * 0.5
             else:
                 current_delay = delay
-                
+
             yield to_sse({
-                "type": content_type, 
+                "type": content_type,
                 "content": char
             })
-            
+
             if current_delay > 0:
                 time.sleep(current_delay)
 
@@ -88,7 +88,7 @@ class GraphRunner:
         """
         # 合并模型配置
         final_config = {**self.model_config, **(model_config or {})}
-        
+
         # 根据配置创建或更新图
         if self.graph is None or model_config:
             try:
@@ -97,7 +97,7 @@ class GraphRunner:
             except RuntimeError as e:
                 # 模型加载失败，直接抛出异常
                 raise e
-        
+
         initial_state = {
             "messages": [HumanMessage(content=user_input)],
             "session_id": session_id,
@@ -108,29 +108,32 @@ class GraphRunner:
         accumulated_messages: List[BaseMessage] = []
 
         try:
-            for event in self.graph.stream(initial_state):
-                # 打印每个事件用于调试
+            for event in self.graph.stream(initial_state, subgraphs=True):
+                # 打印每个事件用于调试（元组结构：(路径, 状态)）
                 print(f"--- EVENT ---\n{event}\n--- END EVENT ---")
 
-                # 1. 处理思考过程
-                if "supervisor" in event:
-                    next_agent = event["supervisor"].get("next")
+                # 解析元组：提取路径和状态字典（关键修复点）
+                path, state = event  # 解包 (路径元组, 状态字典)
+
+                # 1. 处理思考过程（使用解析后的state字典）
+                if "supervisor" in state:
+                    next_agent = state["supervisor"].get("next")
                     if next_agent and next_agent != "FINISH":
                         yield to_sse({"type": "thinking", "content": f"正在路由到: {next_agent}..."})
                     else:
                         # 只有当 supervisor 决定 FINISH 时，才显示任务完成
                         if next_agent == "FINISH":
                             yield to_sse({"type": "thinking", "content": "任务已完成。"})
-                
+
                 # 2. 从每个事件中提取新消息并累积
-                # event 的格式是 {"node_name": {"messages": [...]}}
-                for node_name, node_output in event.items():
+                # state 的格式是 {"node_name": {"messages": [...]}}
+                for node_name, node_output in state.items():  # 这里用state而不是event
                     if isinstance(node_output, dict) and "messages" in node_output:
                         # 将新消息追加到我们的累积列表中
                         accumulated_messages.extend(node_output["messages"])
 
-                # 3. 检查是否有中断请求 (此逻辑保持不变)
-                for key, value in event.items():
+                # 3. 检查是否有中断请求
+                for key, value in state.items():  # 这里用state而不是event
                     if isinstance(value, dict) and "interrupt" in value and value["interrupt"]:
                         yield to_sse({"type": "interrupt", "content": value["interrupt"]})
                         return
@@ -141,11 +144,11 @@ class GraphRunner:
                 if isinstance(final_message, AIMessage):
                     # 发送流开始信号
                     yield to_sse({"type": "response_start", "content": ""})
-                    
+
                     # 逐字符流式输出 AI 的回复
                     for chunk in stream_text(final_message.content):
                         yield chunk
-                    
+
                     # 发送流结束信号
                     yield to_sse({"type": "response_end", "content": ""})
                 else:
@@ -157,3 +160,4 @@ class GraphRunner:
 
         except Exception as e:
             yield to_sse({"type": "error", "content": f"执行过程中发生错误: {str(e)}"})
+

@@ -8,6 +8,8 @@ from langgraph.graph import add_messages
 
 from agent.agent_builder import create_yunyou_agent_executor
 from agent.graph_state import AgentRequest
+from agent.llm.loader_llm_multi import load_open_router, load_zhipu_model
+from agent.llm.model_config import ModelConfig
 from agent.llm.ollama_model import load_ollama_model
 from agent.tools.yunyou_tools import holter_list, holter_type_count, holter_report_count
 from utils import redis_manager
@@ -88,9 +90,7 @@ class YunyouAgent:
                     【执行规范】
                     - 首先，分析用户的请求，严格映射到对应的工具。
                     - 如果用户输入的内容无法唯一确定工具，则结合上下文推理最合适的工具。
-                    - 在调用工具时，必须提供完整参数：  
-                      - 如果用户提供了起止日期，直接使用。  
-                      - 如果用户未提供日期，默认使用最近一天（startUseDay = endUseDay = 今天）。  
+                    - 在调用工具前，必须确保所有必需的参数（如日期）都已提供。如果用户没有提供，你必须向用户提问以获取这些信息。  
                     - 工具调用后，必须根据返回结果生成自然语言总结，使用通俗易懂的表述，不要直接照搬 JSON。
 
                     【回答示例】
@@ -155,17 +155,23 @@ class YunyouAgent:
             self.redis_manager.save_graph_state(final_state, req.session_id, req.subgraph_id)
 
 #
-# if __name__ == '__main__':
-#     # llm = load_open_router("deepseek/deepseek-chat-v3-0324:free")
-#     llm = load_ollama_model("qwen3:8b")
-#     agent_req = AgentRequest(
-#         user_input="今天holter的类型有哪些，每个类型的数量是多少",
-#         model=llm,
-#         session_id="session_1756001239211_uqdut8idsdsv2",
-#         subgraph_id="yunyou_agent",
-#     )
-#     yunyou_agent = YunyouAgent(agent_req)
-#     main_result = yunyou_agent.run(agent_req)
-#     for msg in main_result:
-#         print(msg)
-#     # print(main_result["messages"][-1].content)
+if __name__ == '__main__':
+    config = ModelConfig(
+        model="GLM-4.5-Flash",
+        model_key="053f87263c043e57187968338c63384a.FFLbsjLb9yU3NP9a",
+        model_service="zhipu",
+        service_type="zhipu",
+    )
+    llm = load_zhipu_model(config)
+    # llm = load_ollama_model("qwen3:8b")
+    agent_req = AgentRequest(
+        user_input="今天holter的类型有哪些，每个类型的数量是多少",
+        model=llm,
+        session_id="session_1756001239211_uqdut8idsdsv2",
+        subgraph_id="yunyou_agent",
+    )
+    yunyou_agent = YunyouAgent(agent_req)
+    main_result = yunyou_agent.run(agent_req)
+    for msg in main_result:
+        print(msg)
+    # print(main_result["messages"][-1].content)

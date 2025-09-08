@@ -140,7 +140,6 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
     if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
         user_input = state["messages"][-1].content
 
-    # 获取模型配置，如果没有则使用默认配置
     llm_config = state.get("llm_config", {})
 
     req = AgentRequest(
@@ -154,29 +153,27 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
     agent_info = agent_classes[agent_name]
     agent_instance = agent_info.cls(req)
 
-    # 收集所有消息
-    all_messages = []
-    final_subgraph_state = None
-
+    # 运行子图并从事件流中寻找最终的回复
+    final_answer = None
     for event in agent_instance.run(req):
-        final_subgraph_state = event
-        # 从事件中提取消息
+        # event 的结构是 {'node_name': {'messages': [...]}}
         for node_name, node_output in event.items():
             if isinstance(node_output, dict) and "messages" in node_output:
-                all_messages.extend(node_output["messages"])
+                messages = node_output.get('messages', [])
+                if messages:
+                    # 获取当前节点产生的最新消息
+                    last_message = messages[-1]
+                    # 一个“最终答案”是一个没有工具调用的 AIMessage
+                    if isinstance(last_message, AIMessage) and not last_message.tool_calls:
+                        final_answer = last_message
 
-    # 如果有累积的消息，使用它们；否则检查最终状态
-    if all_messages:
-        return {"messages": all_messages}
+    # 在遍历完所有子图事件后，使用找到的最终答案
+    if final_answer:
+        return {"messages": [final_answer]}
 
-    # 备用方案：从最终状态中获取消息
-    if final_subgraph_state:
-        # 尝试从不同可能的结构中获取消息
-        for key, value in final_subgraph_state.items():
-            if isinstance(value, dict) and "messages" in value:
-                return {"messages": value["messages"]}
+    # 如果遍历完整个子图的运行过程都没有找到一个明确的最终答案
+    return {"messages": [AIMessage(content=f"抱歉，{agent_name} 在处理过程中未能生成明确的回复。", name=agent_name)]}
 
-    return {"messages": []}
 
 
 # -------------------------

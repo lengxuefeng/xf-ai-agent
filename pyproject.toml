@@ -14,9 +14,9 @@ dependencies = [
     "langchain-zhipuai==0.0.1",
     "langchain-community==0.3.27", # 最新稳定版本，与 LangChain 0.3.x 兼容
     "langchain-ollama==0.3.6",
-    "langgraph==0.6.2", # 最新稳定版本，与 LangChain 0.3.x 兼容
     "langchain-google-genai==2.1.8", # 最新稳定版本，与 LangChain 0.3.x 兼容
     "langchain-tavily>=0.2.11",
+    "langgraph==0.6.2", # 最新稳定版本，与 LangChain 0.3.x 兼容
     "langsmith>=0.4.13",
     # 环境变量加载
     "python-dotenv==1.1.0",

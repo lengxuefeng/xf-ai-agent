@@ -6,6 +6,7 @@ from langchain_community.chat_models import ChatZhipuAI, ChatTongyi
 from langchain_core.messages import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from modelscope.hub.api import ModelScopeConfig
 from pydantic import SecretStr
 
 from agent.llm.model_config import ModelConfig
@@ -159,17 +160,33 @@ def load_chat_model(
     except Exception as e:
         raise RuntimeError(f"加载模型失败: {model}\n{e}")
 
-# if __name__ == '__main__':
-#     config = ModelConfig(
-#         model="deepseek/deepseek-chat-v3.1:free",
-#         model_key="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",
-#         model_url="https://openrouter.ai/api/v1",
-#         model_service="openrouter",
-#         service_type="openrouter",
-#     )
-#     llm = load_open_router(config)
-#     message = llm.invoke("你好")
-#     if isinstance(message, AIMessage):
-#         print("模型回复：", message.content)
-#     else:
-#         print("模型未返回 AIMessage:", message)
+if __name__ == '__main__':
+    # config = ModelConfig(
+    #     model="deepseek/deepseek-chat-v3.1:free",
+    #     model_key="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",
+    #     model_url="https://openrouter.ai/api/v1",
+    #     model_service="openrouter",
+    #     service_type="openrouter",
+    # )
+    # llm = load_open_router(config)
+    # config = ModelConfig(
+    #     model="GLM-4.5-Flash",
+    #     model_key="053f87263c043e57187968338c63384a.FFLbsjLb9yU3NP9a",
+    #     model_service="zhipu",
+    #     service_type="zhipu",
+    # )
+    # llm = load_zhipu_model(config)
+
+    config = ModelConfig(
+        model="GLM-4.5-Flash",
+        model_key="053f87263c043e57187968338c63384a.FFLbsjLb9yU3NP9a",
+        model_url="https://openrouter.ai/api/v1",
+        model_service="zhipu",
+        service_type="zhipu",
+    )
+    llm = load_zhipu_model(config)
+    message = llm.invoke("你好")
+    if isinstance(message, AIMessage):
+        print("模型回复：", message.content)
+    else:
+        print("模型未返回 AIMessage:", message)
