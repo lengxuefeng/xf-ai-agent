@@ -1,4 +1,3 @@
-from langchain_core.tools import tool
 from sqlalchemy import text
 
 from db.mysql import get_db
@@ -54,7 +53,7 @@ def get_schema() -> str:
                 for field, col_type, is_null, key, default, extra in columns:
                     schema_info += f"{field} | {col_type} | {is_null} | {key} | {default} | {extra}\n"
 
-            return schema_info
+        return schema_info
     except Exception as e:
         return f"获取表结构时发生错误: {e}"
 

@@ -58,6 +58,8 @@ dependencies = [
     # 图片处理
     "pillow>=11.3.0",
     "redis>=6.4.0",
+    "streamlit>=1.49.1",
+    "cryptography>=46.0.3",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

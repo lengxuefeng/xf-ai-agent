@@ -4,7 +4,7 @@ import time
 from typing import Generator, List
 
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-
+from agent.graphs.supervisor import create_graph
 """
 核心图运行器，负责执行 Supervisor 并处理流式输出。
 """
@@ -92,7 +92,6 @@ class GraphRunner:
         # 根据配置创建或更新图
         if self.graph is None or model_config:
             try:
-                from agent.graphs.supervisor import create_graph
                 self.graph = create_graph(final_config)
             except RuntimeError as e:
                 # 模型加载失败，直接抛出异常

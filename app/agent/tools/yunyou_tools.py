@@ -38,7 +38,8 @@ class YunYouTools:
 
 
 @tool
-def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = None, reportStatus: Optional[int] = None, holterType: Optional[int] = None) -> Dict:
+def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = None, reportStatus: Optional[int] = None,
+                holterType: Optional[int] = None) -> Dict:
     """
     云柚 holter 数据列表，根据具体参数查询holter信息
     Args:
@@ -58,7 +59,7 @@ def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = No
     return YunYouTools().common_post("/holter/list", params)
 
 
-@tool
+# @tool
 def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter类型统计，根据时间范围查询holter类型统计
@@ -75,7 +76,7 @@ def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
     return YunYouTools().common_post("/holter/holterTypeCount", params)
 
 
-@tool
+# @tool
 def holter_report_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter报告状态统计，根据时间范围查询holter报告状态统计

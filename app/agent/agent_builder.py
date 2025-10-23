@@ -31,24 +31,21 @@ def create_tool_agent_executor(
         model: BaseChatModel = None,
         tools: List = None,
         state_class: Type[dict] = None,
-        chain: Optional[Runnable] = None
+        chain: Optional[Runnable] = None,
+        response_parser: Optional[Callable] = None
 ):
     """
     工厂函数：创建一个具备工具使用能力的 Agent 执行器（编译后的图）。
 
-    该函数封装了标准的 "Agent -> Tool -> Agent" 循环。
-
-    工作流程：
-    1. Agent 节点 (agent_node): 调用 LLM 或自定义 chain 决定是直接回答还是使用工具。
-    2. 条件路由 (router): 检查 LLM 的输出，如果包含工具调用，则路由到工具节点；否则结束。
-    3. 工具节点 (ToolNode): 执行具体的工具调用。
-    4. 工具节点执行完毕后，将结果返回给 Agent 节点，由其整合信息并生成最终回复。
+    该函数封装了标准的 "Agent -> Tool -> Agent" 循环，并支持传入一个可选的
+    响应解析器，用于处理特定模型的非标准输出。
 
     Args:
         model (BaseChatModel, optional): 用于驱动 Agent 的语言模型。
         tools (List): Agent 可用的工具列表。
         state_class (Type[dict]): 图的状态类 (TypedDict)，必须包含 'messages' 字段。
         chain (Optional[Runnable]): 自定义的处理链，如果提供则优先使用，否则使用 model。
+        response_parser (Callable, optional): 一个函数，用于在模型调用后解析和转换 AIMessage。
 
     Returns:
         A compiled LangGraph executor.
@@ -65,42 +62,29 @@ def create_tool_agent_executor(
 
     # 1. 定义 Agent 节点
     def agent_node(state):
-        """
-        定义智能体节点（Agent Node）。
-
-        这个节点是决策点。它调用模型或chain，会根据对话历史决定：
-        1.  直接生成一个回答（如果信息足够）。
-        2.  生成一个工具调用请求（如果需要搜索）。
-        3.  在工具执行后，根据工具返回的结果生成最终回答。
-        """
-        # 检查最后一条消息是否是工具消息
+        """定义智能体节点，并在模型调用后应用可选的解析器。"""
         if isinstance(state["messages"][-1], ToolMessage):
-            # 如果是，调用模型或chain生成回复
-            if chain:
-                response = chain.invoke({"messages": state["messages"]})
-            else:
-                response = model.invoke(state["messages"])
+            response = chain.invoke({"messages": state["messages"]}) if chain else model.invoke(state["messages"])
         else:
-            # 否则，将工具绑定到模型，让模型决定是否调用工具
             if chain:
-                # 如果使用自定义chain，假设它已经处理了工具绑定逻辑
                 response = chain.invoke({"messages": state["messages"]})
             else:
                 model_with_tools = model.bind_tools(tools)
                 response = model_with_tools.invoke(state["messages"])
+
+            # 如果提供了响应解析器，则应用它
+            if response_parser:
+                response = response_parser(response)
+
         return {"messages": [response]}
 
     # 2. 定义路由逻辑
     def router(state):
-        """
-        定义路由函数，在 agent 节点执行后决定下一步走向。
-        """
+        """标准的路由函数，检查 .tool_calls 属性。"""
         last_message = state["messages"][-1]
         if hasattr(last_message, "tool_calls") and last_message.tool_calls:
-            # 如果有工具调用，则走向 "tools" 节点
             return "tools"
         else:
-            # 否则，流程结束
             return END
 
     # 3. 创建图
@@ -186,96 +170,4 @@ def create_simple_agent_executor(
     graph.add_node("agent", agent_node)
     graph.set_entry_point("agent")
     graph.add_edge("agent", END)
-    return graph.compile()
-
-
-def create_yunyou_agent_executor(
-        model: BaseChatModel = None,
-        tools: List = None,
-        state_class: Type[dict] = None,
-        chain: Optional[Runnable] = None
-):
-    """
-    工厂函数：创建一个具备工具使用能力的 Agent 执行器（编译后的图）。
-    包含一个针对特定模型（如 gpt-oss）非标准工具调用输出的定制化解析器。
-    """
-    # 参数验证
-    if not chain and not model:
-        raise ValueError("必须提供 model 或 chain 参数中的一个")
-    if not tools:
-        tools = []
-    if not state_class:
-        raise ValueError("必须提供 state_class 参数")
-
-    # --- 定制化解析器 --- #
-    def _parse_custom_tool_call(message: AIMessage) -> AIMessage:
-        """解析 content 字段中非标准的 <|...|> 工具调用格式。"""
-        content = message.content
-        # 正则表达式寻找工具调用指令
-        match = re.search(r"to=(?P<tool_name>\w+).*?<\|message\|>(?P<args_json>.*?)<\|call\|>", content)
-
-        if not match:
-            return message
-
-        tool_name = match.group("tool_name")
-        args_json_str = match.group("args_json")
-
-        try:
-            args = json.loads(args_json_str)
-            # 创建一个标准的 tool_call 字典
-            tool_call = {
-                "name": tool_name,
-                "args": args,
-                "id": f"call_{uuid.uuid4()}"  # 生成唯一的调用ID
-            }
-            # 返回一个新的、符合LangChain标准的AIMessage
-            return AIMessage(
-                content="",  # 原内容已被解析为工具调用，故清空
-                tool_calls=[tool_call],
-                id=message.id,
-                usage_metadata=message.usage_metadata,
-                response_metadata=message.response_metadata
-            )
-        except (json.JSONDecodeError, AttributeError):
-            # 如果解析失败，返回原始消息以避免流程中断
-            return message
-
-    # 1. 定义 Agent 节点
-    def agent_node(state):
-        """定义智能体节点，并在模型调用后应用定制化解析器。"""
-        if isinstance(state["messages"][-1], ToolMessage):
-            response = chain.invoke({"messages": state["messages"]}) if chain else model.invoke(state["messages"])
-        else:
-            if chain:
-                response = chain.invoke({"messages": state["messages"]})
-            else:
-                model_with_tools = model.bind_tools(tools)
-                response = model_with_tools.invoke(state["messages"])
-            
-            # --- 应用解析器 --- #
-            if response.content and "<|call|>" in response.content:
-                response = _parse_custom_tool_call(response)
-
-        return {"messages": [response]}
-
-    # 2. 定义路由逻辑
-    def router(state):
-        """标准的路由函数，检查 .tool_calls 属性。"""
-        last_message = state["messages"][-1]
-        if hasattr(last_message, "tool_calls") and last_message.tool_calls:
-            return "tools"
-        else:
-            return END
-
-    # 3. 创建图
-    graph = StateGraph(state_class)
-    graph.add_node("agent", agent_node)
-    graph.add_node("tools", ToolNode(tools))
-
-    # 4. 设置入口点和边
-    graph.set_entry_point("agent")
-    graph.add_conditional_edges("agent", router)
-    graph.add_edge("tools", "agent")
-
-    # 5. 编译图并返回
     return graph.compile()

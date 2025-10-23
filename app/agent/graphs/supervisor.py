@@ -5,14 +5,9 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.graph import StateGraph, END
 
-from agent.agents.code_agent import CodeAgent
-from agent.agents.medical_agent import MedicalAgent
-from agent.agents.search_agent import SearchAgent
-from agent.agents.sql_agent import SqlAgent
-from agent.agents.weather_agent import WeatherAgent
-from agent.agents.yunyou_agent import YunyouAgent
 from agent.graph_state import AgentRequest
 from agent.graphs.state import GraphState
+from agent.registry import agent_classes, MEMBERS
 
 """
 定义和构建多智能体协作的核心 - 主管图（Supervisor Graph）。
@@ -25,50 +20,7 @@ from agent.graphs.state import GraphState
 # from your_request_model import AgentRequest
 # END 是 workflow 的结束节点常量
 
-# -------------------------
-# 1️⃣ 定义 AgentInfo
-class AgentInfo:
-    def __init__(self, cls, description: str, keywords: List[str]):
-        self.cls = cls
-        self.description = description
-        self.keywords = keywords
 
-
-# 2️⃣ 定义系统中所有 Agent
-agent_classes: Dict[str, AgentInfo] = {
-    "yunyou_agent": AgentInfo(
-        cls=YunyouAgent,
-        description="处理云柚相关问题",
-        keywords=["云柚", "holter", "智纤", "心电", "审核", "上传", "holter类型"]
-    ),
-    "medical_agent": AgentInfo(
-        cls=MedicalAgent,
-        description="回答医疗健康问题，例如症状、药物咨询，输出附带免责声明",
-        keywords=["病", "症状", "药", "健康", "血压", "心率"]
-    ),
-    "code_agent": AgentInfo(
-        cls=CodeAgent,
-        description="提供编程代码生成、分析、优化服务",
-        keywords=["代码", "函数", "bug", "报错", "SQL", "Python", "Java"]
-    ),
-    "sql_agent": AgentInfo(
-        cls=SqlAgent,
-        description="处理数据库查询和 SQL 优化问题",
-        keywords=["SQL", "数据库", "查询", "表", "索引"]
-    ),
-    "weather_agent": AgentInfo(
-        cls=WeatherAgent,
-        description="提供天气查询和预报服务",
-        keywords=["天气", "气温", "预报", "降雨"]
-    ),
-    "search_agent": AgentInfo(
-        cls=SearchAgent,
-        description="处理通用搜索和信息检索",
-        keywords=["搜索", "查找", "信息", "资料"]
-    )
-}
-
-MEMBERS = list(agent_classes.keys())
 
 # -------------------------
 # 3️⃣ Supervisor 提示模板
@@ -109,6 +61,7 @@ def parse_next_agent(llm_response: str) -> str:
 # 5️⃣ Supervisor 节点
 def _supervisor_node(state: GraphState, model):
     user_input = ""
+    print(f"=====: {state["messages"] }")
     if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
         user_input = state["messages"][-1].content.lower()
 
