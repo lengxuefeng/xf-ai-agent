@@ -1,10 +1,11 @@
 from typing import Dict, Any
+import uuid
 
 from fastapi import HTTPException
 
 from db.mongodb.chat_history_db import chat_session_db, chat_message_db
 from schemas.chat_history_schemas import (
-    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate
+    ChatSession, ChatSessionCreate, ChatMessage, ChatMessageCreate, ChatSessionIn
 )
 
 
@@ -32,6 +33,20 @@ class ChatHistoryService:
             user_id=user_id,
             session_id=session_id,
             title=title
+        )
+        return self.session_db.create(obj_in=session_create)
+
+    def create_session(self, user_id: int, req: ChatSessionIn) -> ChatSession:
+        """
+        创建新的聊天会话
+        """
+        # 如果请求中没有session_id，生成一个新的
+        session_id = req.session_id or f"session_{uuid.uuid4().hex[:16]}"
+        
+        session_create = ChatSessionCreate(
+            user_id=user_id,
+            session_id=session_id,
+            title=req.title
         )
         return self.session_db.create(obj_in=session_create)
 

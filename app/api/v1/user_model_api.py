@@ -9,6 +9,9 @@ from schemas.response_model import ResponseModel
 from schemas.user_model_schemas import UserModelCreate, UserModelUpdate, UserModelOut
 from services.user_model_service import user_model_service
 
+from utils.custom_logger import get_logger, LogTarget
+
+log = get_logger(__name__)
 router = APIRouter(prefix="/user_model", tags=["用户模型配置"])
 
 """
@@ -42,8 +45,10 @@ def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Sessio
     """
     更新指定ID的用户模型配置
     """
+    log.info(f"收到更新模型配置请求: id={model_id}, model={user_model_req.selected_model}", target=LogTarget.LOG)
     # 从服务层调用更新用户模型的方法，支持多个模型激活
     updated_model = user_model_service.update_user_model(db, id=model_id, user_model=user_model_req, allow_multiple=True)
+    log.info(f"模型配置更新完成: id={model_id}", target=LogTarget.LOG)
     # 返回更新后的模型配置
     return ResponseModel(data=updated_model)
 

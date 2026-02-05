@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # app/schemas/chat_schemas.py
 from typing import Optional
 
@@ -34,12 +35,15 @@ class StreamChatRequest(BaseSchema):
     user_input: str = Field(..., description="用户的输入文本")
     session_id: str = Field(..., description="用于追踪对话历史的会话ID")
 
-    # 模型配置参数
-    model: Optional[str] = Field(default='google/gemini-1.5-pro', description="当前选择的模型")
-    model_key: Optional[str] = Field(default='', description="当前选择的模型配置的key")
-    model_url: Optional[str] = Field(default='', description="当前选择的模型配置的url")
-    model_service: Optional[str] = Field(default='netlify-gemini', description="模型服务")
-    service_type: Optional[str] = Field(default='ollama', description="模型服务类型")
+    # 新的参数：用户模型配置ID（优先使用）
+    user_model_id: Optional[int] = Field(default=None, description="用户模型配置ID（优先使用此字段）")
+
+    # 以下字段为兼容性保留，当 user_model_id 为空时使用
+    model: Optional[str] = Field(default='google/gemini-1.5-pro', description="当前选择的模型（兼容性字段）")
+    model_key: Optional[str] = Field(default='', description="当前选择的模型配置的key（兼容性字段）")
+    model_url: Optional[str] = Field(default='', description="当前选择的模型配置的url（兼容性字段）")
+    model_service: Optional[str] = Field(default='netlify-gemini', description="模型服务（兼容性字段）")
+    service_type: Optional[str] = Field(default='ollama', description="模型服务类型（兼容性字段）")
     deep_thinking_mode: Optional[str] = Field(default='auto', description="深度思考模式")
     rag_enabled: Optional[bool] = Field(default=False, description="RAG是否启用")
     similarity_threshold: Optional[float] = Field(default=0.7, description="相似度阈值")

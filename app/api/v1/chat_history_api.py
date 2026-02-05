@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from core.security import verify_token
-from schemas.chat_history_schemas import ChatMessageCreate, ChatSessionUpdate, ChatSessionCreate
+from schemas.chat_history_schemas import ChatMessageCreate, ChatSessionUpdate, ChatSessionCreate, ChatSessionIn
 from schemas.response_model import ResponseModel
 from services.chat_history_service import chat_history_service
 
@@ -19,7 +19,7 @@ def create_chat_session(req: ChatSessionCreate):
 
 @chat_history_router.post("/sessions", response_model=ResponseModel)
 def create_chat_session(
-        req: ChatSessionCreate,
+        req: ChatSessionIn,
         user_id: int = Depends(verify_token)
 ):
     """

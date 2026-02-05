@@ -1,12 +1,10 @@
 import os
 
 from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
-from langchain_community.chat_models import ChatZhipuAI, ChatTongyi
+from langchain_community.chat_models import ChatTongyi, ChatZhipuAI
 from langchain_core.messages import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
-from modelscope.hub.api import ModelScopeConfig
 from pydantic import SecretStr
 
 from agent.llm.model_config import ModelConfig
@@ -14,7 +12,7 @@ from agent.llm.model_config import ModelConfig
 load_dotenv(verbose=True)
 
 
-def load_zhipu_model(config: ModelConfig) -> ChatZhipuAI:
+def load_zhipu_model(config: ModelConfig) -> ChatOpenAI:
     """
     加载ZhipuAI模型
 
@@ -24,9 +22,15 @@ def load_zhipu_model(config: ModelConfig) -> ChatZhipuAI:
     Returns:
         ChatZhipuAI: 加载的ZhipuAI模型实例
     """
-    return ChatZhipuAI(
+    # return ChatZhipuAI(
+    #     model=config.model,
+    #     api_key=config.model_key,
+    #     api_base=config.model_url,
+    # )
+    return ChatOpenAI(
         model=config.model,
         api_key=config.model_key,
+        base_url=config.model_url,
     )
 
 
@@ -129,6 +133,23 @@ def load_silicon_flow(config: ModelConfig) -> ChatOpenAI:
     )
 
 
+def load_modelscope_llm(config: ModelConfig) -> ChatOpenAI:
+    """
+    加载魔塔社区模型
+
+    Args:
+        config: 模型配置对象
+
+    Returns:
+        ChatOpenAI: 加载的OpenRouter模型实例
+    """
+    return ChatOpenAI(
+        model=config.model,
+        api_key=SecretStr(config.model_key),
+        base_url=config.model_url,
+    )
+
+
 def load_chat_model(
         model: str,
         api_key: str = None,
@@ -150,7 +171,7 @@ def load_chat_model(
         ChatModel 实例
     """
     try:
-        return init_chat_model(
+        return ChatOpenAI(
             model=model,
             api_key=api_key,
             base_url=base_url,
@@ -159,6 +180,7 @@ def load_chat_model(
         )
     except Exception as e:
         raise RuntimeError(f"加载模型失败: {model}\n{e}")
+
 
 if __name__ == '__main__':
     # config = ModelConfig(
@@ -177,14 +199,28 @@ if __name__ == '__main__':
     # )
     # llm = load_zhipu_model(config)
 
+    # config = ModelConfig(
+    #     model="GLM-4.5-Flash",
+    #     model_key="053f87263c043e57187968338c63384a.FFLbsjLb9yU3NP9a",
+    #     model_url="https://openrouter.ai/api/v1",
+    #     model_service="zhipu",
+    #     service_type="zhipu",
+    # )
+    # llm = load_zhipu_model(config)
+    # message = llm.invoke("你好")
+    # if isinstance(message, AIMessage):
+    #     print("模型回复：", message.content)
+    # else:
+    #     print("模型未返回 AIMessage:", message)
+
     config = ModelConfig(
-        model="GLM-4.5-Flash",
-        model_key="053f87263c043e57187968338c63384a.FFLbsjLb9yU3NP9a",
-        model_url="https://openrouter.ai/api/v1",
-        model_service="zhipu",
-        service_type="zhipu",
+        model="ZhipuAI/GLM-4.6",
+        model_key="ms-6c650c00-122f-48ba-b393-fd2ce93c4526",
+        model_url="https://api-inference.modelscope.cn/v1",
+        model_service="modelscope",
+        service_type="modelscope",
     )
-    llm = load_zhipu_model(config)
+    llm = load_modelscope_llm(config)
     message = llm.invoke("你好")
     if isinstance(message, AIMessage):
         print("模型回复：", message.content)

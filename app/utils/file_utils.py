@@ -12,16 +12,14 @@ class FileUtils:
         从脚本位置向上查找，直到找到项目根目录（此处以包含'.git'文件夹为标志）。
         您可以根据自己项目的特点更改标志，例如 'pyproject.toml' 文件。
         """
-        # 获取当前文件（file_utils.py）的绝对路径
-        current_file_path = Path(__file__).resolve()
-        # 从文件所在的目录开始向上查找
-        parent_dir = current_file_path.parent
-
-        # 循环向上查找，直到找到包含 .git 目录的父级目录
-        while parent_dir != parent_dir.parent:  # 循环直到根目录 '/'
-            if (parent_dir / '.git').exists() or (parent_dir / 'pyproject.toml').exists():
-                return parent_dir
-            parent_dir = parent_dir.parent
+        current_path = Path(__file__).resolve().parent
+        while True:
+            if (current_path / '.git').exists() or (current_path / 'pyproject.toml').exists():
+                return current_path
+            # 如果到达了文件系统的根目录，就停止
+            if current_path == current_path.parent:
+                break
+            current_path = current_path.parent
 
         # 如果找不到标志，则抛出异常，或返回一个默认值
         raise FileNotFoundError("无法自动定位项目根目录。请确保项目中包含 .git 目录或 pyproject.toml 文件。")

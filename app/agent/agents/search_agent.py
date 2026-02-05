@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-from typing import TypedDict, Annotated, Generator
+from typing import Generator
 
 from dotenv import load_dotenv
+from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-from langgraph.graph import add_messages
 
-from agent.agent_builder import create_tool_agent_executor
 from agent.graph_state import AgentRequest
-from agent.llm.loader_llm_multi import load_open_router
-from agent.llm.ollama_model import load_ollama_model
 from agent.tools.search_tools import tavily_search_tool
 from utils import redis_manager
 
@@ -23,13 +20,6 @@ load_dotenv()
     3. 执行搜索工具。
     4. 将搜索结果整合后，生成一个自然的语言回答，并返回给主图。
 """
-
-
-class SearchAgentStat(TypedDict):
-    """
-    搜索子图状态
-    """
-    messages: Annotated[list, add_messages]
 
 
 class SearchAgent:
@@ -54,10 +44,10 @@ class SearchAgent:
         tools = [tavily_search_tool]
 
         # 使用通用构建器创建图执行器
-        self.graph = create_tool_agent_executor(
+        self.graph = create_agent(
             model=req.model,
             tools=tools,
-            state_class=SearchAgentStat
+            system_prompt="你是一个有用的网络搜索助手，能够使用搜索工具查找信息并回答用户的问题。"
         )
 
         # 初始化状态管理器
@@ -96,17 +86,3 @@ class SearchAgent:
         # 将执行后的新状态保存回 Redis
         if final_state:
             self.redis_manager.save_graph_state(final_state, req.session_id, req.subgraph_id)
-
-
-if __name__ == '__main__':
-    # llm = load_open_router("deepseek/deepseek-chat-v3-0324:free")
-    llm = load_ollama_model("qwen3:8b")
-    agent_req = AgentRequest(
-        user_input="最新的AI模型是什么",
-        model=llm,
-        session_id="123232132",
-        subgraph_id="search_agent",
-    )
-    search_agent = SearchAgent(agent_req)
-    main_result = search_agent.run(agent_req)
-    print(main_result["messages"][-1].content)

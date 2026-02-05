@@ -7,4 +7,5 @@ models
 schemas
 services
 templates
+test
 utils

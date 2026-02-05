@@ -13,6 +13,13 @@ class UserModelService:
         """获取用户当前激活的模型配置"""
         return user_model_db.get_active_by_user_id(db, user_id=user_id)
 
+    def get_user_model_by_id(self, db: Session, model_id: int, user_id: int = None):
+        """根据ID获取用户模型配置，可选验证用户ID"""
+        user_model = user_model_db.get(db, model_id)
+        if user_model and user_id is not None and user_model.user_id != user_id:
+            return None
+        return user_model
+
     def create_user_model(self, db: Session, user_model: UserModelCreate, user_id: int, allow_multiple: bool = False):
         """创建用户模型配置"""
         create_data = user_model.model_dump()

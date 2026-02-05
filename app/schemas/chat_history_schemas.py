@@ -51,6 +51,12 @@ class ChatSessionBase(MongodbBaseSchema):
     is_deleted: int = Field(default=0, description="删除标记, 0:未删除, 1:已删除")
 
 
+class ChatSessionIn(BaseModel):
+    """API请求用的会话创建模型"""
+    title: str = Field(..., description="会话标题")
+    session_id: Optional[str] = Field(None, description="会话唯一标识(可选)")
+
+
 class ChatSessionCreate(ChatSessionBase):
     """创建会话的模型"""
     created_at: datetime = Field(default_factory=datetime.now, description="会话创建时间")

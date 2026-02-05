@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 from typing import TypedDict, Annotated, Generator
 
+from agent.graph_state import AgentRequest
+from agent.tools.weather_tools import get_weathers
 from dotenv import load_dotenv
+from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 from langgraph.graph import add_messages
-
-from agent.agent_builder import create_tool_agent_executor
-from agent.graph_state import AgentRequest
-from agent.llm.loader_llm_multi import load_open_router
-from agent.llm.model_config import ModelConfig
-from agent.tools.weather_tools import get_weathers
 from utils import redis_manager
 
 load_dotenv()
@@ -45,20 +42,19 @@ class WeatherAgent:
             raise ValueError("天气 Agent 模型加载失败，请检查配置。")
 
         tools = [get_weathers]
-        
+
         # 检查是否启用RAG功能
         llm_config = req.llm_config or {}
         rag_enabled = llm_config.get('rag_enabled', False)
-        
+
         if rag_enabled:
             # 如果启用RAG，可以在这里添加相关功能
             # 例如：加载向量数据库、检索工具等
             print(f"ℹ️ 天气代理已启用RAG功能，相似度阈值: {llm_config.get('similarity_threshold', 0.7)}")
-            print(f"ℹ️ 使用嵌入模型: {llm_config.get('embedding_model', 'bge-m3:latest')}")        
-        self.graph = create_tool_agent_executor(
+            print(f"ℹ️ 使用嵌入模型: {llm_config.get('embedding_model', 'bge-m3:latest')}")
+        self.graph = create_agent(
             model=req.model,
             tools=tools,
-            state_class=WeatherAgentState
         )
         self.redis_manager = redis_manager.RedisManager()
         self.session_id = req.session_id
@@ -91,11 +87,10 @@ class WeatherAgent:
             # 保存最终状态以供后续使用
             final_state = event
             yield event
-        
+
         # 如果有最终状态，保存它
         if final_state:
             self.redis_manager.save_graph_state(final_state, req.session_id, self.subgraph_id)
-
 
 # if __name__ == '__main__':
 #     config = ModelConfig(

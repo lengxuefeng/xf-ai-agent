@@ -1,29 +1,21 @@
 import functools
-from typing import Dict, List
+import logging
 
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
 from agent.graph_state import AgentRequest
 from agent.graphs.state import GraphState
 from agent.registry import agent_classes, MEMBERS
+from agent.llm.unified_loader import create_model_from_config
+log = logging.getLogger(__name__)
 
 """
 定义和构建多智能体协作的核心 - 主管图（Supervisor Graph）。
 """
 
-
-# 假设你已经有这些类
-# from your_agents import MedicalAgent, CodeAgent, SqlAgent, WeatherAgent, SearchAgent
-# from your_llm_loader import load_ollama_model
-# from your_request_model import AgentRequest
-# END 是 workflow 的结束节点常量
-
-
-
-# -------------------------
-# 3️⃣ Supervisor 提示模板
+# Supervisor 提示模板
 supervisor_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -40,65 +32,136 @@ supervisor_prompt = ChatPromptTemplate.from_messages(
 )
 
 
-# -------------------------
-# 4️⃣ 解析 LLM 回复
+# 解析 LLM 回复
 def parse_next_agent(llm_response: str) -> str:
+    if not llm_response:
+        return "CHAT"
     llm_response = llm_response.strip()
-
     if "CHAT" in llm_response:
         return "CHAT"
     if "FINISH" in llm_response:
         return "FINISH"
-
     for member in MEMBERS:
         if member in llm_response:
             return member
-
     return "CHAT"
 
 
-# -------------------------
-# 5️⃣ Supervisor 节点
+# Supervisor 节点
 def _supervisor_node(state: GraphState, model):
     user_input = ""
-    print(f"=====: {state["messages"] }")
-    if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
-        user_input = state["messages"][-1].content.lower()
+    try:
+        # 安全地获取消息列表
+        if isinstance(state, dict):
+            messages = state.get("messages", [])
+        else:
+            messages = getattr(state, "messages", [])
 
-    # 关键词匹配
-    for name, info in agent_classes.items():
-        if any(kw.lower() in user_input for kw in info.keywords):
-            return {"next": name}
+        log.info(f"消息列表长度: {len(messages)}")
+        for i, msg in enumerate(messages):
+            log.info(
+                f"消息 {i}: 类型={type(msg)}, 内容={getattr(msg, 'content', 'N/A')[:100] if hasattr(msg, 'content') else 'N/A'}, name={getattr(msg, 'name', 'N/A')}")
 
-    # LLM fallback
-    member_descriptions = ", ".join(f"{name}: {info.description}" for name, info in agent_classes.items())
-    supervisor_chain = (
-            supervisor_prompt.partial(members=member_descriptions)
-            | model
-            | (lambda x: x.content)
-    )
-    next_agent_response = supervisor_chain.invoke({"messages": state["messages"]})
-    next_agent = parse_next_agent(next_agent_response)
+        # 检查是否是与特定Agent的连续对话
+        log.info(
+            f"检查连续对话条件: len(messages)={len(messages)}, messages[-1]类型={type(messages[-1]) if len(messages) > 0 else 'N/A'}, messages[-2]类型={type(messages[-2]) if len(messages) > 1 else 'N/A'}")
+        if len(messages) > 1 and isinstance(messages[-1], HumanMessage) and isinstance(messages[-2], AIMessage):
+            last_agent_name = getattr(messages[-2], 'name', None)
+            log.info(f"检查连续对话: last_agent_name={last_agent_name}")
+            # 如果上一条消息来自yunyou_agent，则继续保持在yunyou_agent
+            if last_agent_name and last_agent_name == "yunyou_agent":
+                log.info(f"Continuing conversation with agent: {last_agent_name}")
+                return {"next": last_agent_name}
 
-    if next_agent not in MEMBERS + ["CHAT", "FINISH"]:
-        next_agent = "CHAT"
+            # 其他Agent的连续对话逻辑
+            if last_agent_name and last_agent_name != "ChatAgent" and last_agent_name in MEMBERS:
+                # 如果用户正在回复特定Agent，保持在同一Agent，除非用户明确切换
+                if hasattr(messages[-1], 'content'):
+                    user_input_lower = messages[-1].content.lower()
+                else:
+                    user_input_lower = ""
+                log.info(f"检查其他Agent的连续对话: user_input_lower={user_input_lower}")
+                switch_agent = False
+                for name, info in agent_classes.items():
+                    if name != last_agent_name and hasattr(info, 'keywords') and any(
+                            kw.lower() in user_input_lower for kw in info.keywords):
+                        switch_agent = True
+                        break
+                if not switch_agent:
+                    log.info(f"Continuing conversation with agent: {last_agent_name}")
+                    return {"next": last_agent_name}
+        else:
+            log.info("未满足连续对话条件")
+            if len(messages) > 1:
+                log.info(f"messages[-1]是HumanMessage: {isinstance(messages[-1], HumanMessage)}")
+                log.info(f"messages[-2]是AIMessage: {isinstance(messages[-2], AIMessage)}")
+                if len(messages) > 2:
+                    log.info(f"messages[-3]类型: {type(messages[-3])}")
+                    log.info(
+                        f"messages[-3]内容: {getattr(messages[-3], 'content', 'N/A')[:100] if hasattr(messages[-3], 'content') else 'N/A'}")
+                    log.info(f"messages[-3]名称: {getattr(messages[-3], 'name', 'N/A')}")
 
-    return {"next": next_agent}
+        if messages and isinstance(messages[-1], HumanMessage):
+            user_input = messages[-1].content.lower() if hasattr(messages[-1], 'content') else ""
+            log.info(f"用户输入: {user_input}")
+
+        # 检查是否是简短回复（如"确定"、"是的"等），如果是，则保持当前智能体
+        if user_input and len(user_input) <= 5 and any(
+                kw in user_input for kw in ["确定", "是的", "好的", "ok", "yes"]):
+            # 检查历史对话中最近的智能体调用
+            for i in range(len(messages) - 2, -1, -1):
+                msg = messages[i]
+                if isinstance(msg, AIMessage):
+                    # 检查工具调用
+                    if hasattr(msg, "tool_calls") and msg.tool_calls:
+                        # 通过工具调用判断智能体类型
+                        for tool_call in msg.tool_calls:
+                            if hasattr(tool_call, "name"):
+                                tool_name = getattr(tool_call, 'name', '').lower()
+                                for agent_name in agent_classes.keys():
+                                    if agent_name.lower() in tool_name:
+                                        log.info(f"检测到简短确认回复，继续使用智能体: {agent_name}")
+                                        return {"next": agent_name}
+                            elif isinstance(tool_call, dict) and 'name' in tool_call:
+                                tool_name = tool_call['name'].lower() if hasattr(tool_call['name'], 'lower') else str(
+                                    tool_call['name'])
+                                for agent_name in agent_classes.keys():
+                                    if agent_name.lower() in tool_name:
+                                        log.info(f"检测到简短确认回复，继续使用智能体: {agent_name}")
+                                        return {"next": agent_name}
+                    # 检查消息名称
+                    elif hasattr(msg, "name") and msg.name and msg.name != "ChatAgent":
+                        for agent_name in agent_classes.keys():
+                            if agent_name in str(msg.name).lower():
+                                log.info(f"检测到简短确认回复，继续使用智能体: {agent_name}")
+                                return {"next": agent_name}
+
+        # 关键词匹配
+        for name, info in agent_classes.items():
+            if hasattr(info, 'keywords') and any(kw.lower() in user_input for kw in info.keywords):
+                log.info(f"关键词匹配成功: {name}")
+                return {"next": name}
+
+        # 如果关键词匹配失败，则直接进入聊天模式
+        log.info("未匹配到任何Agent关键词，进入CHAT模式")
+        return {"next": "CHAT"}
+    except Exception as e:
+        log.error(f"主管节点执行失败: {str(e)}")
+        return {"next": "CHAT"}
 
 
-# -------------------------
-# 6️⃣ 通用 Agent 节点
+# 通用 Agent 节点
 def _agent_node(state: GraphState, agent_name: str, model, description: str = ""):
     user_input = ""
     if state["messages"] and isinstance(state["messages"][-1], HumanMessage):
-        user_input = state["messages"][-1].content
+        user_input = state["messages"][-1].content if isinstance(state["messages"][-1].content, str) else ""
 
     llm_config = state.get("llm_config", {})
 
     req = AgentRequest(
-        user_input=user_input,
+        user_input=user_input if isinstance(user_input, str) else "",
         model=model,
-        session_id=state.get("session_id", ""),
+        session_id=state.get("session_id", "") or "",
         subgraph_id=agent_name,
         llm_config=llm_config
     )
@@ -122,39 +185,56 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
 
     # 在遍历完所有子图事件后，使用找到的最终答案
     if final_answer:
+        try:
+            # 确保返回的 AIMessage 包含 agent_name，以便 supervisor 进行上下文判断
+            if not getattr(final_answer, 'name', None):
+                final_answer = AIMessage(
+                    content=final_answer.content,
+                    name=agent_name,
+                    id=getattr(final_answer, 'id', None),
+                    additional_kwargs=getattr(final_answer, 'additional_kwargs', {}),
+                    response_metadata=getattr(final_answer, 'response_metadata', {}),
+                    tool_calls=getattr(final_answer, 'tool_calls', []),
+                    usage_metadata=getattr(final_answer, 'usage_metadata', None),
+                    invalid_tool_calls=getattr(final_answer, 'invalid_tool_calls', [])
+                )
+        except Exception as e:
+            log.error(f"创建带名称的AIMessage失败: {e}, 回退到简单版本")
+            final_answer = AIMessage(content=final_answer.content, name=agent_name,
+                                     id=getattr(final_answer, 'id', None))
         return {"messages": [final_answer]}
 
     # 如果遍历完整个子图的运行过程都没有找到一个明确的最终答案
     return {"messages": [AIMessage(content=f"抱歉，{agent_name} 在处理过程中未能生成明确的回复。", name=agent_name)]}
 
 
-
-# -------------------------
-# 7️⃣ 通用 Chat 节点
+# 通用 Chat 节点
 def _chat_node(state: GraphState, model):
     user_message = state["messages"][-1].content
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "你是一个名为 “XF AI Agent” 的人工智能助手。请直接、友好地回答用户的问题。"),
-        ("human", "{question}")
-    ])
-    chain = prompt | model | (lambda x: x.content)
-    response_content = chain.invoke({"question": user_message})
+    prompt = "你是一个名为 “XF AI Agent” 的人工智能助手。请直接、友好地回答用户的问题。"
+    
+    # 构造消息列表
+    messages = [
+        ("system", prompt),
+        ("human", user_message)
+    ]
+    
+    # 直接调用模型生成回复
+    response = model.invoke(messages)
+    response_content = response.content
+    
     ai_message = AIMessage(content=response_content, name="ChatAgent")
     return {"messages": [ai_message]}
 
 
-# -------------------------
-# 8️⃣ 创建 Graph
-def create_graph(model_config: dict = None):
+#  创建 Graph
+def create_graph(model_config: dict | None = None):
     """
     创建主图，支持动态模型配置
     
     Args:
         model_config: 模型配置字典，包含模型相关参数
     """
-    # 导入统一模型加载器
-    from agent.llm.unified_loader import create_model_from_config
-
     # 默认模型配置
     default_config = {
         'model': 'google/gemini-1.5-pro',
@@ -171,10 +251,11 @@ def create_graph(model_config: dict = None):
     try:
         # 根据配置加载模型
         model, embedding_model = create_model_from_config(**final_config)
-        print(f"✅ 模型加载成功: {final_config['model_service']} - {final_config['model']}")
+        log.info(f"✅ 模型加载成功: {final_config['model_service']} - {final_config['model']}")
+
     except Exception as e:
         error_msg = f"加载模型失败 - 服务: {final_config.get('model_service', 'unknown')}, 模型: {final_config.get('model', 'unknown')}, 错误: {str(e)}"
-        print(f"❌ {error_msg}")
+        log.error(f"❌ {error_msg}")
         # 不使用默认模型，直接抛出异常让上层处理
         raise RuntimeError(error_msg) from e
 
@@ -191,7 +272,7 @@ def create_graph(model_config: dict = None):
     workflow.set_entry_point("supervisor")
 
     # 条件分支
-    conditional_map = {name: name for name in MEMBERS}
+    conditional_map: dict[str | None, str] = {name: name for name in MEMBERS}
     conditional_map["CHAT"] = "chat_node"
     conditional_map["FINISH"] = END
 

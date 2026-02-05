@@ -8,40 +8,28 @@ authors = [
 dependencies = [
     "fastapi~=0.116.0",
     "uvicorn[standard]~=0.35.0",
-    # LangChain 相关包
-    "langchain==0.3.27", # 您的指定版本
-    "langchain-openai==0.3.28", # 最新稳定版本，与 LangChain 0.3.x 兼容
-    "langchain-zhipuai==0.0.1",
-    "langchain-community==0.3.27", # 最新稳定版本，与 LangChain 0.3.x 兼容
-    "langchain-ollama==0.3.6",
-    "langchain-google-genai==2.1.8", # 最新稳定版本，与 LangChain 0.3.x 兼容
-    "langchain-tavily>=0.2.11",
-    "langgraph==0.6.2", # 最新稳定版本，与 LangChain 0.3.x 兼容
-    "langsmith>=0.4.13",
+    # LangChain 核心及生态包：最新版本
+    "langchain~=1.2.0",                  # 最新 1.2.0
+    "langchain-openai~=1.1.0",           # 最新 1.1.7
+    "langchain-community~=0.4.0",        # 最新 0.4.1
+    "langchain-ollama~=1.0.0",           # 最新 1.0.1
+    "langchain-google-genai~=4.2.0",     # 最新 4.2.0
+    "langchain-tavily~=0.2.0",           # 最新 0.2.16
+    "langgraph~=1.0.6",                  # 最新 1.0.6
+    "langsmith>=0.4.0",                  # 最新 0.4.x 系列
     # 环境变量加载
     "python-dotenv==1.1.0",
-    # Tavily 搜索客户端
+    # Tavily 搜索客户端（不变，与 langchain-tavily 配合使用）
     "tavily-python==0.7.3",
     # 文档处理相关
-    # "unstructured[all-docs]==0.17.2",
-    # "weasyprint==65.1",
-    # "mammoth==1.9.0",
-    # "openpyxl==3.1.5",
-    # "marker-pdf==1.7.3",
-    # "python-magic==0.4.27",
     "pypdf==3.10.0",
-    # Streamlit 相关
-    # "streamlit==1.45.1",
-    # "streamlit-chat==0.1.1",
-    # "streamlit-extras==0.7.1",
     # MCP 相关
-    "langchain-mcp-adapters==0.1.9",
+    "langchain-mcp-adapters~=0.2.0",     # 最新 0.2.1
     "mcp==1.12.1",
     # 网络请求
     "httpx==0.28.1",
     # 向量数据库相关
     "faiss-cpu==1.11.0.post1",
-    # "faiss-gpu==1.7.4",
     # Mysql相关
     "pymysql>=1.1.1",
     # 密码加密 - 使用兼容版本解决bcrypt版本读取警告
@@ -57,9 +45,14 @@ dependencies = [
     "ipython>=9.4.0",
     # 图片处理
     "pillow>=11.3.0",
+    # 缓存相关
     "redis>=6.4.0",
+    # 可视化
     "streamlit>=1.49.1",
+    # 密码加密
     "cryptography>=46.0.3",
+    # 模型scope
+    "modelscope>=1.31.0",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

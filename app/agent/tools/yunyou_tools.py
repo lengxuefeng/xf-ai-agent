@@ -3,7 +3,11 @@ from typing import Dict, Optional
 
 import requests
 from dotenv import load_dotenv
+from langchain.agents import create_agent
+from langchain_community.chat_models import ChatZhipuAI
+from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
@@ -42,6 +46,7 @@ def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = No
                 holterType: Optional[int] = None) -> Dict:
     """
     云柚 holter 数据列表，根据具体参数查询holter信息
+
     Args:
         startUseDay (str): 开始日期，格式如 "2020-07-30"
         endUseDay (str): 结束日期，格式如 "2020-07-30"
@@ -59,7 +64,7 @@ def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = No
     return YunYouTools().common_post("/holter/list", params)
 
 
-# @tool
+@tool
 def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter类型统计，根据时间范围查询holter类型统计
@@ -73,10 +78,11 @@ def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
         "startUseDay": startUseDay,
         "endUseDay": endUseDay,
     }
+    print(f"holter_type_count params startUseDay: {startUseDay}, endUseDay: {endUseDay}")
     return YunYouTools().common_post("/holter/holterTypeCount", params)
 
 
-# @tool
+@tool
 def holter_report_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter报告状态统计，根据时间范围查询holter报告状态统计
@@ -94,5 +100,23 @@ def holter_report_count(startUseDay: str, endUseDay: str) -> Dict:
 
 
 if __name__ == '__main__':
-    # 测试时需要直接提供参数，而不是包裹在字典里
-    print(holter_type_count(startUseDay="2025-07-30", endUseDay="2025-08-30"))
+    llm = ChatOpenAI(
+        model="GLM-4.6",
+        temperature=0.5,
+        api_key="372825e177b84308934ad6564cab60f7.1yrv1Sv8mL7YhHZA",
+        # base_url="https://open.bigmodel.cn/api/paas/v4",
+        base_url="https://open.bigmodel.cn/api/coding/paas/v4",
+    )
+    tools = [holter_type_count]
+    a = create_agent(
+        llm,
+        tools=tools,
+        system_prompt="你是一个专业的医疗数据分析师，你需要根据用户的问题，调用云柚的API来获取数据。"
+    )
+
+    response = a.invoke({
+        "messages": [HumanMessage(content="今天holter的数据有多少条")]
+    })
+    print(response["messages"][-1].content)
+
+    # print(holter_type_count.invoke({"startUseDay": "2025-07-30", "endUseDay": "2025-08-30"}))

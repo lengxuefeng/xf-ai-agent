@@ -97,29 +97,3 @@ class MedicalAgent:
 
         if final_state:
             self.redis_manager.save_graph_state(final_state, req.session_id, self.subgraph_id)
-
-
-# if __name__ == '__main__':
-#     config = ModelConfig(
-#         model="deepseek/deepseek-chat-v3-0324:free",
-#         model_key="sk-xxxx",
-#         model_url="https://openrouter.ai/api/v1",
-#     )
-#     agent_llm = load_open_router(config)
-#     agent_req = AgentRequest(
-#         user_input="我最近总是头疼，是怎么回事？",
-#         model=agent_llm,
-#         session_id="session_medical_12345",
-#         subgraph_id="medical_agent",
-#     )
-#     medical_agent = MedicalAgent(req=agent_req)
-#
-#     final_state = None
-#     for chunk in medical_agent.run(agent_req):
-#         final_state = chunk
-#         print("---CHUNK START---")
-#         print(final_state)
-#         print("---CHUNK END---\\n")
-#
-#     print("\n\n===== FINAL RESPONSE =====")
-#     print(final_state["messages"][-1].content)

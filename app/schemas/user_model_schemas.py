@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # schemas/user_model.py
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime

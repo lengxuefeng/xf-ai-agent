@@ -32,7 +32,7 @@ class RedisManager:
             logger.info("Redis 连接成功")
         except redis.RedisError as e:
             logger.error(f"Redis 连接失败: {str(e)}")
-            raise
+            # 不抛出异常，允许系统继续运行
 
     def _key(self, thread_id: str) -> str:
         return f"{self.active_set_key}:{thread_id}"

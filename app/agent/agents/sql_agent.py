@@ -2,13 +2,12 @@
 from typing import Annotated, TypedDict, Generator
 
 from dotenv import load_dotenv
+from langchain_community.agent_toolkits import create_sql_agent
 from langchain_core.messages import ToolMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.graph import add_messages, StateGraph
 
 from agent.graph_state import AgentRequest
-from agent.llm.loader_llm_multi import load_open_router
-from agent.llm.model_config import ModelConfig
 from agent.tools.sql_tools import get_schema, execute_sql
 from utils import redis_manager
 
@@ -159,39 +158,6 @@ class SqlAgent:
             self.redis_manager.save_graph_state(final_state, req.session_id, self.subgraph_id)
 
 
-# if __name__ == '__main__':
-#     config = ModelConfig(
-#         model="deepseek/deepseek-chat-v3-0324:free",
-#         model_key="sk-xxxx",
-#         model_url="https://openrouter.ai/api/v1",
-#     )
-#     agent_llm = load_open_router(config)
-#     agent_req = AgentRequest(
-#         user_input="查询用户模型",
-#         model=agent_llm,
-#         session_id="session_sql_12345",
-#         subgraph_id="sql_agent",
-#     )
-#     sql_agent = SqlAgent(req=agent_req)
-#
-#     final_state = None
-#     for chunk in sql_agent.run(agent_req):
-#         final_state = chunk
-#         print("---", "CHUNK START", "---")
-#         print(final_state)
-#         print("---", "CHUNK END", "---\n")
-#
-#         if interrupt := final_state.get("interrupt"):
-#             print("\n\n", "=====", "INTERRUPT", "=====")
-#             print(interrupt)
-#             # Simulating user confirmation
-#             agent_req.user_input = "ok"
-#             for final_chunk in sql_agent.run(agent_req):
-#                 final_state = final_chunk
-#                 print("---", "FINAL CHUNK START", "---")
-#                 print(final_state)
-#                 print("---", "FINAL CHUNK END", "---\n")
-#             break
-#
-#     print("\n\n", "=====", "FINAL RESPONSE", "=====")
-#     print(final_state["messages"][-1].content)
+
+if __name__ == '__main__':
+    create_sql_agent()

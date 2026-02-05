@@ -19,7 +19,7 @@ from .loader_llm_multi import (
     load_zhipu_model,
     load_tongyi_model,
     load_chat_model,
-    load_gemini_model, load_openai_model
+    load_gemini_model, load_openai_model, load_modelscope_llm
 )
 
 load_dotenv()
@@ -72,6 +72,8 @@ class UnifiedModelLoader:
                 return load_gemini_model(config)
             elif service == 'openai':
                 return load_openai_model(config)
+            elif service == 'modelscope':
+                return load_modelscope_llm(config)
             else:
                 # 尝试使用通用加载器
                 return cls._load_generic_model(config)
