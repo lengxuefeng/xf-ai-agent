@@ -105,8 +105,8 @@ def load_open_router(config: ModelConfig) -> ChatOpenAI:
         model=config.model,
         api_key=api_key,
         base_url=base_url,
-        max_retries=2,
-        timeout=30,
+        max_retries=1,
+        timeout=60,
         model_kwargs={
             "extra_headers": {
                 "HTTP-Referer": "https://localhost:8000",

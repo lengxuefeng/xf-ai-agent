@@ -19,15 +19,15 @@ def to_sse(data: dict) -> str:
     return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-def stream_text(text: str, delay: float = 0.03) -> Generator[str, None, None]:
+def stream_text(text: str, delay: float = 0.0) -> Generator[str, None, None]:
     """
     将文本逐字符流式输出，实现打字机效果。
-    自动识别 </think> 标签内容为思考过程，其他为正常回复。
-    
+    自动识别 <think> 标签内容为思考过程，其他为正常回复。
+
     Args:
         text: 要输出的文本
-        delay: 每个字符之间的延迟（秒）
-    
+        delay: 每个字符之间的延迟（秒），默认0.0以获得最快响应速度
+
     Yields:
         str: SSE格式的流式文本块
     """
@@ -36,23 +36,23 @@ def stream_text(text: str, delay: float = 0.03) -> Generator[str, None, None]:
 
     # 解析文本，分离 thinking 和正常内容
     import re
-    
-    # 查找所有 </think> 块
-    think_pattern = r'</think>(.*?)</think>'
+
+    # 查找所有 <think> 块
+    think_pattern = r'<think>(.*?)</think>'
     parts = re.split(think_pattern, text, flags=re.DOTALL)
 
     for i, part in enumerate(parts):
         if not part.strip():  # 跳过空白部分
             continue
 
-        # 奇数索引是 </think> 标签内的内容（思考过程）
+        # 奇数索引是 <think> 标签内的内容（思考过程）
         is_thinking = (i % 2 == 1)
         content_type = "thinking" if is_thinking else "stream"
 
         # 逐字符流式输出
         for j, char in enumerate(part):
             # 如果是中文字符、标点或空格，可以稍微快一点
-            if ord(char) > 127 or char in '。！？，；：\\n ':
+            if ord(char) > 127 or char in '。！？，；：\n ':
                 current_delay = delay * 0.5
             else:
                 current_delay = delay

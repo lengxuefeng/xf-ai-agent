@@ -22,16 +22,18 @@ class RedisManager:
             db=int(os.getenv("REDIS_DB")),
             decode_responses=bool(os.getenv("REDIS_DECODE_RESPONSES")),
             password=os.getenv("REDIS_PASSWORD"),
-            socket_timeout=int(os.getenv("REDIS_SOCKET_TIMEOUT")),
-            socket_connect_timeout=int(os.getenv("REDIS_SOCKET_CONNECT_TIMEOUT")),
+            socket_timeout=int(os.getenv("REDIS_SOCKET_TIMEOUT", 5)),
+            socket_connect_timeout=int(os.getenv("REDIS_SOCKET_CONNECT_TIMEOUT", 5)),
+            socket_keepalive=True,
+            health_check_interval=30,
         )
-        self.ttl = int(os.getenv("REDIS_TTL"))
+        self.ttl = int(os.getenv("REDIS_TTL", 3600))
         self.active_set_key = active_set_key
         try:
             self.r.ping()  # 测试连接
             logger.info("Redis 连接成功")
         except redis.RedisError as e:
-            logger.error(f"Redis 连接失败: {str(e)}")
+            logger.warning(f"Redis 连接失败: {str(e)}")
             # 不抛出异常，允许系统继续运行
 
     def _key(self, thread_id: str) -> str:
