@@ -9,9 +9,26 @@ from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 
 from agent.graphs.supervisor import create_graph
 
-from utils.custom_logger import get_logger, LogTarget
+from utils.custom_logger import get_logger, LogTarget, CustomLogger
 
 log = get_logger(__name__)
+
+
+# 创建一个全局的日志输出队列（用于在流式输出中显示日志）
+from queue import Queue
+log_output_queue = Queue()
+
+
+# 设置日志回调函数
+def log_callback(message: str):
+    """日志输出回调函数"""
+    print(f"[log_callback] 收到日志: {message.strip()}")
+    log_output_queue.put(message)
+
+
+# 初始化时设置全局回调（所有 logger 实例都会使用）
+CustomLogger.add_global_sse_callback(log_callback)
+print(f"[graph_runner] 全局日志回调已设置: {log_callback}")
 
 
 def to_sse(data: dict) -> str:
@@ -80,6 +97,7 @@ class GraphRunner:
         """
         self.model_config = model_config or {}
         self.graph = None
+        self.last_config_hash = None
 
     def stream_run(self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []) -> Generator[str, None, None]:
         """
@@ -94,11 +112,18 @@ class GraphRunner:
         # 合并模型配置
         final_config = {**self.model_config, **(model_config or {})}
 
+        # 计算配置hash，只在配置改变时才重新创建图
+        import hashlib
+        import json
+        config_str = json.dumps(final_config, sort_keys=True)
+        config_hash = hashlib.md5(config_str.encode()).hexdigest()
+
         # 根据配置创建或更新图
-        if self.graph is None or model_config:
+        if self.graph is None or self.last_config_hash != config_hash:
             try:
                 log.info(f"开始创建图，配置: {final_config.get('model', 'unknown')}", target=LogTarget.LOG)
                 self.graph = create_graph(final_config)
+                self.last_config_hash = config_hash
             except RuntimeError as e:
                 log.error(f"模型加载失败: {e}", target=LogTarget.ALL)
                 # 模型加载失败，直接抛出异常
@@ -126,8 +151,23 @@ class GraphRunner:
         added_message_ids = set()
 
         try:
+            # 首先输出队列中已存在的日志
+            while not log_output_queue.empty():
+                try:
+                    log_message = log_output_queue.get_nowait()
+                    yield log_message
+                except:
+                    break
+
             # 使用 stream + subgraphs（LangGraph 的标准方式）
             for event in self.graph.stream(initial_state, subgraphs=True):
+                # 检查并输出日志队列中的消息
+                while not log_output_queue.empty():
+                    try:
+                        log_message = log_output_queue.get_nowait()
+                        yield log_message
+                    except:
+                        break
                 # 打印每个事件用于调试（元组结构：(路径, 状态））
                 print(f"--- EVENT ---\n{event}\n--- END EVENT ---")
 
@@ -166,12 +206,21 @@ class GraphRunner:
             if accumulated_messages:
                 final_message = accumulated_messages[-1]
                 if isinstance(final_message, AIMessage):
+                    print(f"[graph_runner] 开始输出AI回复，长度: {len(final_message.content)}")
                     # 发送流开始信号
                     yield to_sse({"type": "response_start", "content": ""})
 
-                    # 逐字符流式输出 AI 的回复
-                    for chunk in stream_text(final_message.content):
-                        yield chunk
+                    # 逐字符流式输出 AI 的回复（无延迟）
+                    for i, char in enumerate(final_message.content):
+                        yield to_sse({
+                            "type": "stream",
+                            "content": char
+                        })
+                        # 每100个字符打印一次调试信息
+                        if (i + 1) % 100 == 0:
+                            print(f"[graph_runner] 已输出 {i + 1}/{len(final_message.content)} 个字符")
+
+                    print(f"[graph_runner] AI回复输出完成")
 
                     # 发送流结束信号，并附上 agent name
                     yield to_sse({

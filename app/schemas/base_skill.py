@@ -81,7 +81,7 @@ class SkillLoader:
             skill = SkillLoader.parse_skill_file(file_path)
             if skill:
                 skills.append(skill)
-                log.info(f"SKILL_SUCCESS: 已加载技能 '{skill['name']}'", target=LogTarget.LOG)
+                log.info(f"SKILL_SUCCESS: 已加载技能 '{skill['name']}'", target=LogTarget.ALL)
 
         return skills
 
@@ -105,7 +105,7 @@ class ConfigurableSkillMiddleware(AgentMiddleware):
 
         # 核心逻辑：根据传入参数类型决定如何加载
         if isinstance(skill_source, str):
-            log.info(f"MIDDLEWARE: 正在从目录初始化技能: {skill_source}", target=LogTarget.LOG)
+            log.info(f"MIDDLEWARE: 正在从目录初始化技能: {skill_source}", target=LogTarget.ALL)
             self.skills = SkillLoader.load_from_dir(skill_source)
             log.info(f"✅ 云柚代理工具加载成功: {len(self.skills)} 个工具", target=LogTarget.ALL)
         elif isinstance(skill_source, list):

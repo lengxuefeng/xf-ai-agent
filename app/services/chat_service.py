@@ -205,7 +205,7 @@ class ChatService:
             history_messages: list = []
     ) -> Generator[str, None, None]:
         """带历史记录保存的流式聊天"""
-        log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
+        log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
 
         # 获取或创建会话
         chat_history_service.get_or_create_session(user_id, session_id, user_input)
