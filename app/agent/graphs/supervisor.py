@@ -53,9 +53,15 @@ def _supervisor_node(state: GraphState, model):
     try:
         # 安全地获取消息列表
         if isinstance(state, dict):
-            messages = state.get("messages", [])
+            messages = list(state.get("messages", [])) # 复制列表以防修改影响原状态
         else:
-            messages = getattr(state, "messages", [])
+            messages = list(getattr(state, "messages", []))
+
+        # 预处理：如果最后一条是空的 AIMessage (通常是中断产生的副作用，或者 GraphRunner 未能正确添加恢复标记)，
+        # 则暂时忽略它，以便 Supervisor 能看到上一条 HumanMessage 并正确路由
+        if messages and isinstance(messages[-1], AIMessage) and not messages[-1].content and not messages[-1].tool_calls:
+            log.info("检测到末尾存在空 AIMessage，可能是中断残留，暂时忽略以进行意图识别")
+            messages.pop()
 
         log.info(f"消息列表长度: {len(messages)}")
         for i, msg in enumerate(messages):
@@ -172,8 +178,19 @@ def _agent_node(state: GraphState, agent_name: str, model, description: str = ""
     # 运行子图并从事件流中寻找最终的回复
     final_answer = None
     for event in agent_instance.run(req):
+        # 检查是否是新的中断格式
+        if isinstance(event, dict) and "__interrupt__" in event:
+            log.warning(f"Supervisor 检测到子图中断: {event['__interrupt__']}")
+            # 返回包含特殊中断标记的状态，这将传递给 graph_runner
+            return {"interrupt": event["__interrupt__"]}
+
         # event 的结构是 {'node_name': {'messages': [...]}}
         for node_name, node_output in event.items():
+            # 检查旧的中断格式
+            if isinstance(node_output, dict) and "interrupt" in node_output and node_output["interrupt"]:
+                log.warning(f"Supervisor 检测到子图中断(旧格式): {node_output['interrupt']}")
+                return {"interrupt": node_output["interrupt"]}
+
             if isinstance(node_output, dict) and "messages" in node_output:
                 messages = node_output.get('messages', [])
                 if messages:

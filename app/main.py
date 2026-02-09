@@ -13,6 +13,7 @@ from api.v1.user_info_api import user_router
 from api.v1.model_setting_api import router as model_setting_router
 from api.v1.user_model_api import router as user_model_router
 from api.v1.user_mcp_api import router as user_mcp_router
+from api.v1.interrupt_api import interrupt_router
 from app.core.logger import setup_logger
 from exceptions.business_exception import BusinessException
 from schemas.response_model import ResponseModel
@@ -107,6 +108,7 @@ api_v1_router.include_router(chat_history_router)
 api_v1_router.include_router(model_setting_router)
 api_v1_router.include_router(user_model_router)
 api_v1_router.include_router(user_mcp_router)
+api_v1_router.include_router(interrupt_router)
 
 # 在主应用中包含 v1 路由
 app.include_router(api_v1_router)

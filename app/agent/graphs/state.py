@@ -1,5 +1,5 @@
 import operator
-from typing import TypedDict, Annotated, Optional
+from typing import TypedDict, Annotated, Optional, Any
 
 """
 定义主图 LangGraph 的状态管理
@@ -22,6 +22,6 @@ class GraphState(TypedDict):
     """
     messages: Annotated[list, operator.add]
     next: Optional[str]
-    interrupt: Optional[str]
+    interrupt: Optional[Any]
     session_id: Optional[str]
     llm_config: Optional[dict]

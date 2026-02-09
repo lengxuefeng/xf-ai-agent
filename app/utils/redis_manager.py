@@ -7,9 +7,10 @@ from typing import Optional, List, Dict, Any, TypedDict
 
 from dotenv import load_dotenv
 from langchain_core.messages import messages_to_dict, messages_from_dict
+from utils.custom_logger import get_logger, LogTarget
 
 load_dotenv()
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RedisManager:
@@ -124,6 +125,45 @@ class RedisManager:
         except Exception as e:
             logger.error(f"[StateManager] 加载状态失败, key={key}, error={str(e)}")
             raise ValueError(f"加载状态失败，key={key},{str(e)}")
+
+    def _deep_dict(self, obj):
+        """递归将 defaultdict 转换为 dict，以去除 lambda factory"""
+        if isinstance(obj, dict):
+            return {k: self._deep_dict(v) for k, v in obj.items()}
+        return obj
+
+    def save_checkpoint(self, saver: Any, session_id: str):
+        """保存 LangGraph Checkpoint (InMemorySaver state)"""
+        try:
+            # 必须递归转换，因为 InMemorySaver 内部嵌套了使用 lambda 的 defaultdict
+            data = {
+                "storage": self._deep_dict(saver.storage),
+                "writes": self._deep_dict(saver.writes),
+                "blobs": self._deep_dict(saver.blobs)
+            }
+            import pickle
+            self.r.set(f"checkpoint:{session_id}", pickle.dumps(data))
+            logger.info(f"Checkpoint 已保存: {session_id}", target=LogTarget.ALL)
+        except Exception as e:
+            logger.error(f"保存 Checkpoint 失败: {e}", target=LogTarget.ALL)
+
+    def load_checkpoint(self, saver: Any, session_id: str):
+        """加载 LangGraph Checkpoint (InMemorySaver state)"""
+        try:
+            data = self.r.get(f"checkpoint:{session_id}")
+            if data:
+                import pickle
+                state = pickle.loads(data)
+                # 恢复状态
+                if "storage" in state:
+                    saver.storage.update(state["storage"])
+                if "writes" in state:
+                    saver.writes.update(state["writes"])
+                if "blobs" in state:
+                    saver.blobs.update(state["blobs"])
+                logger.info(f"Checkpoint 已加载: {session_id}", target=LogTarget.ALL)
+        except Exception as e:
+            logger.error(f"加载 Checkpoint 失败: {e}", target=LogTarget.ALL)
 
 
 redis_manager = RedisManager()

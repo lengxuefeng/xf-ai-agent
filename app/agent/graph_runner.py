@@ -10,12 +10,13 @@ from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from agent.graphs.supervisor import create_graph
 
 from utils.custom_logger import get_logger, LogTarget, CustomLogger
+from services.interrupt_service import interrupt_service
 
 log = get_logger(__name__)
 
-
 # 创建一个全局的日志输出队列（用于在流式输出中显示日志）
 from queue import Queue
+
 log_output_queue = Queue()
 
 
@@ -99,7 +100,8 @@ class GraphRunner:
         self.graph = None
         self.last_config_hash = None
 
-    def stream_run(self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []) -> Generator[str, None, None]:
+    def stream_run(self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []) -> \
+    Generator[str, None, None]:
         """
         以流式方式执行主图，并产出格式化的 SSE 事件。
 
@@ -138,7 +140,12 @@ class GraphRunner:
             if msg.get('model_content') is not None:
                 # 修复：在重建 AIMessage 时，包含其 'name' 属性，以维持上下文
                 messages.append(AIMessage(content=msg['model_content'], name=msg.get('name')))
-        messages.append(HumanMessage(content=user_input))
+        
+        # 仅当不是恢复请求时才添加用户消息
+        if user_input and user_input != "[RESUME]":
+            messages.append(HumanMessage(content=user_input))
+        elif user_input == "[RESUME]":
+            log.info("接收到恢复执行请求 [RESUME]，跳过添加消息，将触发 Supervisor 重新路由")
 
         initial_state = {
             "messages": messages,
@@ -195,12 +202,95 @@ class GraphRunner:
                             for msg in unique_messages:
                                 added_message_ids.add(msg.id)
 
-                # 3. 检查是否有中断请求
-                for key, value in state.items():  # 这里用state而不是event
-                    if isinstance(value, dict) and "interrupt" in value and value["interrupt"]:
-                        log.warning(f"收到中断请求: {value['interrupt']}", target=LogTarget.ALL)
-                        yield to_sse({"type": "interrupt", "content": value["interrupt"]})
-                        return
+                # 3. 检查是否有中断请求（支持 __interrupt__ 和 interrupt 键）
+                interrupt_source = None
+
+                # 情况 1: 直接在 state 中 (LangGraph 最新格式)
+                if "__interrupt__" in state:
+                    interrupt_source = state["__interrupt__"]
+
+                # 情况 2: 在节点输出中 (Supervisor 包装或旧格式)
+                if not interrupt_source:
+                    for key, value in state.items():
+                        if isinstance(value, dict):
+                            if "__interrupt__" in value:
+                                interrupt_source = value["__interrupt__"]
+                                break
+                            elif "interrupt" in value and value["interrupt"]:
+                                interrupt_source = value["interrupt"]
+                                break
+
+                if interrupt_source:
+                    interrupt_value = interrupt_source
+
+                    # 处理元组包装 (Interrupt(...),) - 某些版本的 LangGraph 可能会这样返回
+                    if isinstance(interrupt_source, tuple) and len(interrupt_source) > 0:
+                        interrupt_value = interrupt_source[0]
+
+                    # 如果是 Interrupt 对象，提取 value
+                    if hasattr(interrupt_value, 'value'):
+                        interrupt_value = interrupt_value.value
+
+                    # 获取 action_requests (兼容对象属性和字典键)
+                    action_requests = []
+                    if hasattr(interrupt_value, 'action_requests'):
+                        action_requests = interrupt_value.action_requests
+                    elif isinstance(interrupt_value, dict) and 'action_requests' in interrupt_value:
+                        action_requests = interrupt_value['action_requests']
+
+                    # 记录详细的工具调用信息到日志
+                    if action_requests:
+                        log.warning(f"收到中断请求，需要人工审核以下操作:", target=LogTarget.ALL)
+
+                        # 注册待审核请求
+                        for action in action_requests:
+                            # 兼容对象和字典
+                            action_name = getattr(action, 'name', None) or action.get('name', 'unknown') if isinstance(action, dict) else getattr(action, 'name', 'unknown')
+                            action_args = getattr(action, 'args', None) or action.get('args', {}) if isinstance(action, dict) else getattr(action, 'args', {})
+                            action_desc = getattr(action, 'description', None) or action.get('description', '') if isinstance(action, dict) else getattr(action, 'description', '')
+
+                            # 记录日志
+                            import json
+                            log.warning(f"  - 工具: {action_name}", target=LogTarget.ALL)
+                            args_str = json.dumps(action_args, ensure_ascii=False)
+                            log.warning(f"    参数: {args_str}", target=LogTarget.ALL)
+                            if action_desc:
+                                log.warning(f"    描述: {action_desc}", target=LogTarget.ALL)
+
+                            # 注册待审核请求
+                            interrupt_service.register_pending_approval(
+                                session_id=session_id,
+                                message_id=f"{session_id}_{action_name}",
+                                action_name=action_name,
+                                action_args=action_args,
+                                description=action_desc
+                            )
+
+                    # 提取 action_requests 并格式化
+                    if action_requests:
+                        actions_info = []
+                        for action in action_requests:
+                            # 兼容对象和字典
+                            action_name = getattr(action, 'name', None) or action.get('name', 'unknown') if isinstance(action, dict) else getattr(action, 'name', 'unknown')
+                            action_args = getattr(action, 'args', None) or action.get('args', {}) if isinstance(action, dict) else getattr(action, 'args', {})
+                            import json
+                            args_str = json.dumps(action_args, ensure_ascii=False)
+                            actions_info.append(f"工具: {action_name}, 参数: {args_str}")
+
+                        interrupt_message = f"\n\n🛡️ **需要人工审核**\n\n{chr(10).join([f'  • {info}' for info in actions_info])}\n\n请审核是否允许执行这些操作。"
+                    else:
+                        interrupt_message = str(interrupt_value)
+
+                    # 发送中断事件
+                    yield to_sse({"type": "interrupt", "content": interrupt_message})
+
+                    # 发送流结束信号，标记当前回复结束
+                    yield to_sse({
+                        "type": "response_end",
+                        "content": "",
+                        "name": "interrupted"
+                    })
+                    return
 
             # 4. 流结束，从累积的消息列表中提取最终结果
             if accumulated_messages:
@@ -238,4 +328,3 @@ class GraphRunner:
         except Exception as e:
             log.exception(f"Graph execution error")
             yield to_sse({"type": "error", "content": f"执行过程中发生错误: {str(e)}"})
-
