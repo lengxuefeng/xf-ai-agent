@@ -1,50 +1,36 @@
-# -*- coding: utf-8 -*-
-from typing import Annotated, TypedDict, Generator
-
-from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage, AIMessage
+from typing import Annotated, TypedDict, List
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.graph import add_messages
+from langchain_core.runnables import Runnable
+from langgraph.graph import StateGraph, START, END, add_messages
 
-from agent.agent_builder import create_simple_agent_executor
+from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
-from agent.llm.loader_llm_multi import load_open_router
-from agent.llm.model_config import ModelConfig
-from utils import redis_manager
+from utils.custom_logger import get_logger
 
-load_dotenv()
-
-"""
-医疗问答子图（Medical Agent）。
-
-特点：
-1.  不使用任何外部工具，完全依赖大语言模型（LLM）的内部知识。
-2.  在回答用户关于健康或医疗的问题后，总会自动附加一条免责声明。
-3.  使用 `create_simple_agent_executor` 构建器创建，结构简洁。
-"""
-
+log = get_logger(__name__)
 
 class MedicalAgentState(TypedDict):
     """
     医疗问答子图状态
     """
-    messages: Annotated[list, add_messages]
+    messages: Annotated[List[BaseMessage], add_messages]
 
 
-class MedicalAgent:
+class MedicalAgent(BaseAgent):
     """
-    医疗问答智能体
+    医疗问答智能体 (LangGraph 1.0 Refactored)
     """
 
     def __init__(self, req: AgentRequest):
-        """
-        初始化医疗 Agent
-        """
+        super().__init__(req)
         if not req.model:
             raise ValueError("医疗模型初始化失败，请检查配置。")
-
-        # 定义问答提示词模版
-        prompt = ChatPromptTemplate.from_messages(
+        self.llm = req.model
+        self.subgraph_id = "medical_agent"
+        
+        # 提示词
+        self.prompt = ChatPromptTemplate.from_messages(
             [
                 (
                     "system",
@@ -57,43 +43,26 @@ class MedicalAgent:
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
+        self.graph = self._build_graph()
 
-        # 定义一个后处理函数，用于在模型输出后附加免责声明
-        def add_disclaimer(response: AIMessage) -> AIMessage:
+    def _build_graph(self) -> Runnable:
+        workflow = StateGraph(MedicalAgentState)
+
+        def model_node(state: MedicalAgentState):
+            chain = self.prompt | self.llm
+            response = chain.invoke(state)
+            
+            # 附加免责声明
             disclaimer = (
                 "\n\n---\n"
                 "**免责声明：** 我是一个 AI 助手，以上信息仅供参考，不能作为专业的医疗建议、诊断或治疗方案。"
                 "如有任何健康问题，请务必咨询医生或其他有资质的医疗专业人士。"
             )
             response.content += disclaimer
-            return response
+            return {"messages": [response]}
 
-        self.graph = create_simple_agent_executor(
-            model=req.model,
-            prompt=prompt,
-            state_class=MedicalAgentState,
-            post_process_func=add_disclaimer
-        )
-        self.redis_manager = redis_manager.RedisManager()
-        self.session_id = req.session_id
-        self.subgraph_id = "medical_agent"
+        workflow.add_node("agent", model_node)
+        workflow.add_edge(START, "agent")
+        workflow.add_edge("agent", END)
 
-    def run(self, req: AgentRequest) -> Generator:
-        """
-        以流式方式执行 Agent。
-        """
-        state = self.redis_manager.load_graph_state(req.session_id, self.subgraph_id)
-        if not state:
-            state = {"messages": []}
-
-        last_msg = state["messages"][-1] if state["messages"] else None
-        if not last_msg or not isinstance(last_msg, HumanMessage):
-            state["messages"].append(HumanMessage(content=req.user_input))
-
-        final_state = None
-        for event in self.graph.stream(state):
-            final_state = event
-            yield event
-
-        if final_state:
-            self.redis_manager.save_graph_state(final_state, req.session_id, self.subgraph_id)
+        return workflow.compile(checkpointer=self.checkpointer)

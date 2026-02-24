@@ -1,330 +1,194 @@
-# -*- coding: utf-8 -*-
+import hashlib
 import json
-import logging
-import re
-import time
-from typing import Generator, List
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
-from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langgraph.types import Command
 
-from agent.graphs.supervisor import create_graph
-
-from utils.custom_logger import get_logger, LogTarget, CustomLogger
+from agent.graph_state import AgentRequest
+from agent.graphs.supervisor import create_graph as create_supervisor_graph
+from agent.llm.unified_loader import create_model_from_config
+from agent.registry import agent_classes
 from services.interrupt_service import interrupt_service
+from utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 
-# 创建一个全局的日志输出队列（用于在流式输出中显示日志）
-from queue import Queue
-
-log_output_queue = Queue()
-
-
-# 设置日志回调函数
-def log_callback(message: str):
-    """日志输出回调函数"""
-    print(f"[log_callback] 收到日志: {message.strip()}")
-    log_output_queue.put(message)
-
-
-# 初始化时设置全局回调（所有 logger 实例都会使用）
-CustomLogger.add_global_sse_callback(log_callback)
-print(f"[graph_runner] 全局日志回调已设置: {log_callback}")
-
-
-def to_sse(data: dict) -> str:
-    """将字典格式化为 Server-Sent Event (SSE) 字符串。"""
-    return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
-
-
-def stream_text(text: str, delay: float = 0.0) -> Generator[str, None, None]:
-    """
-    将文本逐字符流式输出，实现打字机效果。
-    自动识别 <think> 标签内容为思考过程，其他为正常回复。
-
-    Args:
-        text: 要输出的文本
-        delay: 每个字符之间的延迟（秒），默认0.0以获得最快响应速度
-
-    Yields:
-        str: SSE格式的流式文本块
-    """
-    if not text:
-        return
-
-    # 解析文本，分离 thinking 和正常内容
-    import re
-
-    # 查找所有 <think> 块
-    think_pattern = r'<think>(.*?)</think>'
-    parts = re.split(think_pattern, text, flags=re.DOTALL)
-
-    for i, part in enumerate(parts):
-        if not part.strip():  # 跳过空白部分
-            continue
-
-        # 奇数索引是 <think> 标签内的内容（思考过程）
-        is_thinking = (i % 2 == 1)
-        content_type = "thinking" if is_thinking else "stream"
-
-        # 逐字符流式输出
-        for j, char in enumerate(part):
-            # 如果是中文字符、标点或空格，可以稍微快一点
-            if ord(char) > 127 or char in '。！？，；：\n ':
-                current_delay = delay * 0.5
-            else:
-                current_delay = delay
-
-            yield to_sse({
-                "type": content_type,
-                "content": char
-            })
-
-            if current_delay > 0:
-                time.sleep(current_delay)
+"""
+【模块说明】
+API 接口的直接消费者。
+负责拉起 Supervisor，将执行过程包装为 SSE 事件推给前端。
+同时负责拦截子图 Bubble Up 的 Interrupt（挂起）事件并进行下发。
+"""
 
 
 class GraphRunner:
-    """
-    图运行器，负责执行 Agent Supervisor 并处理流式输出。
-    """
-
-    def __init__(self, model_config: dict = None):
-        """
-        初始化图运行器
-
-        Args:
-            model_config: 模型配置字典，包含模型相关参数
-        """
+    def __init__(self, model_config: Optional[dict] = None):
         self.model_config = model_config or {}
-        self.graph = None
-        self.last_config_hash = None
+        self._supervisor_cache: Dict[str, Any] = {}
+        self._effective_config: Dict[str, Any] = {}
 
-    def stream_run(self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []) -> \
-    Generator[str, None, None]:
-        """
-        以流式方式执行主图，并产出格式化的 SSE 事件。
+    @staticmethod
+    def _config_key(model_config: dict) -> str:
+        stable = json.dumps(model_config or {}, sort_keys=True, ensure_ascii=False)
+        return hashlib.md5(stable.encode("utf-8")).hexdigest()
 
-        Args:
-            user_input: 用户输入
-            session_id: 会话 ID
-            model_config: 模型配置字典
-            history_messages: 历史消息列表
-        """
-        # 合并模型配置
-        final_config = {**self.model_config, **(model_config or {})}
+    def _get_supervisor(self, model_config: dict):
+        cache_key = self._config_key(model_config)
+        if cache_key not in self._supervisor_cache:
+            self._supervisor_cache[cache_key] = create_supervisor_graph(model_config)
+        return self._supervisor_cache[cache_key]
 
-        # 计算配置hash，只在配置改变时才重新创建图
-        import hashlib
-        import json
-        config_str = json.dumps(final_config, sort_keys=True)
-        config_hash = hashlib.md5(config_str.encode()).hexdigest()
+    def stream_run(self, user_input: str, session_id: str, model_config: Optional[dict] = None,
+                   history_messages: Optional[list] = None) -> Generator[str, None, None]:
+        history_messages = history_messages or []
+        effective_config = {**self.model_config, **(model_config or {})}
+        self._effective_config = effective_config
+        graph = self._get_supervisor(effective_config)
 
-        # 根据配置创建或更新图
-        if self.graph is None or self.last_config_hash != config_hash:
-            try:
-                log.info(f"开始创建图，配置: {final_config.get('model', 'unknown')}", target=LogTarget.LOG)
-                self.graph = create_graph(final_config)
-                self.last_config_hash = config_hash
-            except RuntimeError as e:
-                log.error(f"模型加载失败: {e}", target=LogTarget.ALL)
-                # 模型加载失败，直接抛出异常
-                yield to_sse({"type": "error", "content": f"模型加载失败: {str(e)}"})
-                return
+        # 1. 检测前端是否发起了审批恢复操作
+        resume_payload = self._check_pending_approval(session_id)
+        if resume_payload:
+            yield self._format_sse("response_start", "")
+            yield self._format_sse("thinking", "检测到审批结果，正在恢复执行...")
+            yield from self._handle_resume(session_id, resume_payload, graph)
+            yield self._format_sse("response_end", "")
+            return
 
-        # 构建消息历史
-        messages: List[BaseMessage] = []
-        for msg in history_messages:
-            if msg.get('user_content') is not None:
-                messages.append(HumanMessage(content=msg['user_content']))
-            if msg.get('model_content') is not None:
-                # 修复：在重建 AIMessage 时，包含其 'name' 属性，以维持上下文
-                messages.append(AIMessage(content=msg['model_content'], name=msg.get('name')))
-        
-        # 仅当不是恢复请求时才添加用户消息
-        if user_input and user_input != "[RESUME]":
-            messages.append(HumanMessage(content=user_input))
-        elif user_input == "[RESUME]":
-            log.info("接收到恢复执行请求 [RESUME]，跳过添加消息，将触发 Supervisor 重新路由")
+        if user_input == "[RESUME]" or not user_input:
+            yield self._format_sse("error", "参数无效或无待恢复任务")
+            return
 
-        initial_state = {
-            "messages": messages,
-            "session_id": session_id,
-            "llm_config": final_config  # 将模型配置传入状态
+        messages = self._build_initial_messages(history_messages, user_input)
+
+        # 2. RAG 上下文注入
+        if str(effective_config.get("rag_enabled", "")).lower() == "true":
+            rag_context, rag_sources = self._retrieve_rag_context(user_input, effective_config)
+            if rag_context:
+                insert_idx = len(messages) - 1 if isinstance(messages[-1], HumanMessage) else len(messages)
+                messages.insert(insert_idx, SystemMessage(content=f"参考以下知识库回答:\n{rag_context}"))
+                yield self._format_sse("thinking", f"RAG 命中 {len(rag_sources)} 个来源")
+
+        # 3. 构造顶级调用 Config
+        config = {
+            "configurable": {"thread_id": session_id},
+            "run_name": f"Supervisor_Run_{session_id}"  # 给 LangSmith 打标签
         }
-
-        # 此列表用于从所有事件中累积消息，以解决状态在 END 节点丢失的问题
-        accumulated_messages: List[BaseMessage] = []
-        added_message_ids = set()
+        inputs = {"messages": messages, "session_id": session_id, "llm_config": effective_config}
 
         try:
-            # 首先输出队列中已存在的日志
-            while not log_output_queue.empty():
-                try:
-                    log_message = log_output_queue.get_nowait()
-                    yield log_message
-                except:
-                    break
+            yield self._format_sse("response_start", "")
 
-            # 使用 stream + subgraphs（LangGraph 的标准方式）
-            for event in self.graph.stream(initial_state, subgraphs=True):
-                # 检查并输出日志队列中的消息
-                while not log_output_queue.empty():
-                    try:
-                        log_message = log_output_queue.get_nowait()
-                        yield log_message
-                    except:
-                        break
-                # 打印每个事件用于调试（元组结构：(路径, 状态））
-                print(f"--- EVENT ---\n{event}\n--- END EVENT ---")
+            # 主图执行
+            for event in graph.stream(inputs, config=config, stream_mode="updates"):
+                yield from self._process_supervisor_event(event)
 
-                # 解析元组：提取路径和状态字典（关键修复点）
-                path, state = event  # 解包 (路径元组, 状态字典)
+            # 4. 扫描内部子图是否抛出了中断 (Interrupt Bubble-up)
+            interrupt_event = self._scan_subgraph_interrupts(session_id)
+            if interrupt_event:
+                self._register_interrupts(session_id, interrupt_event)
+                yield self._format_sse("interrupt", json.dumps(interrupt_event, ensure_ascii=False))
 
-                # 1. 处理思考过程（使用解析后的state字典）
-                if "supervisor" in state:
-                    next_agent = state["supervisor"].get("next")
-                    log.info(f"Supervisor 决策: {next_agent or 'FINISH'}", target=LogTarget.ALL)
-                    if next_agent and next_agent != "FINISH":
-                        yield to_sse({"type": "thinking", "content": f"🔀 正在路由到: {next_agent}..."})
-                    else:
-                        if next_agent == "FINISH":
-                            log.info("任务已完成", target=LogTarget.ALL)
-                            yield to_sse({"type": "thinking", "content": "✅ 任务已完成"})
+            yield self._format_sse("response_end", "")
 
-                # 2. 从每个事件中提取新消息并累积
-                # state 的格式是 {"node_name": {"messages": [...]}}
-                for node_name, node_output in state.items():  # 这里用state而不是event
-                    if isinstance(node_output, dict) and "messages" in node_output:
-                        unique_messages = [msg for msg in node_output["messages"] if msg.id not in added_message_ids]
-                        if unique_messages:
-                            accumulated_messages.extend(unique_messages)
-                            for msg in unique_messages:
-                                added_message_ids.add(msg.id)
+        except Exception as exc:
+            log.exception(f"执行异常: {exc}")
+            yield self._format_sse("error", str(exc))
 
-                # 3. 检查是否有中断请求（支持 __interrupt__ 和 interrupt 键）
-                interrupt_source = None
+    @staticmethod
+    def _build_initial_messages(history: list, user_input: str) -> List[BaseMessage]:
+        messages: List[BaseMessage] = []
+        for msg in history:
+            if msg.get("user_content"): messages.append(HumanMessage(content=msg["user_content"]))
+            if msg.get("model_content"): messages.append(AIMessage(content=msg["model_content"], name=msg.get("name")))
+        messages.append(HumanMessage(content=user_input))
+        return messages
 
-                # 情况 1: 直接在 state 中 (LangGraph 最新格式)
-                if "__interrupt__" in state:
-                    interrupt_source = state["__interrupt__"]
+    def _retrieve_rag_context(self, user_input: str, model_config: dict) -> Tuple[str, List[str]]:
+        try:
+            from agent.rag.vector_store import vector_store_service
+            docs = vector_store_service.search_documents(user_input,
+                                                         threshold=float(model_config.get("similarity_threshold", 0.7)))
+            return vector_store_service.get_context(docs), [str(d.metadata.get("source")) for d in docs if
+                                                            hasattr(d, "metadata")]
+        except Exception:
+            return "", []
 
-                # 情况 2: 在节点输出中 (Supervisor 包装或旧格式)
-                if not interrupt_source:
-                    for key, value in state.items():
-                        if isinstance(value, dict):
-                            if "__interrupt__" in value:
-                                interrupt_source = value["__interrupt__"]
-                                break
-                            elif "interrupt" in value and value["interrupt"]:
-                                interrupt_source = value["interrupt"]
-                                break
+    def _check_pending_approval(self, session_id: str) -> Optional[Command]:
+        approvals = interrupt_service.pending_approvals.get(session_id, {})
+        for _, data in list(approvals.items()):
+            if data.get("status") == "pending": continue
+            approvals.clear()
+            return Command(resume="approve" if data["status"] == "approve" else {"action": "reject"})
+        return None
 
-                if interrupt_source:
-                    interrupt_value = interrupt_source
+    def _handle_resume(self, session_id: str, command: Command, supervisor_graph) -> Generator[str, None, None]:
+        target_agent = None
+        model, _ = create_model_from_config(**self._effective_config)
 
-                    # 处理元组包装 (Interrupt(...),) - 某些版本的 LangGraph 可能会这样返回
-                    if isinstance(interrupt_source, tuple) and len(interrupt_source) > 0:
-                        interrupt_value = interrupt_source[0]
+        # 寻找挂起状态的子 Agent
+        for name, info in agent_classes.items():
+            agent = info.cls(AgentRequest(user_input="", model=model, session_id=session_id, subgraph_id=name))
+            if agent.get_state().tasks and agent.get_state().tasks[0].interrupts:
+                target_agent = agent
+                break
 
-                    # 如果是 Interrupt 对象，提取 value
-                    if hasattr(interrupt_value, 'value'):
-                        interrupt_value = interrupt_value.value
+        if not target_agent:
+            yield self._format_sse("error", "未找到处于中断状态的子任务")
+            return
 
-                    # 获取 action_requests (兼容对象属性和字典键)
-                    action_requests = []
-                    if hasattr(interrupt_value, 'action_requests'):
-                        action_requests = interrupt_value.action_requests
-                    elif isinstance(interrupt_value, dict) and 'action_requests' in interrupt_value:
-                        action_requests = interrupt_value['action_requests']
+        # 携带 Config 恢复执行
+        subgraph_config = {"configurable": {"thread_id": session_id, "checkpoint_ns": target_agent.subgraph_id}}
+        final_msgs = []
+        try:
+            for event in target_agent.graph.stream(command, config=subgraph_config, stream_mode="updates"):
+                for _, val in event.items():
+                    if "messages" in val:
+                        for msg in val["messages"]:
+                            if isinstance(msg, AIMessage):
+                                final_msgs.append(msg)
+                                yield self._format_sse("message", msg.content)
+        except Exception as exc:
+            yield self._format_sse("error", f"任务恢复失败: {str(exc)}")
+            return
 
-                    # 记录详细的工具调用信息到日志
-                    if action_requests:
-                        log.warning(f"收到中断请求，需要人工审核以下操作:", target=LogTarget.ALL)
+        # 状态回填 Supervisor
+        if final_msgs:
+            sup_config = {"configurable": {"thread_id": session_id}}
+            if supervisor_graph.get_state(sup_config).values:
+                supervisor_graph.update_state(sup_config, {"messages": final_msgs})
 
-                        # 注册待审核请求
-                        for action in action_requests:
-                            # 兼容对象和字典
-                            action_name = getattr(action, 'name', None) or action.get('name', 'unknown') if isinstance(action, dict) else getattr(action, 'name', 'unknown')
-                            action_args = getattr(action, 'args', None) or action.get('args', {}) if isinstance(action, dict) else getattr(action, 'args', {})
-                            action_desc = getattr(action, 'description', None) or action.get('description', '') if isinstance(action, dict) else getattr(action, 'description', '')
+    def _process_supervisor_event(self, event: dict) -> Generator[str, None, None]:
+        for node_name, node_val in event.items():
+            if node_name == "supervisor" and "next" in node_val:
+                yield self._format_sse("thinking",
+                                       f"路由指派: {node_val['next']} (置信度: {node_val.get('routing_confidence', 0):.2f})")
+            if "messages" in node_val:
+                for msg in node_val["messages"]:
+                    if isinstance(msg, AIMessage): yield self._format_sse("message", msg.content)
 
-                            # 记录日志
-                            import json
-                            log.warning(f"  - 工具: {action_name}", target=LogTarget.ALL)
-                            args_str = json.dumps(action_args, ensure_ascii=False)
-                            log.warning(f"    参数: {args_str}", target=LogTarget.ALL)
-                            if action_desc:
-                                log.warning(f"    描述: {action_desc}", target=LogTarget.ALL)
+    def _scan_subgraph_interrupts(self, session_id: str) -> Optional[dict]:
+        model, _ = create_model_from_config(**self._effective_config)
+        for name, info in agent_classes.items():
+            agent = info.cls(AgentRequest(user_input="", model=model, session_id=session_id, subgraph_id=name))
+            snapshot = agent.get_state()
+            if snapshot.tasks and snapshot.tasks[0].interrupts:
+                return self._format_interrupt_payload(snapshot.tasks[0].interrupts[0].value)
+        return None
 
-                            # 注册待审核请求
-                            interrupt_service.register_pending_approval(
-                                session_id=session_id,
-                                message_id=f"{session_id}_{action_name}",
-                                action_name=action_name,
-                                action_args=action_args,
-                                description=action_desc
-                            )
+    def _register_interrupts(self, session_id: str, payload: dict):
+        for req in payload.get("action_requests", []):
+            interrupt_service.register_pending_approval(
+                session_id, req.get("id") or f"{session_id}_{req['name']}",
+                req["name"], req["args"], req.get("description", "")
+            )
 
-                    # 提取 action_requests 并格式化
-                    if action_requests:
-                        actions_info = []
-                        for action in action_requests:
-                            # 兼容对象和字典
-                            action_name = getattr(action, 'name', None) or action.get('name', 'unknown') if isinstance(action, dict) else getattr(action, 'name', 'unknown')
-                            action_args = getattr(action, 'args', None) or action.get('args', {}) if isinstance(action, dict) else getattr(action, 'args', {})
-                            import json
-                            args_str = json.dumps(action_args, ensure_ascii=False)
-                            actions_info.append(f"工具: {action_name}, 参数: {args_str}")
+    @staticmethod
+    def _format_interrupt_payload(val: Any) -> dict:
+        v = val if isinstance(val, dict) else val.__dict__
+        return {"message": v.get("message", "需人工审核"), "allowed_decisions": v.get("allowed_decisions", []),
+                "action_requests": v.get("action_requests", [])}
 
-                        interrupt_message = f"\n\n🛡️ **需要人工审核**\n\n{chr(10).join([f'  • {info}' for info in actions_info])}\n\n请审核是否允许执行这些操作。"
-                    else:
-                        interrupt_message = str(interrupt_value)
-
-                    # 发送中断事件
-                    yield to_sse({"type": "interrupt", "content": interrupt_message})
-
-                    # 发送流结束信号，标记当前回复结束
-                    yield to_sse({
-                        "type": "response_end",
-                        "content": "",
-                        "name": "interrupted"
-                    })
-                    return
-
-            # 4. 流结束，从累积的消息列表中提取最终结果
-            if accumulated_messages:
-                final_message = accumulated_messages[-1]
-                if isinstance(final_message, AIMessage):
-                    print(f"[graph_runner] 开始输出AI回复，长度: {len(final_message.content)}")
-                    # 发送流开始信号
-                    yield to_sse({"type": "response_start", "content": ""})
-
-                    # 逐字符流式输出 AI 的回复（无延迟）
-                    for i, char in enumerate(final_message.content):
-                        yield to_sse({
-                            "type": "stream",
-                            "content": char
-                        })
-                        # 每100个字符打印一次调试信息
-                        if (i + 1) % 100 == 0:
-                            print(f"[graph_runner] 已输出 {i + 1}/{len(final_message.content)} 个字符")
-
-                    print(f"[graph_runner] AI回复输出完成")
-
-                    # 发送流结束信号，并附上 agent name
-                    yield to_sse({
-                        "type": "response_end",
-                        "content": "",
-                        "name": getattr(final_message, 'name', None)
-                    })
-                else:
-                    # 如果最后一条消息不是AI发出的，说明流程异常
-                    yield to_sse({"type": "error", "content": "任务流程异常，AI未生成最终回复。"})
-            else:
-                # 如果整个过程都没有任何消息，返回错误
-                yield to_sse({"type": "error", "content": "任务执行完毕，但未能获取到任何消息。"})
-
-        except Exception as e:
-            log.exception(f"Graph execution error")
-            yield to_sse({"type": "error", "content": f"执行过程中发生错误: {str(e)}"})
+    @staticmethod
+    def _format_sse(type_: str, content: str) -> str:
+        return f"event: {type_}\ndata: {json.dumps({'type': type_, 'content': content}, ensure_ascii=False)}\n\n"

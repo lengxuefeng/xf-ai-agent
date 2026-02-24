@@ -49,6 +49,9 @@ class StreamChatRequest(BaseSchema):
     similarity_threshold: Optional[float] = Field(default=0.7, description="相似度阈值")
     embedding_model: Optional[str] = Field(default='bge-m3:latest', description="嵌入模型")
     embedding_model_key: Optional[str] = Field(default='', description="嵌入模型的key")
+    temperature: Optional[float] = Field(default=0.2, description="采样温度（越低越稳定）")
+    top_p: Optional[float] = Field(default=1.0, description="核采样 top_p")
+    max_tokens: Optional[int] = Field(default=2000, description="最大输出 token")
 
     @field_validator('user_input')
     @classmethod
@@ -77,4 +80,31 @@ class StreamChatRequest(BaseSchema):
         """验证相似度阈值"""
         if not 0.0 <= v <= 1.0:
             raise ValueError('相似度阈值必须在0.0到1.0之间')
+        return v
+
+    @field_validator('temperature')
+    @classmethod
+    def validate_temperature(cls, v: float) -> float:
+        if v is None:
+            return 0.2
+        if not 0.0 <= v <= 2.0:
+            raise ValueError('temperature 必须在0.0到2.0之间')
+        return v
+
+    @field_validator('top_p')
+    @classmethod
+    def validate_top_p(cls, v: float) -> float:
+        if v is None:
+            return 1.0
+        if not 0.0 < v <= 1.0:
+            raise ValueError('top_p 必须在0.0到1.0之间')
+        return v
+
+    @field_validator('max_tokens')
+    @classmethod
+    def validate_max_tokens(cls, v: int) -> int:
+        if v is None:
+            return 2000
+        if v <= 0:
+            raise ValueError('max_tokens 必须大于0')
         return v

@@ -9,14 +9,14 @@ dependencies = [
     "fastapi~=0.116.0",
     "uvicorn[standard]~=0.35.0",
     # LangChain 核心及生态包：最新版本
-    "langchain~=1.2.0",                  # 最新 1.2.0
-    "langchain-openai~=1.1.0",           # 最新 1.1.7
-    "langchain-community~=0.4.0",        # 最新 0.4.1
-    "langchain-ollama~=1.0.0",           # 最新 1.0.1
-    "langchain-google-genai~=4.2.0",     # 最新 4.2.0
-    "langchain-tavily~=0.2.0",           # 最新 0.2.16
-    "langgraph~=1.0.6",                  # 最新 1.0.6
-    "langsmith>=0.4.0",                  # 最新 0.4.x 系列
+    "langchain>=1.2.0", # 更新到 1.2.x 最新版
+    "langchain-openai~=1.1.0", # 最新 1.1.7
+    "langchain-community~=0.4.0", # 最新 0.4.1
+    "langchain-ollama~=1.0.0", # 最新 1.0.1
+    "langchain-google-genai~=4.2.0", # 最新 4.2.0
+    "langchain-tavily~=0.2.0", # 最新 0.2.16
+    "langgraph>=1.0.8", # 显式要求 >= 1.0.8 以确保支持最新特性
+    "langsmith>=0.4.0", # 最新 0.4.x 系列
     # 环境变量加载
     "python-dotenv==1.1.0",
     # Tavily 搜索客户端（不变，与 langchain-tavily 配合使用）
@@ -24,7 +24,7 @@ dependencies = [
     # 文档处理相关
     "pypdf==3.10.0",
     # MCP 相关
-    "langchain-mcp-adapters~=0.2.0",     # 最新 0.2.1
+    "langchain-mcp-adapters~=0.2.0", # 最新 0.2.1
     "mcp==1.12.1",
     # 网络请求
     "httpx==0.28.1",
@@ -53,6 +53,7 @@ dependencies = [
     "cryptography>=46.0.3",
     # 模型scope
     "modelscope>=1.31.0",
+    "langgraph-cli[inmem]>=0.4.12",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

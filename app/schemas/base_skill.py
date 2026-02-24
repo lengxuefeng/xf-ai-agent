@@ -153,6 +153,21 @@ class ConfigurableSkillMiddleware(AgentMiddleware):
 
         return load_skill
 
+    def get_tools(self) -> List[Callable]:
+        """提供给外部 Agent 使用的工具列表。"""
+        return self.tools
+
+    def get_prompt(self) -> str:
+        """生成可直接用于 system prompt 的技能说明片段。"""
+        if not self.skills:
+            return "当前未配置扩展技能。"
+
+        return (
+            "你可以按需调用 `load_skill` 工具加载具体业务规则。\\n"
+            "可用技能如下:\\n"
+            f"{self.skills_prompt}"
+        )
+
     def wrap_model_call(
             self,
             request: ModelRequest,

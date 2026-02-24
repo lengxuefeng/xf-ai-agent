@@ -119,7 +119,9 @@ class UnifiedModelLoader:
         # 构建通用参数
         params = {
             'model': config.model,
-            'temperature': config.extra_params.get('temperature', 0.7),
+            'temperature': config.extra_params.get('temperature', 0.2),
+            'top_p': config.extra_params.get('top_p', 1.0),
+            'max_tokens': config.extra_params.get('max_tokens', 2000),
         }
 
         # 根据服务类型添加特定参数

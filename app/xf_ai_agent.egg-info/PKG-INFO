@@ -8,13 +8,13 @@ Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 Requires-Dist: fastapi~=0.116.0
 Requires-Dist: uvicorn[standard]~=0.35.0
-Requires-Dist: langchain~=1.2.0
+Requires-Dist: langchain>=1.2.0
 Requires-Dist: langchain-openai~=1.1.0
 Requires-Dist: langchain-community~=0.4.0
 Requires-Dist: langchain-ollama~=1.0.0
 Requires-Dist: langchain-google-genai~=4.2.0
 Requires-Dist: langchain-tavily~=0.2.0
-Requires-Dist: langgraph~=1.0.6
+Requires-Dist: langgraph>=1.0.8
 Requires-Dist: langsmith>=0.4.0
 Requires-Dist: python-dotenv==1.1.0
 Requires-Dist: tavily-python==0.7.3
@@ -35,6 +35,7 @@ Requires-Dist: redis>=6.4.0
 Requires-Dist: streamlit>=1.49.1
 Requires-Dist: cryptography>=46.0.3
 Requires-Dist: modelscope>=1.31.0
+Requires-Dist: langgraph-cli[inmem]>=0.4.12
 
 # xf-ai-agent 项目
 

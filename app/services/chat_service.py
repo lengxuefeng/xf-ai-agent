@@ -13,7 +13,6 @@ from services.chat_history_service import chat_history_service
 from services.exception_service import exception_handler
 from services.user_model_service import user_model_service
 from utils.chat_utils import ChatUtils
-from db.mysql.model_setting_db import model_setting_db
 from utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
@@ -50,6 +49,7 @@ class ChatService:
 
         # 根据是否有用户ID选择处理方式
         history_messages = []
+        is_resume = req.user_input == "[RESUME]"
         if user_id:
             history_data = chat_history_service.get_session_messages(user_id, req.session_id)
             history_messages = history_data.get("messages", [])
@@ -58,14 +58,15 @@ class ChatService:
                 session_id=req.session_id,
                 model_config=model_config,
                 user_id=user_id,
-                history_messages=history_messages
+                history_messages=history_messages,
+                is_resume=is_resume,
             )
         else:
             stream_generator = self.stream_chat_anonymous(
                 user_input=req.user_input,
                 session_id=req.session_id,
                 model_config=model_config,
-                history_messages=history_messages
+                history_messages=history_messages,
             )
 
         # 返回流式响应
@@ -100,6 +101,9 @@ class ChatService:
                 'similarity_threshold': custom_config.get('similarity_threshold', 0.7),
                 'embedding_model': custom_config.get('embedding_model', 'bge-m3:latest'),
                 'embedding_model_key': custom_config.get('embedding_model_key', ''),
+                'temperature': custom_config.get('temperature', 0.2),
+                'top_p': custom_config.get('top_p', 1.0),
+                'max_tokens': custom_config.get('max_tokens', 2000),
                 'model_key': user_model.api_key,
                 'model_url': user_model.api_url or model_setting.service_url
             }
@@ -117,75 +121,11 @@ class ChatService:
             similarity_threshold=req.similarity_threshold,
             embedding_model=req.embedding_model,
             embedding_model_key=req.embedding_model_key,
+            temperature=req.temperature,
+            top_p=req.top_p,
+            max_tokens=req.max_tokens,
             model_key=req.model_key,
             model_url=req.model_url,
-        )
-
-    def _process_stream_chat_internal(self, req: StreamChatRequest, user_id: Optional[int] = None) -> StreamingResponse:
-        """内部流式聊天处理逻辑"""
-        # 1. 优先尝试根据 user_model_id 查询数据库配置
-        model_config = None
-        if req.user_model_id:
-            log.info(f"使用用户模型配置: {req.user_model_id}", target=LogTarget.LOG)
-            model_config = self._build_model_config_from_user_model(req.user_model_id, user_id)
-
-        # 2. 如果没查到（或是匿名用户），则使用请求参数构建默认配置
-        if not model_config:
-            if req.user_model_id:
-                log.warning(f"用户模型配置 {req.user_model_id} 查询失败，回退到默认配置", target=LogTarget.LOG)
-            else:
-                log.info("未指定用户模型ID，使用请求参数或默认配置", target=LogTarget.LOG)
-
-            # 智能推断 service_type (仅对默认/匿名情况生效)
-            service_type = req.service_type
-            if not service_type or service_type == 'ollama':
-                if 'gemini' in req.model.lower():
-                    service_type = 'gemini'
-                elif 'gpt' in req.model.lower():
-                    service_type = 'openai'
-                elif 'deepseek' in req.model.lower():
-                    service_type = 'silicon-flow'
-
-            model_config = self.build_model_config(
-                model=req.model,
-                model_service=req.model_service,
-                service_type=service_type,
-                deep_thinking_mode=req.deep_thinking_mode,
-                rag_enabled=req.rag_enabled,
-                similarity_threshold=req.similarity_threshold,
-                embedding_model=req.embedding_model,
-                embedding_model_key=req.embedding_model_key,
-                model_key=req.model_key,
-                model_url=req.model_url,
-            )
-
-        # 根据是否有用户ID选择处理方式
-        history_messages = []
-        if user_id:
-            log.info(f"用户已登录，加载历史消息，会话ID: {req.session_id}", target=LogTarget.LOG)
-            history_data = chat_history_service.get_session_messages(user_id, req.session_id)
-            history_messages = history_data.get("messages", [])
-            stream_generator = self.stream_chat_with_history(
-                user_input=req.user_input,
-                session_id=req.session_id,
-                model_config=model_config,
-                user_id=user_id,
-                history_messages=history_messages
-            )
-        else:
-            log.info("匿名用户，不加载历史消息", target=LogTarget.LOG)
-            stream_generator = self.stream_chat_anonymous(
-                user_input=req.user_input,
-                session_id=req.session_id,
-                model_config=model_config,
-                history_messages=history_messages
-            )
-
-        # 返回流式响应
-        return StreamingResponse(
-            stream_generator,
-            media_type="text/event-stream",
-            headers=self._get_stream_headers()
         )
 
     def _get_stream_headers(self) -> Dict[str, str]:
@@ -202,13 +142,16 @@ class ChatService:
             session_id: str,
             model_config: Dict[str, Any],
             user_id: Optional[int] = None,
-            history_messages: list = []
+            history_messages: Optional[list] = None,
+            is_resume: bool = False,
     ) -> Generator[str, None, None]:
         """带历史记录保存的流式聊天"""
         log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
+        history_messages = history_messages or []
 
         # 获取或创建会话
-        chat_history_service.get_or_create_session(user_id, session_id, user_input)
+        if not is_resume:
+            chat_history_service.get_or_create_session(user_id, session_id, user_input)
 
         ai_response = ""
         start_time = time.time()
@@ -241,36 +184,49 @@ class ChatService:
         finally:
             # 如果用户已认证，保存聊天历史
             if user_id:
-                log.info(f"保存聊天历史，会话ID: {session_id}", target=LogTarget.LOG)
-                chat_data = ChatMessageCreate(
-                    user_id=user_id,
-                    session_id=session_id,
-                    user_content=user_input,
-                    model_content=ai_response if not error_occurred else f"错误: {error_message}",
-                    model=model_config.get('model'),
-                    latency_ms=int((time.time() - start_time) * 1000),
-                    tokens=ChatUtils.estimate_tokens(user_input + ai_response)
-                )
-                chat_history_service.create_chat_message(user_id, chat_data)
+                # 只有当确实有AI回复或发生错误时才保存
+                if (ai_response or error_occurred) and not is_resume:
+                    log.info(f"保存聊天历史，会话ID: {session_id}", target=LogTarget.LOG)
+                    chat_data = ChatMessageCreate(
+                        user_id=user_id,
+                        session_id=session_id,
+                        user_content=user_input,
+                        model_content=ai_response if not error_occurred else f"错误: {error_message}",
+                        model=model_config.get('model'),
+                        latency_ms=int((time.time() - start_time) * 1000),
+                        tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                    )
+                    chat_history_service.create_chat_message(user_id, chat_data)
 
     def stream_chat_anonymous(
             self,
             user_input: str,
             session_id: str,
             model_config: Dict[str, Any],
-            history_messages: list = []
+            history_messages: Optional[list] = None
     ) -> Generator[str, None, None]:
         """匿名流式聊天，不保存历史记录"""
         log.info(f"匿名流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
+        history_messages = history_messages or []
         # 直接返回原始流式响应，不做任何处理
         yield from self.graph_runner.stream_run(user_input, session_id, model_config, history_messages)
 
     def _extract_ai_content_from_chunk(self, chunk: str) -> Optional[str]:
         """从SSE chunk中提取AI响应内容"""
         try:
-            if chunk.startswith('data: '):
+            if chunk.startswith('event: '):
+                # 新格式：event: type\ndata: ...
+                lines = chunk.split('\n')
+                data_line = next((line for line in lines if line.startswith('data: ')), None)
+                if data_line:
+                    data = json.loads(data_line[6:])
+                    # 支持 'stream' (逐字) 和 'message' (整段)
+                    if data.get('type') in ['stream', 'message']:
+                        return data.get('content', '')
+            elif chunk.startswith('data: '):
+                # 旧格式兼容
                 data = json.loads(chunk[6:])
-                if data.get('type') == 'stream':
+                if data.get('type') in ['stream', 'message']:
                     return data.get('content', '')
         except (json.JSONDecodeError, KeyError):
             pass
@@ -286,6 +242,9 @@ class ChatService:
             similarity_threshold: float = 0.7,
             embedding_model: str = 'bge-m3:latest',
             embedding_model_key: str = '',
+            temperature: float = 0.2,
+            top_p: float = 1.0,
+            max_tokens: int = 2000,
             model_key: str = '',
             model_url: str = ''
     ) -> Dict[str, Any]:
@@ -299,6 +258,9 @@ class ChatService:
             'similarity_threshold': similarity_threshold,
             'embedding_model': embedding_model,
             'embedding_model_key': embedding_model_key,
+            'temperature': temperature,
+            'top_p': top_p,
+            'max_tokens': max_tokens,
             'model_key': model_key,
             'model_url': model_url
         }

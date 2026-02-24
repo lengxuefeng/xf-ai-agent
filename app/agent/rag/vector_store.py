@@ -45,7 +45,7 @@ class VectorStoreService:
         """
         try:
             if self.embeddings.model != mode_name:
-                self.embeddings = OllamaEmbeddings(model=Settings.EMBEDDING_MODEL, base_url=Settings.EMBEDDING_BASE_URL)
+                self.embeddings = OllamaEmbeddings(model=mode_name, base_url=Settings.EMBEDDING_BASE_URL)
                 logger.info(f"嵌入模型已更新为: {mode_name}")
                 return True
             return False
@@ -145,7 +145,7 @@ class VectorStoreService:
             return None
 
     @error_handler()
-    def search_documents(self, query: str, threshold: float = 0.7) -> list[Document]:
+    def search_documents(self, query: str, threshold: float = 0.7, top_k: int = 4) -> list[Document]:
         """
         搜索相关文档
 
@@ -161,13 +161,19 @@ class VectorStoreService:
                 logger.error("向量存储未初始化，无法搜索")
                 return []
         try:
-            # 执行搜索，使用层方法similarity_search_with_score，直接返回原始分数，适合自定义流程
-            docs_and_scores = self.vector_store.similarity_search_with_score(
-                query, threshold=threshold
+            # 优先使用相关度分数（0-1，越高越相关），与前端阈值语义一致
+            docs_and_scores = self.vector_store.similarity_search_with_relevance_scores(
+                query, k=max(top_k, 1)
             )
-            # 根据阀值过滤结果,只保留文本不要相似度分数
-            results = [doc for doc, score in docs_and_scores if score > threshold]
-            logger.info(f"搜索到 {len(results)} 个相关文档，相似度阈值: {threshold}")
+            results = [doc for doc, score in docs_and_scores if score >= threshold]
+
+            # 如果阈值过高导致空结果，则回退 top-k，避免“查不到即胡答”
+            if not results:
+                results = [doc for doc, _ in docs_and_scores[:max(top_k, 1)]]
+
+            logger.info(
+                f"搜索到 {len(results)} 个相关文档，相似度阈值: {threshold}, top_k: {top_k}"
+            )
             return results
         except Exception as e:
             logger.error(f"搜索文档失败: {str(e)}")

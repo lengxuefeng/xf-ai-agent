@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Any
 
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatTongyi, ChatZhipuAI
@@ -10,6 +11,19 @@ from pydantic import SecretStr
 from agent.llm.model_config import ModelConfig
 
 load_dotenv(verbose=True)
+
+
+def _common_generation_kwargs(config: ModelConfig) -> Dict[str, Any]:
+    """
+    从 ModelConfig.extra_params 读取统一采样参数。
+    默认值偏保守，优先提升回答稳定性。
+    """
+    extra = config.extra_params or {}
+    return {
+        "temperature": float(extra.get("temperature", 0.2)),
+        "top_p": float(extra.get("top_p", 1.0)),
+        "max_tokens": int(extra.get("max_tokens", 2000)),
+    }
 
 
 def load_zhipu_model(config: ModelConfig) -> ChatOpenAI:
@@ -31,6 +45,7 @@ def load_zhipu_model(config: ModelConfig) -> ChatOpenAI:
         model=config.model,
         api_key=config.model_key,
         base_url=config.model_url,
+        **_common_generation_kwargs(config),
     )
 
 
@@ -47,6 +62,7 @@ def load_tongyi_model(config: ModelConfig) -> ChatTongyi:
     return ChatTongyi(
         model=config.model,
         api_key=SecretStr(config.model_key),
+        temperature=_common_generation_kwargs(config)["temperature"],
     )
 
 
@@ -64,8 +80,9 @@ def load_gemini_model(config: ModelConfig) -> ChatGoogleGenerativeAI:
     return ChatGoogleGenerativeAI(
         model=config.model,
         api_key=SecretStr(config.model_key),
-        # temperature=0.7,  # 控制输出随机性（0-1）
-        # max_output_tokens=1024  # 最大输出token数
+        temperature=_common_generation_kwargs(config)["temperature"],
+        top_p=_common_generation_kwargs(config)["top_p"],
+        max_output_tokens=_common_generation_kwargs(config)["max_tokens"],
     )
 
 
@@ -75,8 +92,8 @@ def load_openai_model(config: ModelConfig):
     return ChatOpenAI(
         model=config.model,
         api_key=SecretStr(config.model_key),
-        # temperature=0.7,
-        # max_tokens=1024
+        base_url=config.model_url or None,
+        **_common_generation_kwargs(config),
     )
 
 
@@ -107,6 +124,7 @@ def load_open_router(config: ModelConfig) -> ChatOpenAI:
         base_url=base_url,
         max_retries=1,
         timeout=60,
+        **_common_generation_kwargs(config),
         model_kwargs={
             "extra_headers": {
                 "HTTP-Referer": "https://localhost:8000",
@@ -130,6 +148,7 @@ def load_silicon_flow(config: ModelConfig) -> ChatOpenAI:
         model=config.model,
         api_key=SecretStr(config.model_key),
         base_url=config.model_url,
+        **_common_generation_kwargs(config),
     )
 
 
@@ -147,6 +166,7 @@ def load_modelscope_llm(config: ModelConfig) -> ChatOpenAI:
         model=config.model,
         api_key=SecretStr(config.model_key),
         base_url=config.model_url,
+        **_common_generation_kwargs(config),
     )
 
 

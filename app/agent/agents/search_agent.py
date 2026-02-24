@@ -1,88 +1,67 @@
-# -*- coding: utf-8 -*-
-from typing import Generator
+from typing import Annotated, TypedDict, List
+from langchain_core.messages import BaseMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import Runnable
+from langgraph.graph import StateGraph, START, END, add_messages
+from langgraph.prebuilt import ToolNode
 
-from dotenv import load_dotenv
-from langchain.agents import create_agent
-from langchain_core.messages import HumanMessage
-
+from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
 from agent.tools.search_tools import tavily_search_tool
-from utils import redis_manager
+from utils.custom_logger import get_logger
 
-load_dotenv()
+log = get_logger(__name__)
 
-"""
-定义和创建网络搜索子图（Web Search Agent）。
-
-功能：
-    1. 当主图（Supervisor）判断需要从互联网获取最新信息时，接收任务。
-    2. 利用语言模型（LLM）的函数调用（Function Calling）或工具使用（Tool Using）能力，
-    3. 执行搜索工具。
-    4. 将搜索结果整合后，生成一个自然的语言回答，并返回给主图。
-"""
-
-
-class SearchAgent:
+class SearchAgentState(TypedDict):
     """
-    网络搜索 Agent。
+    搜索子图状态
+    """
+    messages: Annotated[List[BaseMessage], add_messages]
 
-    本 Agent 的核心职责是处理需要从互联网获取信息的任务。
-    它利用一个通用的 `create_tool_agent_executor` 构建器来创建一个具备工具使用能力的图。
+
+class SearchAgent(BaseAgent):
+    """
+    网络搜索 Agent (LangGraph 1.0 Refactored)
     """
 
     def __init__(self, req: AgentRequest):
-        """
-        初始化搜索 Agent。
-
-        Args:
-            req (AgentRequest): 包含模型、会话 ID 等信息的请求对象。
-        """
+        super().__init__(req)
         if not req.model:
             raise ValueError("搜索模型初始化失败，请检查配置。")
-
-        # 定义 Agent 可用的工具
-        tools = [tavily_search_tool]
-
-        # 使用通用构建器创建图执行器
-        self.graph = create_agent(
-            model=req.model,
-            tools=tools,
-            system_prompt="你是一个有用的网络搜索助手，能够使用搜索工具查找信息并回答用户的问题。"
-        )
-
-        # 初始化状态管理器
-        self.redis_manager = redis_manager.RedisManager()
-        self.session_id = req.session_id
+        self.llm = req.model
         self.subgraph_id = "search_agent"
+        
+        # 工具
+        self.tools = [tavily_search_tool]
+        self.model_with_tools = self.llm.bind_tools(self.tools)
+        
+        # 提示词
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", "你是一个有用的网络搜索助手，能够使用搜索工具查找信息并回答用户的问题。"),
+                MessagesPlaceholder(variable_name="messages"),
+            ]
+        )
+        self.graph = self._build_graph()
 
-    def run(self, req: AgentRequest) -> Generator:
-        """
-        执行 Agent 的主流程。
+    def _build_graph(self) -> Runnable:
+        workflow = StateGraph(SearchAgentState)
 
-        该方法负责加载历史状态、追加新消息、调用图执行器，并保存最新状态。
+        def model_node(state: SearchAgentState):
+            chain = self.prompt | self.model_with_tools
+            return {"messages": [chain.invoke(state)]}
 
-        Args:
-            req (AgentRequest): 包含用户输入的请求对象。
+        tool_node = ToolNode(self.tools)
 
-        Yields:
-            dict: 执行过程中的事件流。
-        """
-        # 从 Redis 加载当前会话的历史状态
-        state = self.redis_manager.load_graph_state(req.session_id, subgraph_id=self.subgraph_id)
-        if not state:
-            state = {"messages": []}
+        workflow.add_node("agent", model_node)
+        workflow.add_node("tools", tool_node)
 
-        # 避免重复追加相同的用户输入
-        last_msg = state["messages"][-1] if state["messages"] else None
-        if not last_msg or getattr(last_msg, "content", None) != req.user_input:
-            state["messages"].append(HumanMessage(content=req.user_input))
+        workflow.add_edge(START, "agent")
+        
+        # 条件边：如果模型决定调用工具，去 tools；否则结束
+        from langgraph.pregel import tools_condition
+        workflow.add_conditional_edges("agent", tools_condition)
+        
+        workflow.add_edge("tools", "agent")
 
-        # 以流式方式调用图执行器
-        final_state = None
-        for event in self.graph.stream(state):
-            final_state = event
-            yield event
-
-        # 将执行后的新状态保存回 Redis
-        if final_state:
-            self.redis_manager.save_graph_state(final_state, req.session_id, req.subgraph_id)
+        return workflow.compile(checkpointer=self.checkpointer)

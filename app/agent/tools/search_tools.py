@@ -29,9 +29,11 @@ def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str
         List[Dict[str, str]]: 包含搜索结果的列表，每个结果包含标题、URL 和内容片段
     """
     # 初始化 Tavily 搜索工具
+    max_results = int(os.getenv("TAVILY_MAX_RESULTS", "5"))
+
     tavily_tool = TavilySearch(
         api_key=os.getenv("TAVILY_API_KEY"),
-        max_results=os.getenv("TAVILY_MAX_RESULTS"),
+        max_results=max_results,
         # 搜索主题，topic 为
         topic=topic,
         # 是否在搜索结果中包含答案

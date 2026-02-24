@@ -1,40 +1,31 @@
-import uuid
 from typing import TypedDict, List, Optional, Dict, Any
 
 from langchain_core.language_models import BaseChatModel
 
-# 从 schemas.base 导入通用基类
 from schemas.base import ArbitraryTypesBaseSchema
+
+"""
+【模块说明】
+定义系统内部流转的强类型请求对象。
+这保证了从 API 层传递到 Agent 层的参数不会出现类型错误。
+"""
 
 
 class AgentRequest(ArbitraryTypesBaseSchema):
     """
-    代码编写智能体请求
-
-    Attributes:
-        user_input (str): 用户输入的原始文本。
-        state (TypedDict, optional): 智能体的当前状态。
-        session_id (str): 会话 ID，用于关联多个交互。
-        subgraph_id (str): 子图 ID，用于指定使用的子图。
-        model (BaseChatModel): 语言模型，用于执行任务。
-        llm_config (Dict[str, Any], optional): 模型配置参数。
+    单智能体请求载荷封装
     """
-    user_input: str
-    state: Optional[TypedDict] = None
-    session_id: str
-    subgraph_id: str
-    model: BaseChatModel
-    llm_config: Optional[Dict[str, Any]] = None
+    user_input: str  # 用户当前轮次的输入文本
+    state: Optional[TypedDict] = None  # 外部传入的初始状态（按需使用）
+    session_id: str  # 用于绑定 Checkpointer 的线程 ID
+    subgraph_id: str  # 子图命名空间标识
+    model: BaseChatModel  # 已经初始化好的 LLM 实例（如 GLM-4）
+    llm_config: Optional[Dict[str, Any]] = None  # 其他模型参数配置
 
 
 class BatchAgentRequest(ArbitraryTypesBaseSchema):
     """
-    批量智能体请求
-
-    Attributes:
-        inputs (List[AgentRequest]): 包含多个智能体请求的列表。
-        max_threads (int, optional): 最大并发线程数，默认值为 2。
-        model (BaseChatModel): 语言模型，用于执行批量任务。
+    批量处理请求载荷（用于并发场景）
     """
     inputs: List[AgentRequest]
     max_threads: int = 2
