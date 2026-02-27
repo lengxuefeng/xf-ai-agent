@@ -28,8 +28,6 @@ dependencies = [
     "mcp==1.12.1",
     # 网络请求
     "httpx==0.28.1",
-    # 向量数据库相关
-    "faiss-cpu==1.11.0.post1",
     # Mysql相关
     "pymysql>=1.1.1",
     # 密码加密 - 使用兼容版本解决bcrypt版本读取警告
@@ -54,6 +52,14 @@ dependencies = [
     # 模型scope
     "modelscope>=1.31.0",
     "langgraph-cli[inmem]>=0.4.12",
+    # 连接 PgSQL 的底层驱动
+    "psycopg2-binary>=2.9.11",
+    # 最新一代的 Postgres 驱动（也就是 psycopg3）
+    "psycopg[binary]>=3.3.3",
+    # LangGraph 官方的 PgSQL 记忆插件
+    "langgraph-checkpoint-postgres>=3.0.4",
+    "langchain-postgres>=0.0.17",
+    "pgvector>=0.3.6",
 ]
 requires-python = ">=3.12"
 readme = "README.md"
