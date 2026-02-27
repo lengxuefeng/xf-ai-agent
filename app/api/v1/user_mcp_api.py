@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from core.security import verify_token
-from db.mysql import get_db
+from db import get_db
 from schemas.response_model import ResponseModel
 from schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate, UserMCPOut
 from services.user_mcp_service import user_mcp_service

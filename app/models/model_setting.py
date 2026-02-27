@@ -1,11 +1,10 @@
-from typing import List, Optional
-from sqlalchemy import Column, String, DateTime, func, BigInteger, Boolean, Text, JSON
-from sqlalchemy.types import TypeDecorator
-from sqlalchemy.dialects.mysql import JSON as MYSQL_JSON
-from sqlalchemy.orm import relationship
 import json
 
-from db.mysql import Base
+from sqlalchemy import Column, String, DateTime, func, BigInteger, Boolean, Text, JSON
+from sqlalchemy.orm import relationship
+from sqlalchemy.types import TypeDecorator
+
+from db import Base
 
 """
 模型配置表

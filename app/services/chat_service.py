@@ -3,10 +3,11 @@ import json
 import time
 from typing import Generator, Optional, Dict, Any
 
+from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
 from agent.graph_runner import GraphRunner
-from db import get_db
+from db import get_db_context
 from schemas.chat_history_schemas import ChatMessageCreate
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
@@ -19,40 +20,66 @@ log = get_logger(__name__)
 
 
 class ChatService:
-    """聊天服务层，处理聊天逻辑和历史记录保存"""
+    """
+    聊天服务层 (Service Layer)
+    职责：
+    1. 解析并组装大模型的配置 (Model Config)
+    2. 从 MongoDB 拉取历史记忆
+    3. 唤醒 GraphRunner 执行核心 AI 逻辑
+    4. 【核心】拦截并解析 SSE 流，精准切面记录用户的会话历史
+    """
 
     def __init__(self):
+        # 实例化我们在下层写好的图流转引擎
         self.graph_runner = GraphRunner()
 
-    def process_stream_chat(self, req: StreamChatRequest, user_id: Optional[int] = None) -> StreamingResponse:
+    def process_stream_chat(
+            self,
+            req: StreamChatRequest,
+            user_id: Optional[int],
+            db: Optional[Session] = None
+    ) -> StreamingResponse:
         """
-        统一处理流式聊天请求，包含所有业务逻辑"""
+        【入口】统一处理流式聊天请求
+        """
         log.info(f"收到流式聊天请求，会话ID: {req.session_id}, 用户ID: {user_id}", target=LogTarget.LOG)
+
+        # 注意：safe_execute 只能捕获组装阶段的异常。流式输出期间的异常需要在 stream_chat_with_history 中捕获
         return exception_handler.safe_execute(
             self._process_stream_chat_internal,
-            req, user_id,
-            context="流式聊天处理"
+            req, user_id, db,
+            context="流式聊天准备阶段"
         )
 
-    def _process_stream_chat_internal(self, req: StreamChatRequest, user_id: Optional[int] = None) -> StreamingResponse:
-        """内部流式聊天处理逻辑"""
+    def _process_stream_chat_internal(
+            self,
+            req: StreamChatRequest,
+            user_id: Optional[int],
+            db: Optional[Session] = None
+    ) -> StreamingResponse:
+        """内部流式聊天处理逻辑：准备配置、挂载生成器"""
         log.info(f"请求参数: model={req.model}, user_model_id={req.user_model_id}, service_type={req.service_type}",
                  target=LogTarget.LOG)
+
         model_config = None
+        # 1. 如果用户指定了保存的模型配置卡片，去 MySQL 里查
         if req.user_model_id:
             log.info(f"使用用户模型配置: {req.user_model_id}", target=LogTarget.LOG)
             model_config = self._build_model_config_from_user_model(req.user_model_id, user_id)
 
+        # 2. 兜底方案：使用前端传来的零散参数
         if not model_config:
             log.info("使用请求参数构建配置", target=LogTarget.LOG)
             model_config = self._build_model_config_from_request(req)
 
-        # 根据是否有用户ID选择处理方式
         history_messages = []
         is_resume = req.user_input == "[RESUME]"
-        if user_id:
-            history_data = chat_history_service.get_session_messages(user_id, req.session_id)
-            history_messages = history_data.get("messages", [])
+
+        # 3. 核心分流：注册用户带记忆，匿名用户无记忆
+        if user_id and db:
+            # 拉取历史并标准化成 GraphRunner 需要的 dict 结构
+            history_data = chat_history_service.get_session_messages(db, user_id, req.session_id, page=1, size=100)
+            history_messages = self._normalize_history_messages(history_data)
             stream_generator = self.stream_chat_with_history(
                 user_input=req.user_input,
                 session_id=req.session_id,
@@ -69,7 +96,7 @@ class ChatService:
                 history_messages=history_messages,
             )
 
-        # 返回流式响应
+        # 4. 返回流式响应，控制权正式交给 FastAPI 后台协程
         return StreamingResponse(
             stream_generator,
             media_type="text/event-stream",
@@ -78,20 +105,17 @@ class ChatService:
 
     def _build_model_config_from_user_model(self, user_model_id: int, user_id: Optional[int] = None) -> Optional[
         Dict[str, Any]]:
-        """根据用户模型ID构建模型配置"""
-        db = next(get_db())
-        try:
+        """
+        根据用户模型ID构建模型配置。
+        【优化细节】使用 contextmanager 安全管理数据库连接，防止泄露。
+        """
+        # 只要在 with 代码块内，数据库连接就一直保持活跃；离开立刻释放
+        with get_db_context() as db:
             user_model = user_model_service.get_user_model_by_id(db, user_model_id, user_id)
-            if not user_model:
+            if not user_model or not user_model.model_setting:
                 return None
-
             model_setting = user_model.model_setting
-            if not model_setting:
-                return None
-
-            # 从 custom_config 中读取用户自定义配置
             custom_config = user_model.custom_config or {}
-
             return {
                 'model': user_model.selected_model,
                 'model_service': model_setting.service_name,
@@ -107,8 +131,134 @@ class ChatService:
                 'model_key': user_model.api_key,
                 'model_url': user_model.api_url or model_setting.service_url
             }
+
+    def stream_chat_with_history(
+            self,
+            user_input: str,
+            session_id: str,
+            model_config: Dict[str, Any],
+            user_id: Optional[int] = None,
+            history_messages: Optional[list] = None,
+            is_resume: bool = False,
+    ) -> Generator[str, None, None]:
+        """
+        【核心】带历史记录保存的流式聊天。
+        这里的异常处理必须极其严密，因为抛出异常时 HTTP Headers 已经发给前端了。
+        """
+        log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
+        history_messages = history_messages or []
+
+        if not is_resume:
+            with get_db_context() as db:
+                chat_history_service.get_or_create_session(db, user_id, session_id, user_input)
+
+        ai_response = ""
+        start_time = time.time()
+        error_occurred = False
+        error_message = ""
+
+        try:
+            # 1. 遍历 GraphRunner 推送过来的每一个流式事件
+            for chunk in self.graph_runner.stream_run(user_input, session_id, model_config, history_messages):
+                yield chunk
+                # 2. 只有当事件包含大模型的正文时，才拼接到 ai_response 里准备落库
+                ai_content = self._extract_ai_content_from_chunk(chunk)
+                if ai_content:
+                    ai_response += ai_content
+
+        except GeneratorExit:
+            # 【优化细节】前端主动断开连接 (比如关掉网页/点击停止生成)
+            log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
+            error_occurred = True
+            error_message = "客户端主动断开连接"
+            raise  # 必须 re-raise GeneratorExit，这是 Python 协程规范
+
+        except Exception as e:
+            # 【优化细节】流式传输中断裂，必须以 SSE 格式告诉前端
+            error_occurred = True
+            error_message = str(e)
+            log.exception(f"聊天流处理异常: {error_message}", target=LogTarget.ALL)
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'执行中断: {error_message}'}, ensure_ascii=False)}\n\n"
+
         finally:
-            db.close()
+            # 3. 收尾动作：落库 MongoDB。无论是正常结束、报错，还是前端断开，只要有话出来，统统存下。
+            if user_id and not is_resume and (ai_response or error_occurred):
+                # 哪怕 error_occurred，只要 ai_response 里面有半截话，也值得保存
+                log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
+                with get_db_context() as db:
+                    final_content = ai_response
+                    if error_occurred and not ai_response:
+                        final_content = f"系统提示: 生成被中断 ({error_message})"
+                    chat_data = ChatMessageCreate(
+                        user_id=user_id,
+                        session_id=session_id,
+                        user_content=user_input,
+                        model_content=final_content,
+                        model_name=model_config.get('model'),
+                        latency_ms=int((time.time() - start_time) * 1000),
+                        tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                    )
+                    chat_history_service.create_chat_message(db, user_id, chat_data)
+
+    def stream_chat_anonymous(
+            self,
+            user_input: str,
+            session_id: str,
+            model_config: Dict[str, Any],
+            history_messages: Optional[list] = None
+    ) -> Generator[str, None, None]:
+        """匿名流式聊天，不触碰数据库，纯粹的管道转发"""
+        log.info(f"匿名流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
+        try:
+            yield from self.graph_runner.stream_run(user_input, session_id, model_config, history_messages or [])
+        except GeneratorExit:
+            pass
+        except Exception as e:
+            log.error(f"匿名聊天异常: {e}")
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'发生异常: {str(e)}'}, ensure_ascii=False)}\n\n"
+
+    def _extract_ai_content_from_chunk(self, chunk: str) -> Optional[str]:
+        """
+        安全提取 SSE 格式内容
+        SSE 格式标准为:
+        event: message
+        data: {"type": "message", "content": "你好"}
+        """
+        try:
+            if chunk.startswith('event: '):
+                lines = chunk.split('\n')
+                data_line = next((line for line in lines if line.startswith('data: ')), None)
+                if data_line:
+                    data = json.loads(data_line[6:])
+                    # 只记录大模型的回复内容，忽略 thinking 等中间状态
+                    if data.get('type') in ['message']:
+                        return data.get('content', '')
+            elif chunk.startswith('data: '):
+                # 兼容旧版本纯 data 输出
+                data = json.loads(chunk[6:])
+                if data.get('type') in ['message']:
+                    return data.get('content', '')
+        except (json.JSONDecodeError, KeyError):
+            pass
+        return None
+
+    @staticmethod
+    def _normalize_history_messages(history_data: Any) -> list[dict]:
+        if not history_data:
+            return []
+
+        normalized = []
+        for item in history_data:
+            if isinstance(item, dict):
+                normalized.append(item)
+                continue
+
+            normalized.append({
+                "user_content": getattr(item, "user_content", ""),
+                "model_content": getattr(item, "model_content", ""),
+                "name": getattr(item, "model_name", None),
+            })
+        return normalized
 
     def _build_model_config_from_request(self, req: StreamChatRequest) -> Dict[str, Any]:
         """从请求中构建模型配置"""
@@ -128,110 +278,6 @@ class ChatService:
             model_url=req.model_url,
         )
 
-    def _get_stream_headers(self) -> Dict[str, str]:
-        """获取流式响应头"""
-        return {
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"  # 禁用nginx缓冲
-        }
-
-    def stream_chat_with_history(
-            self,
-            user_input: str,
-            session_id: str,
-            model_config: Dict[str, Any],
-            user_id: Optional[int] = None,
-            history_messages: Optional[list] = None,
-            is_resume: bool = False,
-    ) -> Generator[str, None, None]:
-        """带历史记录保存的流式聊天"""
-        log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
-        history_messages = history_messages or []
-
-        # 获取或创建会话
-        if not is_resume:
-            chat_history_service.get_or_create_session(user_id, session_id, user_input)
-
-        ai_response = ""
-        start_time = time.time()
-        error_occurred = False
-        error_message = ""
-
-        try:
-            # 生成流式响应并收集AI回复内容
-            for chunk in self.graph_runner.stream_run(user_input, session_id, model_config, history_messages):
-                yield chunk
-                # 提取AI响应内容
-                ai_content = self._extract_ai_content_from_chunk(chunk)
-                if ai_content:
-                    ai_response += ai_content
-
-        except RuntimeError as e:
-            # 模型加载失败的特殊处理
-            error_occurred = True
-            error_message = str(e)
-            log.error(f"模型加载失败: {error_message}", target=LogTarget.ALL)
-            # 发送错误消息给前端
-            yield f"data: {json.dumps({'type': 'error', 'content': f'模型加载失败: {error_message}'}, ensure_ascii=False)}\n\n"
-            return
-        except Exception as e:
-            error_occurred = True
-            error_message = str(e)
-            log.exception(f"聊天处理异常: {error_message}", target=LogTarget.ALL)
-            # 重新抛出异常，让上层处理
-            raise e
-        finally:
-            # 如果用户已认证，保存聊天历史
-            if user_id:
-                # 只有当确实有AI回复或发生错误时才保存
-                if (ai_response or error_occurred) and not is_resume:
-                    log.info(f"保存聊天历史，会话ID: {session_id}", target=LogTarget.LOG)
-                    chat_data = ChatMessageCreate(
-                        user_id=user_id,
-                        session_id=session_id,
-                        user_content=user_input,
-                        model_content=ai_response if not error_occurred else f"错误: {error_message}",
-                        model=model_config.get('model'),
-                        latency_ms=int((time.time() - start_time) * 1000),
-                        tokens=ChatUtils.estimate_tokens(user_input + ai_response)
-                    )
-                    chat_history_service.create_chat_message(user_id, chat_data)
-
-    def stream_chat_anonymous(
-            self,
-            user_input: str,
-            session_id: str,
-            model_config: Dict[str, Any],
-            history_messages: Optional[list] = None
-    ) -> Generator[str, None, None]:
-        """匿名流式聊天，不保存历史记录"""
-        log.info(f"匿名流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
-        history_messages = history_messages or []
-        # 直接返回原始流式响应，不做任何处理
-        yield from self.graph_runner.stream_run(user_input, session_id, model_config, history_messages)
-
-    def _extract_ai_content_from_chunk(self, chunk: str) -> Optional[str]:
-        """从SSE chunk中提取AI响应内容"""
-        try:
-            if chunk.startswith('event: '):
-                # 新格式：event: type\ndata: ...
-                lines = chunk.split('\n')
-                data_line = next((line for line in lines if line.startswith('data: ')), None)
-                if data_line:
-                    data = json.loads(data_line[6:])
-                    # 支持 'stream' (逐字) 和 'message' (整段)
-                    if data.get('type') in ['stream', 'message']:
-                        return data.get('content', '')
-            elif chunk.startswith('data: '):
-                # 旧格式兼容
-                data = json.loads(chunk[6:])
-                if data.get('type') in ['stream', 'message']:
-                    return data.get('content', '')
-        except (json.JSONDecodeError, KeyError):
-            pass
-        return None
-
     def build_model_config(
             self,
             model: str = 'google/gemini-1.5-pro',
@@ -248,7 +294,6 @@ class ChatService:
             model_key: str = '',
             model_url: str = ''
     ) -> Dict[str, Any]:
-        """构建模型配置字典"""
         return {
             'model': model,
             'model_service': model_service,
@@ -263,6 +308,13 @@ class ChatService:
             'max_tokens': max_tokens,
             'model_key': model_key,
             'model_url': model_url
+        }
+
+    def _get_stream_headers(self) -> Dict[str, str]:
+        return {
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
         }
 
 

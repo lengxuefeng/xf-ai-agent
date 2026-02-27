@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime, func, BigInteger
 
-from db.mysql import Base
+from db import Base
 
 # 定义基础类
 

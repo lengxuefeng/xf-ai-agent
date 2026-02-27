@@ -22,7 +22,6 @@ Requires-Dist: pypdf==3.10.0
 Requires-Dist: langchain-mcp-adapters~=0.2.0
 Requires-Dist: mcp==1.12.1
 Requires-Dist: httpx==0.28.1
-Requires-Dist: faiss-cpu==1.11.0.post1
 Requires-Dist: pymysql>=1.1.1
 Requires-Dist: passlib[bcrypt]>=1.7.4
 Requires-Dist: bcrypt<5.0.0,>=4.0.0
@@ -36,6 +35,11 @@ Requires-Dist: streamlit>=1.49.1
 Requires-Dist: cryptography>=46.0.3
 Requires-Dist: modelscope>=1.31.0
 Requires-Dist: langgraph-cli[inmem]>=0.4.12
+Requires-Dist: psycopg2-binary>=2.9.11
+Requires-Dist: psycopg[binary]>=3.3.3
+Requires-Dist: langgraph-checkpoint-postgres>=3.0.4
+Requires-Dist: langchain-postgres>=0.0.17
+Requires-Dist: pgvector>=0.3.6
 
 # xf-ai-agent 项目
 

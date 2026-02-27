@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from db.mysql.user_info_db import user_info_db
+from db.crud import user_info_db
 from exceptions.business_exception import BusinessException
 from models.user_info import UserInfo
 from schemas.user_info_schemas import (

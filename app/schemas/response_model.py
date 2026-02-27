@@ -1,6 +1,7 @@
 from typing import Any, Optional, TypeVar, Generic
 
 from pydantic import BaseModel, Field
+from schemas.base import BaseSchema
 
 # 定义泛型类型变量
 T = TypeVar('T')
@@ -10,7 +11,7 @@ T = TypeVar('T')
 """
 
 
-class ResponseModel(BaseModel, Generic[T]):
+class ResponseModel(BaseSchema, Generic[T]):
     """
     统一返回对象
     """

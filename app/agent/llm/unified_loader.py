@@ -3,140 +3,70 @@
 统一模型加载器
 
 根据模型服务类型和配置参数动态加载相应的模型实例。
-支持多种模型服务：ollama、OpenRouter、silicon-flow、zhipu、tongyi等。
 """
 
-import os
-from typing import Optional, Dict, Any
+from typing import Optional, Any
+
 from dotenv import load_dotenv
 from langchain_core.language_models import BaseChatModel
 
+from utils.custom_logger import get_logger
+from .loader_llm_multi import (
+    load_openai_compatible_model,
+    load_tongyi_model,
+    load_gemini_model
+)
 from .model_config import ModelConfig
 from .ollama_model import load_ollama_model, load_ollama_embeddings
-from .loader_llm_multi import (
-    load_open_router,
-    load_silicon_flow,
-    load_zhipu_model,
-    load_tongyi_model,
-    load_chat_model,
-    load_gemini_model, load_openai_model, load_modelscope_llm
-)
 
+log = get_logger(__name__)
 load_dotenv()
 
 
-
 class UnifiedModelLoader:
-    """统一模型加载器"""
-
-    # 支持的模型服务映射
-    SERVICE_LOADERS = {
-        'ollama': 'load_ollama_model',
-        'openrouter': 'load_open_router',
-        'netlify-gemini': 'load_open_router',  # Gemini通过OpenRouter调用
-        'silicon-flow': 'load_silicon_flow',
-        'zhipu': 'load_zhipu_model',
-        'tongyi': 'load_tongyi_model',
-    }
+    """
+    模型加载的“中央调度室”
+    利用工厂模式，将具体的模型实例化逻辑隐藏。外部使用者只需传入 Config 即可。
+    """
 
     @classmethod
     def load_chat_model(cls, config: ModelConfig) -> BaseChatModel:
-        """
-        根据配置加载聊天模型
-        
-        Args:
-            config: 模型配置对象
-            
-        Returns:
-            BaseChatModel: 加载的聊天模型实例
-            
-        Raises:
-            ValueError: 不支持的模型服务类型
-            RuntimeError: 模型加载失败
-        """
+        """根据配置加载对应的聊天模型"""
         service = config.service_type.lower()
         model_name = config.model
 
-        try:
-            if service == 'ollama':
-                return load_ollama_model(config.model)
-            elif service == 'openrouter':
-                return load_open_router(config)
-            elif service == 'silicon-flow':
-                return load_silicon_flow(config)
-            elif service == 'zhipu':
-                return load_zhipu_model(config)
-            elif service == 'tongyi':
-                return load_tongyi_model(config)
-            elif service == 'gemini':
-                return load_gemini_model(config)
-            elif service == 'openai':
-                return load_openai_model(config)
-            elif service == 'modelscope':
-                return load_modelscope_llm(config)
-            else:
-                # 尝试使用通用加载器
-                return cls._load_generic_model(config)
+        # 【核心优化】路由表。所有 OpenAI 兼容的服务直接映射到同一个加载器
+        service_router = {
+            'ollama': lambda c: load_ollama_model(c.model),  # ollama 的特有加载逻辑
+            'openrouter': load_openai_compatible_model,
+            'netlify-gemini': load_openai_compatible_model,
+            'silicon-flow': load_openai_compatible_model,
+            'zhipu': load_openai_compatible_model,
+            'modelscope': load_openai_compatible_model,
+            'openai': load_openai_compatible_model,
+            'tongyi': load_tongyi_model,
+            'gemini': load_gemini_model,
+        }
 
+        try:
+            # 去路由表里找对应的加载函数，找不到则回退到 openai_compatible
+            loader_func = service_router.get(service, load_openai_compatible_model)
+            return loader_func(config)
         except Exception as e:
-            raise RuntimeError(f"加载模型失败 - 服务: {service}, 模型: {model_name}, 错误: {str(e)}")
+            log.error(f"加载模型失败 - 服务: {service}, 模型: {model_name}, 错误详情: {str(e)}")
+            raise RuntimeError(f"模型加载失败({service}): {model_name}") from e
 
     @classmethod
     def load_embedding_model(cls, config: ModelConfig):
-        """
-        加载嵌入模型
-        
-        Args:
-            config: 模型配置对象
-            
-        Returns:
-            嵌入模型实例
-        """
+        """加载向量嵌入模型"""
         embedding_model = config.embedding_model
-
         try:
-            # 根据嵌入模型名称判断服务类型
-            if ':' in embedding_model:  # ollama格式如 bge-m3:latest
-                return load_ollama_embeddings(embedding_model)
-            else:
-                # 其他嵌入模型可以在这里扩展
-                return load_ollama_embeddings(embedding_model)
-
+            # TODO: 未来可在此处扩展 OpenAI Embeddings 或 Zhipu Embeddings 等
+            # 目前统一使用 ollama_embeddings 作为默认实现
+            return load_ollama_embeddings(embedding_model)
         except Exception as e:
-            raise RuntimeError(f"加载嵌入模型失败 - 模型: {embedding_model}, 错误: {str(e)}")
-
-    @classmethod
-    def _load_generic_model(cls, config: ModelConfig) -> BaseChatModel:
-        """
-        使用通用方法加载模型
-        
-        Args:
-            config: 模型配置对象
-            
-        Returns:
-            BaseChatModel: 加载的模型实例
-        """
-        # 构建通用参数
-        params = {
-            'model': config.model,
-            'temperature': config.extra_params.get('temperature', 0.2),
-            'top_p': config.extra_params.get('top_p', 1.0),
-            'max_tokens': config.extra_params.get('max_tokens', 2000),
-        }
-
-        # 根据服务类型添加特定参数
-        service = config.service_type.lower()
-        if service == 'openai':
-            params['api_key'] = os.getenv('OPENAI_API_KEY')
-        elif service == 'anthropic':
-            params['api_key'] = os.getenv('ANTHROPIC_API_KEY')
-
-        return load_chat_model(**params)
-
-    @classmethod
-    def get_supported_services(cls) -> list:
-        """获取支持的模型服务列表"""
-        return list(cls.SERVICE_LOADERS.keys())
+            log.error(f"加载嵌入模型失败 - 模型: {embedding_model}, 错误: {str(e)}")
+            raise RuntimeError(f"嵌入模型加载失败: {embedding_model}") from e
 
 
 def create_model_from_config(
@@ -153,23 +83,7 @@ def create_model_from_config(
         **kwargs
 ) -> tuple[BaseChatModel, Optional[Any]]:
     """
-    便捷函数：根据参数创建模型配置并加载模型
-    
-    Args:
-        model: 模型名称
-        model_service: 模型服务类型
-        service_type: 服务类型
-        deep_thinking_mode: 深度思考模式
-        rag_enabled: 是否启用RAG
-        similarity_threshold: 相似度阈值
-        embedding_model: 嵌入模型名称
-        model_key: 模型密钥
-        embedding_model_key: 嵌入模型密钥
-        model_url: 模型URL
-        **kwargs: 其他参数
-        
-    Returns:
-        tuple: (聊天模型, 嵌入模型)
+    【对外接口】封装层，提供给 Supervisor 和 Agent 实例化模型使用。
     """
     config = ModelConfig(
         model=model,
@@ -185,37 +99,7 @@ def create_model_from_config(
         **kwargs
     )
 
-    # 加载聊天模型
     chat_model = UnifiedModelLoader.load_chat_model(config)
-
-    # 如果启用RAG，加载嵌入模型
-    embedding_model_instance = None
-    if rag_enabled:
-        embedding_model_instance = UnifiedModelLoader.load_embedding_model(config)
+    embedding_model_instance = UnifiedModelLoader.load_embedding_model(config) if rag_enabled else None
 
     return chat_model, embedding_model_instance
-
-
-if __name__ == '__main__':
-    # 测试不同的模型服务
-    test_configs = [
-        {
-            'model': 'qwen3:8b',
-            'model_service': 'ollama'
-        },
-        {
-            'model': 'gemini-1.5-pro',
-            'model_service': 'gemini'
-        },
-        {
-            'model': 'Qwen/QwQ-32B',
-            'model_service': 'silicon-flow'
-        }
-    ]
-
-    for test_config in test_configs:
-        try:
-            chat_model, embedding_model = create_model_from_config(**test_config)
-            print(f"✅ 成功加载模型: {test_config['model_service']} - {test_config['model']}")
-        except Exception as e:
-            print(f"❌ 加载失败: {test_config['model_service']} - {test_config['model']}: {e}")

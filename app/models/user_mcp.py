@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime, func, BigInteger
 
-from db.mysql import Base
+from db import Base
 
 """
 用户MCP设置表

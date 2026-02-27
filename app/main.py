@@ -15,6 +15,7 @@ from api.v1.user_model_api import router as user_model_router
 from api.v1.user_mcp_api import router as user_mcp_router
 from api.v1.interrupt_api import interrupt_router
 from app.core.logger import setup_logger
+from db import Base, engine
 from exceptions.business_exception import BusinessException
 from schemas.response_model import ResponseModel
 
@@ -22,6 +23,8 @@ from schemas.response_model import ResponseModel
 setup_logger()
 logger = logging.getLogger(__name__)
 
+# 这行代码会在服务启动时，检查 PgSQL 里有没有表，没有就会自动按照你的 Model 创表！
+Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="LangGraph Agent FastAPI",
     description="基于 LangChain、LangGraph 和 FastAPI 构建的智能代理后端项目。",

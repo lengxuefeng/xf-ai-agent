@@ -97,7 +97,7 @@ class YunyouAgent(BaseAgent):
                 } for call in sensitive_calls],
             })
 
-            # 【学习笔记】正确处理拒绝逻辑：构造假 ToolMessage 回传给大模型
+            # 正确处理拒绝逻辑：构造假 ToolMessage 回传给大模型
             if decision == "reject" or (isinstance(decision, dict) and decision.get("action") == "reject"):
                 rejection_messages = [
                     ToolMessage(

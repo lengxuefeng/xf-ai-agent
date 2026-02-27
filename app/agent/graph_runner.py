@@ -11,7 +11,7 @@ from agent.llm.unified_loader import create_model_from_config
 from agent.registry import agent_classes
 from services.interrupt_service import interrupt_service
 from utils.custom_logger import get_logger
-
+from agent.rag.vector_store import vector_store_service
 log = get_logger(__name__)
 
 """
@@ -62,7 +62,11 @@ class GraphRunner:
         messages = self._build_initial_messages(history_messages, user_input)
 
         # 2. RAG 上下文注入
-        if str(effective_config.get("rag_enabled", "")).lower() == "true":
+        rag_enabled = effective_config.get("rag_enabled", False)
+        if isinstance(rag_enabled, str):
+            rag_enabled = rag_enabled.lower() == "true"
+
+        if rag_enabled:
             rag_context, rag_sources = self._retrieve_rag_context(user_input, effective_config)
             if rag_context:
                 insert_idx = len(messages) - 1 if isinstance(messages[-1], HumanMessage) else len(messages)
@@ -106,7 +110,6 @@ class GraphRunner:
 
     def _retrieve_rag_context(self, user_input: str, model_config: dict) -> Tuple[str, List[str]]:
         try:
-            from agent.rag.vector_store import vector_store_service
             docs = vector_store_service.search_documents(user_input,
                                                          threshold=float(model_config.get("similarity_threshold", 0.7)))
             return vector_store_service.get_context(docs), [str(d.metadata.get("source")) for d in docs if
@@ -117,7 +120,8 @@ class GraphRunner:
     def _check_pending_approval(self, session_id: str) -> Optional[Command]:
         approvals = interrupt_service.pending_approvals.get(session_id, {})
         for _, data in list(approvals.items()):
-            if data.get("status") == "pending": continue
+            if data.get("status") == "pending":
+                continue
             approvals.clear()
             return Command(resume="approve" if data["status"] == "approve" else {"action": "reject"})
         return None
@@ -180,7 +184,7 @@ class GraphRunner:
         for req in payload.get("action_requests", []):
             interrupt_service.register_pending_approval(
                 session_id, req.get("id") or f"{session_id}_{req['name']}",
-                req["name"], req["args"], req.get("description", "")
+                req["name"], req.get("args", {}), req.get("description", "")
             )
 
     @staticmethod

@@ -1,6 +1,6 @@
 from sqlalchemy import text
 
-from db.mysql import get_db
+from db import get_db
 
 
 # @tool

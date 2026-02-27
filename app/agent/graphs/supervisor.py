@@ -72,11 +72,12 @@ def _llm_route(messages: List[BaseMessage], model: BaseChatModel, config: Runnab
     options = ["FINISH"] + MEMBERS + ["CHAT"]
     options_str = ", ".join(options)
 
+    # 【关键修复】：将 JSON 示例中的 { } 更改为 {{ }} 以进行转义
     system_prompt = (
             "你是 AI Agent 任务路由器。只负责路由，不回答问题。\n"
             "可用目标:\n" + "\n".join([f"- {name}: {info.description}" for name, info in agent_classes.items()]) +
             "\n- CHAT: 通用对话兜底\n- FINISH: 任务结束\n"
-            "必须返回 JSON: {\"route\": \"目标\", \"confidence\": 0.9, \"reason\": \"原因\"}"
+            "必须返回 JSON: {{\"route\": \"目标\", \"confidence\": 0.9, \"reason\": \"原因\"}}"  # 这里改为双括号
     )
 
     # 路由器只需要看最近的 4 条消息，降低干扰，节省 token
@@ -174,7 +175,7 @@ def _chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig):
 
 
 def create_graph(model_config: Optional[dict] = None):
-    model, _ = create_model_from_config ** (model_config or {})
+    model, _ = create_model_from_config(**(model_config or {}))
     workflow = StateGraph(GraphState)
 
     workflow.add_node("supervisor", functools.partial(_supervisor_node, model=model))

@@ -30,7 +30,7 @@ class BaseAgent(ABC):
     def run(self, req: AgentRequest, config: Optional[RunnableConfig] = None) -> Generator[Dict[str, Any], None, None]:
         """
         统一执行入口。
-        【学习笔记】这里接收外部传入的 config，并与其进行合并。
+        这里接收外部传入的 config，并与其进行合并。
         这是保证 LangSmith Trace 连续性，以及 LangGraph 状态隔离的核心。
         """
         # 1. 继承父级 config（包含 LangSmith 的 tags, callbacks 等）
