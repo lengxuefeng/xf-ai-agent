@@ -280,9 +280,9 @@ class ChatService:
 
     def build_model_config(
             self,
-            model: str = 'google/gemini-1.5-pro',
-            model_service: str = 'netlify-gemini',
-            service_type: str = 'ollama',
+            model: str = 'glm-4',
+            model_service: str = 'zhipu',
+            service_type: str = 'zhipu',
             deep_thinking_mode: str = 'auto',
             rag_enabled: bool = False,
             similarity_threshold: float = 0.7,

@@ -8,14 +8,23 @@ from utils.custom_logger import get_logger
 log = get_logger(__name__)
 
 """
-【模块说明】
 所有具体业务智能体（如 YunyouAgent）的抽象基类。
-负责统一处理请求封装、Checkpointer 绑定以及流式输出逻辑。
+
+本模块提供了核心的 `BaseAgent` 类，负责：
+1. 统一处理来自用户的 AgentRequest 请求封装。
+2. 绑定和管理由于多轮对话产生的 Checkpointer 状态持久化。
+3. 统一规范流式输出与图执行的生命周期隔离机制。
 """
 
 
 class BaseAgent(ABC):
     def __init__(self, req: AgentRequest):
+        """
+        初始化 Agent 实例。
+
+        Args:
+            req (AgentRequest): 包含对话上下文和模型配置的请求对象。
+        """
         self.req = req
         self.session_id = req.session_id
         # 如果未提供子图标识，默认使用类名
@@ -29,17 +38,26 @@ class BaseAgent(ABC):
 
     def run(self, req: AgentRequest, config: Optional[RunnableConfig] = None) -> Generator[Dict[str, Any], None, None]:
         """
-        统一执行入口。
-        这里接收外部传入的 config，并与其进行合并。
-        这是保证 LangSmith Trace 连续性，以及 LangGraph 状态隔离的核心。
+        统一的图执行入口。
+
+        接收外部传入的 config 并进行安全拷贝与合并，以保证 LangSmith Trace 的上下文连续性。
+        同时为 LangGraph 配置持久化 ID，确保不同的业务子图在相同 Session 下状态有效隔离。
+
+        Args:
+            req (AgentRequest): 包含对话上下文的请求对象。
+            config (Optional[RunnableConfig]): 由上游传递的 LangGraph 配置项。
+
+        Yields:
+            Generator[Dict[str, Any], None, None]: 流程图中产生的状态更新事件流或错误信息。
         """
         # 1. 继承父级 config（包含 LangSmith 的 tags, callbacks 等）
         base_config = config or {}
-        configurable = base_config.get("configurable", {})
+        # 安全复制，避免修改上游的 config 指针产生副作用
+        configurable = base_config.get("configurable", {}).copy()
 
         # 2. 注入当前子 Agent 的持久化标识
-        configurable["thread_id"] = self.session_id
-        configurable["checkpoint_ns"] = self.subgraph_id  # 命名空间隔离，防止不同子图状态冲突
+        # 采用联合 thread_id 以在同一对话会话中隔离不同子图的状态，避免直接使用 checkpoint_ns 报错
+        configurable["thread_id"] = f"{self.session_id}_{self.subgraph_id}"
 
         final_config = {**base_config, "configurable": configurable}
 
@@ -54,12 +72,18 @@ class BaseAgent(ABC):
             log.error(f"Agent {self.subgraph_id} 运行出错: {str(e)}")
             yield {"error": str(e)}
 
-    def get_state(self):
-        """提供给外部查询当前子图运行状态（如是否处于 Interrupt 挂起）的方法"""
+    def get_state(self) -> Any:
+        """
+        查询当前子图运行状态。
+
+        提供给外部系统查询智能体当前的图状态（例如是否处于 Interrupt 中断挂起等待审核等）。
+
+        Returns:
+            Any: 当前图状态对象。
+        """
         config = {
             "configurable": {
-                "thread_id": self.session_id,
-                "checkpoint_ns": self.subgraph_id
+                "thread_id": f"{self.session_id}_{self.subgraph_id}"
             }
         }
         return self.graph.get_state(config)

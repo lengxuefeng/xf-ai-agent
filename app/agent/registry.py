@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Agent 注册表
+Agent 注册表与发现配置模块。
 
-该文件作为系统中所有可用 Agent 的中央注册表。
-通过将 Agent 的定义与图的构建逻辑分离，使得系统更易于管理和扩展。
-要添加新的 Agent，只需在此文件中进行注册即可。
+充当系统中所有可用业务 Agent 的中央管理注册中心。
+将 Agent 的抽象定义与执行引擎解耦，使得系统的扩展、组合及管理更加便捷。
 """
 from typing import Dict, List
 
@@ -18,9 +17,17 @@ from agent.agents.yunyou_agent import YunyouAgent
 
 
 class AgentInfo:
-    """一个简单的类，用于存储 Agent 的元数据。"""
+    """
+    负责存储并封装单个业务智能体元数据的基座类。
+
+    Attributes:
+        cls: 该 Agent 对应的具体实现类。
+        description: 对该 Agent 所支持领域的业务描述，主要用于语义路由。
+        keywords: 该 Agent 支持处理的焦点分词或关键词，用于意图匹配与规则降级。
+    """
 
     def __init__(self, cls, description: str, keywords: List[str]):
+        """初始化一个智能体元数据对象。"""
         self.cls = cls
         self.description = description
         self.keywords = keywords

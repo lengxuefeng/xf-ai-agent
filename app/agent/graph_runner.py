@@ -2,7 +2,7 @@ import hashlib
 import json
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, AIMessageChunk
 from langgraph.types import Command
 
 from agent.graph_state import AgentRequest
@@ -83,9 +83,20 @@ class GraphRunner:
         try:
             yield self._format_sse("response_start", "")
 
-            # 主图执行
-            for event in graph.stream(inputs, config=config, stream_mode="updates"):
-                yield from self._process_supervisor_event(event)
+            # 主图执行支持并发更新与流式 Message 拦截
+            for event_type, event in graph.stream(inputs, config=config, stream_mode=["updates", "messages"]):
+                if event_type == "messages":
+                    msg_chunk, metadata = event
+                    if isinstance(msg_chunk, AIMessageChunk) and msg_chunk.content:
+                        # 仅当下发节点非 Supervisor 时才抛为 stream 事件 (防止思维链/路由结构泄露给最终用户)
+                        # LangGraph `metadata` 中通常能包含 `langgraph_node` 信息
+                        node_name = metadata.get("langgraph_node", "")
+                        if node_name != "supervisor":
+                            # 只针对纯助手内容发送逐字流
+                            if not getattr(msg_chunk, "tool_calls", None) and not msg_chunk.name:
+                                yield self._format_sse("stream", msg_chunk.content)
+                elif event_type == "updates":
+                    yield from self._process_supervisor_event(event)
 
             # 4. 扫描内部子图是否抛出了中断 (Interrupt Bubble-up)
             interrupt_event = self._scan_subgraph_interrupts(session_id)
@@ -167,9 +178,9 @@ class GraphRunner:
             if node_name == "supervisor" and "next" in node_val:
                 yield self._format_sse("thinking",
                                        f"路由指派: {node_val['next']} (置信度: {node_val.get('routing_confidence', 0):.2f})")
-            if "messages" in node_val:
-                for msg in node_val["messages"]:
-                    if isinstance(msg, AIMessage): yield self._format_sse("message", msg.content)
+            # 移除了在此处对全量大段内容进行 message 事件下发，因为我们已经支持了 token 级 events
+            # 如果 node_val 产生了非 chunk 类型的 AIMessage 且没有工具调用，由于上游已经发送了 stream，这不再需要
+            # 如果有特殊需要可继续解析，但避免重复。
 
     def _scan_subgraph_interrupts(self, session_id: str) -> Optional[dict]:
         model, _ = create_model_from_config(**self._effective_config)

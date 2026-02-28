@@ -58,7 +58,7 @@ class WeatherAgent(BaseAgent):
 
         workflow.add_edge(START, "agent")
         
-        from langgraph.pregel import tools_condition
+        from langgraph.prebuilt import tools_condition
         workflow.add_conditional_edges("agent", tools_condition)
         
         workflow.add_edge("tools", "agent")

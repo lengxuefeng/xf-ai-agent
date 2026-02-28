@@ -59,7 +59,7 @@ class SearchAgent(BaseAgent):
         workflow.add_edge(START, "agent")
         
         # 条件边：如果模型决定调用工具，去 tools；否则结束
-        from langgraph.pregel import tools_condition
+        from langgraph.prebuilt import tools_condition
         workflow.add_conditional_edges("agent", tools_condition)
         
         workflow.add_edge("tools", "agent")

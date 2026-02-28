@@ -35,11 +35,11 @@ class StreamChatRequest(BaseSchema):
     user_model_id: Optional[int] = Field(default=None, description="用户模型配置ID（优先使用此字段）")
 
     # --- 兼容性保留字段 (不再使用 Optional，直接指定具体类型与默认值) ---
-    model: str = Field(default='google/gemini-1.5-pro', description="当前选择的模型")
+    model: str = Field(default='glm-4', description="当前选择的模型")
     model_key: str = Field(default='', description="API Key")
     model_url: str = Field(default='', description="Base URL")
-    model_service: str = Field(default='netlify-gemini', description="模型服务")
-    service_type: str = Field(default='ollama', description="模型服务类型")
+    model_service: str = Field(default='zhipu', description="模型服务")
+    service_type: str = Field(default='zhipu', description="模型服务类型")
     deep_thinking_mode: str = Field(default='auto', description="深度思考模式")
     rag_enabled: bool = Field(default=False, description="RAG是否启用")
     embedding_model: str = Field(default='bge-m3:latest', description="嵌入模型")

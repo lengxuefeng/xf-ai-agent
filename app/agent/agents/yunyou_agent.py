@@ -20,17 +20,36 @@ from utils.custom_logger import get_logger
 log = get_logger(__name__)
 
 """
-【模块说明】
-云柚业务子图。展示了 ToolNode 调用、人工中断审批(interrupt) 以及状态修剪的高阶玩法。
+云柚业务相关的子图(Agent)实现。
+
+展示了如何将工具(ToolNode)调用、人工中断与审批(Interrupt)
+以及通过状态修剪防止上下文溢出的高阶功能结合。
 """
 
 class YunyouState(TypedDict):
+    """
+    云柚业务图的状态对象。
+
+    Attributes:
+        messages: 对话消息列表，支持通过 add_messages 自动累加。
+    """
     messages: Annotated[List[BaseMessage], add_messages]
 
 class YunyouAgent(BaseAgent):
+    """
+    云柚业务领域智能体，负责处理与云柚数据分析和处理相关的问题。
+
+    通过绑定包含企业敏感操作约束的工具集合来解答问题。
+    """
     SENSITIVE_TOOLS = {"holter_report_count"}
 
     def __init__(self, req: AgentRequest):
+        """
+        初始化云柚智能体并创建相关工作流子图。
+
+        Args:
+            req (AgentRequest): 用户请求上下文，如包含绑定的语言模型。
+        """
         super().__init__(req)
         if not req.model:
             raise ValueError("Yunyou Agent 模型初始化失败。")
@@ -38,6 +57,17 @@ class YunyouAgent(BaseAgent):
         self.graph = self._build_graph()
 
     def _build_system_prompt(self, base_prompt: str) -> str:
+        """
+        生成智能体所需的系统提示词 (System Prompt)。
+
+        补充当前系统时间等实时上下文维度，并强化遵守工具调用的指令。
+
+        Args:
+            base_prompt (str): 从中间件或默认项获取的基础提示词。
+
+        Returns:
+            str: 拼接增强规则后的最终系统提示词。
+        """
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         current_weekday = datetime.now().strftime("%A")
         rules = (
@@ -50,6 +80,14 @@ class YunyouAgent(BaseAgent):
         return (base_prompt or "你是云柚业务助手。") + rules
 
     def _build_graph(self) -> Runnable:
+        """
+        构建并返回云柚业务的状态图 (StateGraph)。
+
+        整合基础分析工具与自定义技能工具，并配置人工审批的人机回环 (HITL)。
+
+        Returns:
+            Runnable: 编译后的 LangGraph 运行图。
+        """
         skill_source = os.getenv("SKILL_YUNYOU", "")
         skill_middleware = ConfigurableSkillMiddleware(skill_source) if skill_source else None
 
@@ -65,8 +103,11 @@ class YunyouAgent(BaseAgent):
         ])
 
         def model_node(state: YunyouState):
-            # 【核心修复】防止国产大模型 (GLM/Qwen) 因不支持 tiktoken 导致崩溃。
-            # 直接使用 len 截断消息轮数（保留最近 8 条消息 = 4 轮对话）。
+            """
+            模型处理节点。接收并响应最新对话。
+            """
+            # 防止部分国产大模型因内部不支持 tiktoken 而崩溃。
+            # 这里统一使用内置 len 方法截断消息轮数（保留最近 8 条消息即 4 轮对话）。
             trimmed_messages = trim_messages(
                 state["messages"],
                 max_tokens=8,
@@ -80,6 +121,10 @@ class YunyouAgent(BaseAgent):
             return {"messages": [response]}
 
         def human_review_node(state: YunyouState):
+            """
+            人工审批节点。检查生成的消息是否需要调用受保护的敏感工具。
+            如果需要调用，向调用方抛出 interrupt 命令暂停执行，等待确认。
+            """
             last_message = state["messages"][-1]
             if not isinstance(last_message, AIMessage) or not last_message.tool_calls:
                 return Command(goto=END)
