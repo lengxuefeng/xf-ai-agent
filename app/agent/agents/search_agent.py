@@ -9,6 +9,7 @@ from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
 from agent.tools.search_tools import tavily_search_tool
 from utils.custom_logger import get_logger
+from agent.prompts.tools_prompt import ToolsPrompt
 
 log = get_logger(__name__)
 
@@ -38,7 +39,7 @@ class SearchAgent(BaseAgent):
         # 提示词
         self.prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", "你是一个有用的网络搜索助手，能够使用搜索工具查找信息并回答用户的问题。"),
+                ("system", ToolsPrompt.SEARCH_SYSTEM),
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )

@@ -3,7 +3,9 @@
 LangChain Stream Events 集成，用于捕获所有中间事件
 """
 import json
+import re
 from typing import Generator, List
+
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 
 from agent.graphs.supervisor import create_graph
@@ -30,8 +32,6 @@ def stream_text(text: str, delay: float = 0.0) -> Generator[str, None, None]:
         return
 
     # 解析文本，分离 thinking 和正常内容
-    import re
-
     # 查找所有 </think> 块
     think_pattern = r'</think>(.*?)</think>'
     parts = re.split(think_pattern, text, flags=re.DOTALL)
@@ -70,7 +70,7 @@ class GraphRunnerWithEvents:
         self.enable_events = enable_events
 
     async def astream_run(
-        self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []
+            self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []
     ) -> Generator[str, None, None]:
         """
         使用 astream_events 执行图，捕获所有中间事件。

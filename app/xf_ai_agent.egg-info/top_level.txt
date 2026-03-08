@@ -1,11 +1,11 @@
 agent
 api
+config
 core
 db
 exceptions
 models
 schemas
 services
-templates
 test
 utils

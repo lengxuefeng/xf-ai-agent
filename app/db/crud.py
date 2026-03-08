@@ -23,10 +23,12 @@ from schemas.chat_history_schemas import ChatSessionCreate, ChatSessionUpdate, C
 这里不仅实例化所有的增删改查对象，还包含了各个表专属的自定义查询逻辑。
 """
 
+
 class CRUDUserInfo(CRUDBase[UserInfo, UserInfoCreate, UserInfoUpdate]):
     def get_by_username(self, db: Session, user_name: str):
         """根据用户名查询用户（登录用）"""
         return db.query(self.model).filter(self.model.user_name == user_name).first()
+
 
 class CRUDUserModel(CRUDBase[UserModel, UserModelCreate, UserModelUpdate]):
     def get_by_user_id(self, db: Session, user_id: int):
@@ -40,16 +42,18 @@ class CRUDUserModel(CRUDBase[UserModel, UserModelCreate, UserModelUpdate]):
             self.model.is_active == True
         ).first()
 
+
 class CRUDModelSetting(CRUDBase[ModelSetting, ModelServiceCreate, ModelServiceUpdate]):
-    # 👇【核心修复】补上了获取所有已启用模型的查询方法
     def get_all_enabled(self, db: Session):
         """获取所有已启用的系统模型配置"""
         return db.query(self.model).filter(self.model.is_enabled == True).all()
+
 
 class CRUDUserMCP(CRUDBase[UserMCP, UserMCPCreate, UserMCPUpdate]):
     def get_by_user_id(self, db: Session, user_id: int):
         """获取用户的 MCP 配置"""
         return db.query(self.model).filter(self.model.user_id == user_id).all()
+
 
 class CRUDChatSession(CRUDBase[ChatSessionModel, ChatSessionCreate, ChatSessionUpdate]):
     def get_by_user_id(self, db: Session, user_id: int, skip: int = 0, limit: int = 20):
@@ -63,6 +67,7 @@ class CRUDChatSession(CRUDBase[ChatSessionModel, ChatSessionCreate, ChatSessionU
         """根据会话 ID 查找"""
         return db.query(self.model).filter(self.model.session_id == session_id).first()
 
+
 class CRUDChatMessage(CRUDBase[ChatMessageModel, ChatMessageCreate, ChatMessageUpdate]):
     def get_by_session_id(self, db: Session, session_id: str, skip: int = 0, limit: int = 50):
         """分页获取某个会话的未删除聊天记录，按时间正序"""
@@ -70,6 +75,7 @@ class CRUDChatMessage(CRUDBase[ChatMessageModel, ChatMessageCreate, ChatMessageU
             self.model.session_id == session_id,
             self.model.is_deleted == False
         ).order_by(self.model.create_time.asc()).offset(skip).limit(limit).all()
+
 
 # ==========================================
 # 统一导出所有表的单例操作对象

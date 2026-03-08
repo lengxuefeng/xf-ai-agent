@@ -9,6 +9,7 @@ from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
 from agent.tools.weather_tools import get_weathers
 from utils.custom_logger import get_logger
+from agent.prompts.tools_prompt import ToolsPrompt
 
 log = get_logger(__name__)
 
@@ -38,7 +39,7 @@ class WeatherAgent(BaseAgent):
         # 提示词
         self.prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", "你是一个天气查询助手。请使用工具查询天气信息。"),
+                ("system", ToolsPrompt.WEATHER_SYSTEM),
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )

@@ -1,0 +1,130 @@
+[
+  {
+    "name": "isinstance",
+    "count": 81
+  },
+  {
+    "name": "str",
+    "count": 66
+  },
+  {
+    "name": "len",
+    "count": 51
+  },
+  {
+    "name": "print",
+    "count": 49
+  },
+  {
+    "name": "any",
+    "count": 38
+  },
+  {
+    "name": "int",
+    "count": 34
+  },
+  {
+    "name": "getattr",
+    "count": 33
+  },
+  {
+    "name": "ValueError",
+    "count": 28
+  },
+  {
+    "name": "super",
+    "count": 16
+  },
+  {
+    "name": "list",
+    "count": 12
+  },
+  {
+    "name": "hasattr",
+    "count": 11
+  },
+  {
+    "name": "dict",
+    "count": 10
+  },
+  {
+    "name": "bool",
+    "count": 7
+  },
+  {
+    "name": "enumerate",
+    "count": 5
+  },
+  {
+    "name": "float",
+    "count": 5
+  },
+  {
+    "name": "min",
+    "count": 4
+  },
+  {
+    "name": "set",
+    "count": 4
+  },
+  {
+    "name": "RuntimeError",
+    "count": 3
+  },
+  {
+    "name": "max",
+    "count": 3
+  },
+  {
+    "name": "next",
+    "count": 3
+  },
+  {
+    "name": "reversed",
+    "count": 3
+  },
+  {
+    "name": "all",
+    "count": 2
+  },
+  {
+    "name": "open",
+    "count": 2
+  },
+  {
+    "name": "setattr",
+    "count": 2
+  },
+  {
+    "name": "sorted",
+    "count": 2
+  },
+  {
+    "name": "sum",
+    "count": 2
+  },
+  {
+    "name": "FileNotFoundError",
+    "count": 1
+  },
+  {
+    "name": "exec",
+    "count": 1
+  },
+  {
+    "name": "iter",
+    "count": 1
+  },
+  {
+    "name": "range",
+    "count": 1
+  },
+  {
+    "name": "round",
+    "count": 1
+  },
+  {
+    "name": "zip",
+    "count": 1
+  }
+]

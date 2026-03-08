@@ -13,6 +13,7 @@ from langchain_core.language_models import BaseChatModel
 from utils.custom_logger import get_logger
 from .loader_llm_multi import (
     load_openai_compatible_model,
+    load_openai_embeddings,
     load_tongyi_model,
     load_gemini_model
 )
@@ -59,14 +60,20 @@ class UnifiedModelLoader:
     @classmethod
     def load_embedding_model(cls, config: ModelConfig):
         """加载向量嵌入模型"""
+        service = config.service_type.lower()
         embedding_model = config.embedding_model
+        
+        service_router = {
+            'ollama': lambda c: load_ollama_embeddings(c.embedding_model),
+        }
+        
         try:
-            # TODO: 未来可在此处扩展 OpenAI Embeddings 或 Zhipu Embeddings 等
-            # 目前统一使用 ollama_embeddings 作为默认实现
-            return load_ollama_embeddings(embedding_model)
+            # 默认使用 OpenAI 兼容的加载方式
+            loader_func = service_router.get(service, load_openai_embeddings)
+            return loader_func(config)
         except Exception as e:
-            log.error(f"加载嵌入模型失败 - 模型: {embedding_model}, 错误: {str(e)}")
-            raise RuntimeError(f"嵌入模型加载失败: {embedding_model}") from e
+            log.error(f"加载嵌入模型失败 - 服务: {service}, 模型: {embedding_model}, 错误: {str(e)}")
+            raise RuntimeError(f"嵌入模型加载失败({service}): {embedding_model}") from e
 
 
 def create_model_from_config(

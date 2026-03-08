@@ -4,7 +4,7 @@ from typing import Dict, Any
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatTongyi
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import SecretStr
 
 from agent.llm.model_config import ModelConfig
@@ -58,6 +58,20 @@ def load_openai_compatible_model(config: ModelConfig) -> ChatOpenAI:
         timeout=60,
         model_kwargs=model_kwargs,
         **_common_generation_kwargs(config),
+    )
+
+
+def load_openai_embeddings(config: ModelConfig) -> OpenAIEmbeddings:
+    """加载兼容 OpenAI 接口协议的嵌入模型 (Embeddings)"""
+    api_key = SecretStr(config.embedding_model_key) if config.embedding_model_key else None
+    
+    log.info(f"初始化 OpenAI 兼容 Embedding 模型: {config.embedding_model} | BaseURL: {config.model_url}")
+    return OpenAIEmbeddings(
+        model=config.embedding_model,
+        api_key=api_key,
+        base_url=config.model_url or None,
+        timeout=60,
+        max_retries=2,
     )
 
 

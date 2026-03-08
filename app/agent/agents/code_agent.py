@@ -1,16 +1,17 @@
-from typing import TypedDict, Annotated, List, Dict, Any, Optional
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
+from typing import TypedDict, Annotated, List, Optional
+from langchain_core.messages import BaseMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langgraph.types import interrupt, Command
+from langgraph.types import interrupt
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 
 from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
-from agent.tools.code_tools import execute_python_code
+from utils.code_tools import execute_python_code
 from utils.custom_logger import get_logger
 from agent.graphs.checkpointer import checkpointer # 使用全局 Checkpointer
+from agent.prompts.code_prompt import CodePrompt
 
 log = get_logger(__name__)
 
@@ -43,11 +44,7 @@ class CodeAgent(BaseAgent):
         # 提示词
         self.prompt = ChatPromptTemplate.from_messages(
             [
-                (
-                    "system",
-                    "你是一个 Python 编程专家。你的任务是根据用户需求编写 Python 代码。"
-                    "请只返回可执行的 Python 代码块，不要包含任何 markdown 格式（如 ```python ... ```）。"
-                ),
+                ("system", CodePrompt.SYSTEM),
                 MessagesPlaceholder(variable_name="messages")
             ]
         )
@@ -89,8 +86,9 @@ class CodeAgent(BaseAgent):
             }],
             "message": "需要审批代码执行"
         })
-        
-        if decision.get("action") == "reject":
+
+        action = decision.get("action") if isinstance(decision, dict) else decision
+        if action == "reject":
             return {"execution_result": "用户拒绝执行代码。"}
             
         # 执行代码
@@ -103,5 +101,4 @@ class CodeAgent(BaseAgent):
     def _analyze_result_node(self, state: CodeAgentState):
         result = state["execution_result"]
         # 简单包装结果
-        return {"messages": [AIMessage(content=f"执行结果: {result}")]}
-
+        return {"messages": [AIMessage(content=CodePrompt.EXECUTION_PREFIX.format(result))]}

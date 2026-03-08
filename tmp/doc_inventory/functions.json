@@ -1,0 +1,5765 @@
+[
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgentState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "代码编写子图状态",
+    "example": "CodeAgentState()"
+  },
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "Code Agent (LangGraph 1.0 Refactored)",
+    "example": "CodeAgent()"
+  },
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "CodeAgent(req)"
+  },
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "CodeAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgent",
+    "name": "_generate_code_node",
+    "signature_args": "state, config",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "CodeAgent()._generate_code_node(state, config)"
+  },
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgent",
+    "name": "_execute_code_node",
+    "signature_args": "state, config",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "CodeAgent()._execute_code_node(state, config)"
+  },
+  {
+    "file": "app/agent/agents/code_agent.py",
+    "module": "app.agent.agents.code_agent",
+    "class": "CodeAgent",
+    "name": "_analyze_result_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "CodeAgent()._analyze_result_node(state)"
+  },
+  {
+    "file": "app/agent/agents/medical_agent.py",
+    "module": "app.agent.agents.medical_agent",
+    "class": "MedicalAgentState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "医疗问答子图状态",
+    "example": "MedicalAgentState()"
+  },
+  {
+    "file": "app/agent/agents/medical_agent.py",
+    "module": "app.agent.agents.medical_agent",
+    "class": "MedicalAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "医疗问答智能体 (LangGraph 1.0 Refactored)",
+    "example": "MedicalAgent()"
+  },
+  {
+    "file": "app/agent/agents/medical_agent.py",
+    "module": "app.agent.agents.medical_agent",
+    "class": "MedicalAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "MedicalAgent(req)"
+  },
+  {
+    "file": "app/agent/agents/medical_agent.py",
+    "module": "app.agent.agents.medical_agent",
+    "class": "MedicalAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "MedicalAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/agents/search_agent.py",
+    "module": "app.agent.agents.search_agent",
+    "class": "SearchAgentState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "搜索子图状态",
+    "example": "SearchAgentState()"
+  },
+  {
+    "file": "app/agent/agents/search_agent.py",
+    "module": "app.agent.agents.search_agent",
+    "class": "SearchAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "网络搜索 Agent (LangGraph 1.0 Refactored)",
+    "example": "SearchAgent()"
+  },
+  {
+    "file": "app/agent/agents/search_agent.py",
+    "module": "app.agent.agents.search_agent",
+    "class": "SearchAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SearchAgent(req)"
+  },
+  {
+    "file": "app/agent/agents/search_agent.py",
+    "module": "app.agent.agents.search_agent",
+    "class": "SearchAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SearchAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgentState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "定义 SQL 子图的状态。",
+    "example": "SqlAgentState()"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "SQL Agent (LangGraph 1.0 Refactored)",
+    "example": "SqlAgent()"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent(req)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_latest_human_text",
+    "signature_args": "messages",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._latest_human_text(messages)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_human_texts",
+    "signature_args": "messages",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._human_texts(messages)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_extract_limit",
+    "signature_args": "text, default",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._extract_limit(text, default)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_parse_schema_tables",
+    "signature_args": "schema_info",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "从 get_schema 的文本输出中解析:",
+    "example": "SqlAgent()._parse_schema_tables(schema_info)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_extract_sql_tables",
+    "signature_args": "sql",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._extract_sql_tables(sql)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_infer_holter_intent",
+    "signature_args": "messages",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._infer_holter_intent(messages)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_choose_holter_table",
+    "signature_args": "schema_tables",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._choose_holter_table(schema_tables)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_pick_order_column",
+    "signature_args": "cols",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._pick_order_column(cols)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_build_holter_fallback_sql",
+    "signature_args": "user_text, schema_tables",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._build_holter_fallback_sql(user_text, schema_tables)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_get_schema_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._get_schema_node(state)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_generate_sql_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._generate_sql_node(state)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_execute_sql_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._execute_sql_node(state)"
+  },
+  {
+    "file": "app/agent/agents/sql_agent.py",
+    "module": "app.agent.agents.sql_agent",
+    "class": "SqlAgent",
+    "name": "_generate_response_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "SqlAgent()._generate_response_node(state)"
+  },
+  {
+    "file": "app/agent/agents/weather_agent.py",
+    "module": "app.agent.agents.weather_agent",
+    "class": "WeatherAgentState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "天气子图状态",
+    "example": "WeatherAgentState()"
+  },
+  {
+    "file": "app/agent/agents/weather_agent.py",
+    "module": "app.agent.agents.weather_agent",
+    "class": "WeatherAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "天气查询 Agent (LangGraph 1.0 Refactored)",
+    "example": "WeatherAgent()"
+  },
+  {
+    "file": "app/agent/agents/weather_agent.py",
+    "module": "app.agent.agents.weather_agent",
+    "class": "WeatherAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "WeatherAgent(req)"
+  },
+  {
+    "file": "app/agent/agents/weather_agent.py",
+    "module": "app.agent.agents.weather_agent",
+    "class": "WeatherAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "WeatherAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "云柚业务图的状态对象。",
+    "example": "YunyouState()"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "云柚业务领域智能体，负责处理与云柚数据分析和处理相关的问题。",
+    "example": "YunyouAgent()"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "初始化云柚智能体并创建相关工作流子图。",
+    "example": "YunyouAgent(req)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_message_text",
+    "signature_args": "msg",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "兼容字符串与 content block 两种消息格式。",
+    "example": "YunyouAgent()._message_text(msg)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_extract_recent_human_texts",
+    "signature_args": "messages, limit",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._extract_recent_human_texts(messages, limit)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_normalize_date_token",
+    "signature_args": "token",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._normalize_date_token(token)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_last_n_days_range",
+    "signature_args": "days",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._last_n_days_range(days)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_extract_date_range",
+    "signature_args": "text",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._extract_date_range(text)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_extract_limit",
+    "signature_args": "text, default_limit",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._extract_limit(text, default_limit)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_wants_desc_order",
+    "signature_args": "text",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._wants_desc_order(text)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_is_holter_list_intent",
+    "signature_args": "latest_text, history_text",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._is_holter_list_intent(latest_text, history_text)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_extract_filters",
+    "signature_args": "text",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._extract_filters(text)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_extract_records",
+    "signature_args": "payload, depth",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._extract_records(payload, depth)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_pick_value",
+    "signature_args": "row, keys",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._pick_value(row, keys)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_clip_value",
+    "signature_args": "value, max_len",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._clip_value(value, max_len)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_format_holter_rows",
+    "signature_args": "raw_result, start_day, end_day, limit",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "子Agent逻辑函数",
+    "description": "",
+    "example": "YunyouAgent()._format_holter_rows(raw_result, start_day, end_day, limit)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_try_direct_holter_list_query",
+    "signature_args": "messages",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "对“Holter 列表 + 最近/按id/前N条”做确定性快路径。",
+    "example": "YunyouAgent()._try_direct_holter_list_query(messages)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_build_system_prompt",
+    "signature_args": "base_prompt",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "生成智能体所需的系统提示词 (System Prompt)。",
+    "example": "YunyouAgent()._build_system_prompt(base_prompt)"
+  },
+  {
+    "file": "app/agent/agents/yunyou_agent.py",
+    "module": "app.agent.agents.yunyou_agent",
+    "class": "YunyouAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [],
+    "role": "子Agent逻辑函数",
+    "description": "构建并返回云柚业务的状态图 (StateGraph)。",
+    "example": "YunyouAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/base.py",
+    "module": "app.agent.base",
+    "class": "BaseAgent",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class BaseAgent",
+    "example": "BaseAgent()"
+  },
+  {
+    "file": "app/agent/base.py",
+    "module": "app.agent.base",
+    "class": "BaseAgent",
+    "name": "_extract_interrupt_payload",
+    "signature_args": "exc",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "尽最大可能从 LangGraph GraphInterrupt 异常对象中提取审批载荷。",
+    "example": "BaseAgent()._extract_interrupt_payload(exc)"
+  },
+  {
+    "file": "app/agent/base.py",
+    "module": "app.agent.base",
+    "class": "BaseAgent",
+    "name": "__init__",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化 Agent 实例。",
+    "example": "BaseAgent(req)"
+  },
+  {
+    "file": "app/agent/base.py",
+    "module": "app.agent.base",
+    "class": "BaseAgent",
+    "name": "_build_graph",
+    "signature_args": "",
+    "decorators": [
+      "abstractmethod"
+    ],
+    "role": "通用函数",
+    "description": "子类必须实现此方法，返回编译后的 StateGraph",
+    "example": "BaseAgent()._build_graph()"
+  },
+  {
+    "file": "app/agent/base.py",
+    "module": "app.agent.base",
+    "class": "BaseAgent",
+    "name": "run",
+    "signature_args": "req, config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "统一的图执行入口。",
+    "example": "BaseAgent().run(req, config)"
+  },
+  {
+    "file": "app/agent/base.py",
+    "module": "app.agent.base",
+    "class": "BaseAgent",
+    "name": "get_state",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "查询当前子图运行状态。",
+    "example": "BaseAgent().get_state()"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "图执行器（Graph Runner）—— 整个 AI 对话链路的核心调度中枢。",
+    "example": "GraphRunner()"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "__init__",
+    "signature_args": "model_config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化图执行器。",
+    "example": "GraphRunner(model_config)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_config_key",
+    "signature_args": "model_config",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "将模型配置序列化为 MD5 摘要，用作 Supervisor 缓存的键。",
+    "example": "GraphRunner()._config_key(model_config)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_get_supervisor",
+    "signature_args": "model_config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取或创建 Supervisor 编译图实例（带内存缓存）。",
+    "example": "GraphRunner()._get_supervisor(model_config)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "stream_run",
+    "signature_args": "user_input, session_id, model_config, history_messages",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "核心流式执行器（使用后台线程实现真正的实时流）。",
+    "example": "GraphRunner().stream_run(user_input, session_id, model_config, history_messages)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_build_initial_messages",
+    "signature_args": "history, user_input",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "将前端传入的历史消息列表转换为 LangChain 的 BaseMessage 列表。",
+    "example": "GraphRunner()._build_initial_messages(history, user_input)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_retrieve_rag_context",
+    "signature_args": "user_input, model_config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "检索 RAG 知识库，返回拼接后的上下文文本和来源列表。失败时静默降级为空。",
+    "example": "GraphRunner()._retrieve_rag_context(user_input, model_config)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_check_pending_approval",
+    "signature_args": "session_id",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "检查当前会话是否有前端已提交的审批结果，若有则构造恢复元信息。",
+    "example": "GraphRunner()._check_pending_approval(session_id)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_snapshot_has_interrupt",
+    "signature_args": "snapshot",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "兼容不同 LangGraph 版本的快照中断字段。",
+    "example": "GraphRunner()._snapshot_has_interrupt(snapshot)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_handle_resume",
+    "signature_args": "session_id, resume_meta, supervisor_graph",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "恢复被 Interrupt 挂起的子 Agent 执行。",
+    "example": "GraphRunner()._handle_resume(session_id, resume_meta, supervisor_graph)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_process_supervisor_event",
+    "signature_args": "event",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "处理 Supervisor 图的 updates 事件。",
+    "example": "GraphRunner()._process_supervisor_event(event)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_extract_interrupt_from_updates",
+    "signature_args": "event",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "从 Supervisor updates 事件中提取子节点透传的 interrupt payload。",
+    "example": "GraphRunner()._extract_interrupt_from_updates(event)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_scan_subgraph_interrupts",
+    "signature_args": "session_id",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "图执行结束后，遍历所有子 Agent 的 Checkpoint 状态，检查是否有未处理的 Interrupt 冒泡。",
+    "example": "GraphRunner()._scan_subgraph_interrupts(session_id)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_register_interrupts",
+    "signature_args": "session_id, payload",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "将需要人工审核的 Interrupt 事件注册到 InterruptService，等待前端提交审批结果。",
+    "example": "GraphRunner()._register_interrupts(session_id, payload)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_approval_message_id",
+    "signature_args": "session_id, req, index",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "为缺失 id 的审批请求生成稳定 message_id，保证前后端可对齐。",
+    "example": "GraphRunner()._approval_message_id(session_id, req, index)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_format_interrupt_payload",
+    "signature_args": "session_id, val",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "将 LangGraph 的 Interrupt 值标准化为前端可消费的字典格式。",
+    "example": "GraphRunner()._format_interrupt_payload(session_id, val)"
+  },
+  {
+    "file": "app/agent/graph_runner.py",
+    "module": "app.agent.graph_runner",
+    "class": "GraphRunner",
+    "name": "_format_sse",
+    "signature_args": "type_, content",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "将事件类型和内容格式化为标准的 SSE（Server-Sent Events）字符串。",
+    "example": "GraphRunner()._format_sse(type_, content)"
+  },
+  {
+    "file": "app/agent/graph_runner_events.py",
+    "module": "app.agent.graph_runner_events",
+    "class": "",
+    "name": "to_sse",
+    "signature_args": "data",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "将字典格式化为 Server-Sent Event (SSE) 字符串。",
+    "example": "to_sse(data)"
+  },
+  {
+    "file": "app/agent/graph_runner_events.py",
+    "module": "app.agent.graph_runner_events",
+    "class": "",
+    "name": "stream_text",
+    "signature_args": "text, delay",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "将文本逐字符流式输出，实现打字机效果。",
+    "example": "stream_text(text, delay)"
+  },
+  {
+    "file": "app/agent/graph_runner_events.py",
+    "module": "app.agent.graph_runner_events",
+    "class": "GraphRunnerWithEvents",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "图运行器，支持使用 astream_events 捕获所有中间事件。",
+    "example": "GraphRunnerWithEvents()"
+  },
+  {
+    "file": "app/agent/graph_runner_events.py",
+    "module": "app.agent.graph_runner_events",
+    "class": "GraphRunnerWithEvents",
+    "name": "__init__",
+    "signature_args": "model_config, enable_events",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化图运行器",
+    "example": "GraphRunnerWithEvents(model_config, enable_events)"
+  },
+  {
+    "file": "app/agent/graph_state.py",
+    "module": "app.agent.graph_state",
+    "class": "AgentRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "单智能体请求载荷封装",
+    "example": "AgentRequest()"
+  },
+  {
+    "file": "app/agent/graph_state.py",
+    "module": "app.agent.graph_state",
+    "class": "BatchAgentRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "批量处理请求载荷（用于并发场景）",
+    "example": "BatchAgentRequest()"
+  },
+  {
+    "file": "app/agent/graphs/checkpointer.py",
+    "module": "app.agent.graphs.checkpointer",
+    "class": "",
+    "name": "_create_checkpointer",
+    "signature_args": "",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "初始化存储后端。",
+    "example": "_create_checkpointer()"
+  },
+  {
+    "file": "app/agent/graphs/state.py",
+    "module": "app.agent.graphs.state",
+    "class": "SubTask",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "单个子任务描述（用于 Parent_Planner 的 DAG 拆解）",
+    "example": "SubTask()"
+  },
+  {
+    "file": "app/agent/graphs/state.py",
+    "module": "app.agent.graphs.state",
+    "class": "WorkerResult",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "单个 Worker 执行返回的结果封装（支持 operator.add 并发收集）",
+    "example": "WorkerResult()"
+  },
+  {
+    "file": "app/agent/graphs/state.py",
+    "module": "app.agent.graphs.state",
+    "class": "GraphState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "定义图的全局状态。",
+    "example": "GraphState()"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "IntentDecision",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "class IntentDecision",
+    "example": "IntentDecision()"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "WorkerState",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "class WorkerState",
+    "example": "WorkerState()"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_looks_like_sql_request",
+    "signature_args": "text",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "快速识别可直接路由到 SQL Agent 的请求模式。",
+    "example": "_looks_like_sql_request(text)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_looks_like_holter_request",
+    "signature_args": "text",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "识别 Holter/云柚业务域请求，用于优先路由到 yunyou_agent。",
+    "example": "_looks_like_holter_request(text)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_latest_human_message",
+    "signature_args": "messages",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "",
+    "example": "_latest_human_message(messages)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_content_to_text",
+    "signature_args": "content",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "将 LLM content（str / block list / other）统一转为可展示文本。",
+    "example": "_content_to_text(content)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_is_followup_supplement",
+    "signature_args": "text",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "识别用户是否在补充上轮追问信息（日期、确认词、简短参数）。",
+    "example": "_is_followup_supplement(text)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_history_hint_intent",
+    "signature_args": "messages",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "从最近上下文中推断业务域，避免补充信息被错误路由到 CHAT。",
+    "example": "_history_hint_intent(messages)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_parse_json_from_text",
+    "signature_args": "text",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "从 LLM 返回文本中提取 JSON 对象（支持嵌套花括号）。",
+    "example": "_parse_json_from_text(text)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_normalize_interrupt_payload",
+    "signature_args": "val",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "将不同形态的 Interrupt 值转成统一 payload。",
+    "example": "_normalize_interrupt_payload(val)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_extract_interrupt_from_snapshot",
+    "signature_args": "snapshot",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "",
+    "example": "_extract_interrupt_from_snapshot(snapshot)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_run_agent_to_completion",
+    "signature_args": "agent_name, user_input, model, config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "共享的 Agent 执行逻辑，供 worker_node 和 single_agent_node 复用。",
+    "example": "_run_agent_to_completion(agent_name, user_input, model, config)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "intent_router_node",
+    "signature_args": "state, model, config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "第二级：意图识别节点 (Intent_Router_Node)",
+    "example": "intent_router_node(state, model, config)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "parent_planner_node",
+    "signature_args": "state, model, config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "第三级：父规划器 (Parent_Planner_Node)",
+    "example": "parent_planner_node(state, model, config)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "dispatcher_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "Dispatcher：提取可并发执行的无依赖任务，并标记为 dispatched。",
+    "example": "dispatcher_node(state)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "dispatch_router",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "Conditional Edge：根据 active_tasks 发起扇出，若全部完成则聚合。",
+    "example": "dispatch_router(state)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "worker_node",
+    "signature_args": "state, config, model",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "Worker：执行单个 SubTask 并返回结果。",
+    "example": "worker_node(state, config, model)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "reducer_node",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "Reducer：回收并发结果，更新全图 task_list 状态。",
+    "example": "reducer_node(state)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "aggregator_node",
+    "signature_args": "state, model, config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "收尾级：结果聚合节点 (Aggregator_Node)",
+    "example": "aggregator_node(state, model, config)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "chat_node",
+    "signature_args": "state, model, config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "单一的对话闲聊节点 (非复杂DAG走这)",
+    "example": "chat_node(state, model, config)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "single_agent_node",
+    "signature_args": "state, agent_name, model, config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "单一实体 Agent 包装执行 (非复杂 DAG 路线)，复用共享执行逻辑。",
+    "example": "single_agent_node(state, agent_name, model, config)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "_route_after_intent",
+    "signature_args": "state",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "条件边：Intent_Router → 单兵/DAG/聊天",
+    "example": "_route_after_intent(state)"
+  },
+  {
+    "file": "app/agent/graphs/supervisor.py",
+    "module": "app.agent.graphs.supervisor",
+    "class": "",
+    "name": "create_graph",
+    "signature_args": "model_config",
+    "decorators": [],
+    "role": "LangGraph节点/编排函数",
+    "description": "构建遵循生产级 3 层逻辑拓扑结构的融合 StateGraph",
+    "example": "create_graph(model_config)"
+  },
+  {
+    "file": "app/agent/llm/loader_llm_multi.py",
+    "module": "app.agent.llm.loader_llm_multi",
+    "class": "",
+    "name": "_common_generation_kwargs",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "参数对齐器",
+    "example": "_common_generation_kwargs(config)"
+  },
+  {
+    "file": "app/agent/llm/loader_llm_multi.py",
+    "module": "app.agent.llm.loader_llm_multi",
+    "class": "",
+    "name": "load_openai_compatible_model",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "【核心优化】加载所有兼容 OpenAI 接口协议的模型！",
+    "example": "load_openai_compatible_model(config)"
+  },
+  {
+    "file": "app/agent/llm/loader_llm_multi.py",
+    "module": "app.agent.llm.loader_llm_multi",
+    "class": "",
+    "name": "load_openai_embeddings",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "加载兼容 OpenAI 接口协议的嵌入模型 (Embeddings)",
+    "example": "load_openai_embeddings(config)"
+  },
+  {
+    "file": "app/agent/llm/loader_llm_multi.py",
+    "module": "app.agent.llm.loader_llm_multi",
+    "class": "",
+    "name": "load_tongyi_model",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "单独加载通义千问 (由于其 SDK 包依赖不同)",
+    "example": "load_tongyi_model(config)"
+  },
+  {
+    "file": "app/agent/llm/loader_llm_multi.py",
+    "module": "app.agent.llm.loader_llm_multi",
+    "class": "",
+    "name": "load_gemini_model",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "单独加载 Gemini 模型",
+    "example": "load_gemini_model(config)"
+  },
+  {
+    "file": "app/agent/llm/model_config.py",
+    "module": "app.agent.llm.model_config",
+    "class": "ModelConfig",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class ModelConfig",
+    "example": "ModelConfig()"
+  },
+  {
+    "file": "app/agent/llm/model_config.py",
+    "module": "app.agent.llm.model_config",
+    "class": "ModelConfig",
+    "name": "extra_params",
+    "signature_args": "",
+    "decorators": [
+      "property"
+    ],
+    "role": "通用函数",
+    "description": "【兼容性黑魔法】",
+    "example": "ModelConfig().extra_params()"
+  },
+  {
+    "file": "app/agent/llm/ollama_model.py",
+    "module": "app.agent.llm.ollama_model",
+    "class": "",
+    "name": "load_ollama_model",
+    "signature_args": "model_name",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "加载ollama模型",
+    "example": "load_ollama_model(model_name)"
+  },
+  {
+    "file": "app/agent/llm/ollama_model.py",
+    "module": "app.agent.llm.ollama_model",
+    "class": "",
+    "name": "load_ollama_embeddings",
+    "signature_args": "model_name",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "加载ollama嵌入模型",
+    "example": "load_ollama_embeddings(model_name)"
+  },
+  {
+    "file": "app/agent/llm/ollama_model.py",
+    "module": "app.agent.llm.ollama_model",
+    "class": "",
+    "name": "load_ollama_vector_storr",
+    "signature_args": "model_name",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建内存向量存储模型",
+    "example": "load_ollama_vector_storr(model_name)"
+  },
+  {
+    "file": "app/agent/llm/unified_loader.py",
+    "module": "app.agent.llm.unified_loader",
+    "class": "UnifiedModelLoader",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "模型加载的“中央调度室”",
+    "example": "UnifiedModelLoader()"
+  },
+  {
+    "file": "app/agent/llm/unified_loader.py",
+    "module": "app.agent.llm.unified_loader",
+    "class": "UnifiedModelLoader",
+    "name": "load_chat_model",
+    "signature_args": "config",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "根据配置加载对应的聊天模型",
+    "example": "UnifiedModelLoader().load_chat_model(config)"
+  },
+  {
+    "file": "app/agent/llm/unified_loader.py",
+    "module": "app.agent.llm.unified_loader",
+    "class": "UnifiedModelLoader",
+    "name": "load_embedding_model",
+    "signature_args": "config",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "加载向量嵌入模型",
+    "example": "UnifiedModelLoader().load_embedding_model(config)"
+  },
+  {
+    "file": "app/agent/llm/unified_loader.py",
+    "module": "app.agent.llm.unified_loader",
+    "class": "",
+    "name": "create_model_from_config",
+    "signature_args": "model, model_service, service_type, deep_thinking_mode",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "【对外接口】封装层，提供给 Supervisor 和 Agent 实例化模型使用。",
+    "example": "create_model_from_config(model, model_service, service_type, deep_thinking_mode)"
+  },
+  {
+    "file": "app/agent/prompts/code_prompt.py",
+    "module": "app.agent.prompts.code_prompt",
+    "class": "CodePrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class CodePrompt",
+    "example": "CodePrompt()"
+  },
+  {
+    "file": "app/agent/prompts/medical_prompt.py",
+    "module": "app.agent.prompts.medical_prompt",
+    "class": "MedicalPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class MedicalPrompt",
+    "example": "MedicalPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/sql_prompt.py",
+    "module": "app.agent.prompts.sql_prompt",
+    "class": "SqlPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class SqlPrompt",
+    "example": "SqlPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "IntentRouterPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "Tier-1: 小模型意图分类器提示词。",
+    "example": "IntentRouterPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "IntentRouterPrompt",
+    "name": "get_system_prompt",
+    "signature_args": "",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "",
+    "example": "IntentRouterPrompt().get_system_prompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "PlannerPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "Tier-2: 父规划器（Parent Planner）提示词。",
+    "example": "PlannerPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "PlannerPrompt",
+    "name": "get_system_prompt",
+    "signature_args": "",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "",
+    "example": "PlannerPrompt().get_system_prompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "AggregatorPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "Tier-2 收尾: 结果聚合器提示词。",
+    "example": "AggregatorPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "ChatFallbackPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "通用对话降级提示词：当请求无法匹配任何专业 Agent 时使用。",
+    "example": "ChatFallbackPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/supervisor_prompt.py",
+    "module": "app.agent.prompts.supervisor_prompt",
+    "class": "ChatFallbackPrompt",
+    "name": "get_system_prompt",
+    "signature_args": "",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "",
+    "example": "ChatFallbackPrompt().get_system_prompt()"
+  },
+  {
+    "file": "app/agent/prompts/tools_prompt.py",
+    "module": "app.agent.prompts.tools_prompt",
+    "class": "ToolsPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class ToolsPrompt",
+    "example": "ToolsPrompt()"
+  },
+  {
+    "file": "app/agent/prompts/yunyou_prompt.py",
+    "module": "app.agent.prompts.yunyou_prompt",
+    "class": "YunyouPrompt",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class YunyouPrompt",
+    "example": "YunyouPrompt()"
+  },
+  {
+    "file": "app/agent/rag/vector_store.py",
+    "module": "app.agent.rag.vector_store",
+    "class": "VectorStoreService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class VectorStoreService",
+    "example": "VectorStoreService()"
+  },
+  {
+    "file": "app/agent/rag/vector_store.py",
+    "module": "app.agent.rag.vector_store",
+    "class": "VectorStoreService",
+    "name": "__init__",
+    "signature_args": "collection_name",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "VectorStoreService(collection_name)"
+  },
+  {
+    "file": "app/agent/rag/vector_store.py",
+    "module": "app.agent.rag.vector_store",
+    "class": "VectorStoreService",
+    "name": "add_documents",
+    "signature_args": "documents",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "将切片后的文档灌入数据库",
+    "example": "VectorStoreService().add_documents(documents)"
+  },
+  {
+    "file": "app/agent/rag/vector_store.py",
+    "module": "app.agent.rag.vector_store",
+    "class": "VectorStoreService",
+    "name": "similarity_search",
+    "signature_args": "query, k, filter",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "相似度检索",
+    "example": "VectorStoreService().similarity_search(query, k, filter)"
+  },
+  {
+    "file": "app/agent/rag/vector_store.py",
+    "module": "app.agent.rag.vector_store",
+    "class": "VectorStoreService",
+    "name": "as_retriever",
+    "signature_args": "search_kwargs",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "转化为 LangChain 标准检索器",
+    "example": "VectorStoreService().as_retriever(search_kwargs)"
+  },
+  {
+    "file": "app/agent/registry.py",
+    "module": "app.agent.registry",
+    "class": "AgentInfo",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "负责存储并封装单个业务智能体元数据的基座类。",
+    "example": "AgentInfo()"
+  },
+  {
+    "file": "app/agent/registry.py",
+    "module": "app.agent.registry",
+    "class": "AgentInfo",
+    "name": "__init__",
+    "signature_args": "cls, description, keywords",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化一个智能体元数据对象。",
+    "example": "AgentInfo(cls, description, keywords)"
+  },
+  {
+    "file": "app/agent/rules/actions.py",
+    "module": "app.agent.rules.actions",
+    "class": "",
+    "name": "handle_action",
+    "signature_args": "action",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "根据给定的 action URI执行对应的动作能力，",
+    "example": "handle_action(action)"
+  },
+  {
+    "file": "app/agent/rules/registry.py",
+    "module": "app.agent.rules.registry",
+    "class": "RuleConfig",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class RuleConfig",
+    "example": "RuleConfig()"
+  },
+  {
+    "file": "app/agent/rules/registry.py",
+    "module": "app.agent.rules.registry",
+    "class": "RuleConfig",
+    "name": "compile_patterns",
+    "signature_args": "",
+    "decorators": [
+      "model_validator"
+    ],
+    "role": "通用函数",
+    "description": "在初始化后对正则配置进行预编译并缓存，提升引擎运行时拦截性能。",
+    "example": "RuleConfig().compile_patterns()"
+  },
+  {
+    "file": "app/agent/rules/registry.py",
+    "module": "app.agent.rules.registry",
+    "class": "RuleRegistry",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "独立化、配置驱动的规则注册表。",
+    "example": "RuleRegistry()"
+  },
+  {
+    "file": "app/agent/rules/registry.py",
+    "module": "app.agent.rules.registry",
+    "class": "RuleRegistry",
+    "name": "__init__",
+    "signature_args": "config_path",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "RuleRegistry(config_path)"
+  },
+  {
+    "file": "app/agent/rules/registry.py",
+    "module": "app.agent.rules.registry",
+    "class": "RuleRegistry",
+    "name": "get_rules",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取按优先级降序排列的可用规则。",
+    "example": "RuleRegistry().get_rules()"
+  },
+  {
+    "file": "app/agent/tools/search_tools.py",
+    "module": "app.agent.tools.search_tools",
+    "class": "",
+    "name": "tavily_search_tool",
+    "signature_args": "query, topic",
+    "decorators": [
+      "tool"
+    ],
+    "role": "工具函数",
+    "description": "使用 Tavily API 执行实时网页搜索。",
+    "example": "tavily_search_tool(query, topic)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "_normalize_sql",
+    "signature_args": "query",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "清理模型输出，去掉 markdown 包裹。",
+    "example": "_normalize_sql(query)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "execute_sql",
+    "signature_args": "query",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "执行 SQL 查询并返回结构化文本结果。",
+    "example": "execute_sql(query)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "_escape_cell",
+    "signature_args": "val, max_len",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "",
+    "example": "_escape_cell(val, max_len)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "_is_sensitive_column",
+    "signature_args": "col",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "",
+    "example": "_is_sensitive_column(col)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "_mask_phone_if_needed",
+    "signature_args": "col, val",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "",
+    "example": "_mask_phone_if_needed(col, val)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "format_sql_result_for_user",
+    "signature_args": "sql, raw_result, max_rows",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "将 SQL 原始执行结果格式化为用户可读文本。",
+    "example": "format_sql_result_for_user(sql, raw_result, max_rows)"
+  },
+  {
+    "file": "app/agent/tools/sql_tools.py",
+    "module": "app.agent.tools.sql_tools",
+    "class": "",
+    "name": "get_schema",
+    "signature_args": "",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "获取 PostgreSQL public schema 下的表结构信息。",
+    "example": "get_schema()"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "WeatherAPIClient",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "和风天气 API 客户端，封装公用的 API 请求和错误处理逻辑",
+    "example": "WeatherAPIClient()"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "WeatherAPIClient",
+    "name": "__init__",
+    "signature_args": "api_key",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "",
+    "example": "WeatherAPIClient(api_key)"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "WeatherAPIClient",
+    "name": "_make_request",
+    "signature_args": "url, params",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "执行 API 请求并处理错误",
+    "example": "WeatherAPIClient()._make_request(url, params)"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "WeatherAPIClient",
+    "name": "get_weather_data",
+    "signature_args": "location",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "获取实时天气数据",
+    "example": "WeatherAPIClient().get_weather_data(location)"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "WeatherAPIClient",
+    "name": "search_city",
+    "signature_args": "city_name",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "根据城市名搜索位置标识",
+    "example": "WeatherAPIClient().search_city(city_name)"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "",
+    "name": "format_weather_data",
+    "signature_args": "weather_data, city",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "格式化天气数据为字符串",
+    "example": "format_weather_data(weather_data, city)"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "",
+    "name": "location_search",
+    "signature_args": "city_or_location",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "根据指定城市名称查询实时天气。",
+    "example": "location_search(city_or_location)"
+  },
+  {
+    "file": "app/agent/tools/weather_tools.py",
+    "module": "app.agent.tools.weather_tools",
+    "class": "",
+    "name": "get_weathers",
+    "signature_args": "city_names, max_threads",
+    "decorators": [
+      "tool"
+    ],
+    "role": "工具函数",
+    "description": "根据指定城市名称查询实时天气。",
+    "example": "get_weathers(city_names, max_threads)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunYouTools",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "class YunYouTools",
+    "example": "YunYouTools()"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunYouTools",
+    "name": "__init__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "",
+    "example": "YunYouTools()"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunYouTools",
+    "name": "common_post",
+    "signature_args": "url, params",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "执行 API 请求并处理错误",
+    "example": "YunYouTools().common_post(url, params)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunyouDbTools",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "工具函数",
+    "description": "云柚业务库查询工具（只读）。",
+    "example": "YunyouDbTools()"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunyouDbTools",
+    "name": "_get_db_url",
+    "signature_args": "",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "工具函数",
+    "description": "",
+    "example": "YunyouDbTools()._get_db_url()"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunyouDbTools",
+    "name": "_init_engine",
+    "signature_args": "",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "工具函数",
+    "description": "",
+    "example": "YunyouDbTools()._init_engine()"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunyouDbTools",
+    "name": "_session_scope",
+    "signature_args": "",
+    "decorators": [
+      "classmethod",
+      "contextmanager"
+    ],
+    "role": "工具函数",
+    "description": "",
+    "example": "YunyouDbTools()._session_scope()"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunyouDbTools",
+    "name": "_normalize_date",
+    "signature_args": "date_text",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "工具函数",
+    "description": "",
+    "example": "YunyouDbTools()._normalize_date(date_text)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "YunyouDbTools",
+    "name": "query_holter_recent",
+    "signature_args": "limit, order_desc, start_use_day, end_use_day",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "工具函数",
+    "description": "直接查询云柚 holter 记录表（t_holter_use_record），支持无日期查询。",
+    "example": "YunyouDbTools().query_holter_recent(limit, order_desc, start_use_day, end_use_day)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "",
+    "name": "holter_list",
+    "signature_args": "startUseDay, endUseDay, isUploaded, reportStatus",
+    "decorators": [
+      "tool"
+    ],
+    "role": "工具函数",
+    "description": "云柚 holter 数据列表，根据具体参数查询holter信息",
+    "example": "holter_list(startUseDay, endUseDay, isUploaded, reportStatus)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "",
+    "name": "holter_type_count",
+    "signature_args": "startUseDay, endUseDay",
+    "decorators": [
+      "tool"
+    ],
+    "role": "工具函数",
+    "description": "云柚 获取holter类型统计，根据时间范围查询holter类型统计",
+    "example": "holter_type_count(startUseDay, endUseDay)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "",
+    "name": "holter_report_count",
+    "signature_args": "startUseDay, endUseDay",
+    "decorators": [
+      "tool"
+    ],
+    "role": "工具函数",
+    "description": "云柚 获取holter报告状态统计，根据时间范围查询holter报告状态统计",
+    "example": "holter_report_count(startUseDay, endUseDay)"
+  },
+  {
+    "file": "app/agent/tools/yunyou_tools.py",
+    "module": "app.agent.tools.yunyou_tools",
+    "class": "",
+    "name": "holter_recent_db",
+    "signature_args": "limit, order, startUseDay, endUseDay",
+    "decorators": [
+      "tool"
+    ],
+    "role": "工具函数",
+    "description": "直接从云柚业务数据库查询 holter 最近记录（t_holter_use_record）。",
+    "example": "holter_recent_db(limit, order, startUseDay, endUseDay)"
+  },
+  {
+    "file": "app/api/v1/chat_api.py",
+    "module": "app.api.v1.chat_api",
+    "class": "",
+    "name": "stream_chat",
+    "signature_args": "req, request, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "处理流式聊天请求。",
+    "example": "stream_chat(req, request, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/chat_api.py",
+    "module": "app.api.v1.chat_api",
+    "class": "",
+    "name": "stream_chat_anonymous",
+    "signature_args": "req",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "匿名用户的流式聊天接口，不需要认证，不保存聊天历史。",
+    "example": "stream_chat_anonymous(req)"
+  },
+  {
+    "file": "app/api/v1/chat_history_api.py",
+    "module": "app.api.v1.chat_history_api",
+    "class": "",
+    "name": "create_chat_session_base",
+    "signature_args": "req, db",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "保存/获取会话",
+    "example": "create_chat_session_base(req, db)"
+  },
+  {
+    "file": "app/api/v1/chat_history_api.py",
+    "module": "app.api.v1.chat_history_api",
+    "class": "",
+    "name": "create_chat_session",
+    "signature_args": "req, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "创建新会话",
+    "example": "create_chat_session(req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/chat_history_api.py",
+    "module": "app.api.v1.chat_history_api",
+    "class": "",
+    "name": "get_chat_sessions",
+    "signature_args": "page, size, db, user_id",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "获取会话列表",
+    "example": "get_chat_sessions(page, size, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/chat_history_api.py",
+    "module": "app.api.v1.chat_history_api",
+    "class": "",
+    "name": "get_session_messages",
+    "signature_args": "session_id, page, size, db",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "获取消息历史",
+    "example": "get_session_messages(session_id, page, size, db)"
+  },
+  {
+    "file": "app/api/v1/chat_history_api.py",
+    "module": "app.api.v1.chat_history_api",
+    "class": "",
+    "name": "create_chat_message",
+    "signature_args": "req, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "保存消息",
+    "example": "create_chat_message(req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/model_setting_api.py",
+    "module": "app.api.v1.model_setting_api",
+    "class": "",
+    "name": "get_model_services",
+    "signature_args": "db, user_id",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "获取系统预定义的模型服务配置（不再按用户过滤）",
+    "example": "get_model_services(db, user_id)"
+  },
+  {
+    "file": "app/api/v1/model_setting_api.py",
+    "module": "app.api.v1.model_setting_api",
+    "class": "",
+    "name": "create_model_service",
+    "signature_args": "service_data, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "为用户创建一个新的模型服务配置",
+    "example": "create_model_service(service_data, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/model_setting_api.py",
+    "module": "app.api.v1.model_setting_api",
+    "class": "",
+    "name": "update_model_service",
+    "signature_args": "service_id, service_data, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "更新指定ID的模型服务配置",
+    "example": "update_model_service(service_id, service_data, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/model_setting_api.py",
+    "module": "app.api.v1.model_setting_api",
+    "class": "",
+    "name": "delete_model_service",
+    "signature_args": "service_id, db, user_id",
+    "decorators": [
+      "delete"
+    ],
+    "role": "API路由/接口函数",
+    "description": "删除指定ID的模型服务配置",
+    "example": "delete_model_service(service_id, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/model_setting_api.py",
+    "module": "app.api.v1.model_setting_api",
+    "class": "",
+    "name": "test_model_service_connection",
+    "signature_args": "service_id, test_data, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "测试指定模型服务的连接",
+    "example": "test_model_service_connection(service_id, test_data, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/model_setting_api.py",
+    "module": "app.api.v1.model_setting_api",
+    "class": "",
+    "name": "toggle_model_service",
+    "signature_args": "service_id, toggle_data, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "启用或禁用指定的模型服务",
+    "example": "toggle_model_service(service_id, toggle_data, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_info_api.py",
+    "module": "app.api.v1.user_info_api",
+    "class": "",
+    "name": "create_user_info",
+    "signature_args": "req, db",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "",
+    "example": "create_user_info(req, db)"
+  },
+  {
+    "file": "app/api/v1/user_info_api.py",
+    "module": "app.api.v1.user_info_api",
+    "class": "",
+    "name": "login_user_info",
+    "signature_args": "req, db",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "",
+    "example": "login_user_info(req, db)"
+  },
+  {
+    "file": "app/api/v1/user_info_api.py",
+    "module": "app.api.v1.user_info_api",
+    "class": "",
+    "name": "get_user_info",
+    "signature_args": "db, user_id",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "",
+    "example": "get_user_info(db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_info_api.py",
+    "module": "app.api.v1.user_info_api",
+    "class": "",
+    "name": "update_user_info",
+    "signature_args": "req, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "",
+    "example": "update_user_info(req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_info_api.py",
+    "module": "app.api.v1.user_info_api",
+    "class": "",
+    "name": "change_user_password",
+    "signature_args": "req, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "",
+    "example": "change_user_password(req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_mcp_api.py",
+    "module": "app.api.v1.user_mcp_api",
+    "class": "",
+    "name": "get_user_mcps",
+    "signature_args": "db, user_id",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "根据Token获取当前用户的所有MCP配置",
+    "example": "get_user_mcps(db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_mcp_api.py",
+    "module": "app.api.v1.user_mcp_api",
+    "class": "",
+    "name": "create_user_mcp",
+    "signature_args": "user_mcp_req, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "为用户创建一个新的MCP配置",
+    "example": "create_user_mcp(user_mcp_req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_mcp_api.py",
+    "module": "app.api.v1.user_mcp_api",
+    "class": "",
+    "name": "update_user_mcp",
+    "signature_args": "mcp_id, user_mcp_req, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "更新指定ID的用户MCP配置",
+    "example": "update_user_mcp(mcp_id, user_mcp_req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_mcp_api.py",
+    "module": "app.api.v1.user_mcp_api",
+    "class": "",
+    "name": "delete_user_mcp",
+    "signature_args": "mcp_id, db, user_id",
+    "decorators": [
+      "delete"
+    ],
+    "role": "API路由/接口函数",
+    "description": "删除指定ID的用户MCP配置",
+    "example": "delete_user_mcp(mcp_id, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "get_user_models",
+    "signature_args": "db, user_id",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "根据Token获取当前用户的所有模型配置",
+    "example": "get_user_models(db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "create_user_model",
+    "signature_args": "user_model_req, db, user_id",
+    "decorators": [
+      "post"
+    ],
+    "role": "API路由/接口函数",
+    "description": "为用户创建一个新的模型配置",
+    "example": "create_user_model(user_model_req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "update_user_model",
+    "signature_args": "model_id, user_model_req, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "更新指定ID的用户模型配置",
+    "example": "update_user_model(model_id, user_model_req, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "activate_user_model",
+    "signature_args": "model_id, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "激活指定ID的用户模型配置，支持多个模型同时激活",
+    "example": "activate_user_model(model_id, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "deactivate_user_model",
+    "signature_args": "model_id, db, user_id",
+    "decorators": [
+      "put"
+    ],
+    "role": "API路由/接口函数",
+    "description": "取消激活指定ID的用户模型配置",
+    "example": "deactivate_user_model(model_id, db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "get_active_user_model",
+    "signature_args": "db, user_id",
+    "decorators": [
+      "get"
+    ],
+    "role": "API路由/接口函数",
+    "description": "获取用户当前激活的模型配置",
+    "example": "get_active_user_model(db, user_id)"
+  },
+  {
+    "file": "app/api/v1/user_model_api.py",
+    "module": "app.api.v1.user_model_api",
+    "class": "",
+    "name": "delete_user_model",
+    "signature_args": "model_id, db, user_id",
+    "decorators": [
+      "delete"
+    ],
+    "role": "API路由/接口函数",
+    "description": "删除指定ID的用户模型配置",
+    "example": "delete_user_model(model_id, db, user_id)"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "get_date_tool",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取日期的工具，返回结构化数据",
+    "example": "get_date_tool()"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "get_time_tool",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取时间的工具，返回结构化数据",
+    "example": "get_time_tool()"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "preprocess_query",
+    "signature_args": "query",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "预处理用户输入：去掉标点、空格等",
+    "example": "preprocess_query(query)"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "match_intent",
+    "signature_args": "query, rules",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "匹配意图：",
+    "example": "match_intent(query, rules)"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "execute_action",
+    "signature_args": "action",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "执行动作：调用对应的工具",
+    "example": "execute_action(action)"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "render_response",
+    "signature_args": "template, data",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "渲染响应模板：把工具返回的数据填充到模板里",
+    "example": "render_response(template, data)"
+  },
+  {
+    "file": "app/config/test.py",
+    "module": "app.config.test",
+    "class": "",
+    "name": "rule_engine_main",
+    "signature_args": "query",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "rule_engine_main(query)"
+  },
+  {
+    "file": "app/core/logger.py",
+    "module": "app.core.logger",
+    "class": "",
+    "name": "setup_logger",
+    "signature_args": "",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "设置应用程序的根日志记录器。",
+    "example": "setup_logger()"
+  },
+  {
+    "file": "app/core/middleware.py",
+    "module": "app.core.middleware",
+    "class": "ProcessTimeMiddleware",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "性能监控中间件",
+    "example": "ProcessTimeMiddleware()"
+  },
+  {
+    "file": "app/core/middleware.py",
+    "module": "app.core.middleware",
+    "class": "DynamicModelMiddleware",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "动态模型上下文提取中间件",
+    "example": "DynamicModelMiddleware()"
+  },
+  {
+    "file": "app/core/security.py",
+    "module": "app.core.security",
+    "class": "",
+    "name": "verify_token",
+    "signature_args": "credentials",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "校验并解码Token，返回用户ID",
+    "example": "verify_token(credentials)"
+  },
+  {
+    "file": "app/core/security.py",
+    "module": "app.core.security",
+    "class": "",
+    "name": "verify_refresh_token",
+    "signature_args": "credentials",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "验证刷新令牌，返回用户ID",
+    "example": "verify_refresh_token(credentials)"
+  },
+  {
+    "file": "app/core/security.py",
+    "module": "app.core.security",
+    "class": "",
+    "name": "get_optional_user_id",
+    "signature_args": "credentials",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "可选的用户认证，不抛出异常",
+    "example": "get_optional_user_id(credentials)"
+  },
+  {
+    "file": "app/core/security.py",
+    "module": "app.core.security",
+    "class": "",
+    "name": "verify_token_header",
+    "signature_args": "auth_token",
+    "decorators": [],
+    "role": "基础设施/中间件函数",
+    "description": "兼容旧版本的token验证方法",
+    "example": "verify_token_header(auth_token)"
+  },
+  {
+    "file": "app/db/__init__.py",
+    "module": "app.db.__init__",
+    "class": "",
+    "name": "get_db",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "【场景 A：FastAPI 路由专用】",
+    "example": "get_db()"
+  },
+  {
+    "file": "app/db/__init__.py",
+    "module": "app.db.__init__",
+    "class": "",
+    "name": "get_db_context",
+    "signature_args": "",
+    "decorators": [
+      "contextmanager"
+    ],
+    "role": "数据库访问函数",
+    "description": "【场景 B：后台任务/Service 独立调用专用上下文】",
+    "example": "get_db_context()"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "通用 CRUD 基类",
+    "example": "CRUDBase()"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "__init__",
+    "signature_args": "model",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase(model)"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "query",
+    "signature_args": "db",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase().query(db)"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "get",
+    "signature_args": "db, id",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase().get(db, id)"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "get_multi",
+    "signature_args": "db, skip, limit",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase().get_multi(db, skip, limit)"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "create",
+    "signature_args": "db, obj_in",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase().create(db, obj_in)"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "update",
+    "signature_args": "db, db_obj, obj_in",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase().update(db, db_obj, obj_in)"
+  },
+  {
+    "file": "app/db/base_crud.py",
+    "module": "app.db.base_crud",
+    "class": "CRUDBase",
+    "name": "remove",
+    "signature_args": "db",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "CRUDBase().remove(db)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserInfo",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "class CRUDUserInfo",
+    "example": "CRUDUserInfo()"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserInfo",
+    "name": "get_by_username",
+    "signature_args": "db, user_name",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "根据用户名查询用户（登录用）",
+    "example": "CRUDUserInfo().get_by_username(db, user_name)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserModel",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "class CRUDUserModel",
+    "example": "CRUDUserModel()"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserModel",
+    "name": "get_by_user_id",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "获取用户专属的所有模型配置",
+    "example": "CRUDUserModel().get_by_user_id(db, user_id)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserModel",
+    "name": "get_active_by_user_id",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "获取用户当前激活的模型",
+    "example": "CRUDUserModel().get_active_by_user_id(db, user_id)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDModelSetting",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "class CRUDModelSetting",
+    "example": "CRUDModelSetting()"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDModelSetting",
+    "name": "get_all_enabled",
+    "signature_args": "db",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "获取所有已启用的系统模型配置",
+    "example": "CRUDModelSetting().get_all_enabled(db)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserMCP",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "class CRUDUserMCP",
+    "example": "CRUDUserMCP()"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDUserMCP",
+    "name": "get_by_user_id",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "获取用户的 MCP 配置",
+    "example": "CRUDUserMCP().get_by_user_id(db, user_id)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDChatSession",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "class CRUDChatSession",
+    "example": "CRUDChatSession()"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDChatSession",
+    "name": "get_by_user_id",
+    "signature_args": "db, user_id, skip, limit",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "分页获取用户的未删除会话列表，按时间倒序",
+    "example": "CRUDChatSession().get_by_user_id(db, user_id, skip, limit)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDChatSession",
+    "name": "get_by_session_id",
+    "signature_args": "db, session_id",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "根据会话 ID 查找",
+    "example": "CRUDChatSession().get_by_session_id(db, session_id)"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDChatMessage",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "class CRUDChatMessage",
+    "example": "CRUDChatMessage()"
+  },
+  {
+    "file": "app/db/crud.py",
+    "module": "app.db.crud",
+    "class": "CRUDChatMessage",
+    "name": "get_by_session_id",
+    "signature_args": "db, session_id, skip, limit",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "分页获取某个会话的未删除聊天记录，按时间正序",
+    "example": "CRUDChatMessage().get_by_session_id(db, session_id, skip, limit)"
+  },
+  {
+    "file": "app/db/pgsql/chat_history_db.py",
+    "module": "app.db.pgsql.chat_history_db",
+    "class": "",
+    "name": "reset_pg_sequence",
+    "signature_args": "pg_conn, table_name, pk_column",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "修复 PgSQL 手动插入数据后的自增序列不同步问题",
+    "example": "reset_pg_sequence(pg_conn, table_name, pk_column)"
+  },
+  {
+    "file": "app/db/pgsql/chat_history_db.py",
+    "module": "app.db.pgsql.chat_history_db",
+    "class": "",
+    "name": "migrate_mysql",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "migrate_mysql()"
+  },
+  {
+    "file": "app/db/pgsql/chat_history_db.py",
+    "module": "app.db.pgsql.chat_history_db",
+    "class": "",
+    "name": "migrate_mongodb",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "migrate_mongodb()"
+  },
+  {
+    "file": "app/db/pgsql/chat_history_db.py",
+    "module": "app.db.pgsql.chat_history_db",
+    "class": "",
+    "name": "migrate_redis",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据库访问函数",
+    "description": "",
+    "example": "migrate_redis()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "BusinessException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "自定义业务异常",
+    "example": "BusinessException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "BusinessException",
+    "name": "__init__",
+    "signature_args": "code, message",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "BusinessException(code, message)"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "SecurityException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "安全相关异常",
+    "example": "SecurityException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "SecurityException",
+    "name": "__init__",
+    "signature_args": "message, code",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "SecurityException(message, code)"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "AuthenticationException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "认证失败异常",
+    "example": "AuthenticationException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "AuthenticationException",
+    "name": "__init__",
+    "signature_args": "message",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "AuthenticationException(message)"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "AuthorizationException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "授权失败异常",
+    "example": "AuthorizationException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "AuthorizationException",
+    "name": "__init__",
+    "signature_args": "message",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "AuthorizationException(message)"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "TokenExpiredException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "令牌过期异常",
+    "example": "TokenExpiredException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "TokenExpiredException",
+    "name": "__init__",
+    "signature_args": "message",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "TokenExpiredException(message)"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "InvalidTokenException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "无效令牌异常",
+    "example": "InvalidTokenException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "InvalidTokenException",
+    "name": "__init__",
+    "signature_args": "message",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "InvalidTokenException(message)"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "PasswordValidationException",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "密码验证异常",
+    "example": "PasswordValidationException()"
+  },
+  {
+    "file": "app/exceptions/business_exception.py",
+    "module": "app.exceptions.business_exception",
+    "class": "PasswordValidationException",
+    "name": "__init__",
+    "signature_args": "message",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "PasswordValidationException(message)"
+  },
+  {
+    "file": "app/models/chat_history.py",
+    "module": "app.models.chat_history",
+    "class": "ChatSessionModel",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "聊天会话表",
+    "example": "ChatSessionModel()"
+  },
+  {
+    "file": "app/models/chat_history.py",
+    "module": "app.models.chat_history",
+    "class": "ChatMessageModel",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "聊天消息表",
+    "example": "ChatMessageModel()"
+  },
+  {
+    "file": "app/models/model_setting.py",
+    "module": "app.models.model_setting",
+    "class": "JSONType",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "自定义JSON类型，用于处理MySQL JSON字段的序列化和反序列化",
+    "example": "JSONType()"
+  },
+  {
+    "file": "app/models/model_setting.py",
+    "module": "app.models.model_setting",
+    "class": "JSONType",
+    "name": "process_bind_param",
+    "signature_args": "value, dialect",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "JSONType().process_bind_param(value, dialect)"
+  },
+  {
+    "file": "app/models/model_setting.py",
+    "module": "app.models.model_setting",
+    "class": "JSONType",
+    "name": "process_result_value",
+    "signature_args": "value, dialect",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "JSONType().process_result_value(value, dialect)"
+  },
+  {
+    "file": "app/models/model_setting.py",
+    "module": "app.models.model_setting",
+    "class": "ModelSetting",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class ModelSetting",
+    "example": "ModelSetting()"
+  },
+  {
+    "file": "app/models/model_setting.py",
+    "module": "app.models.model_setting",
+    "class": "ModelSetting",
+    "name": "__repr__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "ModelSetting().__repr__()"
+  },
+  {
+    "file": "app/models/user_info.py",
+    "module": "app.models.user_info",
+    "class": "UserInfo",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class UserInfo",
+    "example": "UserInfo()"
+  },
+  {
+    "file": "app/models/user_info.py",
+    "module": "app.models.user_info",
+    "class": "UserInfo",
+    "name": "__repr__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "UserInfo().__repr__()"
+  },
+  {
+    "file": "app/models/user_mcp.py",
+    "module": "app.models.user_mcp",
+    "class": "UserMCP",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class UserMCP",
+    "example": "UserMCP()"
+  },
+  {
+    "file": "app/models/user_mcp.py",
+    "module": "app.models.user_mcp",
+    "class": "UserMCP",
+    "name": "__repr__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "UserMCP().__repr__()"
+  },
+  {
+    "file": "app/models/user_model.py",
+    "module": "app.models.user_model",
+    "class": "UserModel",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class UserModel",
+    "example": "UserModel()"
+  },
+  {
+    "file": "app/models/user_model.py",
+    "module": "app.models.user_model",
+    "class": "UserModel",
+    "name": "__repr__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "优化打印输出，在调试或看日志时更直观。",
+    "example": "UserModel().__repr__()"
+  },
+  {
+    "file": "app/schemas/base.py",
+    "module": "app.schemas.base",
+    "class": "BaseSchema",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "标准基础模型",
+    "example": "BaseSchema()"
+  },
+  {
+    "file": "app/schemas/base.py",
+    "module": "app.schemas.base",
+    "class": "ArbitraryTypesBaseSchema",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "支持任意类型的基础模型 - 用于包含复杂对象（如 LangChain 组件）的场景",
+    "example": "ArbitraryTypesBaseSchema()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "Skill",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "class Skill",
+    "example": "Skill()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "SkillLoader",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "负责从文件系统中加载和解析技能文件",
+    "example": "SkillLoader()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "SkillLoader",
+    "name": "parse_skill_file",
+    "signature_args": "file_path",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "数据模型/校验函数",
+    "description": "解析带有 YAML Front Matter 的 Markdown 文件",
+    "example": "SkillLoader().parse_skill_file(file_path)"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "SkillLoader",
+    "name": "load_from_dir",
+    "signature_args": "directory",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "数据模型/校验函数",
+    "description": "加载目录下所有 SKILL_*.md 文件",
+    "example": "SkillLoader().load_from_dir(directory)"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "可配置的技能中间件。",
+    "example": "ConfigurableSkillMiddleware()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "__init__",
+    "signature_args": "skill_source",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "初始化中间件。",
+    "example": "ConfigurableSkillMiddleware(skill_source)"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "_build_skills_prompt",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "生成系统提示词中的技能列表部分",
+    "example": "ConfigurableSkillMiddleware()._build_skills_prompt()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "_create_load_skill_tool",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建一个闭包函数作为 Tool，使其能访问 self.skills",
+    "example": "ConfigurableSkillMiddleware()._create_load_skill_tool()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "get_tools",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "提供给外部 Agent 使用的工具列表。",
+    "example": "ConfigurableSkillMiddleware().get_tools()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "get_prompt",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "生成可直接用于 system prompt 的技能说明片段。",
+    "example": "ConfigurableSkillMiddleware().get_prompt()"
+  },
+  {
+    "file": "app/schemas/base_skill.py",
+    "module": "app.schemas.base_skill",
+    "class": "ConfigurableSkillMiddleware",
+    "name": "wrap_model_call",
+    "signature_args": "request, handler",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "注入技能描述到 System Prompt",
+    "example": "ConfigurableSkillMiddleware().wrap_model_call(request, handler)"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatSessionBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "会话基础模型",
+    "example": "ChatSessionBase()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatSessionCreate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建会话模型",
+    "example": "ChatSessionCreate()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatSessionUpdate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "更新会话模型",
+    "example": "ChatSessionUpdate()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatSession",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "会话响应模型 (返回给前端的数据)",
+    "example": "ChatSession()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatSessionIn",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "前端传入的创建会话参数",
+    "example": "ChatSessionIn()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatMessageBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "聊天记录基础模型",
+    "example": "ChatMessageBase()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatMessageCreate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建聊天记录的模型",
+    "example": "ChatMessageCreate()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatMessageUpdate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "更新聊天记录的模型",
+    "example": "ChatMessageUpdate()"
+  },
+  {
+    "file": "app/schemas/chat_history_schemas.py",
+    "module": "app.schemas.chat_history_schemas",
+    "class": "ChatMessage",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "聊天记录响应模型 (返回给前端的数据)",
+    "example": "ChatMessage()"
+  },
+  {
+    "file": "app/schemas/chat_schemas.py",
+    "module": "app.schemas.chat_schemas",
+    "class": "ChatRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "聊天请求模型（简易版/旧版兼容）。",
+    "example": "ChatRequest()"
+  },
+  {
+    "file": "app/schemas/chat_schemas.py",
+    "module": "app.schemas.chat_schemas",
+    "class": "StreamChatRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "流式聊天请求核心模型",
+    "example": "StreamChatRequest()"
+  },
+  {
+    "file": "app/schemas/chat_schemas.py",
+    "module": "app.schemas.chat_schemas",
+    "class": "StreamChatRequest",
+    "name": "validate_user_input",
+    "signature_args": "v",
+    "decorators": [
+      "field_validator"
+    ],
+    "role": "数据模型/校验函数",
+    "description": "验证并清洗用户输入",
+    "example": "StreamChatRequest().validate_user_input(v)"
+  },
+  {
+    "file": "app/schemas/chat_schemas.py",
+    "module": "app.schemas.chat_schemas",
+    "class": "StreamChatRequest",
+    "name": "validate_session_id",
+    "signature_args": "v",
+    "decorators": [
+      "field_validator"
+    ],
+    "role": "数据模型/校验函数",
+    "description": "验证会话ID格式",
+    "example": "StreamChatRequest().validate_session_id(v)"
+  },
+  {
+    "file": "app/schemas/common.py",
+    "module": "app.schemas.common",
+    "class": "BaseRequestParams",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "class BaseRequestParams",
+    "example": "BaseRequestParams()"
+  },
+  {
+    "file": "app/schemas/common.py",
+    "module": "app.schemas.common",
+    "class": "PageParams",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "class PageParams",
+    "example": "PageParams()"
+  },
+  {
+    "file": "app/schemas/interrupt_schemas.py",
+    "module": "app.schemas.interrupt_schemas",
+    "class": "InterruptApprovalRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "人工审核批准请求",
+    "example": "InterruptApprovalRequest()"
+  },
+  {
+    "file": "app/schemas/interrupt_schemas.py",
+    "module": "app.schemas.interrupt_schemas",
+    "class": "InterruptApprovalResponse",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "人工审核批准响应",
+    "example": "InterruptApprovalResponse()"
+  },
+  {
+    "file": "app/schemas/model_setting_schemas.py",
+    "module": "app.schemas.model_setting_schemas",
+    "class": "ModelServiceBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "模型服务基础模型",
+    "example": "ModelServiceBase()"
+  },
+  {
+    "file": "app/schemas/model_setting_schemas.py",
+    "module": "app.schemas.model_setting_schemas",
+    "class": "ModelServiceCreate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建模型服务模型",
+    "example": "ModelServiceCreate()"
+  },
+  {
+    "file": "app/schemas/model_setting_schemas.py",
+    "module": "app.schemas.model_setting_schemas",
+    "class": "ModelServiceUpdate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "更新模型服务模型",
+    "example": "ModelServiceUpdate()"
+  },
+  {
+    "file": "app/schemas/model_setting_schemas.py",
+    "module": "app.schemas.model_setting_schemas",
+    "class": "ModelServiceOut",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "系统模型服务输出模型",
+    "example": "ModelServiceOut()"
+  },
+  {
+    "file": "app/schemas/model_setting_schemas.py",
+    "module": "app.schemas.model_setting_schemas",
+    "class": "TestConnectionRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "测试连接请求模型",
+    "example": "TestConnectionRequest()"
+  },
+  {
+    "file": "app/schemas/model_setting_schemas.py",
+    "module": "app.schemas.model_setting_schemas",
+    "class": "ToggleServiceRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "启用/禁用服务请求模型",
+    "example": "ToggleServiceRequest()"
+  },
+  {
+    "file": "app/schemas/response_model.py",
+    "module": "app.schemas.response_model",
+    "class": "ResponseModel",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "统一返回对象",
+    "example": "ResponseModel()"
+  },
+  {
+    "file": "app/schemas/response_model.py",
+    "module": "app.schemas.response_model",
+    "class": "ResponseModel",
+    "name": "success",
+    "signature_args": "data, message",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "数据模型/校验函数",
+    "description": "",
+    "example": "ResponseModel().success(data, message)"
+  },
+  {
+    "file": "app/schemas/response_model.py",
+    "module": "app.schemas.response_model",
+    "class": "ResponseModel",
+    "name": "fail",
+    "signature_args": "code, message",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "数据模型/校验函数",
+    "description": "",
+    "example": "ResponseModel().fail(code, message)"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户信息基础模型",
+    "example": "UserInfoBase()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoLogin",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户登录模型",
+    "example": "UserInfoLogin()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoCreate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建用户模型，必填字段不能为空",
+    "example": "UserInfoCreate()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoUpdate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "更新用户模型",
+    "example": "UserInfoUpdate()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoChangePassword",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "修改密码模型",
+    "example": "UserInfoChangePassword()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "TokenResponse",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "Token响应模型",
+    "example": "TokenResponse()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "RefreshTokenRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "刷新令牌请求模型",
+    "example": "RefreshTokenRequest()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "PasswordResetRequest",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "密码重置请求模型",
+    "example": "PasswordResetRequest()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "PasswordResetConfirm",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "密码重置确认模型",
+    "example": "PasswordResetConfirm()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoQuery",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "class UserInfoQuery",
+    "example": "UserInfoQuery()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoResp",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "class UserInfoResp",
+    "example": "UserInfoResp()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoPageQuery",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "class UserInfoPageQuery",
+    "example": "UserInfoPageQuery()"
+  },
+  {
+    "file": "app/schemas/user_info_schemas.py",
+    "module": "app.schemas.user_info_schemas",
+    "class": "UserInfoRead",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户信息模型",
+    "example": "UserInfoRead()"
+  },
+  {
+    "file": "app/schemas/user_mcp_schemas.py",
+    "module": "app.schemas.user_mcp_schemas",
+    "class": "UserMCPBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户MCP设置基础模型 - 不含user_id",
+    "example": "UserMCPBase()"
+  },
+  {
+    "file": "app/schemas/user_mcp_schemas.py",
+    "module": "app.schemas.user_mcp_schemas",
+    "class": "UserMCPCreate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建用户MCP设置模型",
+    "example": "UserMCPCreate()"
+  },
+  {
+    "file": "app/schemas/user_mcp_schemas.py",
+    "module": "app.schemas.user_mcp_schemas",
+    "class": "UserMCPUpdate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "更新用户MCP设置模型 - 不允许更新user_id",
+    "example": "UserMCPUpdate()"
+  },
+  {
+    "file": "app/schemas/user_mcp_schemas.py",
+    "module": "app.schemas.user_mcp_schemas",
+    "class": "UserMCP",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "数据库模型对应的Pydantic模型",
+    "example": "UserMCP()"
+  },
+  {
+    "file": "app/schemas/user_mcp_schemas.py",
+    "module": "app.schemas.user_mcp_schemas",
+    "class": "UserMCPOut",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户MCP设置输出 - 包含所有字段",
+    "example": "UserMCPOut()"
+  },
+  {
+    "file": "app/schemas/user_model_schemas.py",
+    "module": "app.schemas.user_model_schemas",
+    "class": "UserModelBase",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户模型基础模型 - 不含user_id，用于创建",
+    "example": "UserModelBase()"
+  },
+  {
+    "file": "app/schemas/user_model_schemas.py",
+    "module": "app.schemas.user_model_schemas",
+    "class": "UserModelCreate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "创建用户模型",
+    "example": "UserModelCreate()"
+  },
+  {
+    "file": "app/schemas/user_model_schemas.py",
+    "module": "app.schemas.user_model_schemas",
+    "class": "UserModelUpdate",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "更新用户模型 - 不允许更新user_id",
+    "example": "UserModelUpdate()"
+  },
+  {
+    "file": "app/schemas/user_model_schemas.py",
+    "module": "app.schemas.user_model_schemas",
+    "class": "UserModel",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "数据库模型对应的Pydantic模型",
+    "example": "UserModel()"
+  },
+  {
+    "file": "app/schemas/user_model_schemas.py",
+    "module": "app.schemas.user_model_schemas",
+    "class": "UserModelOut",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "数据模型/校验函数",
+    "description": "用户模型输出模型 - 包含所有字段",
+    "example": "UserModelOut()"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "通用 Service 基类，类似 MyBatis-Plus 的 ServiceImpl",
+    "example": "BaseService()"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "__init__",
+    "signature_args": "model",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "BaseService(model)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "query",
+    "signature_args": "db",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "返回 SQLAlchemy Query 对象，可链式调用",
+    "example": "BaseService().query(db)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "get",
+    "signature_args": "db, id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "BaseService().get(db, id)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "get_multi",
+    "signature_args": "db, skip, limit",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "BaseService().get_multi(db, skip, limit)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "create",
+    "signature_args": "db, obj_in",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "BaseService().create(db, obj_in)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "update",
+    "signature_args": "db, db_obj, obj_in",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "BaseService().update(db, db_obj, obj_in)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "remove",
+    "signature_args": "db, id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "BaseService().remove(db, id)"
+  },
+  {
+    "file": "app/services/base_service.py",
+    "module": "app.services.base_service",
+    "class": "BaseService",
+    "name": "page",
+    "signature_args": "db, page, size, filters",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "分页查询",
+    "example": "BaseService().page(db, page, size, filters)"
+  },
+  {
+    "file": "app/services/chat_history_service.py",
+    "module": "app.services.chat_history_service",
+    "class": "ChatHistoryService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "class ChatHistoryService",
+    "example": "ChatHistoryService()"
+  },
+  {
+    "file": "app/services/chat_history_service.py",
+    "module": "app.services.chat_history_service",
+    "class": "ChatHistoryService",
+    "name": "get_or_create_session",
+    "signature_args": "db, user_id, session_id, title",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatHistoryService().get_or_create_session(db, user_id, session_id, title)"
+  },
+  {
+    "file": "app/services/chat_history_service.py",
+    "module": "app.services.chat_history_service",
+    "class": "ChatHistoryService",
+    "name": "create_session",
+    "signature_args": "db, user_id, req",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatHistoryService().create_session(db, user_id, req)"
+  },
+  {
+    "file": "app/services/chat_history_service.py",
+    "module": "app.services.chat_history_service",
+    "class": "ChatHistoryService",
+    "name": "get_user_sessions",
+    "signature_args": "db, user_id, page, size",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatHistoryService().get_user_sessions(db, user_id, page, size)"
+  },
+  {
+    "file": "app/services/chat_history_service.py",
+    "module": "app.services.chat_history_service",
+    "class": "ChatHistoryService",
+    "name": "get_session_messages",
+    "signature_args": "db, user_id, session_id, page",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatHistoryService().get_session_messages(db, user_id, session_id, page)"
+  },
+  {
+    "file": "app/services/chat_history_service.py",
+    "module": "app.services.chat_history_service",
+    "class": "ChatHistoryService",
+    "name": "create_chat_message",
+    "signature_args": "db, user_id, req",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatHistoryService().create_chat_message(db, user_id, req)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "聊天服务层 (Service Layer)",
+    "example": "ChatService()"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "__init__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatService()"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "process_stream_chat",
+    "signature_args": "req, user_id, db, dynamic_model_config",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "【入口】统一处理流式聊天请求",
+    "example": "ChatService().process_stream_chat(req, user_id, db, dynamic_model_config)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "_process_stream_chat_internal",
+    "signature_args": "req, user_id, db, dynamic_model_config",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "内部流式聊天处理逻辑：准备配置、挂载生成器",
+    "example": "ChatService()._process_stream_chat_internal(req, user_id, db, dynamic_model_config)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "_build_model_config_from_user_model",
+    "signature_args": "user_model_id, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "根据用户模型ID构建模型配置。",
+    "example": "ChatService()._build_model_config_from_user_model(user_model_id, user_id)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "stream_chat_with_history",
+    "signature_args": "user_input, session_id, model_config, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "【核心】带历史记录保存的流式聊天。",
+    "example": "ChatService().stream_chat_with_history(user_input, session_id, model_config, user_id)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "stream_chat_anonymous",
+    "signature_args": "user_input, session_id, model_config, history_messages",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "匿名流式聊天，不触碰数据库，纯粹的管道转发",
+    "example": "ChatService().stream_chat_anonymous(user_input, session_id, model_config, history_messages)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "_extract_ai_content_from_chunk",
+    "signature_args": "chunk",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "安全提取 SSE 格式内容",
+    "example": "ChatService()._extract_ai_content_from_chunk(chunk)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "_normalize_history_messages",
+    "signature_args": "history_data",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatService()._normalize_history_messages(history_data)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "_build_model_config_from_request",
+    "signature_args": "req",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "从请求中构建模型配置",
+    "example": "ChatService()._build_model_config_from_request(req)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "build_model_config",
+    "signature_args": "model, model_service, service_type, deep_thinking_mode",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatService().build_model_config(model, model_service, service_type, deep_thinking_mode)"
+  },
+  {
+    "file": "app/services/chat_service.py",
+    "module": "app.services.chat_service",
+    "class": "ChatService",
+    "name": "_get_stream_headers",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "ChatService()._get_stream_headers()"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "业务异常处理器，统一处理各种业务异常和错误转换",
+    "example": "BusinessExceptionHandler()"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "handle_validation_error",
+    "signature_args": "error",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "处理输入验证错误",
+    "example": "BusinessExceptionHandler().handle_validation_error(error)"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "handle_business_error",
+    "signature_args": "error, context",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "处理业务逻辑错误",
+    "example": "BusinessExceptionHandler().handle_business_error(error, context)"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "handle_authentication_error",
+    "signature_args": "error",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "处理认证相关错误",
+    "example": "BusinessExceptionHandler().handle_authentication_error(error)"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "handle_authorization_error",
+    "signature_args": "error",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "处理授权相关错误",
+    "example": "BusinessExceptionHandler().handle_authorization_error(error)"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "handle_resource_not_found_error",
+    "signature_args": "resource_type, resource_id",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "处理资源未找到错误",
+    "example": "BusinessExceptionHandler().handle_resource_not_found_error(resource_type, resource_id)"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "handle_rate_limit_error",
+    "signature_args": "error",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "处理频率限制错误",
+    "example": "BusinessExceptionHandler().handle_rate_limit_error(error)"
+  },
+  {
+    "file": "app/services/exception_service.py",
+    "module": "app.services.exception_service",
+    "class": "BusinessExceptionHandler",
+    "name": "safe_execute",
+    "signature_args": "func",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "业务服务函数",
+    "description": "安全执行函数，自动处理异常",
+    "example": "BusinessExceptionHandler().safe_execute(func)"
+  },
+  {
+    "file": "app/services/interrupt_service.py",
+    "module": "app.services.interrupt_service",
+    "class": "InterruptService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "人工审核服务",
+    "example": "InterruptService()"
+  },
+  {
+    "file": "app/services/interrupt_service.py",
+    "module": "app.services.interrupt_service",
+    "class": "InterruptService",
+    "name": "__init__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "InterruptService()"
+  },
+  {
+    "file": "app/services/interrupt_service.py",
+    "module": "app.services.interrupt_service",
+    "class": "InterruptService",
+    "name": "register_pending_approval",
+    "signature_args": "session_id, message_id, action_name, action_args",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "注册待审核请求",
+    "example": "InterruptService().register_pending_approval(session_id, message_id, action_name, action_args)"
+  },
+  {
+    "file": "app/services/interrupt_service.py",
+    "module": "app.services.interrupt_service",
+    "class": "InterruptService",
+    "name": "handle_approval",
+    "signature_args": "session_id, message_id, decision, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "处理审核结果",
+    "example": "InterruptService().handle_approval(session_id, message_id, decision, user_id)"
+  },
+  {
+    "file": "app/services/interrupt_service.py",
+    "module": "app.services.interrupt_service",
+    "class": "InterruptService",
+    "name": "get_pending_approval",
+    "signature_args": "session_id, message_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "获取待审核请求",
+    "example": "InterruptService().get_pending_approval(session_id, message_id)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "系统模型服务业务逻辑层",
+    "example": "ModelSettingService()"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "get_model_services",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "获取系统预定义的模型服务配置",
+    "example": "ModelSettingService().get_model_services(db, user_id)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "create_model_service",
+    "signature_args": "db, service_data, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "创建新的系统模型服务配置（管理员功能）",
+    "example": "ModelSettingService().create_model_service(db, service_data, user_id)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "update_model_service",
+    "signature_args": "db, id, service_data",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "更新指定ID的模型服务配置",
+    "example": "ModelSettingService().update_model_service(db, id, service_data)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "remove_model_service",
+    "signature_args": "db, id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "删除指定ID的模型服务配置",
+    "example": "ModelSettingService().remove_model_service(db, id)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "test_connection",
+    "signature_args": "db, service_id, api_key",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "测试模型服务连接",
+    "example": "ModelSettingService().test_connection(db, service_id, api_key)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "toggle_service",
+    "signature_args": "db, service_id, enabled",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "启用或禁用模型服务",
+    "example": "ModelSettingService().toggle_service(db, service_id, enabled)"
+  },
+  {
+    "file": "app/services/model_setting_service.py",
+    "module": "app.services.model_setting_service",
+    "class": "ModelSettingService",
+    "name": "_categorize_models",
+    "signature_args": "models",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "将模型列表按类型分类",
+    "example": "ModelSettingService()._categorize_models(models)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "class UserInfoService",
+    "example": "UserInfoService()"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "__init__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService()"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "list_gmail_users",
+    "signature_args": "db, page, size",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService().list_gmail_users(db, page, size)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "create_user",
+    "signature_args": "db, user_create",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService().create_user(db, user_create)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "login",
+    "signature_args": "db, user",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "用户登录，返回访问令牌和刷新令牌",
+    "example": "UserInfoService().login(db, user)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "get_user_by_id",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService().get_user_by_id(db, user_id)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "update_user",
+    "signature_args": "db, user_id, user_update",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService().update_user(db, user_id, user_update)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "_check_info",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService()._check_info(db, user_id)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "change_password",
+    "signature_args": "db, user_id, user_update",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "修改用户密码",
+    "example": "UserInfoService().change_password(db, user_id, user_update)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "refresh_token",
+    "signature_args": "db, refresh_token",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "使用刷新令牌获取新的访问令牌",
+    "example": "UserInfoService().refresh_token(db, refresh_token)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "refresh_token_by_user_id",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "基于用户ID刷新token（适用于已认证的用户）",
+    "example": "UserInfoService().refresh_token_by_user_id(db, user_id)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "revoke_token",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "撤销用户令牌（登出）",
+    "example": "UserInfoService().revoke_token(db, user_id)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "generate_password_reset_token",
+    "signature_args": "db, phone",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "生成密码重置令牌",
+    "example": "UserInfoService().generate_password_reset_token(db, phone)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "reset_password_with_token",
+    "signature_args": "db, phone, token, new_password",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "使用重置令牌重置密码",
+    "example": "UserInfoService().reset_password_with_token(db, phone, token, new_password)"
+  },
+  {
+    "file": "app/services/user_info_service.py",
+    "module": "app.services.user_info_service",
+    "class": "UserInfoService",
+    "name": "get_user_by_token",
+    "signature_args": "db, token",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserInfoService().get_user_by_token(db, token)"
+  },
+  {
+    "file": "app/services/user_mcp_service.py",
+    "module": "app.services.user_mcp_service",
+    "class": "UserMCPService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "class UserMCPService",
+    "example": "UserMCPService()"
+  },
+  {
+    "file": "app/services/user_mcp_service.py",
+    "module": "app.services.user_mcp_service",
+    "class": "UserMCPService",
+    "name": "get_user_mcps",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserMCPService().get_user_mcps(db, user_id)"
+  },
+  {
+    "file": "app/services/user_mcp_service.py",
+    "module": "app.services.user_mcp_service",
+    "class": "UserMCPService",
+    "name": "create_user_mcp",
+    "signature_args": "db, user_mcp, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserMCPService().create_user_mcp(db, user_mcp, user_id)"
+  },
+  {
+    "file": "app/services/user_mcp_service.py",
+    "module": "app.services.user_mcp_service",
+    "class": "UserMCPService",
+    "name": "update_user_mcp",
+    "signature_args": "db, id, user_mcp",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserMCPService().update_user_mcp(db, id, user_mcp)"
+  },
+  {
+    "file": "app/services/user_mcp_service.py",
+    "module": "app.services.user_mcp_service",
+    "class": "UserMCPService",
+    "name": "remove_user_mcp",
+    "signature_args": "db, id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "",
+    "example": "UserMCPService().remove_user_mcp(db, id)"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "用户大模型配置服务层",
+    "example": "UserModelService()"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "get_user_models",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "获取用户的所有模型配置",
+    "example": "UserModelService().get_user_models(db, user_id)"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "get_active_user_model",
+    "signature_args": "db, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "获取用户当前激活的模型配置",
+    "example": "UserModelService().get_active_user_model(db, user_id)"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "get_user_model_by_id",
+    "signature_args": "db, model_id, user_id",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "【安全优化】获取用户模型配置，严格验证数据归属权",
+    "example": "UserModelService().get_user_model_by_id(db, model_id, user_id)"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "create_user_model",
+    "signature_args": "db, user_model, user_id, allow_multiple",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "创建用户模型配置",
+    "example": "UserModelService().create_user_model(db, user_model, user_id, allow_multiple)"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "update_user_model",
+    "signature_args": "db, id, user_model, allow_multiple",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "【安全优化】更新前确认记录存在",
+    "example": "UserModelService().update_user_model(db, id, user_model, allow_multiple)"
+  },
+  {
+    "file": "app/services/user_model_service.py",
+    "module": "app.services.user_model_service",
+    "class": "UserModelService",
+    "name": "activate_user_model",
+    "signature_args": "db, id, user_id, allow_multiple",
+    "decorators": [],
+    "role": "业务服务函数",
+    "description": "【安全优化】激活指定的用户模型配置（附加归属权校验）",
+    "example": "UserModelService().activate_user_model(db, id, user_id, allow_multiple)"
+  },
+  {
+    "file": "app/test/skill.py",
+    "module": "app.test.skill",
+    "class": "Skill",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "一个可以逐步向代理（Agent）披露的技能。",
+    "example": "Skill()"
+  },
+  {
+    "file": "app/test/skill.py",
+    "module": "app.test.skill",
+    "class": "",
+    "name": "load_skill",
+    "signature_args": "skill_name",
+    "decorators": [
+      "tool"
+    ],
+    "role": "LangChain工具函数",
+    "description": "将技能的完整内容加载到代理（Agent）的上下文中。",
+    "example": "load_skill(skill_name)"
+  },
+  {
+    "file": "app/test/skill.py",
+    "module": "app.test.skill",
+    "class": "SkillMiddleware",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "将技能描述注入系统提示词的中间件。",
+    "example": "SkillMiddleware()"
+  },
+  {
+    "file": "app/test/skill.py",
+    "module": "app.test.skill",
+    "class": "SkillMiddleware",
+    "name": "__init__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化并从 SKILLS 列表生成技能提示词。",
+    "example": "SkillMiddleware()"
+  },
+  {
+    "file": "app/test/skill.py",
+    "module": "app.test.skill",
+    "class": "SkillMiddleware",
+    "name": "wrap_model_call",
+    "signature_args": "request, handler",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "同步：将技能描述注入到系统提示词中。",
+    "example": "SkillMiddleware().wrap_model_call(request, handler)"
+  },
+  {
+    "file": "app/test/zhipu.py",
+    "module": "app.test.zhipu",
+    "class": "",
+    "name": "ocr_with_openai_compatible",
+    "signature_args": "image_url",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "ocr_with_openai_compatible(image_url)"
+  },
+  {
+    "file": "app/utils/agent_utils.py",
+    "module": "app.utils.agent_utils",
+    "class": "AgentUtils",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class AgentUtils",
+    "example": "AgentUtils()"
+  },
+  {
+    "file": "app/utils/agent_utils.py",
+    "module": "app.utils.agent_utils",
+    "class": "AgentUtils",
+    "name": "to_sse",
+    "signature_args": "data",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "将字符串或字典包装成符合 SSE (Server-Sent Events) 的格式。",
+    "example": "AgentUtils().to_sse(data)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "【学习笔记】聊天相关的通用工具函数",
+    "example": "ChatUtils()"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "generate_session_id",
+    "signature_args": "prefix",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "生成唯一的会话ID",
+    "example": "ChatUtils().generate_session_id(prefix)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "format_sse_data",
+    "signature_args": "event_type, data",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "【核心修复】标准 SSE 流格式化",
+    "example": "ChatUtils().format_sse_data(event_type, data)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "parse_sse_data",
+    "signature_args": "chunk",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "解析 SSE 数据块",
+    "example": "ChatUtils().parse_sse_data(chunk)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "extract_content_by_type",
+    "signature_args": "chunk, content_type",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "从SSE chunk中提取指定类型的内容",
+    "example": "ChatUtils().extract_content_by_type(chunk, content_type)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "validate_session_id",
+    "signature_args": "session_id",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "验证会话ID格式 (长度5-100，仅允许字母、数字、下划线、中划线)",
+    "example": "ChatUtils().validate_session_id(session_id)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "sanitize_user_input",
+    "signature_args": "user_input, max_length",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "清理并截断用户输入，防止超大文本恶意注入",
+    "example": "ChatUtils().sanitize_user_input(user_input, max_length)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "estimate_tokens",
+    "signature_args": "text",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "估算文本的token数量 (轻量级本地估算)",
+    "example": "ChatUtils().estimate_tokens(text)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "create_error_response",
+    "signature_args": "error_type, message",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "生成标准错误 SSE 响应",
+    "example": "ChatUtils().create_error_response(error_type, message)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "create_status_response",
+    "signature_args": "status, message",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "生成状态提示 SSE 响应 (如 thinking, processing)",
+    "example": "ChatUtils().create_status_response(status, message)"
+  },
+  {
+    "file": "app/utils/chat_utils.py",
+    "module": "app.utils.chat_utils",
+    "class": "ChatUtils",
+    "name": "calculate_response_metrics",
+    "signature_args": "start_time, content_length",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "计算响应耗时与吞吐量指标",
+    "example": "ChatUtils().calculate_response_metrics(start_time, content_length)"
+  },
+  {
+    "file": "app/utils/code_tools.py",
+    "module": "app.utils.code_tools",
+    "class": "",
+    "name": "execute_python_code",
+    "signature_args": "code",
+    "decorators": [
+      "tool"
+    ],
+    "role": "LangChain工具函数",
+    "description": "执行 Python 代码并返回标准输出。",
+    "example": "execute_python_code(code)"
+  },
+  {
+    "file": "app/utils/concurrent_executor.py",
+    "module": "app.utils.concurrent_executor",
+    "class": "ConcurrentExecutor",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "封装线程并发执行逻辑，供多个 LangGraph 子图复用",
+    "example": "ConcurrentExecutor()"
+  },
+  {
+    "file": "app/utils/concurrent_executor.py",
+    "module": "app.utils.concurrent_executor",
+    "class": "ConcurrentExecutor",
+    "name": "__init__",
+    "signature_args": "max_threads",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化并发执行器",
+    "example": "ConcurrentExecutor(max_threads)"
+  },
+  {
+    "file": "app/utils/concurrent_executor.py",
+    "module": "app.utils.concurrent_executor",
+    "class": "ConcurrentExecutor",
+    "name": "run_concurrent",
+    "signature_args": "items, func",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "并发执行任务",
+    "example": "ConcurrentExecutor().run_concurrent(items, func)"
+  },
+  {
+    "file": "app/utils/config.py",
+    "module": "app.utils.config",
+    "class": "Settings",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "项目配置类，从环境变量中加载配置。",
+    "example": "Settings()"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "LogTarget",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "日志输出目标",
+    "example": "LogTarget()"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "自定义日志记录器",
+    "example": "CustomLogger()"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "add_global_sse_callback",
+    "signature_args": "callback",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "添加全局 SSE 回调函数",
+    "example": "CustomLogger().add_global_sse_callback(callback)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "remove_global_sse_callback",
+    "signature_args": "callback",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "移除全局 SSE 回调函数",
+    "example": "CustomLogger().remove_global_sse_callback(callback)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "clear_global_sse_callbacks",
+    "signature_args": "",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "清空所有全局 SSE 回调函数",
+    "example": "CustomLogger().clear_global_sse_callbacks()"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "__init__",
+    "signature_args": "name, log_dir",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化自定义日志记录器",
+    "example": "CustomLogger(name, log_dir)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "_setup_handlers",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "配置日志处理器",
+    "example": "CustomLogger()._setup_handlers()"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "_create_latest_links",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建最新的日志文件链接",
+    "example": "CustomLogger()._create_latest_links()"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "set_sse_queue",
+    "signature_args": "queue",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "设置 SSE 输出队列",
+    "example": "CustomLogger().set_sse_queue(queue)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "set_sse_callback",
+    "signature_args": "callback",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "设置 SSE 输出回调函数",
+    "example": "CustomLogger().set_sse_callback(callback)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "_log",
+    "signature_args": "level, msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "内部日志方法",
+    "example": "CustomLogger()._log(level, msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "debug",
+    "signature_args": "msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "DEBUG 级别日志",
+    "example": "CustomLogger().debug(msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "info",
+    "signature_args": "msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "INFO 级别日志",
+    "example": "CustomLogger().info(msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "warning",
+    "signature_args": "msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "WARNING 级别日志",
+    "example": "CustomLogger().warning(msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "error",
+    "signature_args": "msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "ERROR 级别日志",
+    "example": "CustomLogger().error(msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "critical",
+    "signature_args": "msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "CRITICAL 级别日志",
+    "example": "CustomLogger().critical(msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "exception",
+    "signature_args": "msg, target",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "EXCEPTION 级别日志（包含堆栈）",
+    "example": "CustomLogger().exception(msg, target)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "CustomLogger",
+    "name": "get_logger",
+    "signature_args": "name, log_dir",
+    "decorators": [
+      "classmethod"
+    ],
+    "role": "通用函数",
+    "description": "获取日志记录器实例（单例模式）",
+    "example": "CustomLogger().get_logger(name, log_dir)"
+  },
+  {
+    "file": "app/utils/custom_logger.py",
+    "module": "app.utils.custom_logger",
+    "class": "",
+    "name": "get_logger",
+    "signature_args": "name, log_dir",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取日志记录器",
+    "example": "get_logger(name, log_dir)"
+  },
+  {
+    "file": "app/utils/date_utils.py",
+    "module": "app.utils.date_utils",
+    "class": "",
+    "name": "get_current_time_context",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取详细的当前时间上下文，供 Prompt 注入",
+    "example": "get_current_time_context()"
+  },
+  {
+    "file": "app/utils/date_utils.py",
+    "module": "app.utils.date_utils",
+    "class": "",
+    "name": "get_agent_date_context",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "生成“每次调用 Agent 都应注入”的严格日期上下文。",
+    "example": "get_agent_date_context()"
+  },
+  {
+    "file": "app/utils/date_utils.py",
+    "module": "app.utils.date_utils",
+    "class": "",
+    "name": "parse_semantic_date",
+    "signature_args": "text",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "生产级语义日期解析：支持复杂中文口语时间",
+    "example": "parse_semantic_date(text)"
+  },
+  {
+    "file": "app/utils/decorators.py",
+    "module": "app.utils.decorators",
+    "class": "",
+    "name": "error_handler",
+    "signature_args": "show_error",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "统一错误处理装饰器",
+    "example": "error_handler(show_error)"
+  },
+  {
+    "file": "app/utils/decorators.py",
+    "module": "app.utils.decorators",
+    "class": "",
+    "name": "log_execution",
+    "signature_args": "func",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "记录函数执行的装饰器",
+    "example": "log_execution(func)"
+  },
+  {
+    "file": "app/utils/file_utils.py",
+    "module": "app.utils.file_utils",
+    "class": "FileUtils",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "class FileUtils",
+    "example": "FileUtils()"
+  },
+  {
+    "file": "app/utils/file_utils.py",
+    "module": "app.utils.file_utils",
+    "class": "FileUtils",
+    "name": "get_project_root",
+    "signature_args": "",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "从脚本位置向上查找，直到找到项目根目录（此处以包含'.git'文件夹为标志）。",
+    "example": "FileUtils().get_project_root()"
+  },
+  {
+    "file": "app/utils/file_utils.py",
+    "module": "app.utils.file_utils",
+    "class": "FileUtils",
+    "name": "read_project_file",
+    "signature_args": "relative_file_path",
+    "decorators": [
+      "staticmethod"
+    ],
+    "role": "通用函数",
+    "description": "安全地读取项目内指定相对路径的文件内容，并保持其原始格式。",
+    "example": "FileUtils().read_project_file(relative_file_path)"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "RedisSaver",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "基于 Redis 的 LangGraph Checkpoint Saver",
+    "example": "RedisSaver()"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "RedisSaver",
+    "name": "__init__",
+    "signature_args": "conn, serde, ttl",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "RedisSaver(conn, serde, ttl)"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "RedisSaver",
+    "name": "get_tuple",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "获取 Checkpoint",
+    "example": "RedisSaver().get_tuple(config)"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "RedisSaver",
+    "name": "list",
+    "signature_args": "config",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "列出 Checkpoints (简化版：仅支持列出最新的)",
+    "example": "RedisSaver().list(config)"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "RedisSaver",
+    "name": "put",
+    "signature_args": "config, checkpoint, metadata, new_versions",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "保存 Checkpoint",
+    "example": "RedisSaver().put(config, checkpoint, metadata, new_versions)"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "RedisSaver",
+    "name": "put_writes",
+    "signature_args": "config, writes, task_id",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "保存写入操作 (用于 Resume)",
+    "example": "RedisSaver().put_writes(config, writes, task_id)"
+  },
+  {
+    "file": "app/utils/langgraph_redis_saver.py",
+    "module": "app.utils.langgraph_redis_saver",
+    "class": "",
+    "name": "get_redis_saver",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "get_redis_saver()"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "PasswordStrengthError",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "密码强度不足异常",
+    "example": "PasswordStrengthError()"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "TokenError",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "令牌相关异常",
+    "example": "TokenError()"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "加密工具类，提供密码加密、验证和JWT令牌处理功能",
+    "example": "EncryptionUtils()"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "__init__",
+    "signature_args": "token_length",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "",
+    "example": "EncryptionUtils(token_length)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "validate_password_strength",
+    "signature_args": "password",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "验证密码强度",
+    "example": "EncryptionUtils().validate_password_strength(password)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "encrypt_password",
+    "signature_args": "password",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "加密密码",
+    "example": "EncryptionUtils().encrypt_password(password)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "verify_password",
+    "signature_args": "plain_password, hashed_password",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "验证密码",
+    "example": "EncryptionUtils().verify_password(plain_password, hashed_password)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "generate_reset_token",
+    "signature_args": "phone",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "生成密码重置令牌",
+    "example": "EncryptionUtils().generate_reset_token(phone)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "verify_reset_token",
+    "signature_args": "phone, token, stored_token",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "验证密码重置令牌",
+    "example": "EncryptionUtils().verify_reset_token(phone, token, stored_token)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "create_access_token",
+    "signature_args": "user_id, extra_data",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建访问令牌",
+    "example": "EncryptionUtils().create_access_token(user_id, extra_data)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "create_refresh_token",
+    "signature_args": "user_id",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建刷新令牌",
+    "example": "EncryptionUtils().create_refresh_token(user_id)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "_create_token",
+    "signature_args": "data, expires_delta",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建JWT令牌的内部方法",
+    "example": "EncryptionUtils()._create_token(data, expires_delta)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "decode_token",
+    "signature_args": "token, token_type",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "解码JWT令牌",
+    "example": "EncryptionUtils().decode_token(token, token_type)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "get_user_id_from_token",
+    "signature_args": "token",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "从令牌中获取用户ID",
+    "example": "EncryptionUtils().get_user_id_from_token(token)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "refresh_access_token",
+    "signature_args": "refresh_token",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "使用刷新令牌生成新的访问令牌",
+    "example": "EncryptionUtils().refresh_access_token(refresh_token)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "token_encode",
+    "signature_args": "user_id",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "兼容旧的方法名，生成访问令牌",
+    "example": "EncryptionUtils().token_encode(user_id)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "EncryptionUtils",
+    "name": "token_decode",
+    "signature_args": "token",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "兼容旧的方法名，解码令牌获取用户ID",
+    "example": "EncryptionUtils().token_decode(token)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "",
+    "name": "encrypt_password",
+    "signature_args": "password",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "加密密码的函数式接口",
+    "example": "encrypt_password(password)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "",
+    "name": "verify_password",
+    "signature_args": "plain_password, hashed_password",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "验证密码的函数式接口",
+    "example": "verify_password(plain_password, hashed_password)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "",
+    "name": "create_access_token",
+    "signature_args": "user_id",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建访问令牌的函数式接口",
+    "example": "create_access_token(user_id)"
+  },
+  {
+    "file": "app/utils/pwd_utils.py",
+    "module": "app.utils.pwd_utils",
+    "class": "",
+    "name": "decode_access_token",
+    "signature_args": "token",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "解码访问令牌获取用户ID的函数式接口",
+    "example": "decode_access_token(token)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "SSELoggingHandler",
+    "name": "__class__",
+    "signature_args": "",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "SSE 日志处理器，将日志输出转换为 SSE 事件并放入队列",
+    "example": "SSELoggingHandler()"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "SSELoggingHandler",
+    "name": "__init__",
+    "signature_args": "output_queue, level, default_show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "初始化 SSE 日志处理器",
+    "example": "SSELoggingHandler(output_queue, level, default_show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "SSELoggingHandler",
+    "name": "emit",
+    "signature_args": "record",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "发送日志（转换为 SSE 格式）",
+    "example": "SSELoggingHandler().emit(record)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "create_sse_handler",
+    "signature_args": "output_queue, default_show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建并配置 SSE 日志处理器",
+    "example": "create_sse_handler(output_queue, default_show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "log_with_config",
+    "signature_args": "logger, level, msg, show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "带配置的日志函数，可以控制是否输出到思考过程",
+    "example": "log_with_config(logger, level, msg, show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "log_debug",
+    "signature_args": "logger, msg, show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "DEBUG 级别日志",
+    "example": "log_debug(logger, msg, show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "log_info",
+    "signature_args": "logger, msg, show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "INFO 级别日志",
+    "example": "log_info(logger, msg, show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "log_warning",
+    "signature_args": "logger, msg, show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "WARNING 级别日志",
+    "example": "log_warning(logger, msg, show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "log_error",
+    "signature_args": "logger, msg, show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "ERROR 级别日志",
+    "example": "log_error(logger, msg, show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "log_exception",
+    "signature_args": "logger, msg, show_in_thinking",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "EXCEPTION 级别日志",
+    "example": "log_exception(logger, msg, show_in_thinking)"
+  },
+  {
+    "file": "app/utils/sse_logging_handler.py",
+    "module": "app.utils.sse_logging_handler",
+    "class": "",
+    "name": "create_sse_handler",
+    "signature_args": "output_queue",
+    "decorators": [],
+    "role": "通用函数",
+    "description": "创建并配置 SSE 日志处理器",
+    "example": "create_sse_handler(output_queue)"
+  }
+]

@@ -4,6 +4,7 @@ from langchain_core.runnables import Runnable, RunnableConfig
 from agent.graph_state import AgentRequest
 from agent.graphs.checkpointer import checkpointer
 from utils.custom_logger import get_logger
+from utils.date_utils import get_agent_date_context
 
 log = get_logger(__name__)
 
@@ -18,6 +19,53 @@ log = get_logger(__name__)
 
 
 class BaseAgent(ABC):
+    @staticmethod
+    def _extract_interrupt_payload(exc: Exception) -> Optional[dict]:
+        """
+        尽最大可能从 LangGraph GraphInterrupt 异常对象中提取审批载荷。
+        兼容不同版本的异常结构（args / interrupts / value）。
+        """
+        candidates: list[Any] = []
+
+        if hasattr(exc, "interrupts"):
+            interrupts = getattr(exc, "interrupts")
+            if interrupts:
+                candidates.extend(list(interrupts))
+
+        if hasattr(exc, "value"):
+            candidates.append(getattr(exc, "value"))
+
+        if getattr(exc, "args", None):
+            candidates.extend(list(exc.args))
+
+        def _unwrap(obj: Any) -> Optional[dict]:
+            if obj is None:
+                return None
+
+            if isinstance(obj, dict):
+                if "action_requests" in obj or "allowed_decisions" in obj or "message" in obj:
+                    return obj
+                return None
+
+            if isinstance(obj, (list, tuple)):
+                for item in obj:
+                    payload = _unwrap(item)
+                    if payload:
+                        return payload
+                return None
+
+            # LangGraph Interrupt 对象通常有 value 字段
+            if hasattr(obj, "value"):
+                return _unwrap(getattr(obj, "value"))
+
+            return None
+
+        for c in candidates:
+            payload = _unwrap(c)
+            if payload:
+                return payload
+        return None
+
     def __init__(self, req: AgentRequest):
         """
         初始化 Agent 实例。
@@ -62,15 +110,36 @@ class BaseAgent(ABC):
         final_config = {**base_config, "configurable": configurable}
 
         # 3. 构造初始状态
-        input_message = {"messages": [("human", req.user_input)]}
+        # 为每次 Agent 调用注入严格日期上下文，统一 today/tomorrow/yesterday 的解释基准。
+        input_message = {
+            "messages": [
+                ("system", get_agent_date_context()),
+                ("human", req.user_input),
+            ]
+        }
 
         try:
-            # 仅流式传输更新，中断状态(Interrupt)交由外部 GraphRunner 统一扫描
+            # 流式传输 updates；若子图触发 native interrupt()，会在 except 中透传 interrupt payload
             for event in self.graph.stream(input_message, config=final_config, stream_mode="updates"):
                 yield event
         except Exception as e:
-            log.error(f"Agent {self.subgraph_id} 运行出错: {str(e)}")
-            yield {"error": str(e)}
+            err_msg = str(e)
+            if "Interrupt(" in err_msg or e.__class__.__name__ == "GraphInterrupt":
+                log.info(f"Agent {self.subgraph_id} 触发原生中断挂起，等待审批恢复。")
+                payload = self._extract_interrupt_payload(e)
+                if payload:
+                    yield {"interrupt": payload}
+                else:
+                    yield {
+                        "interrupt": {
+                            "message": "需要人工审核",
+                            "allowed_decisions": ["approve", "reject"],
+                            "action_requests": []
+                        }
+                    }
+                return
+            log.error(f"Agent {self.subgraph_id} 运行出错: {err_msg}")
+            yield {"error": err_msg}
 
     def get_state(self) -> Any:
         """

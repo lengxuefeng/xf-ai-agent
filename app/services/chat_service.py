@@ -12,6 +12,7 @@ from schemas.chat_history_schemas import ChatMessageCreate
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
 from services.exception_service import exception_handler
+from services.route_metrics_service import route_metrics_service
 from services.user_model_service import user_model_service
 from utils.chat_utils import ChatUtils
 from utils.custom_logger import get_logger, LogTarget
@@ -37,17 +38,20 @@ class ChatService:
             self,
             req: StreamChatRequest,
             user_id: Optional[int],
-            db: Optional[Session] = None
+            db: Optional[Session] = None,
+            dynamic_model_config: Optional[Dict[str, Any]] = None
     ) -> StreamingResponse:
         """
         【入口】统一处理流式聊天请求
         """
         log.info(f"收到流式聊天请求，会话ID: {req.session_id}, 用户ID: {user_id}", target=LogTarget.LOG)
+        if req.user_input and req.user_input != "[RESUME]":
+            route_metrics_service.detect_and_record_correction(req.session_id, req.user_input)
 
         # 注意：safe_execute 只能捕获组装阶段的异常。流式输出期间的异常需要在 stream_chat_with_history 中捕获
         return exception_handler.safe_execute(
             self._process_stream_chat_internal,
-            req, user_id, db,
+            req, user_id, db, dynamic_model_config,
             context="流式聊天准备阶段"
         )
 
@@ -55,21 +59,20 @@ class ChatService:
             self,
             req: StreamChatRequest,
             user_id: Optional[int],
-            db: Optional[Session] = None
+            db: Optional[Session] = None,
+            dynamic_model_config: Optional[Dict[str, Any]] = None
     ) -> StreamingResponse:
         """内部流式聊天处理逻辑：准备配置、挂载生成器"""
         log.info(f"请求参数: model={req.model}, user_model_id={req.user_model_id}, service_type={req.service_type}",
                  target=LogTarget.LOG)
 
-        model_config = None
-        # 1. 如果用户指定了保存的模型配置卡片，去 MySQL 里查
-        if req.user_model_id:
-            log.info(f"使用用户模型配置: {req.user_model_id}", target=LogTarget.LOG)
-            model_config = self._build_model_config_from_user_model(req.user_model_id, user_id)
-
-        # 2. 兜底方案：使用前端传来的零散参数
-        if not model_config:
-            log.info("使用请求参数构建配置", target=LogTarget.LOG)
+        # 1. 如果中间件已经解析好模型配置，则直接使用
+        if dynamic_model_config:
+            log.info("使用中间件预加载的动态模型配置", target=LogTarget.LOG)
+            model_config = dynamic_model_config
+        else:
+            # 2. 兜底方案：使用前端传来的零散参数
+            log.info("使用请求自带的默认参数构建配置", target=LogTarget.LOG)
             model_config = self._build_model_config_from_request(req)
 
         history_messages = []
@@ -167,18 +170,30 @@ class ChatService:
                     ai_response += ai_content
 
         except GeneratorExit:
-            # 【优化细节】前端主动断开连接 (比如关掉网页/点击停止生成)
+            # 前端主动断开连接 (比如关掉网页/点击停止生成)
             log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
             error_occurred = True
             error_message = "客户端主动断开连接"
             raise  # 必须 re-raise GeneratorExit，这是 Python 协程规范
 
+        except TimeoutError:
+            error_occurred = True
+            error_message = "模型响应超时，请重试"
+            log.warning(f"流式聊天超时: {session_id}", target=LogTarget.LOG)
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'【系统提示】网络请求超时，请稍后重试。'}, ensure_ascii=False)}\n\n"
+
+        except ConnectionError:
+            error_occurred = True
+            error_message = "远端服务连接断开"
+            log.warning(f"流式聊天连接异常: {session_id}", target=LogTarget.LOG)
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'【系统提示】模型服务连接断开，请检查网络或重试。'}, ensure_ascii=False)}\n\n"
+
         except Exception as e:
-            # 【优化细节】流式传输中断裂，必须以 SSE 格式告诉前端
+            # 流式传输中断裂，必须以 SSE 格式告诉前端
             error_occurred = True
             error_message = str(e)
             log.exception(f"聊天流处理异常: {error_message}", target=LogTarget.ALL)
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'执行中断: {error_message}'}, ensure_ascii=False)}\n\n"
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'【系统提示】底层服务执行异常: {error_message}'}, ensure_ascii=False)}\n\n"
 
         finally:
             # 3. 收尾动作：落库 MongoDB。无论是正常结束、报错，还是前端断开，只要有话出来，统统存下。
@@ -187,8 +202,11 @@ class ChatService:
                 log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
                 with get_db_context() as db:
                     final_content = ai_response
-                    if error_occurred and not ai_response:
-                        final_content = f"系统提示: 生成被中断 ({error_message})"
+                    if error_occurred:
+                        if not ai_response:
+                            final_content = f"【系统提示: 生成被中断 ({error_message})】"
+                        else:
+                            final_content += f"\n\n> [系统提示: 输出异常中断 ({error_message})]"
                     chat_data = ChatMessageCreate(
                         user_id=user_id,
                         session_id=session_id,
@@ -213,6 +231,10 @@ class ChatService:
             yield from self.graph_runner.stream_run(user_input, session_id, model_config, history_messages or [])
         except GeneratorExit:
             pass
+        except TimeoutError:
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': '【系统提示】网络请求超时，请稍后重试。'}, ensure_ascii=False)}\n\n"
+        except ConnectionError:
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': '【系统提示】模型服务连接断开，请检查网络或重试。'}, ensure_ascii=False)}\n\n"
         except Exception as e:
             log.error(f"匿名聊天异常: {e}")
             yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'发生异常: {str(e)}'}, ensure_ascii=False)}\n\n"
@@ -230,13 +252,13 @@ class ChatService:
                 data_line = next((line for line in lines if line.startswith('data: ')), None)
                 if data_line:
                     data = json.loads(data_line[6:])
-                    # 只记录大模型的回复内容，忽略 thinking 等中间状态
-                    if data.get('type') in ['message']:
+                    # 只记录主输出正文，忽略 thinking/interrupt 等中间状态
+                    if data.get('type') in ['stream', 'message']:
                         return data.get('content', '')
             elif chunk.startswith('data: '):
                 # 兼容旧版本纯 data 输出
                 data = json.loads(chunk[6:])
-                if data.get('type') in ['message']:
+                if data.get('type') in ['stream', 'message']:
                     return data.get('content', '')
         except (json.JSONDecodeError, KeyError):
             pass
@@ -247,8 +269,16 @@ class ChatService:
         if not history_data:
             return []
 
+        # 兼容 chat_history_service 返回 {"messages": [...]} 的结构
+        if isinstance(history_data, dict):
+            source_items = history_data.get("messages", []) or []
+        elif isinstance(history_data, list):
+            source_items = history_data
+        else:
+            source_items = []
+
         normalized = []
-        for item in history_data:
+        for item in source_items:
             if isinstance(item, dict):
                 normalized.append(item)
                 continue
@@ -280,7 +310,7 @@ class ChatService:
 
     def build_model_config(
             self,
-            model: str = 'glm-4',
+            model: str = 'glm-4.7',
             model_service: str = 'zhipu',
             service_type: str = 'zhipu',
             deep_thinking_mode: str = 'auto',

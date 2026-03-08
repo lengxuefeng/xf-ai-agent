@@ -1,4 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+FastAPI 应用主入口模块。
+
+职责：
+1. 创建 FastAPI 应用实例并配置 Swagger 文档
+2. 注册全局异常处理器（业务异常、HTTP 异常、未知异常）
+3. 配置 CORS 跨域中间件
+4. 挂载所有 v1 版本 API 路由（用户、聊天、模型设置等）
+5. 在启动时通过 SQLAlchemy 自动建表
+"""
 import logging
+import os
 
 from fastapi import APIRouter
 from fastapi import FastAPI, Request, HTTPException
@@ -14,8 +26,10 @@ from api.v1.model_setting_api import router as model_setting_router
 from api.v1.user_model_api import router as user_model_router
 from api.v1.user_mcp_api import router as user_mcp_router
 from api.v1.interrupt_api import interrupt_router
+from api.v1.metrics_api import metrics_router
 from app.core.logger import setup_logger
 from db import Base, engine
+import models  # noqa: F401  # 确保所有 ORM 模型在 create_all 前被加载
 from exceptions.business_exception import BusinessException
 from schemas.response_model import ResponseModel
 
@@ -24,7 +38,11 @@ setup_logger()
 logger = logging.getLogger(__name__)
 
 # 这行代码会在服务启动时，检查 PgSQL 里有没有表，没有就会自动按照你的 Model 创表！
-Base.metadata.create_all(bind=engine)
+AUTO_CREATE_TABLES = os.getenv("AUTO_CREATE_TABLES", "true").lower() == "true"
+if AUTO_CREATE_TABLES:
+    Base.metadata.create_all(bind=engine)
+else:
+    logging.getLogger(__name__).info("AUTO_CREATE_TABLES=false，跳过 create_all，建议使用 Alembic 迁移。")
 app = FastAPI(
     title="LangGraph Agent FastAPI",
     description="基于 LangChain、LangGraph 和 FastAPI 构建的智能代理后端项目。",
@@ -92,9 +110,19 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
+# 注册统一性能监控与动态模型分发中间件 (注意中间件执行顺序：后注册的先运行)
+from fastapi.middleware.gzip import GZipMiddleware
+from core.middleware import ProcessTimeMiddleware, DynamicModelMiddleware
+
+# gzip 压缩：对于 SSE 以及长度大于 500 字节的响应进行压缩，降低网络传输开销
+app.add_middleware(GZipMiddleware, minimum_size=500)
+# 动态加载大模型配置 (比如通过 X-User-Model-Id 或 Body 中解析提取并缓存到 State 中)
+app.add_middleware(DynamicModelMiddleware)
+# 请求耗时与 Request_ID 计算
+app.add_middleware(ProcessTimeMiddleware)
+
 # 配置 CORS
-# 这是一个最宽松的 CORS 配置，通常用于开发环境以排除所有 CORS 问题。
-# 在生产环境中，请务必限制 allow_origins、allow_methods 和 allow_headers。
+# CORSMiddleware 必须最后注册，使其成为最外层中间件，拦截预检请求并注入跨域头
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # 允许所有来源
@@ -102,6 +130,7 @@ app.add_middleware(
     allow_methods=["*"],  # 允许所有 HTTP 方法
     allow_headers=["*"],  # 允许所有请求头
 )
+
 
 # 创建 v1 版本的 API 路由
 api_v1_router = APIRouter(prefix="/api/v1")
@@ -112,6 +141,7 @@ api_v1_router.include_router(model_setting_router)
 api_v1_router.include_router(user_model_router)
 api_v1_router.include_router(user_mcp_router)
 api_v1_router.include_router(interrupt_router)
+api_v1_router.include_router(metrics_router)
 
 # 在主应用中包含 v1 路由
 app.include_router(api_v1_router)

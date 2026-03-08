@@ -1,4 +1,5 @@
 import os
+import concurrent.futures
 from typing import List, Dict
 
 from dotenv import load_dotenv
@@ -30,6 +31,7 @@ def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str
     """
     # 初始化 Tavily 搜索工具
     max_results = int(os.getenv("TAVILY_MAX_RESULTS", "5"))
+    timeout_sec = int(os.getenv("TAVILY_TIMEOUT_SEC", "20"))
 
     tavily_tool = TavilySearch(
         api_key=os.getenv("TAVILY_API_KEY"),
@@ -50,5 +52,23 @@ def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str
         include_images=False
     )
 
-    # 执行搜索
-    return tavily_tool.invoke({"query": query})
+    # 执行搜索（增加超时保护，避免前端长期无最终答复）
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(tavily_tool.invoke, {"query": query})
+            result = future.result(timeout=timeout_sec)
+            if isinstance(result, list):
+                return result
+            return [{"title": "搜索结果", "url": "", "content": str(result)}]
+    except concurrent.futures.TimeoutError:
+        return [{
+            "title": "搜索超时",
+            "url": "",
+            "content": f"联网检索超过 {timeout_sec} 秒未返回，请稍后重试或缩小关键词。",
+        }]
+    except Exception as exc:
+        return [{
+            "title": "搜索失败",
+            "url": "",
+            "content": f"联网检索异常：{exc}",
+        }]

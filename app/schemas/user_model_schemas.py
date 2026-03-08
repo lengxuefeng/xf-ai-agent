@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # schemas/user_model.py
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, Dict, Any
+
+from pydantic import BaseModel
 
 from schemas.base import BaseSchema
 

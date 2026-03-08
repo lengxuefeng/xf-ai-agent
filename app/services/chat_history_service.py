@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from db.crud import chat_session_db, chat_message_db
 from schemas.chat_history_schemas import ChatSessionCreate, ChatSessionIn, ChatSessionUpdate, ChatMessageCreate
 
+
 class ChatHistoryService:
     def get_or_create_session(self, db: Session, user_id: int, session_id: str, title: str):
         session = chat_session_db.get_by_session_id(db, session_id)
@@ -21,14 +22,14 @@ class ChatHistoryService:
         return chat_session_db.create(db, obj_in=obj_in)
 
     def get_user_sessions(self, db: Session, user_id: int, page: int = 1, size: int = 20):
-        return chat_session_db.get_by_user_id(db, user_id, (page-1)*size, size)
+        return chat_session_db.get_by_user_id(db, user_id, (page - 1) * size, size)
 
     def get_session_messages(self, db: Session, user_id: int, session_id: str, page: int = 1, size: int = 50):
         # 先校验归属权
         sess = chat_session_db.get_by_session_id(db, session_id)
         if not sess or sess.user_id != user_id:
             return {"messages": []}
-        messages = chat_message_db.get_by_session_id(db, session_id, (page-1)*size, size)
+        messages = chat_message_db.get_by_session_id(db, session_id, (page - 1) * size, size)
         return {"messages": messages}
 
     def create_chat_message(self, db: Session, user_id: int, req: ChatMessageCreate):
@@ -40,5 +41,6 @@ class ChatHistoryService:
         if 'model' in data and data['model']:
             data['model_name'] = data.pop('model')
         return chat_message_db.create(db, obj_in=data)
+
 
 chat_history_service = ChatHistoryService()

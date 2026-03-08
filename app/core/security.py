@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+安全认证模块 —— JWT Token 校验与用户鉴权。
+
+提供三种认证依赖注入方式：
+1. verify_token: 强制认证，Token 无效则返回 401
+2. verify_refresh_token: 刷新令牌认证
+3. get_optional_user_id: 可选认证，未登录时返回 None
+
+使用方式：在 FastAPI 路由中通过 Depends() 注入，例如：
+    @router.get("/profile")
+    def profile(user_id: int = Depends(verify_token)):
+        ...
+"""
 from typing import Optional, Dict, Any
 import logging
 

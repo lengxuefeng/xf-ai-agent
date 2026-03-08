@@ -7,6 +7,7 @@ from langgraph.graph import StateGraph, START, END, add_messages
 from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
 from utils.custom_logger import get_logger
+from agent.prompts.medical_prompt import MedicalPrompt
 
 log = get_logger(__name__)
 
@@ -32,14 +33,7 @@ class MedicalAgent(BaseAgent):
         # 提示词
         self.prompt = ChatPromptTemplate.from_messages(
             [
-                (
-                    "system",
-                    """
-                    你是一个医疗健康问答助手。请根据用户的提问，利用你的知识库提供相关信息。
-                    你的回答应该清晰、准确，并使用通俗易懂的语言。
-                    请注意，你提供的所有信息都不能替代专业的医疗诊断和建议。
-                    """
-                ),
+                ("system", MedicalPrompt.SYSTEM),
                 MessagesPlaceholder(variable_name="messages"),
             ]
         )
@@ -53,12 +47,7 @@ class MedicalAgent(BaseAgent):
             response = chain.invoke(state)
             
             # 附加免责声明
-            disclaimer = (
-                "\n\n---\n"
-                "**免责声明：** 我是一个 AI 助手，以上信息仅供参考，不能作为专业的医疗建议、诊断或治疗方案。"
-                "如有任何健康问题，请务必咨询医生或其他有资质的医疗专业人士。"
-            )
-            response.content += disclaimer
+            response.content += MedicalPrompt.DISCLAIMER
             return {"messages": [response]}
 
         workflow.add_node("agent", model_node)

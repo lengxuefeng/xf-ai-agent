@@ -227,27 +227,27 @@ class CustomLogger:
                 except Exception as e:
                     print(f"[Logger] 队列输出失败: {e}")
 
-    def debug(self, msg: str, target: LogTarget = LogTarget.ALL, **kwargs):
+    def debug(self, msg: str, target: LogTarget = LogTarget.LOG, **kwargs):
         """DEBUG 级别日志"""
         self._log(logging.DEBUG, msg, target, **kwargs)
 
-    def info(self, msg: str, target: LogTarget = LogTarget.ALL, **kwargs):
+    def info(self, msg: str, target: LogTarget = LogTarget.LOG, **kwargs):
         """INFO 级别日志"""
         self._log(logging.INFO, msg, target, **kwargs)
 
-    def warning(self, msg: str, target: LogTarget = LogTarget.ALL, **kwargs):
+    def warning(self, msg: str, target: LogTarget = LogTarget.LOG, **kwargs):
         """WARNING 级别日志"""
         self._log(logging.WARNING, msg, target, **kwargs)
 
-    def error(self, msg: str, target: LogTarget = LogTarget.ALL, **kwargs):
+    def error(self, msg: str, target: LogTarget = LogTarget.LOG, **kwargs):
         """ERROR 级别日志"""
         self._log(logging.ERROR, msg, target, **kwargs)
 
-    def critical(self, msg: str, target: LogTarget = LogTarget.ALL, **kwargs):
+    def critical(self, msg: str, target: LogTarget = LogTarget.LOG, **kwargs):
         """CRITICAL 级别日志"""
         self._log(logging.CRITICAL, msg, target, **kwargs)
 
-    def exception(self, msg: str, target: LogTarget = LogTarget.ALL, **kwargs):
+    def exception(self, msg: str, target: LogTarget = LogTarget.LOG, **kwargs):
         """EXCEPTION 级别日志（包含堆栈）"""
         self.logger.exception(msg)
         if target in [LogTarget.AI, LogTarget.ALL]:
