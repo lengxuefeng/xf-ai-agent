@@ -1,153 +1,208 @@
-# xf-ai-agent 项目
+# XF-AI-Agent
 
-这是一个基于 LangChain、LangGraph 和 FastAPI 构建的智能代理后端项目。它提供了一个 HTTP API 接口，用于与 LangGraph 驱动的智能代理进行交互，并支持知识库问答 (RAG)。
+基于 LangChain、LangGraph 和 FastAPI 构建的企业级多智能体 AI 代理系统。
 
-[langchain文档](https://python.langchain.com/docs)  
-[langgraph文档](https://langchain-ai.github.io/langgraph/)
+## 项目简介
 
+XF-AI-Agent 是一套完整的多智能体协作系统，采用主管-专家架构，通过智能路由将用户请求分发给最合适的领域专家处理。系统支持动态模型切换、流式响应、RAG 检索增强、人工审批等企业级功能。
+
+### 核心特性
+
+- **多智能体协同** - 医疗、代码、SQL、天气、搜索等 6+ 专业领域智能体
+- **智能路由系统** - 三层路由架构：数据域路由 → 意图路由 → DAG 规划器
+- **实时流式响应** - 基于 SSE 的真正实时输出，毫秒级延迟
+- **人工审批机制** - 敏感操作支持人工审核，安全可控
+- **RAG 检索增强** - 基于 PGVector 的高性能向量检索
+- **多模型支持** - 统一接入 Ollama、OpenRouter、Gemini、通义千问等
+- **历史压缩** - 自动压缩长对话历史，减少 Token 消耗
+- **语义缓存** - 相似问题智能缓存，提升响应速度
+- **配置中心** - 运行时参数集中管理，支持热更新
+
+## 快速开始
+
+### 环境准备
+
+- Python 3.12+
+- PostgreSQL 14+ (用于业务数据和向量检索)
+- Node.js 18+ (前端开发)
+
+### 安装后端
+
+```bash
+cd xf-ai-agent
+
+# 创建虚拟环境
+python -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+# .venv\Scripts\activate   # Windows
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 复制环境变量配置
+cp .env.example .env
+
+# 编辑 .env 文件，填入必要的配置
+# - 数据库连接信息
+# - 大模型 API Key
+# - 其他必要配置
+
+# 启动服务
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 访问服务
+
+- **API 服务**: http://localhost:8000
+- **Swagger 文档**: http://localhost:8000/docs
+- **ReDoc 文档**: http://localhost:8000/redoc
+
+## 📖 文档阅读顺序（按顺序阅读）
+
+### 第一步：快速了解项目
+📖 [完整项目说明文档.md](./完整项目说明文档.md) - **最核心的文档**，包含项目的所有内容（必读）
+
+### 第二步：API 接口开发
+📖 [API文档.md](./API文档.md) - 接口开发必备（开发人员必读）
+
+### 第三步：深入专题文档（按需）
+- [docs/函数方法与包说明表.md](./docs/函数方法与包说明表.md) - 函数方法大全（查阅使用）
+- [docs/PostgreSQL数据库完整技术文档.md](./docs/PostgreSQL数据库完整技术文档.md) - 数据库运维（运维开发必读）
+- [docs/database_init.sql](database_init.sql) - 数据库初始化脚本（包含所有7张表）
+- [docs/后端项目说明文档.md](./docs/后端项目说明文档.md) - 后端开发详解（开发人员）
 
 ## 项目结构
 
 ```
 xf-ai-agent/
-├── app/                  # 应用核心逻辑
-│   ├── api/              # API 路由定义
-│   │   └── v1/           # API 版本化
-│   │       └── endpoints.py # 包含所有 FastAPI 路由端点
-│   ├── models/           # Pydantic 模型定义
-│   │   └── schemas.py    # 用于 API 请求和响应的数据结构
-│   ├── services/         # 业务逻辑层，包含核心功能实现
-│   │   ├── agent.py      # LangGraph Agent 的核心定义 (状态、节点、边)
-│   │   ├── retriever.py  # 负责 RAG 的检索器和向量库创建
-│   │   └── tools.py      # 为 Agent 定义的工具 (例如，文档搜索)
-│   ├── utils/            # 通用工具函数、帮助类等
-│   │   ├── config.py     # 配置加载 (例如，从 .env 读取环境变量)
-│   │   └── common.py     # 其他通用辅助函数
-│   └── dependencies.py   # FastAPI 依赖注入函数 (例如，获取共享资源、认证)
-├── data/                 # 存放 RAG 知识库源文件
-│   └── knowledge.txt
-├── vectorstore/          # 存放生成的向量数据库
-├── .env                  # 环境变量 (例如 GOOGLE_API_KEY)
-├── main.py               # FastAPI 应用入口，负责加载应用和路由
-├── pyproject.toml        # 项目依赖和元数据配置
-└── README.md             # 项目说明文档 (中文)
+├── app/                           # 应用核心代码
+│   ├── agent/                     # AI Agent 模块
+│   │   ├── agents/                # 具体业务 Agent 实现
+│   │   ├── graphs/                # 图结构定义
+│   │   ├── tools/                 # 工具函数
+│   │   ├── llm/                   # 大模型加载
+│   │   ├── rag/                   # RAG 检索增强
+│   │   ├── rules/                 # 规则引擎
+│   │   ├── prompts/               # 系统提示词
+│   │   ├── base.py                # Agent 基类
+│   │   └── graph_runner.py        # 图执行器
+│   ├── api/v1/                    # API 路由层
+│   ├── core/                      # 核心中间件
+│   ├── config/                    # 配置管理
+│   ├── constants/                 # 常量定义
+│   ├── db/                        # 数据库操作
+│   ├── models/                    # 数据模型
+│   ├── schemas/                   # 数据验证模型
+│   ├── services/                  # 业务服务层
+│   └── utils/                     # 工具函数
+├── docs/                          # 专题文档
+├── alembic/                       # 数据库迁移
+├── .env                           # 环境变量配置
+├── main.py                        # 应用启动入口
+└── pyproject.toml                 # 项目依赖配置
 ```
 
-## 安装与运行
+## 技术栈
 
-### 1. 克隆项目
+### 核心框架
+- **FastAPI** 0.116.0+ - 现代化 Web 框架
+- **LangChain** 1.2.10+ - LLM 应用框架
+- **LangGraph** 0.2.50+ - 状态机与图编排引擎
+
+### 数据库与存储
+- **PostgreSQL** 14+ - 主数据库（支持向量检索）
+- **PGVector** 0.3.6+ - 向量存储与检索
+- **Redis** 6.4.0+ - 缓存与会话管理
+- **SQLAlchemy** - ORM 框架
+- **Alembic** - 数据库迁移工具
+
+### LLM 与嵌入
+- **langchain-openai** - OpenAI 兼容接口
+- **langchain-google-genai** - Google Gemini
+- **langchain-ollama** - 本地 Ollama 模型
+- **langchain-community** - 社区模型集成
+
+### 工具库
+- **uvicorn** - ASGI 服务器
+- **pydantic** - 数据验证
+- **python-dotenv** - 环境变量管理
+- **httpx** - HTTP 客户端
+- **tavily-python** - 搜索 API 客户端
+
+### 安全与认证
+- **PyJWT** - JWT 令牌生成与验证
+- **passlib** - 密码加密
+- **bcrypt** - 密码哈希
+
+## 部署说明
+
+### 开发环境
 
 ```bash
-git clone <项目仓库地址>
-cd xf-ai-agent
+# 使用 uvicorn 启动开发服务器
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 2. 创建并激活虚拟环境 (使用 uv)
+### 生产环境
 
 ```bash
-uv venv
-source .venv/bin/activate  # macOS/Linux
-# .venv\Scripts\activate   # Windows
+# 使用 gunicorn 启动（推荐）
+gunicorn app.main:app \
+  --workers 4 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:8000 \
+  --access-logfile - \
+  --error-logfile -
+
+# 或使用 uvicorn
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-### 3. 安装依赖 (使用 uv)
+### Docker 部署
 
 ```bash
-uv pip install .
+# 构建镜像
+docker build -t xf-ai-agent .
+
+# 运行容器
+docker run -d \
+  --name xf-ai-agent \
+  -p 8000:8000 \
+  --env-file .env \
+  xf-ai-agent
 ```
 
-### 4. 生成 requirements.txt (可选)
+## 主要功能
 
-如果您需要为其他环境生成 `requirements.txt` 文件，可以使用以下命令：
+### 1. 智能对话
+- 实时流式输出
+- 多轮对话记忆
+- 上下文自动管理
 
-```bash
-uv pip freeze > requirements.txt
-```
+### 2. 专业智能体
+- **医疗 Agent** - 健康咨询、症状分析
+- **代码 Agent** - 代码生成、调试、优化
+- **SQL Agent** - 数据库查询、分析
+- **天气 Agent** - 天气查询、预报
+- **搜索 Agent** - 联网搜索、信息检索
+- **云柚 Agent** - 云柚业务系统交互
 
-### 5. 使用 requirements.txt 安装依赖 (可选)
+### 3. 安全机制
+- JWT 认证
+- 权限控制
+- 人工审批
+- SQL 注入防护
 
-如果您已经有了 `requirements.txt` 文件，可以使用 `pip` 或 `uv pip` 来安装依赖：
+### 4. 性能优化
+- 语义缓存
+- 历史压缩
+- 并发执行
+- 负载均衡
 
-```bash
-# 使用 pip
-pip install -r requirements.txt
+## 贡献指南
 
-# 或者使用 uv pip
-uv pip install -r requirements.txt
-```
-
-### 6. 配置环境变量
-
-在项目根目录下创建 `.env` 文件，并填入您的 Google API Key：
-
-```
-GOOGLE_API_KEY="YOUR_API_KEY"
-```
-
-### 5. 准备知识库数据
-
-将您的知识文本文件放入 `data/` 目录下，例如 `data/knowledge.txt`。
-
-### 6. 运行 FastAPI 应用
-
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-应用将在 `http://0.0.0.0:8000` 启动。您可以通过访问 `http://0.0.0.0:8000/docs` 查看 API 文档 (Swagger UI)。
-
-## API 文档
-
-访问 `http://0.0.0.0:8000/docs` 查看自动生成的 API 文档。
-
-## 使用示例
-
-### 聊天 API
-
-向 `/api/v1/chat` 端点发送 POST 请求，以与智能代理进行交互。
-
-**请求示例:**
-
-```json
-{
-  "message": "你好，请问有什么可以帮助你的吗？"
-}
-```
-
-**响应示例:**
-
-```json
-{
-  "response": "你好！我是一个智能助手，很高兴为您服务。"
-}
-```
-
-## 核心组件说明
-
-### LangGraph Agent (`app/services/agent.py`)
-
-定义了智能代理的状态、节点和边。它能够根据用户输入和内部逻辑进行多步骤推理和工具使用。
-
-### 知识检索器 (`app/services/retriever.py`)
-
-负责从 `data/` 目录加载文本数据，创建向量嵌入，并构建 FAISS 向量存储。它提供了一个检索接口，供 Agent 在需要时查询相关文档片段。
-
-### 工具 (`app/services/tools.py`)
-
-定义了 Agent 可以使用的外部工具，例如文档搜索工具。这些工具通过 LangChain 的 `Tool` 接口集成。
-
-### Pydantic 模型 (`app/models/schemas.py`)
-
-定义了 API 请求和响应的数据结构，确保数据传输的类型安全和清晰。
-
-### 配置 (`app/utils/config.py`)
-
-处理环境变量和应用配置的加载。
-
-## 贡献
-
-欢迎提交 Pull Request 或报告 Issue。
+欢迎贡献代码、提出建议或报告问题！
 
 ## 许可证
 
-本项目采用 MIT 许可证。
+MIT License
