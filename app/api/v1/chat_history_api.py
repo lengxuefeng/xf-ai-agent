@@ -54,13 +54,21 @@ def get_session_messages(
         session_id: str,
         page: int = Query(1, ge=1),
         size: int = Query(50, ge=1, le=100),
+        order: str = Query("desc", pattern="^(asc|desc)$"),
         db: Session = Depends(get_db),
         user_id: int = Depends(verify_token)
 ):
     """获取消息历史"""
-    result = chat_history_service.get_session_messages(db, user_id, session_id, page, size)
+    result = chat_history_service.get_session_messages(db, user_id, session_id, page, size, order)
     messages = result.get("messages", [])
-    data = [ChatMessage.model_validate(m).model_dump() for m in messages]
+    data = {
+        "messages": [ChatMessage.model_validate(m).model_dump() for m in messages],
+        "total": result.get("total", 0),
+        "page": result.get("page", page),
+        "size": result.get("size", size),
+        "has_more": result.get("has_more", False),
+        "order": result.get("order", order),
+    }
     return ResponseModel.success(data=data)
 
 

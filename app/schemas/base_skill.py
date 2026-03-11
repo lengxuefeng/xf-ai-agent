@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+import threading
 import uuid
 from typing import TypedDict, List, Callable, Optional, Union
 
@@ -92,6 +93,9 @@ class ConfigurableSkillMiddleware(AgentMiddleware):
     支持直接传入文件夹路径，自动处理加载逻辑。
     """
 
+    _dir_skill_cache: dict[str, List[Skill]] = {}
+    _cache_lock = threading.RLock()
+
     def __init__(self, skill_source: Union[str, List[Skill]]):
         """
         初始化中间件。
@@ -105,8 +109,18 @@ class ConfigurableSkillMiddleware(AgentMiddleware):
 
         # 核心逻辑：根据传入参数类型决定如何加载
         if isinstance(skill_source, str):
-            log.info(f"MIDDLEWARE: 正在从目录初始化技能: {skill_source}", target=LogTarget.ALL)
-            self.skills = SkillLoader.load_from_dir(skill_source)
+            with self._cache_lock:
+                cached_skills = self._dir_skill_cache.get(skill_source)
+            if cached_skills is not None:
+                self.skills = [dict(item) for item in cached_skills]
+                log.info(f"MIDDLEWARE: 命中技能缓存: {skill_source}", target=LogTarget.ALL)
+            else:
+                log.info(f"MIDDLEWARE: 正在从目录初始化技能: {skill_source}", target=LogTarget.ALL)
+                loaded_skills = SkillLoader.load_from_dir(skill_source)
+                with self._cache_lock:
+                    # 缓存副本，避免外部误修改共享对象
+                    self._dir_skill_cache[skill_source] = [dict(item) for item in loaded_skills]
+                self.skills = loaded_skills
             log.info(f"✅ 云柚代理工具加载成功: {len(self.skills)} 个工具", target=LogTarget.ALL)
         elif isinstance(skill_source, list):
             self.skills = skill_source
@@ -204,12 +218,15 @@ if __name__ == '__main__':
     # 1. 开启日志显示 (如果不加这行，log.info 不会打印)
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+    demo_api_key = os.getenv("SKILL_DEMO_API_KEY", "").strip()
+    if not demo_api_key:
+        raise RuntimeError("请先设置环境变量 SKILL_DEMO_API_KEY 再运行本地示例。")
+
     model = ChatOpenAI(
         model="GLM-4.6",  # 请确认你的模型名称正确
         temperature=0.1,  # 稍微调低温度，让工具调用更稳定
-        api_key="372825e177b84308934ad6564cab60f7.1yrv1Sv8mL7YhHZA",
-        # base_url="https://open.bigmodel.cn/api/paas/v4",
-        base_url="https://open.bigmodel.cn/api/coding/paas/v4",
+        api_key=demo_api_key,
+        base_url=os.getenv("SKILL_DEMO_BASE_URL", "https://open.bigmodel.cn/api/coding/paas/v4"),
     )
 
     # 技能文件路径

@@ -1,6 +1,12 @@
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 
+from constants.approval_constants import (
+    APPROVAL_HANDLE_STATUS_PROCESSED,
+    ApprovalDecision,
+    ApprovalStatus,
+    DEFAULT_ALLOWED_DECISIONS,
+)
 from db import get_db_context
 from models.interrupt_approval import InterruptApprovalModel
 from utils.custom_logger import get_logger, LogTarget
@@ -9,21 +15,24 @@ log = get_logger(__name__)
 
 
 class InterruptService:
-    """人工审核服务（PG 持久化版，内存兜底）。"""
+    """中断审批服务：处理Agent执行过程中的人工审批请求"""
 
     def __init__(self):
+        """初始化服务，准备内存兜底容器"""
         # 兜底内存态：仅在数据库不可用时启用
         self.pending_approvals: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
     @staticmethod
     def _normalize_decision(decision: str) -> str:
+        """标准化审批动作为approve或reject"""
         d = (decision or "").strip().lower()
-        if d not in {"approve", "reject"}:
+        if d not in DEFAULT_ALLOWED_DECISIONS:
             raise ValueError("decision 必须是 approve 或 reject")
         return d
 
     @staticmethod
     def _row_to_dict(row: InterruptApprovalModel) -> Dict[str, Any]:
+        """将ORM行对象转换为字典"""
         return {
             "id": row.id,
             "session_id": row.session_id,
@@ -45,6 +54,7 @@ class InterruptService:
 
     @staticmethod
     def _query_by_message(db, session_id: str, message_id: str) -> Optional[InterruptApprovalModel]:
+        """按会话和消息ID查询审批记录"""
         return (
             db.query(InterruptApprovalModel)
             .filter(
@@ -57,11 +67,12 @@ class InterruptService:
 
     @staticmethod
     def _query_session_pending(db, session_id: str) -> List[InterruptApprovalModel]:
+        """查询会话所有待审批且未消费的记录"""
         return (
             db.query(InterruptApprovalModel)
             .filter(
                 InterruptApprovalModel.session_id == session_id,
-                InterruptApprovalModel.status == "pending",
+                InterruptApprovalModel.status == ApprovalStatus.PENDING.value,
                 InterruptApprovalModel.is_consumed.is_(False),
             )
             .order_by(InterruptApprovalModel.create_time.desc(), InterruptApprovalModel.id.desc())
@@ -81,12 +92,13 @@ class InterruptService:
         checkpoint_id: Optional[str] = None,
         checkpoint_ns: Optional[str] = None,
     ) -> InterruptApprovalModel:
+        """写入或更新待审批记录"""
         row = self._query_by_message(db, session_id, message_id)
         if row:
             row.action_name = action_name
             row.action_args = action_args or {}
             row.description = description or ""
-            row.status = "pending"
+            row.status = ApprovalStatus.PENDING.value
             row.user_id = None
             row.decision_time = None
             row.is_consumed = False
@@ -102,7 +114,7 @@ class InterruptService:
             action_name=action_name,
             action_args=action_args or {},
             description=description or "",
-            status="pending",
+            status=ApprovalStatus.PENDING.value,
             user_id=None,
             decision_time=None,
             is_consumed=False,
@@ -127,13 +139,14 @@ class InterruptService:
         checkpoint_id: Optional[str] = None,
         checkpoint_ns: Optional[str] = None,
     ):
+        """数据库不可用时，将审批请求存入内存"""
         if session_id not in self.pending_approvals:
             self.pending_approvals[session_id] = {}
         self.pending_approvals[session_id][message_id] = {
             "action_name": action_name,
             "action_args": action_args or {},
             "description": description or "",
-            "status": "pending",
+            "status": ApprovalStatus.PENDING.value,
             "user_id": None,
             "decision_time": None,
             "agent_name": agent_name,
@@ -156,7 +169,7 @@ class InterruptService:
         checkpoint_id: Optional[str] = None,
         checkpoint_ns: Optional[str] = None,
     ):
-        """注册待审核请求（优先写 PG，失败回退内存）。"""
+        """注册待审核请求，优先写入数据库，失败则回退内存"""
         try:
             with get_db_context() as db:
                 self._upsert_pending_row(
@@ -195,7 +208,7 @@ class InterruptService:
         action_name: Optional[str] = None,
         action_args: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """处理审核结果（优先写 PG，失败回退内存）。"""
+        """处理审批结果，优先写入数据库，失败则回退内存"""
         normalized_decision = self._normalize_decision(decision)
 
         try:
@@ -231,7 +244,7 @@ class InterruptService:
                 row.is_consumed = False
                 log_action_name = action_name or row.action_name
 
-            if normalized_decision == "approve":
+            if normalized_decision == ApprovalDecision.APPROVE.value:
                 log.warning(f"✅ 用户 {user_id} 批准了工具调用: {log_action_name}", target=LogTarget.ALL)
                 log.warning("审核已批准，等待前端触发恢复执行。", target=LogTarget.ALL)
             else:
@@ -242,7 +255,7 @@ class InterruptService:
                 "session_id": session_id,
                 "message_id": message_id,
                 "decision": normalized_decision,
-                "status": "processed",
+                "status": APPROVAL_HANDLE_STATUS_PROCESSED,
             }
         except ValueError:
             raise
@@ -271,7 +284,7 @@ class InterruptService:
                 "session_id": session_id,
                 "message_id": message_id,
                 "decision": normalized_decision,
-                "status": "processed",
+                "status": APPROVAL_HANDLE_STATUS_PROCESSED,
             }
 
     def get_pending_approval(
@@ -279,7 +292,7 @@ class InterruptService:
         session_id: str,
         message_id: str
     ) -> Optional[Dict[str, Any]]:
-        """获取单条审批请求（优先读 PG，失败回退内存）。"""
+        """获取单条审批请求"""
         try:
             with get_db_context() as db:
                 row = self._query_by_message(db, session_id, message_id)
@@ -291,16 +304,17 @@ class InterruptService:
             return self.pending_approvals.get(session_id, {}).get(message_id)
 
     def fetch_latest_resolved_approval(self, session_id: str) -> Optional[Dict[str, Any]]:
-        """
-        读取当前会话最新一条“已审批且未消费”的记录，供 [RESUME] 使用。
-        """
+        """获取会话最新已审批未消费的记录，用于恢复执行"""
         try:
             with get_db_context() as db:
                 row = (
                     db.query(InterruptApprovalModel)
                     .filter(
                         InterruptApprovalModel.session_id == session_id,
-                        InterruptApprovalModel.status.in_(["approve", "reject"]),
+                        InterruptApprovalModel.status.in_([
+                            ApprovalStatus.APPROVE.value,
+                            ApprovalStatus.REJECT.value,
+                        ]),
                         InterruptApprovalModel.is_consumed.is_(False),
                     )
                     .order_by(
@@ -317,7 +331,10 @@ class InterruptService:
             log.error(f"读取恢复审批记录(PG)失败，降级内存: {e}", target=LogTarget.ALL)
             approvals = self.pending_approvals.get(session_id, {})
             for message_id, data in reversed(list(approvals.items())):
-                if data.get("status") in {"approve", "reject"} and not data.get("is_consumed", False):
+                if data.get("status") in {
+                    ApprovalStatus.APPROVE.value,
+                    ApprovalStatus.REJECT.value,
+                } and not data.get("is_consumed", False):
                     d = dict(data)
                     d["session_id"] = session_id
                     d["message_id"] = message_id
@@ -325,7 +342,7 @@ class InterruptService:
             return None
 
     def mark_approval_consumed(self, session_id: str, message_id: str):
-        """将审批结果标记为已消费，避免重复恢复。"""
+        """标记审批为已消费，防止重复恢复"""
         if not message_id:
             return
         try:

@@ -1,4 +1,4 @@
-from typing import TypedDict, List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 
 from langchain_core.language_models import BaseChatModel
 
@@ -16,7 +16,7 @@ class AgentRequest(ArbitraryTypesBaseSchema):
     单智能体请求载荷封装
     """
     user_input: str  # 用户当前轮次的输入文本
-    state: Optional[TypedDict] = None  # 外部传入的初始状态（按需使用）
+    state: Optional[Dict[str, Any]] = None  # 外部传入的初始状态（按需使用）
     session_id: str  # 用于绑定 Checkpointer 的线程 ID
     subgraph_id: str  # 子图命名空间标识
     model: BaseChatModel  # 已经初始化好的 LLM 实例（如 GLM-4）

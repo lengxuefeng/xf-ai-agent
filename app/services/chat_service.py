@@ -7,12 +7,26 @@ from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
 from agent.graph_runner import GraphRunner
+from constants.chat_service_constants import (
+    CHAT_AI_CONTENT_TYPES,
+    CHAT_DEFAULT_MODEL_CONFIG,
+    CHAT_SERVICE_ERROR_CONNECTION,
+    CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE,
+    CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE,
+    CHAT_SERVICE_ERROR_TIMEOUT,
+    CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE,
+    CHAT_SERVICE_INTERRUPTED_TEMPLATE,
+    STREAM_HEADERS,
+)
+from constants.sse_constants import SseEventType, SsePayloadField
+from config.runtime_settings import MODEL_TIERING_CONFIG
 from db import get_db_context
 from schemas.chat_history_schemas import ChatMessageCreate
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
 from services.exception_service import exception_handler
 from services.route_metrics_service import route_metrics_service
+from services.session_state_service import session_state_service
 from services.user_model_service import user_model_service
 from utils.chat_utils import ChatUtils
 from utils.custom_logger import get_logger, LogTarget
@@ -21,17 +35,10 @@ log = get_logger(__name__)
 
 
 class ChatService:
-    """
-    聊天服务层 (Service Layer)
-    职责：
-    1. 解析并组装大模型的配置 (Model Config)
-    2. 从 MongoDB 拉取历史记忆
-    3. 唤醒 GraphRunner 执行核心 AI 逻辑
-    4. 【核心】拦截并解析 SSE 流，精准切面记录用户的会话历史
-    """
+    """聊天服务层：处理流式聊天请求、历史记录和配置管理"""
 
     def __init__(self):
-        # 实例化我们在下层写好的图流转引擎
+        """初始化聊天服务"""
         self.graph_runner = GraphRunner()
 
     def process_stream_chat(
@@ -76,6 +83,8 @@ class ChatService:
             model_config = self._build_model_config_from_request(req)
 
         history_messages = []
+        # 会话结构化上下文：包含城市/用户画像等槽位
+        runtime_context: Dict[str, Any] = {}
         is_resume = req.user_input == "[RESUME]"
 
         # 3. 核心分流：注册用户带记忆，匿名用户无记忆
@@ -83,12 +92,21 @@ class ChatService:
             # 拉取历史并标准化成 GraphRunner 需要的 dict 结构
             history_data = chat_history_service.get_session_messages(db, user_id, req.session_id, page=1, size=100)
             history_messages = self._normalize_history_messages(history_data)
+            # 在进入图执行前，先构建并持久化一份会话槽位上下文
+            runtime_context = session_state_service.build_runtime_context(
+                db=db,
+                user_id=user_id,
+                session_id=req.session_id,
+                user_input=req.user_input,
+                history_messages=history_messages,
+            )
             stream_generator = self.stream_chat_with_history(
                 user_input=req.user_input,
                 session_id=req.session_id,
                 model_config=model_config,
                 user_id=user_id,
                 history_messages=history_messages,
+                runtime_context=runtime_context,
                 is_resume=is_resume,
             )
         else:
@@ -97,6 +115,7 @@ class ChatService:
                 session_id=req.session_id,
                 model_config=model_config,
                 history_messages=history_messages,
+                runtime_context=runtime_context,
             )
 
         # 4. 返回流式响应，控制权正式交给 FastAPI 后台协程
@@ -119,18 +138,36 @@ class ChatService:
                 return None
             model_setting = user_model.model_setting
             custom_config = user_model.custom_config or {}
+            router_model = (
+                custom_config["router_model"]
+                if "router_model" in custom_config
+                else MODEL_TIERING_CONFIG.router_model
+            )
+            simple_chat_model = (
+                custom_config["simple_chat_model"]
+                if "simple_chat_model" in custom_config
+                else MODEL_TIERING_CONFIG.simple_chat_model
+            )
             return {
                 'model': user_model.selected_model,
                 'model_service': model_setting.service_name,
                 'service_type': model_setting.service_type,
-                'deep_thinking_mode': custom_config.get('deep_thinking_mode', 'auto'),
-                'rag_enabled': custom_config.get('rag_enabled', False),
-                'similarity_threshold': custom_config.get('similarity_threshold', 0.7),
-                'embedding_model': custom_config.get('embedding_model', 'bge-m3:latest'),
-                'embedding_model_key': custom_config.get('embedding_model_key', ''),
-                'temperature': custom_config.get('temperature', 0.2),
-                'top_p': custom_config.get('top_p', 1.0),
-                'max_tokens': custom_config.get('max_tokens', 2000),
+                'router_model': router_model,
+                'simple_chat_model': simple_chat_model,
+                'deep_thinking_mode': custom_config.get('deep_thinking_mode', CHAT_DEFAULT_MODEL_CONFIG["deep_thinking_mode"]),
+                'rag_enabled': custom_config.get('rag_enabled', CHAT_DEFAULT_MODEL_CONFIG["rag_enabled"]),
+                'similarity_threshold': custom_config.get(
+                    'similarity_threshold',
+                    CHAT_DEFAULT_MODEL_CONFIG["similarity_threshold"],
+                ),
+                'embedding_model': custom_config.get('embedding_model', CHAT_DEFAULT_MODEL_CONFIG["embedding_model"]),
+                'embedding_model_key': custom_config.get(
+                    'embedding_model_key',
+                    CHAT_DEFAULT_MODEL_CONFIG["embedding_model_key"],
+                ),
+                'temperature': custom_config.get('temperature', CHAT_DEFAULT_MODEL_CONFIG["temperature"]),
+                'top_p': custom_config.get('top_p', CHAT_DEFAULT_MODEL_CONFIG["top_p"]),
+                'max_tokens': custom_config.get('max_tokens', CHAT_DEFAULT_MODEL_CONFIG["max_tokens"]),
                 'model_key': user_model.api_key,
                 'model_url': user_model.api_url or model_setting.service_url
             }
@@ -142,6 +179,7 @@ class ChatService:
             model_config: Dict[str, Any],
             user_id: Optional[int] = None,
             history_messages: Optional[list] = None,
+            runtime_context: Optional[Dict[str, Any]] = None,
             is_resume: bool = False,
     ) -> Generator[str, None, None]:
         """
@@ -150,6 +188,7 @@ class ChatService:
         """
         log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
         history_messages = history_messages or []
+        runtime_context = runtime_context or {}
 
         if not is_resume:
             with get_db_context() as db:
@@ -159,10 +198,18 @@ class ChatService:
         start_time = time.time()
         error_occurred = False
         error_message = ""
+        runner_stream = None
 
         try:
+            runner_stream = self.graph_runner.stream_run(
+                user_input=user_input,
+                session_id=session_id,
+                model_config=model_config,
+                history_messages=history_messages,
+                session_context=runtime_context,
+            )
             # 1. 遍历 GraphRunner 推送过来的每一个流式事件
-            for chunk in self.graph_runner.stream_run(user_input, session_id, model_config, history_messages):
+            for chunk in runner_stream:
                 yield chunk
                 # 2. 只有当事件包含大模型的正文时，才拼接到 ai_response 里准备落库
                 ai_content = self._extract_ai_content_from_chunk(chunk)
@@ -171,6 +218,11 @@ class ChatService:
 
         except GeneratorExit:
             # 前端主动断开连接 (比如关掉网页/点击停止生成)
+            if runner_stream is not None:
+                try:
+                    runner_stream.close()
+                except Exception:
+                    pass
             log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
             error_occurred = True
             error_message = "客户端主动断开连接"
@@ -180,64 +232,91 @@ class ChatService:
             error_occurred = True
             error_message = "模型响应超时，请重试"
             log.warning(f"流式聊天超时: {session_id}", target=LogTarget.LOG)
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'【系统提示】网络请求超时，请稍后重试。'}, ensure_ascii=False)}\n\n"
+            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
 
         except ConnectionError:
             error_occurred = True
             error_message = "远端服务连接断开"
             log.warning(f"流式聊天连接异常: {session_id}", target=LogTarget.LOG)
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'【系统提示】模型服务连接断开，请检查网络或重试。'}, ensure_ascii=False)}\n\n"
+            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
 
         except Exception as e:
             # 流式传输中断裂，必须以 SSE 格式告诉前端
             error_occurred = True
             error_message = str(e)
             log.exception(f"聊天流处理异常: {error_message}", target=LogTarget.ALL)
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'【系统提示】底层服务执行异常: {error_message}'}, ensure_ascii=False)}\n\n"
+            yield self._format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
 
         finally:
-            # 3. 收尾动作：落库 MongoDB。无论是正常结束、报错，还是前端断开，只要有话出来，统统存下。
-            if user_id and not is_resume and (ai_response or error_occurred):
+            # 3. 收尾动作：落库。无论是正常结束、报错，还是前端断开，只要有话出来，统统存下。
+            if user_id and not is_resume:
                 # 哪怕 error_occurred，只要 ai_response 里面有半截话，也值得保存
                 log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
                 with get_db_context() as db:
+                    # 组装要入库的最终回答文本
                     final_content = ai_response
                     if error_occurred:
                         if not ai_response:
-                            final_content = f"【系统提示: 生成被中断 ({error_message})】"
+                            final_content = CHAT_SERVICE_INTERRUPTED_TEMPLATE.format(error=error_message)
                         else:
-                            final_content += f"\n\n> [系统提示: 输出异常中断 ({error_message})]"
-                    chat_data = ChatMessageCreate(
+                            final_content += CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE.format(error=error_message)
+
+                    # 仅当本轮有可存内容时才写聊天消息，避免空白消息污染历史
+                    if final_content:
+                        chat_data = ChatMessageCreate(
+                            user_id=user_id,
+                            session_id=session_id,
+                            user_content=user_input,
+                            model_content=final_content,
+                            model_name=model_config.get('model'),
+                            latency_ms=int((time.time() - start_time) * 1000),
+                            tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                        )
+                        chat_history_service.create_chat_message(db, user_id, chat_data)
+
+                    # 无论是否产出正文，都回写会话状态（轮次、路由快照、槽位补全）
+                    session_state_service.update_after_turn(
+                        db=db,
                         user_id=user_id,
                         session_id=session_id,
-                        user_content=user_input,
-                        model_content=final_content,
-                        model_name=model_config.get('model'),
-                        latency_ms=int((time.time() - start_time) * 1000),
-                        tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                        user_input=user_input,
+                        ai_response=final_content,
                     )
-                    chat_history_service.create_chat_message(db, user_id, chat_data)
 
     def stream_chat_anonymous(
             self,
             user_input: str,
             session_id: str,
             model_config: Dict[str, Any],
-            history_messages: Optional[list] = None
+            history_messages: Optional[list] = None,
+            runtime_context: Optional[Dict[str, Any]] = None,
     ) -> Generator[str, None, None]:
         """匿名流式聊天，不触碰数据库，纯粹的管道转发"""
         log.info(f"匿名流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
+        runner_stream = None
         try:
-            yield from self.graph_runner.stream_run(user_input, session_id, model_config, history_messages or [])
+            runner_stream = self.graph_runner.stream_run(
+                user_input=user_input,
+                session_id=session_id,
+                model_config=model_config,
+                history_messages=history_messages or [],
+                session_context=runtime_context or {},
+            )
+            yield from runner_stream
         except GeneratorExit:
-            pass
+            if runner_stream is not None:
+                try:
+                    runner_stream.close()
+                except Exception:
+                    pass
+            raise
         except TimeoutError:
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': '【系统提示】网络请求超时，请稍后重试。'}, ensure_ascii=False)}\n\n"
+            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
         except ConnectionError:
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': '【系统提示】模型服务连接断开，请检查网络或重试。'}, ensure_ascii=False)}\n\n"
+            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
         except Exception as e:
             log.error(f"匿名聊天异常: {e}")
-            yield f"event: error\ndata: {json.dumps({'type': 'error', 'content': f'发生异常: {str(e)}'}, ensure_ascii=False)}\n\n"
+            yield self._format_error_event(CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE.format(error=str(e)))
 
     def _extract_ai_content_from_chunk(self, chunk: str) -> Optional[str]:
         """
@@ -253,13 +332,13 @@ class ChatService:
                 if data_line:
                     data = json.loads(data_line[6:])
                     # 只记录主输出正文，忽略 thinking/interrupt 等中间状态
-                    if data.get('type') in ['stream', 'message']:
-                        return data.get('content', '')
+                    if data.get(SsePayloadField.TYPE.value) in CHAT_AI_CONTENT_TYPES:
+                        return data.get(SsePayloadField.CONTENT.value, '')
             elif chunk.startswith('data: '):
                 # 兼容旧版本纯 data 输出
                 data = json.loads(chunk[6:])
-                if data.get('type') in ['stream', 'message']:
-                    return data.get('content', '')
+                if data.get(SsePayloadField.TYPE.value) in CHAT_AI_CONTENT_TYPES:
+                    return data.get(SsePayloadField.CONTENT.value, '')
         except (json.JSONDecodeError, KeyError):
             pass
         return None
@@ -296,6 +375,8 @@ class ChatService:
             model=req.model,
             model_service=req.model_service,
             service_type=req.service_type,
+            router_model=req.router_model or None,
+            simple_chat_model=req.simple_chat_model or None,
             deep_thinking_mode=req.deep_thinking_mode,
             rag_enabled=req.rag_enabled,
             similarity_threshold=req.similarity_threshold,
@@ -310,42 +391,51 @@ class ChatService:
 
     def build_model_config(
             self,
-            model: str = 'glm-4.7',
-            model_service: str = 'zhipu',
-            service_type: str = 'zhipu',
-            deep_thinking_mode: str = 'auto',
-            rag_enabled: bool = False,
-            similarity_threshold: float = 0.7,
-            embedding_model: str = 'bge-m3:latest',
-            embedding_model_key: str = '',
-            temperature: float = 0.2,
-            top_p: float = 1.0,
-            max_tokens: int = 2000,
-            model_key: str = '',
-            model_url: str = ''
+            model: Optional[str] = None,
+            model_service: Optional[str] = None,
+            service_type: Optional[str] = None,
+            router_model: Optional[str] = None,
+            simple_chat_model: Optional[str] = None,
+            deep_thinking_mode: Optional[str] = None,
+            rag_enabled: Optional[bool] = None,
+            similarity_threshold: Optional[float] = None,
+            embedding_model: Optional[str] = None,
+            embedding_model_key: Optional[str] = None,
+            temperature: Optional[float] = None,
+            top_p: Optional[float] = None,
+            max_tokens: Optional[int] = None,
+            model_key: Optional[str] = None,
+            model_url: Optional[str] = None
     ) -> Dict[str, Any]:
+        defaults = CHAT_DEFAULT_MODEL_CONFIG
         return {
-            'model': model,
-            'model_service': model_service,
-            'service_type': service_type,
-            'deep_thinking_mode': deep_thinking_mode,
-            'rag_enabled': rag_enabled,
-            'similarity_threshold': similarity_threshold,
-            'embedding_model': embedding_model,
-            'embedding_model_key': embedding_model_key,
-            'temperature': temperature,
-            'top_p': top_p,
-            'max_tokens': max_tokens,
-            'model_key': model_key,
-            'model_url': model_url
+            'model': model or defaults["model"],
+            'model_service': model_service or defaults["model_service"],
+            'service_type': service_type or defaults["service_type"],
+            'router_model': MODEL_TIERING_CONFIG.router_model if router_model is None else router_model,
+            'simple_chat_model': MODEL_TIERING_CONFIG.simple_chat_model if simple_chat_model is None else simple_chat_model,
+            'deep_thinking_mode': deep_thinking_mode or defaults["deep_thinking_mode"],
+            'rag_enabled': defaults["rag_enabled"] if rag_enabled is None else rag_enabled,
+            'similarity_threshold': defaults["similarity_threshold"] if similarity_threshold is None else similarity_threshold,
+            'embedding_model': embedding_model or defaults["embedding_model"],
+            'embedding_model_key': embedding_model_key if embedding_model_key is not None else defaults["embedding_model_key"],
+            'temperature': defaults["temperature"] if temperature is None else temperature,
+            'top_p': defaults["top_p"] if top_p is None else top_p,
+            'max_tokens': defaults["max_tokens"] if max_tokens is None else max_tokens,
+            'model_key': model_key if model_key is not None else defaults["model_key"],
+            'model_url': model_url if model_url is not None else defaults["model_url"],
         }
 
     def _get_stream_headers(self) -> Dict[str, str]:
-        return {
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"
-        }
+        return dict(STREAM_HEADERS)
+
+    @staticmethod
+    def _format_error_event(message: str) -> str:
+        """构造统一错误事件，避免服务层重复拼接 SSE 字符串。"""
+        return ChatUtils.format_sse_data(
+            event_type=SseEventType.ERROR.value,
+            data={SsePayloadField.CONTENT.value: message},
+        )
 
 
 # 创建全局实例

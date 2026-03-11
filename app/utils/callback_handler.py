@@ -9,6 +9,8 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.outputs import LLMResult, ChatGenerationChunk
 from langchain_core.messages import BaseMessage
 
+from constants.sse_constants import SseEventType
+
 
 class LoggingCallbackHandler(BaseCallbackHandler):
     """日志回调处理器，将 LangChain 事件转换为 SSE 格式"""
@@ -37,7 +39,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         """LLM 调用开始"""
         if self.include_thinking:
             self._emit({
-                "type": "thinking",
+                "type": SseEventType.THINKING.value,
                 "content": f"🤖 模型调用中..."
             })
 
@@ -58,7 +60,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
                 reasoning_content = response.llm_output.get('reasoning_content', '')
                 if reasoning_content:
                     self._emit({
-                        "type": "thinking",
+                        "type": SseEventType.THINKING.value,
                         "content": f"💭 思考: {reasoning_content}"
                     })
 
@@ -69,7 +71,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         if self.include_thinking:
             chain_name = serialized.get('name', 'unknown')
             self._emit({
-                "type": "thinking",
+                "type": SseEventType.THINKING.value,
                 "content": f"🔗 执行: {chain_name}"
             })
 
@@ -77,7 +79,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         """Chain 调用结束"""
         if self.include_thinking:
             self._emit({
-                "type": "thinking",
+                "type": SseEventType.THINKING.value,
                 "content": "✅ Chain 执行完成"
             })
 
@@ -88,7 +90,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         if self.include_thinking:
             tool_name = serialized.get('name', 'unknown')
             self._emit({
-                "type": "thinking",
+                "type": SseEventType.THINKING.value,
                 "content": f"🛠️ 调用工具: {tool_name}"
             })
 
@@ -96,7 +98,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         """工具调用结束"""
         if self.include_thinking:
             self._emit({
-                "type": "thinking",
+                "type": SseEventType.THINKING.value,
                 "content": "✅ 工具调用完成"
             })
 
@@ -134,13 +136,14 @@ class LoggerHandler(logging.Handler):
                 elif record.levelno >= logging.WARNING:
                     log_type = "warning"
 
+                payload = {
+                    "type": SseEventType.LOG.value,
+                    "log_type": log_type,
+                    "logger": record.name,
+                    "message": log_message,
+                }
                 self.output_callback(
-                    f"data: {json.dumps({"
-                    f'"type": "log", '
-                    f'"log_type": "{log_type}", '
-                    f'"logger": "{record.name}", '
-                    f'"message": "{log_message}"'
-                    f"}, ensure_ascii=False)}\n\n"
+                    f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
                 )
         except Exception:
             self.handleError(record)

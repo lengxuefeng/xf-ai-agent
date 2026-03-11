@@ -9,6 +9,7 @@ from typing import Generator, List
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 
 from agent.graphs.supervisor import create_graph
+from constants.sse_constants import SseEventType
 
 
 def to_sse(data: dict) -> str:
@@ -42,7 +43,7 @@ def stream_text(text: str, delay: float = 0.0) -> Generator[str, None, None]:
 
         # 奇数索引是 </think> 标签内的内容（思考过程）
         is_thinking = (i % 2 == 1)
-        content_type = "thinking" if is_thinking else "stream"
+        content_type = SseEventType.THINKING.value if is_thinking else SseEventType.STREAM.value
 
         # 逐字符流式输出
         for j, char in enumerate(part):
@@ -115,7 +116,7 @@ class GraphRunnerWithEvents:
                 if "on_chat_model_start" in event_type:
                     model_name = event.get("data", {}).get("input", {}).get("model", "unknown")
                     yield to_sse({
-                        "type": "log",
+                        "type": SseEventType.LOG.value,
                         "log_type": "info",
                         "logger": "llm",
                         "message": f"🤖 调用模型: {model_name}"
@@ -126,7 +127,7 @@ class GraphRunnerWithEvents:
                     if content:
                         # 流式输出
                         yield to_sse({
-                            "type": "stream",
+                            "type": SseEventType.STREAM.value,
                             "content": content
                         })
 
@@ -141,7 +142,7 @@ class GraphRunnerWithEvents:
                             reasoning_tokens = usage.get('reasoning_tokens', 0)
                             if reasoning_tokens > 0:
                                 yield to_sse({
-                                    "type": "thinking",
+                                    "type": SseEventType.THINKING.value,
                                     "content": f"💭 思考了 {reasoning_tokens} 个 token"
                                 })
 
@@ -149,7 +150,7 @@ class GraphRunnerWithEvents:
                 elif "on_chain_start" in event_type:
                     chain_name = event.get("name", "unknown")
                     yield to_sse({
-                        "type": "log",
+                        "type": SseEventType.LOG.value,
                         "log_type": "info",
                         "logger": "chain",
                         "message": f"🔗 执行 Chain: {chain_name}"
@@ -159,7 +160,7 @@ class GraphRunnerWithEvents:
                     chain_name = event.get("name", "unknown")
                     output = event.get("data", {}).get("output", {})
                     yield to_sse({
-                        "type": "log",
+                        "type": SseEventType.LOG.value,
                         "log_type": "info",
                         "logger": "chain",
                         "message": f"✅ Chain 完成: {chain_name}"
@@ -169,7 +170,7 @@ class GraphRunnerWithEvents:
                 elif "on_tool_start" in event_type:
                     tool_name = event.get("name", "unknown")
                     yield to_sse({
-                        "type": "log",
+                        "type": SseEventType.LOG.value,
                         "log_type": "info",
                         "logger": "tool",
                         "message": f"🛠️ 调用工具: {tool_name}"
@@ -179,7 +180,7 @@ class GraphRunnerWithEvents:
                     tool_name = event.get("name", "unknown")
                     output = event.get("data", {}).get("output", {})
                     yield to_sse({
-                        "type": "log",
+                        "type": SseEventType.LOG.value,
                         "log_type": "info",
                         "logger": "tool",
                         "message": f"✅ 工具完成: {tool_name}"
@@ -190,12 +191,12 @@ class GraphRunnerWithEvents:
                     action = event.get("data", {}).get("action", {})
                     tool = action.get("tool", "unknown")
                     yield to_sse({
-                        "type": "thinking",
+                        "type": SseEventType.THINKING.value,
                         "content": f"🤔 Agent 决定使用工具: {tool}"
                     })
 
         except Exception as e:
             yield to_sse({
-                "type": "error",
+                "type": SseEventType.ERROR.value,
                 "content": f"执行错误: {str(e)}"
             })

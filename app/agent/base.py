@@ -1,10 +1,15 @@
 from abc import ABC, abstractmethod
+import re
 from typing import Generator, Any, Dict, Optional
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from agent.graph_state import AgentRequest
 from agent.graphs.checkpointer import checkpointer
+from constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
+from config.runtime_settings import AGENT_LOOP_CONFIG
+from utils.history_compressor import compress_history_messages
 from utils.custom_logger import get_logger
-from utils.date_utils import get_agent_date_context
+from utils.date_utils import get_agent_date_context, get_current_time_context
 
 log = get_logger(__name__)
 
@@ -19,6 +24,87 @@ log = get_logger(__name__)
 
 
 class BaseAgent(ABC):
+    """Agent基类：所有具体业务Agent的抽象父类"""
+
+    @staticmethod
+    def _message_text(msg: BaseMessage) -> str:
+        """提取消息文本内容"""
+        content = getattr(msg, "content", "")
+        if isinstance(content, str):
+            return content.strip()
+        return str(content or "").strip()
+
+    @staticmethod
+    def _extract_text_tokens(text: str) -> set[str]:
+        """提取轻量关键词用于相关性筛选。"""
+        if not text:
+            return set()
+        min_chars = AGENT_LOOP_CONFIG.context_relevance_min_token_chars
+        zh_tokens = re.findall(rf"[\u4e00-\u9fa5]{{{min_chars},}}", text)
+        en_tokens = re.findall(rf"[A-Za-z0-9_]{{{min_chars},}}", text.lower())
+        return set(zh_tokens + en_tokens)
+
+    @classmethod
+    def _extract_history_messages(cls, req: AgentRequest) -> list[BaseMessage]:
+        """提取并压缩最近多轮对话消息"""
+        state = getattr(req, "state", None) or {}
+        if not isinstance(state, dict):
+            return []
+        messages = state.get("messages")
+        if not isinstance(messages, list):
+            return []
+        valid_messages = [m for m in messages if isinstance(m, BaseMessage)]
+        recent_messages = valid_messages[-AGENT_LOOP_CONFIG.context_history_messages:]
+        if not recent_messages:
+            return []
+
+        # 相关性筛选：保留尾部窗口 + 与当前问题词面有交集的历史，减少旧主题污染。
+        current_tokens = cls._extract_text_tokens((req.user_input or "").strip())
+        tail_window = max(1, min(AGENT_LOOP_CONFIG.context_relevance_tail_messages, AGENT_LOOP_CONFIG.context_history_messages))
+        tail_part = recent_messages[-tail_window:]
+        head_part = recent_messages[:-tail_window]
+        filtered_messages: list[BaseMessage] = []
+
+        if current_tokens:
+            for msg in head_part:
+                msg_tokens = cls._extract_text_tokens(cls._message_text(msg))
+                if msg_tokens & current_tokens:
+                    filtered_messages.append(msg)
+
+        # 尾部窗口只强保留最近用户消息；AI 消息必须与当前问题相关才保留，避免主题漂移。
+        for msg in tail_part:
+            if isinstance(msg, HumanMessage):
+                filtered_messages.append(msg)
+                continue
+            msg_tokens = cls._extract_text_tokens(cls._message_text(msg))
+            if (not current_tokens) or (msg_tokens & current_tokens):
+                filtered_messages.append(msg)
+
+        # 兜底：至少保留最后一条用户消息，避免丢上下文锚点。
+        if not any(isinstance(m, HumanMessage) for m in filtered_messages):
+            for msg in reversed(recent_messages):
+                if isinstance(msg, HumanMessage):
+                    filtered_messages.append(msg)
+                    break
+
+        return compress_history_messages(
+            filtered_messages,
+            model=getattr(req, "model", None),
+            max_tokens=AGENT_LOOP_CONFIG.context_compress_max_tokens,
+            max_chars=AGENT_LOOP_CONFIG.context_compress_max_chars,
+        )
+
+    @staticmethod
+    def _extract_context_summary(req: AgentRequest) -> str:
+        """从请求 state 中读取会话摘要，供子 Agent 继承全局上下文。"""
+        state = getattr(req, "state", None) or {}
+        if not isinstance(state, dict):
+            return ""
+        summary_text = state.get("context_summary")
+        if isinstance(summary_text, str):
+            return summary_text.strip()
+        return ""
+
     @staticmethod
     def _extract_interrupt_payload(exc: Exception) -> Optional[dict]:
         """
@@ -67,15 +153,10 @@ class BaseAgent(ABC):
         return None
 
     def __init__(self, req: AgentRequest):
-        """
-        初始化 Agent 实例。
-
-        Args:
-            req (AgentRequest): 包含对话上下文和模型配置的请求对象。
-        """
+        """初始化Agent实例"""
         self.req = req
         self.session_id = req.session_id
-        # 如果未提供子图标识，默认使用类名
+        # 子图标识，用于状态隔离
         self.subgraph_id = getattr(req, "subgraph_id", None) or self.__class__.__name__
         self.checkpointer = checkpointer
 
@@ -110,13 +191,27 @@ class BaseAgent(ABC):
         final_config = {**base_config, "configurable": configurable}
 
         # 3. 构造初始状态
-        # 为每次 Agent 调用注入严格日期上下文，统一 today/tomorrow/yesterday 的解释基准。
-        input_message = {
-            "messages": [
-                ("system", get_agent_date_context()),
-                ("human", req.user_input),
-            ]
-        }
+        # 为每次 Agent 调用注入严格日期上下文，并尽量携带最近多轮上下文。
+        history_messages = self._extract_history_messages(req)
+        # 读取会话摘要（如城市/用户画像），减少反复追问
+        context_summary = self._extract_context_summary(req)
+        input_messages: list[BaseMessage] = [
+            SystemMessage(content=get_agent_date_context()),
+            SystemMessage(content=get_current_time_context()),
+        ]
+        if context_summary:
+            input_messages.append(SystemMessage(content=context_summary))
+        input_messages.extend(history_messages)
+        latest_human_text = ""
+        for msg in reversed(history_messages):
+            if isinstance(msg, HumanMessage):
+                latest_human_text = self._message_text(msg)
+                break
+        current_text = (req.user_input or "").strip()
+        if not latest_human_text or latest_human_text != current_text:
+            input_messages.append(HumanMessage(content=req.user_input))
+
+        input_message = {"messages": input_messages}
 
         try:
             # 流式传输 updates；若子图触发 native interrupt()，会在 except 中透传 interrupt payload
@@ -132,8 +227,8 @@ class BaseAgent(ABC):
                 else:
                     yield {
                         "interrupt": {
-                            "message": "需要人工审核",
-                            "allowed_decisions": ["approve", "reject"],
+                            "message": DEFAULT_INTERRUPT_MESSAGE,
+                            "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
                             "action_requests": []
                         }
                     }

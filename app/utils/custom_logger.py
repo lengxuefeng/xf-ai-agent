@@ -12,6 +12,8 @@ from typing import Optional, Dict, Any, List
 from queue import Queue
 import json
 
+from constants.sse_constants import SseEventType
+
 
 class LogTarget(Enum):
     """日志输出目标"""
@@ -138,6 +140,7 @@ class CustomLogger:
 
     def _create_latest_links(self):
         """创建最新的日志文件链接"""
+        import shutil
         today = datetime.now().strftime('%Y-%m-%d')
 
         for level, prefix in self.LOG_PREFIXES.items():
@@ -148,20 +151,32 @@ class CustomLogger:
 
             # 如果源文件存在，创建符号链接或复制
             if os.path.exists(source_file):
-                # 删除旧的链接
-                if os.path.exists(link_file) or os.path.islink(link_file):
-                    try:
+                # 删除旧链接/旧文件（并发场景下允许失败后重试）
+                try:
+                    if os.path.lexists(link_file):
                         os.unlink(link_file)
-                    except:
-                        pass
+                except FileNotFoundError:
+                    # 并发删除导致文件不存在，忽略即可
+                    pass
+                except Exception:
+                    # 某些系统下删除失败时不抛出到主流程，交由后续 copy 兜底
+                    pass
 
                 # 创建符号链接（Unix）或复制（Windows）
                 try:
                     os.symlink(source_file, link_file)
                 except (OSError, AttributeError):
-                    # Windows 或不支持符号链接，使用复制
-                    import shutil
-                    shutil.copy2(source_file, link_file)
+                    # 若目标与源实际是同一文件，说明链接已就位或并发写入完成，直接跳过。
+                    try:
+                        if os.path.exists(link_file) and os.path.samefile(source_file, link_file):
+                            continue
+                    except Exception:
+                        pass
+                    try:
+                        shutil.copy2(source_file, link_file)
+                    except shutil.SameFileError:
+                        # 兜底复制时遇到同文件，说明最终状态已正确，无需处理。
+                        continue
 
     def set_sse_queue(self, queue: Queue):
         """设置 SSE 输出队列"""
@@ -198,7 +213,7 @@ class CustomLogger:
             logger_name = self.name.split('.')[-1] if '.' in self.name else self.name
 
             sse_data = {
-                "type": "log",
+                "type": SseEventType.LOG.value,
                 "log_type": log_type,
                 "logger": logger_name,
                 "message": f"{icon} {msg}"
@@ -255,7 +270,7 @@ class CustomLogger:
             logger_name = self.name.split('.')[-1] if '.' in self.name else self.name
 
             sse_data = {
-                "type": "log",
+                "type": SseEventType.LOG.value,
                 "log_type": log_type,
                 "logger": logger_name,
                 "message": f"{icon} {msg}"

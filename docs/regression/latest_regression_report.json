@@ -1,0 +1,177 @@
+{
+  "generated_at": "2026-03-10 16:47:15",
+  "versions": {
+    "langchain": "1.2.10",
+    "langgraph": "1.0.10",
+    "langchain-core": "1.2.18",
+    "langchain-openai": "1.1.11",
+    "langsmith": "0.7.16",
+    "openai": "2.26.0"
+  },
+  "router_regression": {
+    "total_cases": 100,
+    "domain_accuracy": 0.96,
+    "intent_accuracy": 0.98,
+    "full_route_accuracy": 0.94,
+    "latency_ms": {
+      "domain_p50": 0,
+      "domain_p95": 0,
+      "domain_max": 1,
+      "intent_p50": 0,
+      "intent_p95": 0,
+      "intent_max": 0
+    },
+    "mismatches_top20": [
+      {
+        "text": "晚上出门合适吗",
+        "expected_domain": "WEB_SEARCH",
+        "actual_domain": "GENERAL",
+        "expected_intent": "CHAT",
+        "actual_intent": "CHAT",
+        "domain_ms": 0,
+        "intent_ms": 0,
+        "pass_domain": false,
+        "pass_intent": true
+      },
+      {
+        "text": "天气也这么不好，老板还让我查询一下holter最近的数据",
+        "expected_domain": "YUNYOU_DB",
+        "actual_domain": "YUNYOU_DB",
+        "expected_intent": "CHAT",
+        "actual_intent": "yunyou_agent",
+        "domain_ms": 0,
+        "intent_ms": 0,
+        "pass_domain": true,
+        "pass_intent": false
+      },
+      {
+        "text": "今天郑州东站有什么活动，再帮我查holter最近5条",
+        "expected_domain": "YUNYOU_DB",
+        "actual_domain": "YUNYOU_DB",
+        "expected_intent": "CHAT",
+        "actual_intent": "yunyou_agent",
+        "domain_ms": 0,
+        "intent_ms": 0,
+        "pass_domain": true,
+        "pass_intent": false
+      },
+      {
+        "text": "先查郑州天气，再查本地库用户最近10条",
+        "expected_domain": "LOCAL_DB",
+        "actual_domain": "WEB_SEARCH",
+        "expected_intent": "CHAT",
+        "actual_intent": "CHAT",
+        "domain_ms": 0,
+        "intent_ms": 0,
+        "pass_domain": false,
+        "pass_intent": true
+      },
+      {
+        "text": "我先看看今天天气，然后帮我查云柚holter记录",
+        "expected_domain": "YUNYOU_DB",
+        "actual_domain": "WEB_SEARCH",
+        "expected_intent": "CHAT",
+        "actual_intent": "CHAT",
+        "domain_ms": 0,
+        "intent_ms": 0,
+        "pass_domain": false,
+        "pass_intent": true
+      },
+      {
+        "text": "查下附近活动并且查询holter最近使用用户",
+        "expected_domain": "YUNYOU_DB",
+        "actual_domain": "WEB_SEARCH",
+        "expected_intent": "CHAT",
+        "actual_intent": "CHAT",
+        "domain_ms": 0,
+        "intent_ms": 0,
+        "pass_domain": false,
+        "pass_intent": true
+      }
+    ]
+  },
+  "structured_router_smoke": {
+    "total": 10,
+    "passed": 10,
+    "failed_inputs": []
+  },
+  "log_latency": {
+    "log_file": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/logs/app.log",
+    "exists": true,
+    "metrics": {
+      "domain_router_ms": {
+        "count": 13,
+        "p50": 0,
+        "p95": 1,
+        "max": 1
+      },
+      "intent_router_ms": {
+        "count": 13,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "chat_node_ms": {
+        "count": 3,
+        "p50": 158124,
+        "p95": 234333,
+        "max": 234333
+      },
+      "planner_ms": {
+        "count": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "aggregator_ms": {
+        "count": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "worker_ms": {
+        "count": 4,
+        "p50": 530,
+        "p95": 62295,
+        "max": 62295
+      }
+    }
+  },
+  "e2e_offline": {
+    "total_cases": 3,
+    "success_cases": 3,
+    "success_rate": 1.0,
+    "latency_ms": {
+      "first_stream_p50": 36,
+      "first_stream_p95": 167,
+      "total_p50": 37,
+      "total_p95": 168
+    },
+    "details": [
+      {
+        "name": "weather_chain",
+        "user_input": "郑州今天天气怎么样",
+        "first_stream_ms": 167,
+        "total_ms": 168,
+        "status": "ok",
+        "final_preview": "郑州今天天气偏冷且有霾，建议减少长时间户外活动。"
+      },
+      {
+        "name": "search_chain",
+        "user_input": "郑州东站附近有什么活动",
+        "first_stream_ms": 36,
+        "total_ms": 37,
+        "status": "ok",
+        "final_preview": "已为你整理附近可选活动：商场、书店、室内运动馆。"
+      },
+      {
+        "name": "yunyou_chain",
+        "user_input": "查询holter最近使用数据，按id倒序前5条",
+        "first_stream_ms": 33,
+        "total_ms": 33,
+        "status": "ok",
+        "final_preview": "✅ 已直接查询 Holter 数据。\n- 时间范围：`2016-03-13` ~ `2026-03-10`\n- 排序：`id DESC`\n- 返回：`2` 条（上限 `5`）\n- 说明：未提供明确时间范围，已按默认最近 3650 天查询。\n\n| 用户ID | 使用日期 | 报告状态 | Holter类型 |\n| --- | --- | --- | --- |"
+      }
+    ]
+  }
+}

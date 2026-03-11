@@ -68,7 +68,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ### 第三步：深入专题文档（按需）
 - [docs/函数方法与包说明表.md](./docs/函数方法与包说明表.md) - 函数方法大全（查阅使用）
 - [docs/PostgreSQL数据库完整技术文档.md](./docs/PostgreSQL数据库完整技术文档.md) - 数据库运维（运维开发必读）
-- [docs/database_init.sql](database_init.sql) - 数据库初始化脚本（包含所有7张表）
+- [docs/database_init.sql](docs/database_init.sql) - 数据库初始化脚本（包含所有8张表）
 - [docs/后端项目说明文档.md](./docs/后端项目说明文档.md) - 后端开发详解（开发人员）
 
 ## 项目结构

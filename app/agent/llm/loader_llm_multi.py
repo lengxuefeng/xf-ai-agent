@@ -28,6 +28,26 @@ def _common_generation_kwargs(config: ModelConfig) -> Dict[str, Any]:
     }
 
 
+def _common_transport_kwargs(config: ModelConfig) -> Dict[str, Any]:
+    """
+    统一模型传输层参数（超时/重试）。
+
+    设计说明：
+    1. 默认缩短超时，避免网络抖动导致链路长时间无响应；
+    2. 支持通过 extra_params 与环境变量覆盖，便于线上灰度调优。
+    """
+    extra = config.extra_params or {}
+    timeout_sec = float(
+        extra.get("timeout_sec", os.getenv("LLM_REQUEST_TIMEOUT_SEC", 25))
+    )
+    max_retries = int(
+        extra.get("max_retries", os.getenv("LLM_MAX_RETRIES", 1))
+    )
+    timeout_sec = max(3.0, min(timeout_sec, 180.0))
+    max_retries = max(0, min(max_retries, 5))
+    return {"timeout": timeout_sec, "max_retries": max_retries}
+
+
 def load_openai_compatible_model(config: ModelConfig) -> ChatOpenAI:
     """
     【核心优化】加载所有兼容 OpenAI 接口协议的模型！
@@ -50,12 +70,13 @@ def load_openai_compatible_model(config: ModelConfig) -> ChatOpenAI:
         }
 
     log.info(f"初始化 OpenAI 兼容模型: {config.model} | BaseURL: {config.model_url}")
+    transport_kwargs = _common_transport_kwargs(config)
     return ChatOpenAI(
         model=config.model,
         api_key=api_key,
         base_url=config.model_url or None,
-        max_retries=2,
-        timeout=60,
+        max_retries=transport_kwargs["max_retries"],
+        timeout=transport_kwargs["timeout"],
         model_kwargs=model_kwargs,
         **_common_generation_kwargs(config),
     )
@@ -64,14 +85,15 @@ def load_openai_compatible_model(config: ModelConfig) -> ChatOpenAI:
 def load_openai_embeddings(config: ModelConfig) -> OpenAIEmbeddings:
     """加载兼容 OpenAI 接口协议的嵌入模型 (Embeddings)"""
     api_key = SecretStr(config.embedding_model_key) if config.embedding_model_key else None
+    transport_kwargs = _common_transport_kwargs(config)
     
     log.info(f"初始化 OpenAI 兼容 Embedding 模型: {config.embedding_model} | BaseURL: {config.model_url}")
     return OpenAIEmbeddings(
         model=config.embedding_model,
         api_key=api_key,
         base_url=config.model_url or None,
-        timeout=60,
-        max_retries=2,
+        timeout=transport_kwargs["timeout"],
+        max_retries=transport_kwargs["max_retries"],
     )
 
 

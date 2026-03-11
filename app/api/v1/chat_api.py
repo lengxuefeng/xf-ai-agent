@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
@@ -50,5 +50,7 @@ def stream_chat_anonymous(req: StreamChatRequest) -> StreamingResponse:
     接口参数和返回格式与认证接口相同，但不会保存任何聊天记录。
     适用于游客用户或不需要保存历史的场景。
     """
+    if req.user_model_id is not None:
+        raise HTTPException(status_code=400, detail="匿名接口不支持 user_model_id")
     # 直接调用服务层处理，不做任何业务逻辑处理
     return chat_service.process_stream_chat(req, user_id=None, db=None)

@@ -40,6 +40,8 @@ class StreamChatRequest(BaseSchema):
     model_url: str = Field(default='', description="Base URL")
     model_service: str = Field(default='zhipu', description="模型服务")
     service_type: str = Field(default='zhipu', description="模型服务类型")
+    router_model: str = Field(default='', description="路由专用小模型（可选）")
+    simple_chat_model: str = Field(default='', description="简单对话专用小模型（可选）")
     deep_thinking_mode: str = Field(default='auto', description="深度思考模式")
     rag_enabled: bool = Field(default=False, description="RAG是否启用")
     embedding_model: str = Field(default='bge-m3:latest', description="嵌入模型")

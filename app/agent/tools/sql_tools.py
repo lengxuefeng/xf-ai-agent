@@ -8,6 +8,16 @@ from typing import Any
 from sqlalchemy import text
 
 from agent.policy.sql_policy_engine import sql_policy_engine
+from constants.sql_tool_constants import (
+    SCHEMA_COLUMN_LIST_SQL,
+    SCHEMA_TABLE_LIST_SQL,
+    SQL_MSG_EMPTY,
+    SQL_MSG_EXEC_ERROR_PREFIX,
+    SQL_MSG_NO_DATA,
+    SQL_MSG_SCHEMA_ERROR_PREFIX,
+    SQL_MSG_SUCCESS_AFFECT_PREFIX,
+)
+from constants.sql_tool_keywords import SQL_PHONE_COLUMN_KEYWORDS, SQL_SENSITIVE_COLUMN_KEYWORDS
 from db import get_db_context
 from services.semantic_cache_service import semantic_cache_service
 from utils.custom_logger import get_logger, LogTarget
@@ -16,7 +26,7 @@ log = get_logger(__name__)
 
 
 def _normalize_sql(query: str) -> str:
-    """清理模型输出，去掉 markdown 包裹。"""
+    """清理SQL语句，去掉markdown包裹"""
     if not query:
         return ""
     cleaned = query.strip()
@@ -25,15 +35,10 @@ def _normalize_sql(query: str) -> str:
 
 
 def execute_sql(query: str, domain: str = "LOCAL_DB") -> str:
-    """
-    执行 SQL 查询并返回结构化文本结果。
-    支持：
-    - SELECT / WITH / EXPLAIN（返回查询结果）
-    - INSERT / UPDATE / DELETE（返回影响行数）
-    """
+    """执行SQL查询并返回结果"""
     sql = _normalize_sql(query)
     if not sql:
-        return "SQL 为空，无法执行。"
+        return SQL_MSG_EMPTY
 
     try:
         # 表级白名单与只读策略校验
@@ -52,7 +57,7 @@ def execute_sql(query: str, domain: str = "LOCAL_DB") -> str:
                 result = db.execute(text(sql))
                 rows = result.fetchall()
                 if not rows:
-                    no_data = "查询成功，但没有返回结果。"
+                    no_data = SQL_MSG_NO_DATA
                     semantic_cache_service.set(cache_key, no_data, ttl_seconds=30)
                     return no_data
 
@@ -64,15 +69,16 @@ def execute_sql(query: str, domain: str = "LOCAL_DB") -> str:
 
             result = db.execute(text(sql))
             affected = result.rowcount if result.rowcount is not None else 0
-            outcome = f"操作成功，影响行数: {affected}"
+            outcome = f"{SQL_MSG_SUCCESS_AFFECT_PREFIX}{affected}"
             semantic_cache_service.set(cache_key, outcome, ttl_seconds=30)
             return outcome
 
     except Exception as e:
-        return f"执行 SQL 时发生错误: {e}"
+        return f"{SQL_MSG_EXEC_ERROR_PREFIX}{e}"
 
 
 def _escape_cell(val: Any, max_len: int = 80) -> str:
+    """转义表格单元格内容"""
     s = "" if val is None else str(val)
     s = s.replace("\n", " ").replace("|", "\\|").strip()
     if len(s) > max_len:
@@ -81,14 +87,15 @@ def _escape_cell(val: Any, max_len: int = 80) -> str:
 
 
 def _is_sensitive_column(col: str) -> bool:
+    """判断是否为敏感列"""
     c = (col or "").lower()
-    keywords = ("token", "password", "passwd", "secret", "api_key", "access_key", "refresh_token")
-    return any(k in c for k in keywords)
+    return any(k in c for k in SQL_SENSITIVE_COLUMN_KEYWORDS)
 
 
 def _mask_phone_if_needed(col: str, val: Any) -> Any:
+    """对手机号列进行脱敏"""
     c = (col or "").lower()
-    if not any(k in c for k in ("phone", "mobile", "tel")):
+    if not any(k in c for k in SQL_PHONE_COLUMN_KEYWORDS):
         return val
     s = str(val) if val is not None else ""
     digits = re.sub(r"\D", "", s)
@@ -98,31 +105,27 @@ def _mask_phone_if_needed(col: str, val: Any) -> Any:
 
 
 def format_sql_result_for_user(sql: str, raw_result: str, max_rows: int = 10) -> str:
-    """
-    将 SQL 原始执行结果格式化为用户可读文本。
-    - 查询结果(JSON 数组) -> Markdown 表格 + 行数摘要
-    - 影响行数/无结果/错误 -> 友好文案
-    """
+    """将SQL执行结果格式化为用户可读的Markdown表格"""
     normalized_sql = _normalize_sql(sql)
     result_text = (raw_result or "").strip()
 
     if not result_text:
         return "查询完成，但没有可展示的结果。"
 
-    if result_text.startswith("执行 SQL 时发生错误"):
+    if result_text.startswith(SQL_MSG_EXEC_ERROR_PREFIX):
         return f"❌ SQL 执行失败\n\n{result_text}"
 
-    if result_text.startswith("SQL 为空"):
+    if result_text.startswith(SQL_MSG_EMPTY):
         return f"❌ {result_text}"
 
-    if result_text.startswith("操作成功，影响行数"):
+    if result_text.startswith(SQL_MSG_SUCCESS_AFFECT_PREFIX):
         return "\n".join([
             "✅ SQL 执行成功",
             f"- 语句: `{normalized_sql}`" if normalized_sql else "- 语句: （未提供）",
             f"- {result_text}",
         ])
 
-    if result_text.startswith("查询成功，但没有返回结果"):
+    if result_text.startswith(SQL_MSG_NO_DATA):
         return "\n".join([
             "✅ 查询执行成功",
             f"- 语句: `{normalized_sql}`" if normalized_sql else "- 语句: （未提供）",
@@ -208,34 +211,14 @@ def get_schema() -> str:
     """
     try:
         with get_db_context() as db:
-            table_sql = text(
-                """
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-                  AND table_type = 'BASE TABLE'
-                ORDER BY table_name;
-                """
-            )
+            table_sql = text(SCHEMA_TABLE_LIST_SQL)
             tables = [row[0] for row in db.execute(table_sql).fetchall()]
             if not tables:
                 return "当前数据库没有可用业务表。"
 
             schema_lines: list[str] = ["数据库表结构如下："]
             for table_name in tables:
-                cols_sql = text(
-                    """
-                    SELECT
-                        column_name,
-                        data_type,
-                        is_nullable,
-                        column_default
-                    FROM information_schema.columns
-                    WHERE table_schema = 'public'
-                      AND table_name = :table_name
-                    ORDER BY ordinal_position;
-                    """
-                )
+                cols_sql = text(SCHEMA_COLUMN_LIST_SQL)
                 columns = db.execute(cols_sql, {"table_name": table_name}).fetchall()
 
                 schema_lines.append(f"\n表名: {table_name}")
@@ -246,4 +229,4 @@ def get_schema() -> str:
 
             return "\n".join(schema_lines)
     except Exception as e:
-        return f"获取表结构时发生错误: {e}"
+        return f"{SQL_MSG_SCHEMA_ERROR_PREFIX}{e}"

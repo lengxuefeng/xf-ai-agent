@@ -31,7 +31,7 @@ def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str
     """
     # 初始化 Tavily 搜索工具
     max_results = int(os.getenv("TAVILY_MAX_RESULTS", "5"))
-    timeout_sec = int(os.getenv("TAVILY_TIMEOUT_SEC", "20"))
+    timeout_sec = int(os.getenv("TAVILY_TIMEOUT_SEC", "10"))
 
     tavily_tool = TavilySearch(
         api_key=os.getenv("TAVILY_API_KEY"),

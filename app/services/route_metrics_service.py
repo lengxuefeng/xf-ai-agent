@@ -4,6 +4,7 @@ import time
 from collections import Counter, deque
 from typing import Dict, Any
 
+from config.runtime_settings import ROUTE_METRICS_CONFIG
 from utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
@@ -19,17 +20,8 @@ class RouteMetricsService:
     3. 提供快照给运维接口查看。
     """
 
-    CORRECTION_KEYWORDS = (
-        "不对",
-        "错了",
-        "查错",
-        "不是这个",
-        "不是我要的",
-        "还是不对",
-        "你查错了",
-    )
-
     def __init__(self):
+        """初始化路由指标统计容器。"""
         self._lock = threading.Lock()
         self._domain_counter = Counter()
         self._intent_counter = Counter()
@@ -39,7 +31,8 @@ class RouteMetricsService:
         self._total_intent = 0
         self._correction_count = 0
         self._session_last_route: Dict[str, Dict[str, Any]] = {}
-        self._recent_events = deque(maxlen=500)
+        self._recent_events = deque(maxlen=ROUTE_METRICS_CONFIG.max_events)
+        self._correction_keywords = tuple(k.lower() for k in ROUTE_METRICS_CONFIG.correction_keywords if k)
 
     def record_domain_decision(
         self,
@@ -49,6 +42,7 @@ class RouteMetricsService:
         confidence: float,
         source: str,
     ):
+        """记录一次数据域路由决策。"""
         with self._lock:
             self._total_domain += 1
             self._domain_counter[domain] += 1
@@ -83,6 +77,7 @@ class RouteMetricsService:
         confidence: float,
         source: str,
     ):
+        """记录一次意图路由决策。"""
         with self._lock:
             self._total_intent += 1
             self._intent_counter[intent] += 1
@@ -110,11 +105,12 @@ class RouteMetricsService:
             )
 
     def detect_and_record_correction(self, session_id: str, user_text: str):
+        """识别用户纠错语句并记录疑似误路由事件。"""
         t = (user_text or "").strip().lower()
         if not t or not session_id:
             return
 
-        if not any(k in t for k in self.CORRECTION_KEYWORDS):
+        if not any(k in t for k in self._correction_keywords):
             return
 
         with self._lock:
@@ -137,6 +133,7 @@ class RouteMetricsService:
             )
 
     def snapshot(self) -> Dict[str, Any]:
+        """导出当前路由指标快照。"""
         with self._lock:
             total_intent = max(self._total_intent, 1)
             misroute_rate = self._correction_count / total_intent
@@ -154,6 +151,13 @@ class RouteMetricsService:
                 "recent_events": list(self._recent_events)[-100:],
             }
 
+    def get_last_route(self, session_id: str) -> Dict[str, Any]:
+        """读取某会话最近一次路由快照（线程安全拷贝）。"""
+        if not session_id:
+            return {}
+        with self._lock:
+            # 返回副本，避免外部误改内部状态
+            return dict(self._session_last_route.get(session_id, {}) or {})
+
 
 route_metrics_service = RouteMetricsService()
-

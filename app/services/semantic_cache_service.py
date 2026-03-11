@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import hashlib
-import os
 import threading
 import time
 from typing import Dict, Any, Optional
 
+from config.runtime_settings import SEMANTIC_CACHE_CONFIG
 from utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
@@ -20,6 +20,7 @@ class SemanticCacheService:
     """
 
     def __init__(self, default_ttl_seconds: int = 120, max_size: int = 1000):
+        """初始化缓存参数和内存存储。"""
         self.default_ttl_seconds = default_ttl_seconds
         self.max_size = max_size
         self._lock = threading.Lock()
@@ -27,14 +28,17 @@ class SemanticCacheService:
 
     @staticmethod
     def _normalize_text(text: str) -> str:
+        """统一文本规范，减少“同义空白差异”造成的缓存抖动。"""
         return " ".join((text or "").strip().lower().split())
 
     def build_key(self, domain: str, text: str) -> str:
+        """按域名+文本摘要构建稳定缓存键。"""
         normalized = self._normalize_text(text)
         digest = hashlib.md5(normalized.encode("utf-8")).hexdigest()
         return f"{(domain or 'GENERAL').upper()}:{digest}"
 
     def get(self, key: str) -> Optional[str]:
+        """读取缓存；若已过期则顺便清理。"""
         now = time.time()
         with self._lock:
             item = self._store.get(key)
@@ -47,6 +51,7 @@ class SemanticCacheService:
             return item["value"]
 
     def set(self, key: str, value: str, ttl_seconds: Optional[int] = None):
+        """写入缓存；容量超限时淘汰最久未访问项。"""
         ttl = ttl_seconds if ttl_seconds is not None else self.default_ttl_seconds
         now = time.time()
         with self._lock:
@@ -61,6 +66,7 @@ class SemanticCacheService:
             }
 
     def snapshot(self) -> Dict[str, Any]:
+        """输出缓存规模与配置，方便排查。"""
         with self._lock:
             return {
                 "size": len(self._store),
@@ -70,6 +76,6 @@ class SemanticCacheService:
 
 
 semantic_cache_service = SemanticCacheService(
-    default_ttl_seconds=int(os.getenv("SEMANTIC_CACHE_TTL_SECONDS", "120")),
-    max_size=int(os.getenv("SEMANTIC_CACHE_MAX_SIZE", "1000")),
+    default_ttl_seconds=SEMANTIC_CACHE_CONFIG.default_ttl_seconds,
+    max_size=SEMANTIC_CACHE_CONFIG.max_size,
 )

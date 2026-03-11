@@ -1,7 +1,7 @@
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 
-from app.utils.config import Settings
+from utils.config import Settings
 
 """
 根据提供的模型名称加载相应的Ollama模型

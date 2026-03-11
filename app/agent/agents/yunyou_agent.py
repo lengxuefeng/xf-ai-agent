@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime, timedelta
-from typing import Annotated, Any, Dict, List, Optional, Tuple, TypedDict
+from typing import Annotated, Any, Dict, List, Optional, Sequence, Tuple, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -12,9 +12,26 @@ from langgraph.prebuilt import ToolNode
 from langgraph.types import Command, interrupt
 
 from agent.base import BaseAgent
-from agent.gateway.federated_query_gateway import federated_query_gateway
 from agent.graph_state import AgentRequest
 from agent.prompts.yunyou_prompt import YunyouPrompt
+from constants.approval_constants import ApprovalDecision, DEFAULT_ALLOWED_DECISIONS
+from constants.agent_messages import (
+    YUNYOU_REVIEW_DESCRIPTION,
+    YUNYOU_REVIEW_INTERRUPT_MESSAGE,
+)
+from constants.yunyou_keywords import (
+    YUNYOU_HOLTER_TYPE_MAP,
+    YUNYOU_HOLTER_TYPE_FILTERS,
+    YUNYOU_HOLTER_TABLE_COLUMNS,
+    YUNYOU_KEYWORDS,
+    YUNYOU_LIMIT_PATTERNS,
+    YUNYOU_RECORD_KEYS,
+    YUNYOU_RELATIVE_DATE_KEYWORDS,
+    YUNYOU_REPORT_STATUS_FILTERS,
+    YUNYOU_REPORT_STATUS_MAP,
+    YUNYOU_UPLOAD_STATUS_MAP,
+    YunyouKeywordGroup,
+)
 from agent.tools.yunyou_tools import (
     YunYouTools,
     holter_list,
@@ -22,6 +39,7 @@ from agent.tools.yunyou_tools import (
     holter_report_count,
     holter_type_count,
 )
+from config.runtime_settings import AGENT_LOOP_CONFIG, YUNYOU_DB_POOL_CONFIG
 from schemas.base_skill import ConfigurableSkillMiddleware
 from utils.custom_logger import get_logger
 
@@ -36,26 +54,19 @@ log = get_logger(__name__)
 
 
 class YunyouState(TypedDict):
-    """
-    云柚业务图的状态对象。
-
-    Attributes:
-        messages: 对话消息列表，支持通过 add_messages 自动累加。
-    """
+    """云柚业务图状态"""
     messages: Annotated[List[BaseMessage], add_messages]
+    tool_loop_count: int
 
 
 class YunyouAgent(BaseAgent):
-    """
-    云柚业务领域智能体，负责处理与云柚数据分析和处理相关的问题。
+    """云柚业务Agent：处理Holter相关查询"""
 
-    通过绑定包含企业敏感操作约束的工具集合来解答问题。
-    """
-
-    SENSITIVE_TOOLS = {"holter_report_count"}
-    HOLTER_TYPE_MAP = {0: "24小时", 1: "2小时", 2: "24小时(夜间)", 3: "48小时"}
-    REPORT_STATUS_MAP = {-1: "无数据", 0: "待审核", 1: "审核中", 2: "人工审核完成", 3: "自动审核完成"}
-    UPLOAD_STATUS_MAP = {-1: "无数据", 0: "未上传", 1: "已上传"}
+    SENSITIVE_TOOLS = {"holter_report_count"}  # 需要审批的敏感工具
+    TOOL_LOOP_EXCEEDED_MESSAGE = "⚠️ 云柚查询步骤过多，已自动停止本轮工具循环。请缩小问题范围后重试。"
+    HOLTER_TYPE_MAP = YUNYOU_HOLTER_TYPE_MAP
+    REPORT_STATUS_MAP = YUNYOU_REPORT_STATUS_MAP
+    UPLOAD_STATUS_MAP = YUNYOU_UPLOAD_STATUS_MAP
 
     def __init__(self, req: AgentRequest):
         """
@@ -101,6 +112,7 @@ class YunyouAgent(BaseAgent):
 
     @staticmethod
     def _normalize_date_token(token: str) -> Optional[str]:
+        """标准化日期格式为YYYY-MM-DD"""
         normalized = (
             token.replace("年", "-")
             .replace("月", "-")
@@ -117,6 +129,7 @@ class YunyouAgent(BaseAgent):
 
     @staticmethod
     def _last_n_days_range(days: int) -> Tuple[str, str]:
+        """计算最近N天的日期范围"""
         n = max(1, min(days, 3650))
         end = datetime.now().date()
         start = end - timedelta(days=n - 1)
@@ -137,7 +150,7 @@ class YunyouAgent(BaseAgent):
             if start > end:
                 start, end = end, start
             return start, end
-        if len(parsed_dates) == 1 and any(k in t for k in ["当天", "当日", "今天"]):
+        if len(parsed_dates) == 1 and any(k in t for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.SAME_DAY]):
             return parsed_dates[0], parsed_dates[0]
 
         lower = t.lower()
@@ -145,37 +158,37 @@ class YunyouAgent(BaseAgent):
         if m:
             return cls._last_n_days_range(int(m.group(1)))
 
-        if any(k in lower for k in ["最近一周", "近一周", "最近7天", "近7天"]):
+        if any(k in lower for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.RANGE_7_DAYS]):
             return cls._last_n_days_range(7)
-        if any(k in lower for k in ["最近30天", "近30天", "最近一个月", "近一个月"]):
+        if any(k in lower for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.RANGE_30_DAYS]):
             return cls._last_n_days_range(30)
-        if any(k in lower for k in ["最近90天", "近90天", "最近三个月", "近三个月"]):
+        if any(k in lower for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.RANGE_90_DAYS]):
             return cls._last_n_days_range(90)
-        if any(k in lower for k in ["最近半年", "近半年"]):
+        if any(k in lower for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.RANGE_180_DAYS]):
             return cls._last_n_days_range(180)
-        if any(k in lower for k in ["最近一年", "近一年"]):
+        if any(k in lower for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.RANGE_365_DAYS]):
             return cls._last_n_days_range(365)
 
         now = datetime.now()
         today = now.date()
-        if "昨天" in lower:
+        if any(k in lower for k in YUNYOU_RELATIVE_DATE_KEYWORDS["yesterday"]):
             y = today - timedelta(days=1)
             return y.strftime("%Y-%m-%d"), y.strftime("%Y-%m-%d")
-        if "今天" in lower or "当日" in lower:
+        if any(k in lower for k in YUNYOU_RELATIVE_DATE_KEYWORDS["today"]):
             d = today.strftime("%Y-%m-%d")
             return d, d
-        if "本周" in lower or "这周" in lower:
+        if any(k in lower for k in YUNYOU_RELATIVE_DATE_KEYWORDS["this_week"]):
             start = today - timedelta(days=today.weekday())
             return start.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
-        if "上周" in lower:
+        if any(k in lower for k in YUNYOU_RELATIVE_DATE_KEYWORDS["last_week"]):
             this_week_start = today - timedelta(days=today.weekday())
             last_week_start = this_week_start - timedelta(days=7)
             last_week_end = this_week_start - timedelta(days=1)
             return last_week_start.strftime("%Y-%m-%d"), last_week_end.strftime("%Y-%m-%d")
-        if "本月" in lower or "这个月" in lower:
+        if any(k in lower for k in YUNYOU_RELATIVE_DATE_KEYWORDS["this_month"]):
             month_start = today.replace(day=1)
             return month_start.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
-        if "上月" in lower or "上个月" in lower:
+        if any(k in lower for k in YUNYOU_RELATIVE_DATE_KEYWORDS["last_month"]):
             month_start = today.replace(day=1)
             last_month_end = month_start - timedelta(days=1)
             last_month_start = last_month_end.replace(day=1)
@@ -185,13 +198,9 @@ class YunyouAgent(BaseAgent):
 
     @staticmethod
     def _extract_limit(text: str, default_limit: int = 5) -> int:
+        """提取查询条数限制"""
         t = (text or "").lower()
-        patterns = [
-            r"(?:前|最后|最新)\s*(\d{1,3})\s*条",
-            r"\btop\s*(\d{1,3})\b",
-            r"\blimit\s*(\d{1,3})\b",
-        ]
-        for p in patterns:
+        for p in YUNYOU_LIMIT_PATTERNS:
             m = re.search(p, t)
             if m:
                 return max(1, min(int(m.group(1)), 200))
@@ -199,37 +208,52 @@ class YunyouAgent(BaseAgent):
 
     @staticmethod
     def _wants_desc_order(text: str) -> bool:
+        """判断是否需要降序排列"""
         t = (text or "").lower()
-        if any(k in t for k in ["升序", "asc", "最早"]):
+        if any(k in t for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.ORDER_ASC]):
             return False
-        return any(k in t for k in ["倒序", "倒叙", "降序", "desc", "最近", "最新", "最后"])
+        return any(k in t for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.ORDER_DESC])
 
     @classmethod
     def _is_holter_list_intent(cls, latest_text: str, history_text: str) -> bool:
+        """判断是否应命中“Holter 列表直查”快路径。"""
         latest = (latest_text or "").lower().strip()
         history = (history_text or "").lower()
         merged = f"{history} {latest}".strip()
         if not merged:
             return False
 
-        # 必须在当前或上下文中命中 Holter 业务域
-        if not any(k in merged for k in ["holter", "云柚", "动态心电", "贴片"]):
-            return False
+        holter_keywords = YUNYOU_KEYWORDS[YunyouKeywordGroup.HOLTER_DOMAIN]
+        holter_hit = any(k in merged for k in holter_keywords)
 
         # 统计类问题交给常规模型流程，避免误判。
-        if any(k in latest for k in ["类型统计", "报告统计", "报告状态统计"]):
+        if any(k in latest for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.STATS_BLOCK]):
             return False
 
-        list_keywords = ["列表", "明细", "记录", "用户", "有哪些", "最近", "最新", "最后", "按id", "按 id", "根据id",
-                         "根据 id", "id倒", "倒序", "倒叙", "limit", "top", "前"]
-        if any(k in latest for k in list_keywords):
+        list_keywords = YUNYOU_KEYWORDS[YunyouKeywordGroup.LIST_INTENT]
+        list_hit = any(k in latest for k in list_keywords)
+        order_hit = any(k in latest for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.ORDER_INTENT])
+
+        # 若当前句没显式说 holter，但历史已经在 holter 语境，且当前是排序/条数补充，也应直查。
+        if not holter_hit and history and order_hit and any(k in history for k in holter_keywords):
+            holter_hit = True
+
+        # 当前路由已进入 yunyou_agent，且用户明确只说“按 id 倒序前 N 条”这类强列表诉求，
+        # 默认按 holter 列表理解，避免重复追问日期或表名。
+        if not holter_hit and not history and order_hit:
+            holter_hit = True
+
+        if not holter_hit:
+            return False
+
+        if list_hit:
             return True
 
         # 用户补充参数（如“最近7天”）时，沿用上文列表查询意图
         if (
             len(latest) <= 32
-            and any(k in latest for k in ["今天", "昨天", "本周", "上周", "本月", "上月", "最近", "近"])
-            and any(k in history for k in ["列表", "记录", "用户", "按id", "按 id", "倒序", "倒叙", "limit", "top", "前"])
+            and any(k in latest for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.FOLLOWUP_DATE])
+            and any(k in history for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.FOLLOWUP_LIST_HISTORY])
         ):
             return True
 
@@ -243,28 +267,20 @@ class YunyouAgent(BaseAgent):
             "reportStatus": None,
             "holterType": None,
         }
-        if any(k in t for k in ["已上传", "上传完成", "上传完"]):
+        if any(k in t for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.UPLOADED_YES]):
             filters["isUploaded"] = 1
-        elif any(k in t for k in ["未上传", "没上传"]):
+        elif any(k in t for k in YUNYOU_KEYWORDS[YunyouKeywordGroup.UPLOADED_NO]):
             filters["isUploaded"] = 0
 
-        if "待审核" in t:
-            filters["reportStatus"] = 0
-        elif "审核中" in t:
-            filters["reportStatus"] = 1
-        elif "人工审核完成" in t:
-            filters["reportStatus"] = 2
-        elif "自动审核完成" in t:
-            filters["reportStatus"] = 3
+        for status_code, keywords in YUNYOU_REPORT_STATUS_FILTERS.items():
+            if any(k in t for k in keywords):
+                filters["reportStatus"] = status_code
+                break
 
-        if any(k in t for k in ["2小时", "两小时"]):
-            filters["holterType"] = 1
-        elif any(k in t for k in ["48小时"]):
-            filters["holterType"] = 3
-        elif any(k in t for k in ["夜间", "24小时（夜间）", "24小时(夜间)"]):
-            filters["holterType"] = 2
-        elif any(k in t for k in ["24小时"]):
-            filters["holterType"] = 0
+        for holter_type, keywords in YUNYOU_HOLTER_TYPE_FILTERS.items():
+            if any(k in t for k in keywords):
+                filters["holterType"] = holter_type
+                break
 
         return filters
 
@@ -277,7 +293,7 @@ class YunyouAgent(BaseAgent):
         if not isinstance(payload, dict):
             return []
 
-        for key in ["records", "list", "rows", "items", "result", "data"]:
+        for key in YUNYOU_RECORD_KEYS:
             value = payload.get(key)
             if isinstance(value, list):
                 return [item for item in value if isinstance(item, dict)]
@@ -297,7 +313,8 @@ class YunyouAgent(BaseAgent):
         return []
 
     @staticmethod
-    def _pick_value(row: Dict[str, Any], keys: List[str]) -> Any:
+    def _pick_value(row: Dict[str, Any], keys: Sequence[str]) -> Any:
+        """从行中提取第一个非空字段值"""
         for k in keys:
             if k in row and row.get(k) is not None and row.get(k) != "":
                 return row.get(k)
@@ -305,6 +322,7 @@ class YunyouAgent(BaseAgent):
 
     @staticmethod
     def _clip_value(value: Any, max_len: int = 36) -> str:
+        """截断过长文本"""
         text = str(value)
         if len(text) > max_len:
             return text[: max_len - 1] + "…"
@@ -350,17 +368,7 @@ class YunyouAgent(BaseAgent):
             records = sorted(records, key=sort_key, reverse=desc)
         rows = records[:limit]
 
-        columns = [
-            ("ID", ["id"]),
-            ("用户ID", ["user_id", "userId"]),
-            ("用户名", ["nick_name", "nickName", "user_name", "userName"]),
-            ("使用日期", ["use_day", "useDay"]),
-            ("开始时间", ["begin_date_time", "beginDateTime"]),
-            ("结束时间", ["end_date_time", "endDateTime"]),
-            ("上传状态", ["is_uploaded", "isUploaded"]),
-            ("报告状态", ["report_status", "reportStatus"]),
-            ("Holter类型", ["holter_type", "holterType"]),
-        ]
+        columns = YUNYOU_HOLTER_TABLE_COLUMNS
         selected = [
             (title, keys)
             for title, keys in columns
@@ -409,6 +417,118 @@ class YunyouAgent(BaseAgent):
 
         return "\n".join(lines)
 
+    @staticmethod
+    def _has_recent_tool_failure(messages: List[BaseMessage]) -> bool:
+        """
+        检测最近工具调用是否出现连接/可用性错误。
+
+        目的：
+        - 避免工具失败后模型反复重试造成卡顿；
+        - 让 Agent 能快速降级给出可读错误提示。
+        """
+        failure_keywords = (
+            "connection error",
+            "connection failed",
+            "连接失败",
+            "连接超时",
+            "timed out",
+            "timeout",
+            "does not exist",
+            "undefinedtable",
+            "未找到可用",
+            "查询时发生未知错误",
+        )
+        for msg in messages[-6:]:
+            if not isinstance(msg, ToolMessage):
+                continue
+            content = msg.content if isinstance(msg.content, str) else str(msg.content or "")
+            lower_text = content.lower()
+            if any(keyword in lower_text for keyword in failure_keywords):
+                return True
+        return False
+
+    @staticmethod
+    def _build_tool_failure_reply(error_detail: str = "") -> str:
+        """构建工具失败时的统一用户提示。"""
+        detail_line = f"\n\n错误摘要：{error_detail}" if error_detail else ""
+        return (
+            "❌ 云柚数据服务暂时不可用，当前无法完成本次查询。\n\n"
+            "建议检查：\n"
+            "- `YUNYOU_DB_URL` 是否指向云柚业务库\n"
+            "- `YUNYOU_HOLTER_TABLE` 是否为真实存在的表名\n"
+            "- `YY_BASE_URL` 对应接口是否可访问\n"
+            f"请稍后重试。{detail_line}"
+        )
+
+    @staticmethod
+    def _wants_sql_example_intent(text: str) -> bool:
+        """识别用户是否明确要求“给 SQL 写法/示例”。"""
+        lower_text = (text or "").strip().lower()
+        if not lower_text:
+            return False
+        keywords = YUNYOU_KEYWORDS[YunyouKeywordGroup.SQL_EXAMPLE_INTENT]
+        return any(keyword in lower_text for keyword in keywords)
+
+    @classmethod
+    def _build_holter_sql_example(
+        cls,
+        *,
+        start_day: Optional[str],
+        end_day: Optional[str],
+        limit: int,
+        desc: bool,
+        filters: Dict[str, Optional[int]],
+    ) -> str:
+        """
+        根据当前用户意图生成 Holter 查询 SQL 示例。
+
+        注意：该 SQL 为示例模板，真实字段名请以云柚业务库实际结构为准。
+        """
+        table_name = str(YUNYOU_DB_POOL_CONFIG.holter_table_name or "your_holter_table").strip() or "your_holter_table"
+        where_clauses: List[str] = []
+        if start_day and end_day:
+            where_clauses.append(f"use_day BETWEEN '{start_day}' AND '{end_day}'")
+        elif start_day:
+            where_clauses.append(f"use_day >= '{start_day}'")
+        elif end_day:
+            where_clauses.append(f"use_day <= '{end_day}'")
+        if filters.get("isUploaded") is not None:
+            where_clauses.append(f"is_uploaded = {int(filters['isUploaded'])}")
+        if filters.get("reportStatus") is not None:
+            where_clauses.append(f"report_status = {int(filters['reportStatus'])}")
+        if filters.get("holterType") is not None:
+            where_clauses.append(f"holter_type = {int(filters['holterType'])}")
+
+        where_sql = ""
+        if where_clauses:
+            where_sql = "WHERE " + "\n  AND ".join(where_clauses)
+
+        order_sql = "DESC" if desc else "ASC"
+        sql = (
+            "SELECT\n"
+            "  id,\n"
+            "  user_id,\n"
+            "  use_day,\n"
+            "  begin_date_time,\n"
+            "  end_date_time,\n"
+            "  is_uploaded,\n"
+            "  report_status,\n"
+            "  holter_type,\n"
+            "  add_time,\n"
+            "  update_time\n"
+            f"FROM {table_name}\n"
+            f"{where_sql}\n"
+            f"ORDER BY id {order_sql}\n"
+            f"LIMIT {max(1, int(limit))};"
+        )
+        return (
+            "⚠️ 当前工具不可用，以下是可参考的 Holter SQL 示例：\n\n"
+            "```sql\n"
+            f"{sql}\n"
+            "```\n"
+            "\n说明：如果该表名在你的库不存在，请替换为实际 Holter 业务表。"
+        )
+
     def _try_direct_holter_list_query(self, messages: List[BaseMessage]) -> Optional[str]:
         """
         对“Holter 列表 + 最近/按id/前N条”做确定性快路径。
@@ -420,7 +540,8 @@ class YunyouAgent(BaseAgent):
 
         latest = human_texts[-1]
         history = " ".join(human_texts[:-1][-4:])
-        if not self._is_holter_list_intent(latest, history):
+        sql_example_intent = self._wants_sql_example_intent(latest)
+        if (not sql_example_intent) and (not self._is_holter_list_intent(latest, history)):
             return None
 
         # 优先从本轮解析时间范围；若本轮无，则复用最近历史。
@@ -435,49 +556,17 @@ class YunyouAgent(BaseAgent):
         limit = self._extract_limit(merged, default_limit=5)
         desc = self._wants_desc_order(merged)
         filters = self._extract_filters(merged)
-        db_fallback_reason: Optional[str] = None
-
-        def _safe_int(value: Any, default: int = -999) -> int:
-            try:
-                return int(value)
-            except Exception:
-                return default
-
-        # 路径1：优先直连云柚业务库（无日期也可查，符合“按 id 倒序最近 N 条”诉求）
-        try:
-            db_result = federated_query_gateway.query_yunyou_holter_recent(
-                limit=limit,
-                order_desc=desc,
-                start_use_day=start_day,
-                end_use_day=end_day,
-            )
-            rows = self._extract_records(db_result)
-            if rows:
-                # 本地附加筛选，避免 DB 工具参数过于复杂。
-                if filters.get("isUploaded") is not None:
-                    target_uploaded = _safe_int(filters["isUploaded"])
-                    rows = [r for r in rows if _safe_int(r.get("is_uploaded", -999)) == target_uploaded]
-                if filters.get("reportStatus") is not None:
-                    target_report_status = _safe_int(filters["reportStatus"])
-                    rows = [r for r in rows if _safe_int(r.get("report_status", -999)) == target_report_status]
-                if filters.get("holterType") is not None:
-                    target_holter_type = _safe_int(filters["holterType"])
-                    rows = [r for r in rows if _safe_int(r.get("holter_type", -999)) == target_holter_type]
-                db_result = {**db_result, "rows": rows}
-
-            return self._format_holter_rows(
-                raw_result=db_result,
+        if sql_example_intent:
+            return self._build_holter_sql_example(
                 start_day=start_day,
                 end_day=end_day,
                 limit=limit,
                 desc=desc,
-                default_range_days=default_range_days,
+                filters=filters,
             )
-        except Exception as db_exc:
-            log.warning(f"Yunyou DB 直查失败，回退 API: {db_exc}")
-            db_fallback_reason = str(db_exc)
 
-        # 路径2：回退到云柚 API（接口需要日期；若缺失则给宽窗口兜底）
+        # 工具查询优先：优先使用 yunyou tool 的接口查询。
+        # 接口需要日期；若缺失则给宽窗口兜底。
         if not start_day or not end_day:
             default_range_days = 3650
             fallback_range = self._last_n_days_range(default_range_days)
@@ -501,19 +590,11 @@ class YunyouAgent(BaseAgent):
                 desc=desc,
                 default_range_days=default_range_days,
             )
-            if db_fallback_reason:
-                formatted += (
-                    "\n\n> 说明：已尝试直连云柚业务库查询，但当前不可用，已回退到云柚 API。"
-                    "\n> 若希望完全按 SKILL 的数据库表查询，请配置 `YUNYOU_DB_URL` 到云柚业务库。"
-                )
             return formatted
         except Exception as exc:
-            log.exception(f"Yunyou fast-path 查询失败: {exc}")
-            return (
-                "❌ 查询 Holter 数据失败，请稍后重试。\n\n"
-                f"错误信息：{exc}\n"
-                "如果持续失败，请检查云柚服务地址、鉴权配置和接口可用性。"
-            )
+            log.warning(f"Yunyou tool 查询失败，返回可读错误并提示重试: {exc}")
+            error_preview = self._clip_value(exc, max_len=240)
+            return self._build_tool_failure_reply(error_preview)
 
     def _build_system_prompt(self, base_prompt: str) -> str:
         """
@@ -559,15 +640,38 @@ class YunyouAgent(BaseAgent):
             """
             模型处理节点。接收并响应最新对话。
             """
+            loop_count = int(state.get("tool_loop_count", 0) or 0)
+            if loop_count >= AGENT_LOOP_CONFIG.yunyou_max_tool_loops:
+                return {
+                    "tool_loop_count": loop_count,
+                    "messages": [AIMessage(content=self.TOOL_LOOP_EXCEEDED_MESSAGE)],
+                }
             # 保留最近多轮消息，避免用户补充参数时丢失上文导致重复追问。
             recent_messages = state["messages"][-12:]
             fast_path_response = self._try_direct_holter_list_query(recent_messages)
             if fast_path_response:
                 # 命中确定性查询路径：直接返回格式化结果，避免反复追问。
-                return {"messages": [AIMessage(content=fast_path_response)]}
+                return {"tool_loop_count": loop_count + 1, "messages": [AIMessage(content=fast_path_response)]}
+            if self._has_recent_tool_failure(recent_messages):
+                # 工具已经明确失败，直接收敛输出，避免继续循环调用工具。
+                return {
+                    "tool_loop_count": loop_count + 1,
+                    "messages": [AIMessage(content=self._build_tool_failure_reply())],
+                }
             chain = self.prompt | self.model_with_tools
-            response = chain.invoke({"messages": recent_messages})
-            return {"messages": [response]}
+            try:
+                response = chain.invoke({"messages": recent_messages})
+                return {"tool_loop_count": loop_count + 1, "messages": [response]}
+            except Exception as exc:
+                # 兜底：模型/工具执行异常时，不让错误冒泡到上层主流程。
+                log.exception(f"yunyou model_node 调用失败，执行降级回复: {exc}")
+                fallback_response = self._try_direct_holter_list_query(recent_messages)
+                if fallback_response:
+                    return {"tool_loop_count": loop_count + 1, "messages": [AIMessage(content=fallback_response)]}
+                return {
+                    "tool_loop_count": loop_count + 1,
+                    "messages": [AIMessage(content=self._build_tool_failure_reply())],
+                }
 
         def human_review_node(state: YunyouState):
             """
@@ -585,17 +689,17 @@ class YunyouAgent(BaseAgent):
 
             # 首次进入，需要人工审批，返回中断载荷
             decision_payload = {
-                "message": "检测到敏感操作，请审核。",
-                "allowed_decisions": ["approve", "reject"],
+                "message": YUNYOU_REVIEW_INTERRUPT_MESSAGE,
+                "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
                 "action_requests": [{
                     "type": "tool_approval", "name": call["name"], "args": call["args"],
-                    "description": "⚠️ 敏感业务数据操作，需审批。", "id": call["id"],
+                    "description": YUNYOU_REVIEW_DESCRIPTION, "id": call["id"],
                 } for call in sensitive_calls],
             }
             decision = interrupt(decision_payload)
             action = decision.get("action") if isinstance(decision, dict) else decision
 
-            if action == "reject":
+            if action == ApprovalDecision.REJECT.value:
                 rejection_messages = [
                     ToolMessage(
                         tool_call_id=call["id"], name=call["name"],
@@ -616,7 +720,8 @@ class YunyouAgent(BaseAgent):
         workflow = StateGraph(YunyouState)
         workflow.add_node("agent", model_node)
         workflow.add_node("human_review", human_review_node)
-        workflow.add_node("tools", ToolNode(all_tools))
+        # 关键配置：工具异常转成 ToolMessage，而不是直接抛异常中断整个子图。
+        workflow.add_node("tools", ToolNode(all_tools, handle_tool_errors=True))
 
         workflow.add_edge(START, "agent")
         # 修改原来的单向边界为条件判断，如果在分析阶段大模型决定不调用任何工具直接作答，直接 END

@@ -14,6 +14,7 @@ from agent.agents.search_agent import SearchAgent
 from agent.agents.sql_agent import SqlAgent
 from agent.agents.weather_agent import WeatherAgent
 from agent.agents.yunyou_agent import YunyouAgent
+from constants.agent_registry_keywords import AGENT_KEYWORDS, AgentKeywordGroup
 
 
 class AgentInfo:
@@ -38,32 +39,32 @@ agent_classes: Dict[str, AgentInfo] = {
     "yunyou_agent": AgentInfo(
         cls=YunyouAgent,
         description="处理云柚医疗设备平台的业务数据查询（Holter 设备、心电报告、审核记录等）",
-        keywords=["云柚", "holter", "智纤", "心电", "审核", "上传", "holter类型", "报告"]
+        keywords=list(AGENT_KEYWORDS[AgentKeywordGroup.YUNYOU]),
     ),
     "medical_agent": AgentInfo(
         cls=MedicalAgent,
         description="回答医疗健康专业问题（症状分析、药物咨询、疾病科普），输出附带免责声明",
-        keywords=["病", "症状", "药", "健康", "血压", "心率", "诊断", "治疗"]
+        keywords=list(AGENT_KEYWORDS[AgentKeywordGroup.MEDICAL]),
     ),
     "code_agent": AgentInfo(
         cls=CodeAgent,
         description="编写、调试、优化 Python 代码，并可执行代码查看运行结果",
-        keywords=["代码", "函数", "bug", "报错", "Python", "Java", "编程", "脚本"]
+        keywords=list(AGENT_KEYWORDS[AgentKeywordGroup.CODE]),
     ),
     "sql_agent": AgentInfo(
         cls=SqlAgent,
         description="根据自然语言生成 SQL 查询语句并执行，需人工审核后才会执行",
-        keywords=["SQL", "数据库", "查询", "表", "索引", "select", "insert"]
+        keywords=list(AGENT_KEYWORDS[AgentKeywordGroup.SQL]),
     ),
     "weather_agent": AgentInfo(
         cls=WeatherAgent,
         description="实时查询指定城市的天气情况和气象预报（需调用天气 API）",
-        keywords=["天气", "气温", "预报", "降雨", "温度", "几度"]
+        keywords=list(AGENT_KEYWORDS[AgentKeywordGroup.WEATHER]),
     ),
     "search_agent": AgentInfo(
         cls=SearchAgent,
         description="联网搜索最新新闻、实时事件、网页内容（仅用于模型训练数据无法覆盖的实时信息检索）",
-        keywords=["搜索", "搜一下", "查一下最新", "新闻", "百度", "谷歌", "最新消息"]
+        keywords=list(AGENT_KEYWORDS[AgentKeywordGroup.SEARCH]),
     )
 }
 

@@ -27,11 +27,12 @@ from api.v1.user_model_api import router as user_model_router
 from api.v1.user_mcp_api import router as user_mcp_router
 from api.v1.interrupt_api import interrupt_router
 from api.v1.metrics_api import metrics_router
-from app.core.logger import setup_logger
+from core.logger import setup_logger
 from db import Base, engine
 import models  # noqa: F401  # 确保所有 ORM 模型在 create_all 前被加载
 from exceptions.business_exception import BusinessException
 from schemas.response_model import ResponseModel
+from core.middleware import ProcessTimeMiddleware, DynamicModelMiddleware, SSESafeGZipMiddleware
 
 # 配置日志
 setup_logger()
@@ -39,10 +40,6 @@ logger = logging.getLogger(__name__)
 
 # 这行代码会在服务启动时，检查 PgSQL 里有没有表，没有就会自动按照你的 Model 创表！
 AUTO_CREATE_TABLES = os.getenv("AUTO_CREATE_TABLES", "true").lower() == "true"
-if AUTO_CREATE_TABLES:
-    Base.metadata.create_all(bind=engine)
-else:
-    logging.getLogger(__name__).info("AUTO_CREATE_TABLES=false，跳过 create_all，建议使用 Alembic 迁移。")
 app = FastAPI(
     title="LangGraph Agent FastAPI",
     description="基于 LangChain、LangGraph 和 FastAPI 构建的智能代理后端项目。",
@@ -54,6 +51,29 @@ app = FastAPI(
     #     "swaggerFaviconUrl": "https://cdn.bootcdn.net/ajax/libs/swagger-ui/5.10.3/favicon-32x32.png",
     # }
 )
+
+
+@app.on_event("startup")
+async def startup_initialize_tables():
+    """
+    启动阶段初始化数据库表结构（可开关）。
+
+    设计说明：
+    - 避免在模块 import 阶段就触发数据库连接，降低导入副作用；
+    - 保留原有 create_all 行为，兼容当前项目运行方式；
+    - 若禁用 AUTO_CREATE_TABLES，建议使用 Alembic 管理迁移。
+    """
+    if not AUTO_CREATE_TABLES:
+        logging.getLogger(__name__).info("AUTO_CREATE_TABLES=false，跳过 create_all，建议使用 Alembic 迁移。")
+        return
+
+    try:
+        Base.metadata.create_all(bind=engine)
+        logging.getLogger(__name__).info("数据库表结构检查完成（create_all）。")
+    except Exception as exc:
+        # 启动期数据库不可用属于关键故障，直接抛出，防止服务带病启动
+        logging.getLogger(__name__).exception(f"数据库初始化失败: {exc}")
+        raise
 
 
 # ====== 辅助函数：获取请求体 ======
@@ -111,11 +131,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 # 注册统一性能监控与动态模型分发中间件 (注意中间件执行顺序：后注册的先运行)
-from fastapi.middleware.gzip import GZipMiddleware
-from core.middleware import ProcessTimeMiddleware, DynamicModelMiddleware
 
-# gzip 压缩：对于 SSE 以及长度大于 500 字节的响应进行压缩，降低网络传输开销
-app.add_middleware(GZipMiddleware, minimum_size=500)
+# gzip 压缩：SSE 路径自动跳过，仅压缩普通响应。
+app.add_middleware(SSESafeGZipMiddleware, minimum_size=500)
 # 动态加载大模型配置 (比如通过 X-User-Model-Id 或 Body 中解析提取并缓存到 State 中)
 app.add_middleware(DynamicModelMiddleware)
 # 请求耗时与 Request_ID 计算
@@ -130,7 +148,6 @@ app.add_middleware(
     allow_methods=["*"],  # 允许所有 HTTP 方法
     allow_headers=["*"],  # 允许所有请求头
 )
-
 
 # 创建 v1 版本的 API 路由
 api_v1_router = APIRouter(prefix="/api/v1")

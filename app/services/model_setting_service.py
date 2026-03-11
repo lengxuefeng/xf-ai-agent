@@ -1,6 +1,13 @@
 # app/services/model_setting_service.py
 from sqlalchemy.orm import Session
 
+from constants.model_category_keywords import (
+    CLAUDE_VISION_MARKERS,
+    DISTILBERT_EMBED_MARKERS,
+    EMBEDDING_EXACT_NAMES,
+    MODEL_CATEGORY_KEYWORDS,
+    ModelCategory,
+)
 from db.crud import model_setting_db
 from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 
@@ -87,52 +94,29 @@ class ModelSettingService:
         
         if not isinstance(models, list):
             return categories
+
+        def _contains_any(text: str, keywords) -> bool:
+            """判断文本是否命中任意关键词。"""
+            return any(k in text for k in keywords)
         
         for model in models:
             model_lower = model.lower().strip()
             
             # 嵌入模型关键词 - 优先级最高
-            if ('embedding' in model_lower or 'embed' in model_lower or 
-                'bge-' in model_lower or 'text-embedding' in model_lower or
-                'e5-' in model_lower or 'sentence-' in model_lower or
-                'all-minilm' in model_lower or 'all-mpnet' in model_lower or
-                'gte-' in model_lower or 'm3e-' in model_lower or
-                'text2vec' in model_lower or 'simcse' in model_lower or
-                'sbert' in model_lower or 'instructor' in model_lower or
-                'multilingual-e5' in model_lower or 'paraphrase-' in model_lower or
-                ('distilbert' in model_lower and 'embed' in model_lower) or
-                model_lower in ['engtrng', 'engtng1', '333', 'zz', '1123']):
+            if (
+                _contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.EMBEDDING])
+                or all(k in model_lower for k in DISTILBERT_EMBED_MARKERS)
+                or model_lower in EMBEDDING_EXACT_NAMES
+            ):
                 categories['embedding'].append(model)
             # 视觉模型关键词 - 第二优先级  
-            elif ('dall-e' in model_lower or 'midjourney' in model_lower or 
-                  'stable-diffusion' in model_lower or 'image' in model_lower or
-                  'vision' in model_lower or 'visual' in model_lower or
-                  'gpt-4-vision' in model_lower or 'gpt-4v' in model_lower or
-                  ('claude-3' in model_lower and 'vision' in model_lower) or
-                  'gemini-pro-vision' in model_lower or 'gemini-vision' in model_lower or
-                  'cogvlm' in model_lower or 'blip' in model_lower or
-                  'clip' in model_lower or 'flamingo' in model_lower or
-                  'llava' in model_lower or 'minigpt' in model_lower or
-                  'instructblip' in model_lower or 'qwen-vl' in model_lower or
-                  'internvl' in model_lower or 'yi-vl' in model_lower or
-                  '视觉' in model_lower or '图像' in model_lower or
-                  '看图' in model_lower or '识图' in model_lower):
+            elif (
+                _contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.VISION])
+                or all(k in model_lower for k in CLAUDE_VISION_MARKERS)
+            ):
                 categories['vision'].append(model)
             # 对话模型关键词 - 第三优先级
-            elif ('gpt' in model_lower or 'claude' in model_lower or 
-                  'gemini' in model_lower or 'llama' in model_lower or 
-                  'qwen' in model_lower or 'chat' in model_lower or
-                  'pro' in model_lower or 'turbo' in model_lower or
-                  'flash' in model_lower or 'sonnet' in model_lower or
-                  'haiku' in model_lower or 'opus' in model_lower or
-                  'mistral' in model_lower or 'yi-' in model_lower or
-                  'baichuan' in model_lower or 'chatglm' in model_lower or
-                  'vicuna' in model_lower or 'alpaca' in model_lower or
-                  'wizard' in model_lower or 'orca' in model_lower or
-                  'falcon' in model_lower or 'mpt' in model_lower or
-                  'palm' in model_lower or 'bard' in model_lower or
-                  'ernie' in model_lower or 'wenxin' in model_lower or
-                  'tongyi' in model_lower or 'spark' in model_lower):
+            elif _contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.CHAT]):
                 categories['chat'].append(model)
             else:
                 categories['other'].append(model)

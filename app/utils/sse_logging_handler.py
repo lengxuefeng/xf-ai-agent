@@ -5,9 +5,10 @@
 """
 import json
 import logging
-from typing import Optional, Callable, List
+from typing import Optional
 from queue import Queue
-from threading import Thread
+
+from constants.sse_constants import SseEventType
 
 
 class SSELoggingHandler(logging.Handler):
@@ -114,7 +115,7 @@ class SSELoggingHandler(logging.Handler):
 
             # 构建 SSE 数据
             sse_data = {
-                "type": "log",
+                "type": SseEventType.LOG.value,
                 "log_type": log_type,
                 "logger": logger_name,
                 "message": f"{icon} {message}"
@@ -207,25 +208,3 @@ def log_error(logger: logging.Logger, msg: str, show_in_thinking: bool = True, *
 def log_exception(logger: logging.Logger, msg: str, show_in_thinking: bool = True, **kwargs) -> None:
     """EXCEPTION 级别日志"""
     log_with_config(logger, logging.ERROR, msg, show_in_thinking, **kwargs)
-
-
-def create_sse_handler(output_queue: Optional['Queue[str]'] = None) -> SSELoggingHandler:
-    """
-    创建并配置 SSE 日志处理器
-
-    Args:
-        output_queue: 输出队列
-
-    Returns:
-        SSELoggingHandler: 配置好的日志处理器
-    """
-    handler = SSELoggingHandler(output_queue=output_queue, level=logging.INFO)
-
-    # 设置格式化器
-    formatter = logging.Formatter(
-        fmt='%(message)s',  # 只保留消息，不包含时间、logger 名称等
-        datefmt=None
-    )
-    handler.setFormatter(formatter)
-
-    return handler

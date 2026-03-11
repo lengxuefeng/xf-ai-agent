@@ -1,10 +1,18 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 from typing import Dict, List, Optional
 
 import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
+
+from constants.weather_tool_constants import (
+    WEATHER_CITY_NOT_FOUND_MESSAGE,
+    WEATHER_CITY_REQUIRED_MESSAGE,
+)
+from utils.custom_logger import get_logger
+from utils.location_parser import extract_valid_city_candidate, normalize_city_candidate
 
 """
 定义天气查询相关的工具。
@@ -13,6 +21,7 @@ from langchain_core.tools import tool
 """
 
 load_dotenv()
+log = get_logger(__name__)
 
 
 class WeatherAPIClient:
@@ -30,7 +39,7 @@ class WeatherAPIClient:
     def _make_request(self, url: str, params: Dict) -> Dict:
         """执行 API 请求并处理错误"""
         try:
-            response = requests.get(url, params={**self.base_params, **params})
+            response = requests.get(url, params={**self.base_params, **params}, timeout=15)
             response.raise_for_status()
             data = response.json()
             return data
@@ -97,8 +106,15 @@ def format_weather_data(weather_data: Dict, city: str) -> str:
         if key == "text" and weather_data.get("icon"):
             value = f"{value}（图标代码：{weather_data['icon']}）"
         formatted += f"- {label}：{value}{unit}\n"
-    print(f"格式化后的天气数据：{formatted}")
+    log.info(f"天气工具格式化完成，城市={city}")
     return formatted
+
+
+@lru_cache(maxsize=512)
+def _cached_city_id_lookup(city_name: str) -> str:
+    """缓存城市名到 location id 的映射，减少重复地理编码请求。"""
+    client = WeatherAPIClient()
+    return client.search_city(city_name)
 
 
 def location_search(city_or_location: str) -> str:
@@ -111,16 +127,30 @@ def location_search(city_or_location: str) -> str:
     Returns:
         str: 格式化的天气信息或错误信息。
     """
-    client = WeatherAPIClient()
+    # 先做参数治理：如果没有可用城市，直接返回标准提示，不访问外部 API
+    resolved_city_or_id = extract_valid_city_candidate(city_or_location)
+    if not resolved_city_or_id:
+        return WEATHER_CITY_REQUIRED_MESSAGE
+
     try:
-        # 如果输入是城市名称，转换为位置标识
-        location = city_or_location
-        if not city_or_location.isdigit():
-            location = client.search_city(city_or_location)
+        client = WeatherAPIClient()
+        # 如果输入是城市名称，转换为 location id；如果本身是 id，直接查询
+        location = resolved_city_or_id
+        display_city = normalize_city_candidate(resolved_city_or_id) or resolved_city_or_id
+        if not resolved_city_or_id.isdigit():
+            try:
+                location = _cached_city_id_lookup(resolved_city_or_id)
+            except Exception:
+                return WEATHER_CITY_NOT_FOUND_MESSAGE
         data = client.get_weather_data(location)
-        return format_weather_data(data["now"], city_or_location)
+        return format_weather_data(data.get("now", {}), display_city)
     except ValueError as e:
-        return str(e)
+        # 对外返回稳定文案，避免把内部异常细节直接暴露给用户
+        log.warning(f"天气工具调用异常: {e}")
+        return WEATHER_CITY_NOT_FOUND_MESSAGE
+    except Exception as e:
+        log.error(f"天气工具未知异常: {e}")
+        return "天气服务暂时不可用，请稍后重试。"
 
 
 @tool
@@ -135,8 +165,15 @@ def get_weathers(city_names: List[str], max_threads: int = 4) -> List[str]:
     Returns:
         str: 格式化的天气信息或错误信息。
     """
-    with ThreadPoolExecutor(max_workers=max_threads) as executor:
-        results = list(executor.map(location_search, city_names))
+    # 参数兜底：空列表时直接返回标准追问文案
+    normalized_city_names = [str(item).strip() for item in (city_names or []) if str(item).strip()]
+    if not normalized_city_names:
+        return [WEATHER_CITY_REQUIRED_MESSAGE]
+
+    # 并发参数保护，避免极值误配置
+    safe_max_threads = max(1, min(int(max_threads or 1), 8))
+    with ThreadPoolExecutor(max_workers=safe_max_threads) as executor:
+        results = list(executor.map(location_search, normalized_city_names))
     return results
 
 

@@ -1,5 +1,5 @@
 import operator
-from typing import TypedDict, Annotated, List, Optional, Dict
+from typing import TypedDict, Annotated, List, Optional, Dict, Any
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
@@ -21,7 +21,7 @@ class SubTask(TypedDict):
     agent: str                      # 分配的 Agent 名称 (如 "weather_agent", "CHAT")
     input: str                      # 子任务的完整输入描述 (自包含，无代词)
     depends_on: List[str]           # 依赖的其他子任务 ID 列表 (空 = 可并行)
-    status: str                     # pending / dispatched / done / error
+    status: str                     # pending / dispatched / pending_approval / done / error / cancelled
     result: Optional[str]           # 执行结果
 
 class WorkerResult(TypedDict):
@@ -29,6 +29,10 @@ class WorkerResult(TypedDict):
     task_id: str
     result: str
     error: Optional[str]
+    # 执行该子任务的 Agent 名称
+    agent: Optional[str]
+    # 子任务总耗时（毫秒）
+    elapsed_ms: Optional[int]
 
 class GraphState(TypedDict):
     """
@@ -43,18 +47,26 @@ class GraphState(TypedDict):
         data_domain: 数据域 (YUNYOU_DB / LOCAL_DB / WEB_SEARCH / GENERAL)
         domain_confidence: 数据域识别置信度 0~1
         domain_route_source: 识别来源 (rule / llm / history)
+        domain_candidates: 候选数据域列表（多域场景）
+        intent_candidates: 候选意图/Agent 列表（多意图场景）
+        route_strategy: 路由策略（single_domain / multi_domain_split / complex_single_domain）
+        route_reason: 路由策略原因（便于前端和日志追踪）
+        domain_elapsed_ms: Domain Router 耗时
 
         ---- 意图识别 (Intent Router) 输出 ----
         intent: 识别到的意图/Agent 名称
         intent_confidence: 置信度 0~1
         is_complex: 是否为复杂请求
         direct_answer: LLM 直接给出的回答
+        intent_elapsed_ms: Intent Router 耗时
 
         ---- 任务规划 (Parent Planner) 输出 ----
         task_list: 子任务列表（DAG 描述）
         task_results: 子任务执行结果映射 {task_id: result}
         current_wave: 当前 Dispatcher 调度波次
         max_waves: 最大调度波次（安全阀）
+        planner_source: 任务规划来源（rule_split / llm / fallback）
+        planner_elapsed_ms: Parent Planner 耗时
 
         ---- 并发执行 (Dispatcher & Worker) ----
         active_tasks: 当前准备 Send 派发执行的 SubTask 列表
@@ -67,23 +79,35 @@ class GraphState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
     session_id: Optional[str]
     llm_config: Optional[dict]
+    # 会话结构化上下文（城市/画像等）
+    context_slots: Optional[Dict[str, Any]]
+    # 会话上下文摘要（用于系统提示注入）
+    context_summary: Optional[str]
 
     # 数据域路由输出
     data_domain: Optional[str]
     domain_confidence: Optional[float]
     domain_route_source: Optional[str]
+    domain_candidates: Optional[List[str]]
+    intent_candidates: Optional[List[str]]
+    route_strategy: Optional[str]
+    route_reason: Optional[str]
+    domain_elapsed_ms: Optional[int]
 
     # 意图识别输出
     intent: Optional[str]
     intent_confidence: Optional[float]
     is_complex: Optional[bool]
     direct_answer: Optional[str]
+    intent_elapsed_ms: Optional[int]
 
     # 任务规划输出 (Tier-2 DAG)
     task_list: Optional[List[SubTask]]
     task_results: Optional[Dict[str, str]]
     current_wave: Optional[int]
     max_waves: Optional[int]
+    planner_source: Optional[str]
+    planner_elapsed_ms: Optional[int]
 
     # 并发执行输出 (Map-Reduce)
     active_tasks: Optional[List[SubTask]]

@@ -10,6 +10,7 @@ from models.user_model import UserModel
 from models.model_setting import ModelSetting
 from models.user_mcp import UserMCP
 from models.chat_history import ChatSessionModel, ChatMessageModel
+from models.session_state import SessionStateModel
 
 # --- 导入 Schemas ---
 from schemas.user_info_schemas import UserInfoCreate, UserInfoUpdate
@@ -17,6 +18,7 @@ from schemas.user_model_schemas import UserModelCreate, UserModelUpdate
 from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 from schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate
 from schemas.chat_history_schemas import ChatSessionCreate, ChatSessionUpdate, ChatMessageCreate, ChatMessageUpdate
+from schemas.session_state_schemas import SessionStateCreate, SessionStateUpdate
 
 """
 【大一统 CRUD 注册中心】
@@ -69,12 +71,39 @@ class CRUDChatSession(CRUDBase[ChatSessionModel, ChatSessionCreate, ChatSessionU
 
 
 class CRUDChatMessage(CRUDBase[ChatMessageModel, ChatMessageCreate, ChatMessageUpdate]):
-    def get_by_session_id(self, db: Session, session_id: str, skip: int = 0, limit: int = 50):
-        """分页获取某个会话的未删除聊天记录，按时间正序"""
+    def get_by_session_id(
+            self,
+            db: Session,
+            session_id: str,
+            skip: int = 0,
+            limit: int = 50,
+            order_desc: bool = False
+    ):
+        """分页获取某个会话的未删除聊天记录，支持按时间正序/倒序。"""
+        order_clause = self.model.create_time.desc() if order_desc else self.model.create_time.asc()
         return db.query(self.model).filter(
             self.model.session_id == session_id,
             self.model.is_deleted == False
-        ).order_by(self.model.create_time.asc()).offset(skip).limit(limit).all()
+        ).order_by(order_clause).offset(skip).limit(limit).all()
+
+    def count_by_session_id(self, db: Session, session_id: str) -> int:
+        """统计某个会话下未删除消息总数。"""
+        return db.query(self.model).filter(
+            self.model.session_id == session_id,
+            self.model.is_deleted == False
+        ).count()
+
+
+class CRUDSessionState(CRUDBase[SessionStateModel, SessionStateCreate, SessionStateUpdate]):
+    """会话状态 CRUD，负责按 session_id 读取与更新结构化上下文。"""
+
+    def get_by_session_id(self, db: Session, session_id: str):
+        """根据会话 ID 获取未删除的会话状态记录。"""
+        return (
+            db.query(self.model)
+            .filter(self.model.session_id == session_id, self.model.is_deleted == False)
+            .first()
+        )
 
 
 # ==========================================
@@ -87,3 +116,4 @@ user_mcp_db = CRUDUserMCP(UserMCP)
 
 chat_session_db = CRUDChatSession(ChatSessionModel)
 chat_message_db = CRUDChatMessage(ChatMessageModel)
+session_state_db = CRUDSessionState(SessionStateModel)

@@ -8,6 +8,12 @@ from langchain_core.runnables import RunnableConfig
 
 from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
+from constants.approval_constants import (
+    ApprovalDecision,
+    CODE_APPROVAL_ACTION_NAME,
+    CODE_APPROVAL_MESSAGE,
+    DEFAULT_ALLOWED_DECISIONS,
+)
 from utils.code_tools import execute_python_code
 from utils.custom_logger import get_logger
 from agent.graphs.checkpointer import checkpointer # 使用全局 Checkpointer
@@ -16,22 +22,14 @@ from agent.prompts.code_prompt import CodePrompt
 log = get_logger(__name__)
 
 class CodeAgentState(TypedDict):
-    """
-    代码编写子图状态
-    Attributes:
-        messages: 对话消息列表
-        code_to_execute: 待执行代码
-        execution_result: 执行结果
-    """
+    """代码编写子图状态"""
     messages: Annotated[List[BaseMessage], add_messages]
-    code_to_execute: Optional[str]
-    execution_result: Optional[str]
+    code_to_execute: Optional[str]  # 待执行的代码
+    execution_result: Optional[str]  # 执行结果
 
 
 class CodeAgent(BaseAgent):
-    """
-    Code Agent (LangGraph 1.0 Refactored)
-    """
+    """代码执行Agent：生成并执行Python代码"""
 
     def __init__(self, req: AgentRequest):
         super().__init__(req)
@@ -40,7 +38,7 @@ class CodeAgent(BaseAgent):
         self.llm = req.model
         self.checkpointer = checkpointer  # 使用全局单例
         self.subgraph_id = "code_agent"
-        
+
         # 提示词
         self.prompt = ChatPromptTemplate.from_messages(
             [
@@ -68,29 +66,32 @@ class CodeAgent(BaseAgent):
         return workflow.compile(checkpointer=self.checkpointer)
 
     def _generate_code_node(self, state: CodeAgentState, config: RunnableConfig):
+        """生成代码节点"""
         chain = self.prompt | self.llm
         response = chain.invoke({"messages": state["messages"]})
         code = response.content.strip().replace("```python", "").replace("```", "")
         return {"code_to_execute": code}
 
     def _execute_code_node(self, state: CodeAgentState, config: RunnableConfig):
+        """执行代码节点"""
         code = state["code_to_execute"]
-        
+
         # --- Native Interrupt Logic ---
         decision = interrupt({
             "action_requests": [{
                 "type": "code_approval",
-                "name": "execute_code",
+                "name": CODE_APPROVAL_ACTION_NAME,
                 "args": {"code": code},
                 "description": f"即将执行 Python 代码:\n{code[:100]}..." # 截断显示
             }],
-            "message": "需要审批代码执行"
+            "message": CODE_APPROVAL_MESSAGE,
+            "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
         })
 
         action = decision.get("action") if isinstance(decision, dict) else decision
-        if action == "reject":
+        if action == ApprovalDecision.REJECT.value:
             return {"execution_result": "用户拒绝执行代码。"}
-            
+
         # 执行代码
         try:
             result = execute_python_code(code)
@@ -99,6 +100,7 @@ class CodeAgent(BaseAgent):
             return {"execution_result": f"代码执行错误: {str(e)}"}
 
     def _analyze_result_node(self, state: CodeAgentState):
+        """分析结果节点"""
         result = state["execution_result"]
         # 简单包装结果
         return {"messages": [AIMessage(content=CodePrompt.EXECUTION_PREFIX.format(result))]}

@@ -24,13 +24,41 @@ class ChatHistoryService:
     def get_user_sessions(self, db: Session, user_id: int, page: int = 1, size: int = 20):
         return chat_session_db.get_by_user_id(db, user_id, (page - 1) * size, size)
 
-    def get_session_messages(self, db: Session, user_id: int, session_id: str, page: int = 1, size: int = 50):
+    def get_session_messages(
+            self,
+            db: Session,
+            user_id: int,
+            session_id: str,
+            page: int = 1,
+            size: int = 50,
+            order: str = "asc"
+    ):
         # 先校验归属权
         sess = chat_session_db.get_by_session_id(db, session_id)
         if not sess or sess.user_id != user_id:
-            return {"messages": []}
-        messages = chat_message_db.get_by_session_id(db, session_id, (page - 1) * size, size)
-        return {"messages": messages}
+            return {"messages": [], "total": 0, "page": page, "size": size, "has_more": False, "order": order}
+
+        normalized_order = (order or "asc").lower()
+        order_desc = normalized_order == "desc"
+        offset = (page - 1) * size
+        total = chat_message_db.count_by_session_id(db, session_id)
+        messages = chat_message_db.get_by_session_id(
+            db=db,
+            session_id=session_id,
+            skip=offset,
+            limit=size,
+            order_desc=order_desc
+        )
+
+        has_more = offset + len(messages) < total
+        return {
+            "messages": messages,
+            "total": total,
+            "page": page,
+            "size": size,
+            "has_more": has_more,
+            "order": "desc" if order_desc else "asc"
+        }
 
     def create_chat_message(self, db: Session, user_id: int, req: ChatMessageCreate):
         # 确保会话存在
