@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import json
 import time
-from typing import Generator, Optional, Dict, Any
+from typing import AsyncGenerator, Generator, Optional, Dict, Any
 
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
@@ -19,7 +20,7 @@ from constants.chat_service_constants import (
     STREAM_HEADERS,
 )
 from constants.sse_constants import SseEventType, SsePayloadField
-from config.runtime_settings import MODEL_TIERING_CONFIG
+from config.runtime_settings import CHAT_STREAM_HISTORY_LIMIT, MODEL_TIERING_CONFIG
 from db import get_db_context
 from schemas.chat_history_schemas import ChatMessageCreate
 from schemas.chat_schemas import StreamChatRequest
@@ -49,18 +50,83 @@ class ChatService:
             dynamic_model_config: Optional[Dict[str, Any]] = None
     ) -> StreamingResponse:
         """
-        【入口】统一处理流式聊天请求
+        【入口】统一处理流式聊天请求（同步兼容版，内部仍用同步生成器）
         """
         log.info(f"收到流式聊天请求，会话ID: {req.session_id}, 用户ID: {user_id}", target=LogTarget.LOG)
         if req.user_input and req.user_input != "[RESUME]":
             route_metrics_service.detect_and_record_correction(req.session_id, req.user_input)
 
-        # 注意：safe_execute 只能捕获组装阶段的异常。流式输出期间的异常需要在 stream_chat_with_history 中捕获
         return exception_handler.safe_execute(
             self._process_stream_chat_internal,
             req, user_id, db, dynamic_model_config,
             context="流式聊天准备阶段"
         )
+
+    async def process_stream_chat_async(
+            self,
+            req: StreamChatRequest,
+            user_id: Optional[int],
+            db: Optional[Session] = None,
+            dynamic_model_config: Optional[Dict[str, Any]] = None
+    ) -> StreamingResponse:
+        """
+        【异步入口】统一处理流式聊天请求，返回 StreamingResponse 包裹异步生成器。
+
+        路由层调用此方法，确保流式数据在 asyncio 事件循环中逐块推送，
+        不阻塞其他并发请求。
+        """
+        log.info(f"收到异步流式聊天请求，会话ID: {req.session_id}, 用户ID: {user_id}", target=LogTarget.LOG)
+        if req.user_input and req.user_input != "[RESUME]":
+            route_metrics_service.detect_and_record_correction(req.session_id, req.user_input)
+
+        try:
+            model_config = self._resolve_model_config(req, dynamic_model_config)
+        except Exception as exc:
+            log.exception(f"流式聊天准备阶段异常: {exc}", target=LogTarget.ALL)
+            async def _error_gen():
+                yield self._format_error_event(str(exc))
+            return StreamingResponse(
+                _error_gen(),
+                media_type="text/event-stream",
+                headers=self._get_stream_headers(),
+            )
+
+        is_resume = req.user_input == "[RESUME]"
+        if user_id:
+            stream_gen = self.stream_chat_with_history_async(
+                user_input=req.user_input,
+                session_id=req.session_id,
+                model_config=model_config,
+                user_id=user_id,
+                is_resume=is_resume,
+                history_limit=CHAT_STREAM_HISTORY_LIMIT,
+            )
+        else:
+            stream_gen = self.stream_chat_anonymous_async(
+                user_input=req.user_input,
+                session_id=req.session_id,
+                model_config=model_config,
+                history_messages=[],
+                runtime_context={},
+            )
+
+        return StreamingResponse(
+            stream_gen,
+            media_type="text/event-stream",
+            headers=self._get_stream_headers(),
+        )
+
+    def _resolve_model_config(
+            self,
+            req: StreamChatRequest,
+            dynamic_model_config: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """统一解析模型配置：优先使用中间件预加载配置，其次从请求参数构建。"""
+        if dynamic_model_config:
+            log.info("使用中间件预加载的动态模型配置", target=LogTarget.LOG)
+            return dynamic_model_config
+        log.info("使用请求自带的默认参数构建配置", target=LogTarget.LOG)
+        return self._build_model_config_from_request(req)
 
     def _process_stream_chat_internal(
             self,
@@ -69,56 +135,32 @@ class ChatService:
             db: Optional[Session] = None,
             dynamic_model_config: Optional[Dict[str, Any]] = None
     ) -> StreamingResponse:
-        """内部流式聊天处理逻辑：准备配置、挂载生成器"""
+        """内部流式聊天处理逻辑：准备配置、挂载生成器（同步兼容版）"""
         log.info(f"请求参数: model={req.model}, user_model_id={req.user_model_id}, service_type={req.service_type}",
                  target=LogTarget.LOG)
 
-        # 1. 如果中间件已经解析好模型配置，则直接使用
-        if dynamic_model_config:
-            log.info("使用中间件预加载的动态模型配置", target=LogTarget.LOG)
-            model_config = dynamic_model_config
-        else:
-            # 2. 兜底方案：使用前端传来的零散参数
-            log.info("使用请求自带的默认参数构建配置", target=LogTarget.LOG)
-            model_config = self._build_model_config_from_request(req)
-
-        history_messages = []
-        # 会话结构化上下文：包含城市/用户画像等槽位
-        runtime_context: Dict[str, Any] = {}
+        model_config = self._resolve_model_config(req, dynamic_model_config)
         is_resume = req.user_input == "[RESUME]"
 
-        # 3. 核心分流：注册用户带记忆，匿名用户无记忆
-        if user_id and db:
-            # 拉取历史并标准化成 GraphRunner 需要的 dict 结构
-            history_data = chat_history_service.get_session_messages(db, user_id, req.session_id, page=1, size=100)
-            history_messages = self._normalize_history_messages(history_data)
-            # 在进入图执行前，先构建并持久化一份会话槽位上下文
-            runtime_context = session_state_service.build_runtime_context(
-                db=db,
-                user_id=user_id,
-                session_id=req.session_id,
-                user_input=req.user_input,
-                history_messages=history_messages,
-            )
+        # 核心分流：注册用户带记忆，匿名用户无记忆
+        if user_id:
             stream_generator = self.stream_chat_with_history(
                 user_input=req.user_input,
                 session_id=req.session_id,
                 model_config=model_config,
                 user_id=user_id,
-                history_messages=history_messages,
-                runtime_context=runtime_context,
                 is_resume=is_resume,
+                history_limit=CHAT_STREAM_HISTORY_LIMIT,
             )
         else:
             stream_generator = self.stream_chat_anonymous(
                 user_input=req.user_input,
                 session_id=req.session_id,
                 model_config=model_config,
-                history_messages=history_messages,
-                runtime_context=runtime_context,
+                history_messages=[],
+                runtime_context={},
             )
 
-        # 4. 返回流式响应，控制权正式交给 FastAPI 后台协程
         return StreamingResponse(
             stream_generator,
             media_type="text/event-stream",
@@ -172,27 +214,227 @@ class ChatService:
                 'model_url': user_model.api_url or model_setting.service_url
             }
 
+    async def stream_chat_with_history_async(
+            self,
+            user_input: str,
+            session_id: str,
+            model_config: Dict[str, Any],
+            user_id: Optional[int] = None,
+            is_resume: bool = False,
+            history_limit: int = CHAT_STREAM_HISTORY_LIMIT,
+            emit_response_start: bool = True,
+    ) -> AsyncGenerator[str, None]:
+        """
+        【异步核心】带历史记录保存的流式聊天。
+
+        阻塞式 DB 操作全部通过 asyncio.to_thread 在线程池执行，
+        不阻塞 asyncio 事件循环，支持真正并发的 SSE 推送。
+        """
+        log.info(f"开始异步带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
+        history_messages: list[dict] = []
+        runtime_context: Dict[str, Any] = {}
+
+        if emit_response_start:
+            yield ChatUtils.format_sse_data(
+                event_type=SseEventType.RESPONSE_START.value,
+                data={SsePayloadField.CONTENT.value: ""},
+            )
+
+        ai_response = ""
+        start_time = time.time()
+        error_occurred = False
+        error_message = ""
+
+        try:
+            # 非 resume 场景：在线程池中执行阻塞 DB 操作
+            if not is_resume:
+                await asyncio.to_thread(
+                    self._init_session_and_load_history,
+                    user_id, session_id, user_input, history_limit,
+                    history_messages, runtime_context,
+                )
+
+            # 驱动异步图执行器
+            async for chunk in self.graph_runner.stream_run(
+                user_input=user_input,
+                session_id=session_id,
+                model_config=model_config,
+                history_messages=history_messages,
+                session_context=runtime_context,
+                emit_response_start=False,
+            ):
+                yield chunk
+                ai_content = self._extract_ai_content_from_chunk(chunk)
+                if ai_content:
+                    ai_response += ai_content
+
+        except GeneratorExit:
+            log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
+            error_occurred = True
+            error_message = "客户端主动断开连接"
+            raise
+
+        except TimeoutError:
+            error_occurred = True
+            error_message = "模型响应超时，请重试"
+            log.warning(f"异步流式聊天超时: {session_id}", target=LogTarget.LOG)
+            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
+
+        except ConnectionError:
+            error_occurred = True
+            error_message = "远端服务连接断开"
+            log.warning(f"异步流式聊天连接异常: {session_id}", target=LogTarget.LOG)
+            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
+
+        except Exception as e:
+            error_occurred = True
+            error_message = str(e)
+            log.exception(f"异步聊天流处理异常: {error_message}", target=LogTarget.ALL)
+            yield self._format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
+
+        finally:
+            # 收尾落库：在线程池中执行，避免阻塞事件循环
+            if user_id and not is_resume:
+                log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
+                await asyncio.to_thread(
+                    self._save_chat_history,
+                    user_id, session_id, user_input, ai_response,
+                    model_config, start_time, error_occurred, error_message,
+                )
+
+    def _init_session_and_load_history(
+            self,
+            user_id: Optional[int],
+            session_id: str,
+            user_input: str,
+            history_limit: int,
+            history_messages: list,
+            runtime_context: dict,
+    ) -> None:
+        """
+        阻塞式初始化会话和加载历史记录。
+        设计为可在 asyncio.to_thread 中调用的纯同步方法。
+        """
+        with get_db_context() as db:
+            chat_history_service.get_or_create_session(db, user_id, session_id, user_input)
+
+        if user_id:
+            try:
+                with get_db_context() as db:
+                    recent_history = chat_history_service.get_recent_session_messages(
+                        db=db,
+                        user_id=user_id,
+                        session_id=session_id,
+                        limit=history_limit,
+                    )
+                    loaded_history = self._normalize_history_messages(recent_history)
+                    loaded_context = session_state_service.build_runtime_context(
+                        db=db,
+                        user_id=user_id,
+                        session_id=session_id,
+                        user_input=user_input,
+                        history_messages=loaded_history,
+                    )
+                # 就地修改，让调用方可以读到结果
+                history_messages.extend(loaded_history)
+                runtime_context.update(loaded_context)
+            except Exception as preload_exc:
+                log.warning(f"会话上下文预热失败，已降级为空上下文继续: {preload_exc}", target=LogTarget.LOG)
+
+    def _save_chat_history(
+            self,
+            user_id: int,
+            session_id: str,
+            user_input: str,
+            ai_response: str,
+            model_config: Dict[str, Any],
+            start_time: float,
+            error_occurred: bool,
+            error_message: str,
+    ) -> None:
+        """
+        阻塞式落库。设计为可在 asyncio.to_thread 中调用的纯同步方法。
+        """
+        with get_db_context() as db:
+            final_content = ai_response
+            if error_occurred:
+                if not ai_response:
+                    final_content = CHAT_SERVICE_INTERRUPTED_TEMPLATE.format(error=error_message)
+                else:
+                    final_content += CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE.format(error=error_message)
+
+            if final_content:
+                chat_data = ChatMessageCreate(
+                    user_id=user_id,
+                    session_id=session_id,
+                    user_content=user_input,
+                    model_content=final_content,
+                    model_name=model_config.get('model'),
+                    latency_ms=int((time.time() - start_time) * 1000),
+                    tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                )
+                chat_history_service.create_chat_message(db, user_id, chat_data)
+
+            session_state_service.update_after_turn(
+                db=db,
+                user_id=user_id,
+                session_id=session_id,
+                user_input=user_input,
+                ai_response=final_content,
+            )
+
+    async def stream_chat_anonymous_async(
+            self,
+            user_input: str,
+            session_id: str,
+            model_config: Dict[str, Any],
+            history_messages: Optional[list] = None,
+            runtime_context: Optional[Dict[str, Any]] = None,
+    ) -> AsyncGenerator[str, None]:
+        """匿名异步流式聊天，不触碰数据库，纯粹的管道转发"""
+        log.info(f"匿名异步流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
+        try:
+            async for chunk in self.graph_runner.stream_run(
+                user_input=user_input,
+                session_id=session_id,
+                model_config=model_config,
+                history_messages=history_messages or [],
+                session_context=runtime_context or {},
+            ):
+                yield chunk
+        except GeneratorExit:
+            raise
+        except TimeoutError:
+            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
+        except ConnectionError:
+            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
+        except Exception as e:
+            log.error(f"匿名异步聊天异常: {e}")
+            yield self._format_error_event(CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE.format(error=str(e)))
+
     def stream_chat_with_history(
             self,
             user_input: str,
             session_id: str,
             model_config: Dict[str, Any],
             user_id: Optional[int] = None,
-            history_messages: Optional[list] = None,
-            runtime_context: Optional[Dict[str, Any]] = None,
             is_resume: bool = False,
+            history_limit: int = CHAT_STREAM_HISTORY_LIMIT,
+            emit_response_start: bool = True,
     ) -> Generator[str, None, None]:
         """
         【核心】带历史记录保存的流式聊天。
         这里的异常处理必须极其严密，因为抛出异常时 HTTP Headers 已经发给前端了。
         """
         log.info(f"开始带历史的流式聊天，会话ID: {session_id}", target=LogTarget.ALL)
-        history_messages = history_messages or []
-        runtime_context = runtime_context or {}
+        history_messages: list[dict] = []
+        runtime_context: Dict[str, Any] = {}
 
-        if not is_resume:
-            with get_db_context() as db:
-                chat_history_service.get_or_create_session(db, user_id, session_id, user_input)
+        if emit_response_start:
+            yield ChatUtils.format_sse_data(
+                event_type=SseEventType.RESPONSE_START.value,
+                data={SsePayloadField.CONTENT.value: ""},
+            )
 
         ai_response = ""
         start_time = time.time()
@@ -201,12 +443,39 @@ class ChatService:
         runner_stream = None
 
         try:
+            # 首包已发出后，再进行会话准备和轻量上下文预热，避免首包阻塞。
+            if not is_resume:
+                with get_db_context() as db:
+                    chat_history_service.get_or_create_session(db, user_id, session_id, user_input)
+            if user_id and not is_resume:
+                try:
+                    with get_db_context() as db:
+                        recent_history = chat_history_service.get_recent_session_messages(
+                            db=db,
+                            user_id=user_id,
+                            session_id=session_id,
+                            limit=history_limit,
+                        )
+                        history_messages = self._normalize_history_messages(recent_history)
+                        runtime_context = session_state_service.build_runtime_context(
+                            db=db,
+                            user_id=user_id,
+                            session_id=session_id,
+                            user_input=user_input,
+                            history_messages=history_messages,
+                        )
+                except Exception as preload_exc:
+                    log.warning(f"会话上下文预热失败，已降级为空上下文继续: {preload_exc}", target=LogTarget.LOG)
+                    history_messages = []
+                    runtime_context = {}
+
             runner_stream = self.graph_runner.stream_run(
                 user_input=user_input,
                 session_id=session_id,
                 model_config=model_config,
                 history_messages=history_messages,
                 session_context=runtime_context,
+                emit_response_start=False,
             )
             # 1. 遍历 GraphRunner 推送过来的每一个流式事件
             for chunk in runner_stream:

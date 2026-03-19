@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
@@ -8,7 +8,6 @@ from core.security import verify_token
 from db import get_db
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_service import chat_service
-from fastapi import Request
 
 """
 定义流式聊天 API 接口
@@ -19,10 +18,12 @@ chat_router = APIRouter()
 
 
 @chat_router.post("/chat/stream", summary="流式聊天接口")
-def stream_chat(req: StreamChatRequest,
-                request: Request,
-                db: Session = Depends(get_db),
-                user_id: int = Depends(verify_token)) -> StreamingResponse:
+async def stream_chat(
+    req: StreamChatRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(verify_token),
+) -> StreamingResponse:
     """
     处理流式聊天请求。
 
@@ -39,11 +40,11 @@ def stream_chat(req: StreamChatRequest,
     """
     # Middleware 会在这里挂载动态模型配置
     dynamic_model_config = getattr(request.state, "model_config", None)
-    return chat_service.process_stream_chat(req, user_id, db, dynamic_model_config)
+    return await chat_service.process_stream_chat_async(req, user_id, db, dynamic_model_config)
 
 
 @chat_router.post("/chat/stream/anonymous", summary="匿名流式聊天接口")
-def stream_chat_anonymous(req: StreamChatRequest) -> StreamingResponse:
+async def stream_chat_anonymous(req: StreamChatRequest) -> StreamingResponse:
     """
     匿名用户的流式聊天接口，不需要认证，不保存聊天历史。
 
@@ -52,5 +53,4 @@ def stream_chat_anonymous(req: StreamChatRequest) -> StreamingResponse:
     """
     if req.user_model_id is not None:
         raise HTTPException(status_code=400, detail="匿名接口不支持 user_model_id")
-    # 直接调用服务层处理，不做任何业务逻辑处理
-    return chat_service.process_stream_chat(req, user_id=None, db=None)
+    return await chat_service.process_stream_chat_async(req, user_id=None, db=None)
