@@ -167,6 +167,166 @@ class ChatService:
             headers=self._get_stream_headers()
         )
 
+    @staticmethod
+    def _is_async_stream(stream_obj: Any) -> bool:
+        """判断对象是否为 async 可迭代流。"""
+        return hasattr(stream_obj, "__aiter__")
+
+    def _iterate_stream_sync(self, stream_obj: Any) -> Generator[str, None, None]:
+        """
+        兼容遍历同步/异步流对象。
+
+        说明：
+        - GraphRunner 已升级为 async 生成器，但同步兼容入口仍可能被调用；
+        - 此方法在同步上下文中桥接 async 流，避免直接 `for` 触发类型错误。
+        """
+        if not self._is_async_stream(stream_obj):
+            yield from stream_obj
+            return
+
+        loop = asyncio.new_event_loop()
+        async_iter = stream_obj.__aiter__()
+        try:
+            while True:
+                try:
+                    chunk = loop.run_until_complete(async_iter.__anext__())
+                except StopAsyncIteration:
+                    break
+                yield chunk
+        finally:
+            try:
+                aclose = getattr(stream_obj, "aclose", None)
+                if callable(aclose):
+                    loop.run_until_complete(aclose())
+            except Exception:
+                pass
+            loop.close()
+
+    def _close_stream_safely(self, stream_obj: Any) -> None:
+        """统一关闭同步/异步流对象，供 GeneratorExit 场景复用。"""
+        if stream_obj is None:
+            return
+        close_fn = getattr(stream_obj, "close", None)
+        if callable(close_fn):
+            try:
+                close_fn()
+                return
+            except Exception:
+                pass
+        aclose_fn = getattr(stream_obj, "aclose", None)
+        if callable(aclose_fn):
+            loop = asyncio.new_event_loop()
+            try:
+                loop.run_until_complete(aclose_fn())
+            except Exception:
+                pass
+            finally:
+                loop.close()
+
+    @staticmethod
+    def _parse_sse_payload(chunk: str) -> Optional[Dict[str, Any]]:
+        """从 SSE chunk 中提取 JSON 负载，兼容 event/data 与纯 data 两种格式。"""
+        try:
+            if chunk.startswith("event: "):
+                lines = chunk.split("\n")
+                data_line = next((line for line in lines if line.startswith("data: ")), None)
+                if data_line:
+                    return json.loads(data_line[6:])
+            elif chunk.startswith("data: "):
+                return json.loads(chunk[6:])
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return None
+        return None
+
+    @staticmethod
+    def _append_workflow_trace(
+        workflow_trace: list[dict],
+        payload: Dict[str, Any],
+    ) -> None:
+        """将结构化流程事件追加到轨迹中，对高频 streaming 事件做就地合并。"""
+        workflow_payload = payload.get(SsePayloadField.PAYLOAD.value)
+        if not isinstance(workflow_payload, dict):
+            return
+
+        normalized = dict(workflow_payload)
+        phase = str(normalized.get("phase") or "")
+        agent_name = str(normalized.get("agent_name") or "")
+        task_id = str(normalized.get("task_id") or "")
+
+        # 高频 worker_streaming 事件只保留该员工最近一条预览，避免轨迹膨胀。
+        if phase in {"worker_streaming", "direct_response_streaming"}:
+            for index in range(len(workflow_trace) - 1, -1, -1):
+                existing = workflow_trace[index]
+                if not isinstance(existing, dict):
+                    continue
+                if (
+                    str(existing.get("phase") or "") == phase
+                    and str(existing.get("agent_name") or "") == agent_name
+                    and str(existing.get("task_id") or "") == task_id
+                ):
+                    workflow_trace[index] = normalized
+                    return
+
+        workflow_trace.append(normalized)
+
+    @staticmethod
+    def _append_thinking_entry(thinking_entries: list[str], entry: str) -> None:
+        """累积思考过程文本，并避免连续重复项。"""
+        normalized = str(entry or "").strip()
+        if not normalized:
+            return
+        if thinking_entries and thinking_entries[-1] == normalized:
+            return
+        thinking_entries.append(normalized)
+
+    def _collect_trace_from_chunk(
+        self,
+        chunk: str,
+        thinking_entries: list[str],
+        workflow_trace: list[dict],
+    ) -> None:
+        """从流式 chunk 中提取可持久化的思考过程与流程轨迹。"""
+        data = self._parse_sse_payload(chunk)
+        if not data:
+            return
+
+        event_type = str(data.get(SsePayloadField.TYPE.value) or "")
+        if event_type == SseEventType.WORKFLOW_EVENT.value:
+            self._append_workflow_trace(workflow_trace, data)
+            return
+
+        if event_type == SseEventType.THINKING.value:
+            self._append_thinking_entry(thinking_entries, str(data.get(SsePayloadField.CONTENT.value) or ""))
+            return
+
+        if event_type == SseEventType.LOG.value:
+            self._append_thinking_entry(thinking_entries, str(data.get("message") or ""))
+            return
+
+        if event_type == SseEventType.INTERRUPT.value:
+            interrupt_content = data.get(SsePayloadField.CONTENT.value)
+            if isinstance(interrupt_content, str):
+                self._append_thinking_entry(thinking_entries, interrupt_content)
+            elif isinstance(interrupt_content, dict):
+                self._append_thinking_entry(
+                    thinking_entries,
+                    str(interrupt_content.get("message") or ""),
+                )
+
+    @staticmethod
+    def _build_extra_data(
+        thinking_entries: list[str],
+        workflow_trace: list[dict],
+    ) -> Optional[Dict[str, Any]]:
+        """构造消息持久化所需的扩展数据。"""
+        extra_data: Dict[str, Any] = {}
+        if thinking_entries:
+            extra_data["thinking_trace"] = "\n\n".join(thinking_entries)
+        if workflow_trace:
+            extra_data["workflow_trace"] = workflow_trace
+            extra_data["workflow_version"] = 1
+        return extra_data or None
+
     def _build_model_config_from_user_model(self, user_model_id: int, user_id: Optional[int] = None) -> Optional[
         Dict[str, Any]]:
         """
@@ -241,6 +401,8 @@ class ChatService:
             )
 
         ai_response = ""
+        thinking_entries: list[str] = []
+        workflow_trace: list[dict] = []
         start_time = time.time()
         error_occurred = False
         error_message = ""
@@ -264,6 +426,7 @@ class ChatService:
                 emit_response_start=False,
             ):
                 yield chunk
+                self._collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
                 ai_content = self._extract_ai_content_from_chunk(chunk)
                 if ai_content:
                     ai_response += ai_content
@@ -300,6 +463,7 @@ class ChatService:
                     self._save_chat_history,
                     user_id, session_id, user_input, ai_response,
                     model_config, start_time, error_occurred, error_message,
+                    self._build_extra_data(thinking_entries, workflow_trace),
                 )
 
     def _init_session_and_load_history(
@@ -351,6 +515,7 @@ class ChatService:
             start_time: float,
             error_occurred: bool,
             error_message: str,
+            extra_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         阻塞式落库。设计为可在 asyncio.to_thread 中调用的纯同步方法。
@@ -371,7 +536,8 @@ class ChatService:
                     model_content=final_content,
                     model_name=model_config.get('model'),
                     latency_ms=int((time.time() - start_time) * 1000),
-                    tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                    tokens=ChatUtils.estimate_tokens(user_input + ai_response),
+                    extra_data=extra_data,
                 )
                 chat_history_service.create_chat_message(db, user_id, chat_data)
 
@@ -437,6 +603,8 @@ class ChatService:
             )
 
         ai_response = ""
+        thinking_entries: list[str] = []
+        workflow_trace: list[dict] = []
         start_time = time.time()
         error_occurred = False
         error_message = ""
@@ -478,8 +646,9 @@ class ChatService:
                 emit_response_start=False,
             )
             # 1. 遍历 GraphRunner 推送过来的每一个流式事件
-            for chunk in runner_stream:
+            for chunk in self._iterate_stream_sync(runner_stream):
                 yield chunk
+                self._collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
                 # 2. 只有当事件包含大模型的正文时，才拼接到 ai_response 里准备落库
                 ai_content = self._extract_ai_content_from_chunk(chunk)
                 if ai_content:
@@ -488,10 +657,7 @@ class ChatService:
         except GeneratorExit:
             # 前端主动断开连接 (比如关掉网页/点击停止生成)
             if runner_stream is not None:
-                try:
-                    runner_stream.close()
-                except Exception:
-                    pass
+                self._close_stream_safely(runner_stream)
             log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
             error_occurred = True
             error_message = "客户端主动断开连接"
@@ -539,7 +705,8 @@ class ChatService:
                             model_content=final_content,
                             model_name=model_config.get('model'),
                             latency_ms=int((time.time() - start_time) * 1000),
-                            tokens=ChatUtils.estimate_tokens(user_input + ai_response)
+                            tokens=ChatUtils.estimate_tokens(user_input + ai_response),
+                            extra_data=self._build_extra_data(thinking_entries, workflow_trace),
                         )
                         chat_history_service.create_chat_message(db, user_id, chat_data)
 
@@ -571,13 +738,11 @@ class ChatService:
                 history_messages=history_messages or [],
                 session_context=runtime_context or {},
             )
-            yield from runner_stream
+            for chunk in self._iterate_stream_sync(runner_stream):
+                yield chunk
         except GeneratorExit:
             if runner_stream is not None:
-                try:
-                    runner_stream.close()
-                except Exception:
-                    pass
+                self._close_stream_safely(runner_stream)
             raise
         except TimeoutError:
             yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)

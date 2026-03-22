@@ -31,6 +31,7 @@ class YunyouResilienceTest(unittest.TestCase):
     def test_retry_then_cache_hit(self):
         tool = YunYouTools()
         params = {"startUseDay": "2026-03-01", "endUseDay": "2026-03-10"}
+        retry_attempts = max(1, int(YUNYOU_HTTP_CONFIG.retry_attempts))
         with patch(
             "agent.tools.yunyou_tools.requests.post",
             side_effect=[
@@ -39,12 +40,18 @@ class YunyouResilienceTest(unittest.TestCase):
             ],
         ) as mocked_post:
             with patch("agent.tools.yunyou_tools.time.sleep", return_value=None):
-                first = tool.common_post("holter/list", params)
+                if retry_attempts > 1:
+                    first = tool.common_post("holter/list", params)
+                    self.assertEqual(first, {"rows": [1, 2, 3]})
+                else:
+                    with self.assertRaises(ValueError):
+                        tool.common_post("holter/list", params)
             second = tool.common_post("holter/list", params)
+            third = tool.common_post("holter/list", params)
 
-        self.assertEqual(first, {"rows": [1, 2, 3]})
         self.assertEqual(second, {"rows": [1, 2, 3]})
-        # 第一次调用重试两次，第二次命中缓存不再触发 requests.post
+        self.assertEqual(third, {"rows": [1, 2, 3]})
+        # 若重试次数 >1，成功发生在一次调用内；若重试次数 =1，则第二次调用成功，第三次命中缓存。
         self.assertEqual(mocked_post.call_count, 2)
 
     def test_circuit_breaker_opens_after_consecutive_failures(self):

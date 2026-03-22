@@ -15,7 +15,11 @@ from langchain_core.tools import tool
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from config.runtime_settings import YUNYOU_DB_POOL_CONFIG, YUNYOU_HTTP_CONFIG
+from config.runtime_settings import (
+    YUNYOU_DB_POOL_CONFIG,
+    YUNYOU_HTTP_CONFIG,
+    YUNYOU_TABLE_DISCOVERY_CACHE_TTL_SECONDS,
+)
 from services.request_cancellation_service import request_cancellation_service
 from utils.custom_logger import get_logger
 
@@ -219,6 +223,8 @@ class YunyouDbTools:
 
     _engine = None
     _session_factory = None
+    _table_cache_lock = threading.RLock()
+    _holter_table_cache: Dict[str, Any] = {"expire_at": 0.0, "tables": []}
     # 查询 Holter 列表时要求最少具备的字段
     _MIN_REQUIRED_COLUMNS = {"id", "user_id", "use_day"}
     # 用于展示/过滤的常用字段
@@ -396,6 +402,32 @@ class YunyouDbTools:
         return [table for _, table in ranked_tables]
 
     @classmethod
+    def _get_cached_holter_tables(cls) -> List[str]:
+        now = time.time()
+        with cls._table_cache_lock:
+            expire_at = float(cls._holter_table_cache.get("expire_at") or 0.0)
+            if now >= expire_at:
+                return []
+            cached = cls._holter_table_cache.get("tables") or []
+            return [str(x) for x in cached if str(x).strip()]
+
+    @classmethod
+    def _set_cached_holter_tables(cls, tables: Sequence[str]) -> None:
+        valid_tables = [str(x).strip() for x in (tables or []) if str(x).strip()]
+        if not valid_tables:
+            return
+        with cls._table_cache_lock:
+            cls._holter_table_cache = {
+                "expire_at": time.time() + int(YUNYOU_TABLE_DISCOVERY_CACHE_TTL_SECONDS),
+                "tables": list(valid_tables),
+            }
+
+    @classmethod
+    def _invalidate_holter_table_cache(cls) -> None:
+        with cls._table_cache_lock:
+            cls._holter_table_cache = {"expire_at": 0.0, "tables": []}
+
+    @classmethod
     def _build_query_sql(
         cls,
         table_identifier: str,
@@ -457,11 +489,15 @@ class YunyouDbTools:
             candidate_tables: List[str] = []
             if configured_table:
                 candidate_tables.append(configured_table)
-            try:
-                discovered_tables = cls._discover_holter_tables(session)
-            except Exception as discover_exc:
-                log.warning(f"自动发现 Holter 表失败，继续使用配置表名。原因: {discover_exc}")
-                discovered_tables = []
+            discovered_tables = cls._get_cached_holter_tables()
+            if not discovered_tables:
+                try:
+                    discovered_tables = cls._discover_holter_tables(session)
+                    cls._set_cached_holter_tables(discovered_tables)
+                except Exception as discover_exc:
+                    cls._invalidate_holter_table_cache()
+                    log.warning(f"自动发现 Holter 表失败，继续使用配置表名。原因: {discover_exc}")
+                    discovered_tables = []
             for table_name in discovered_tables:
                 if table_name not in candidate_tables:
                     candidate_tables.append(table_name)
@@ -490,6 +526,7 @@ class YunyouDbTools:
                 except Exception as query_exc:
                     last_error = cls._extract_error_text(query_exc)
                     if cls._is_missing_table_error(query_exc) or cls._is_missing_column_error(query_exc):
+                        cls._invalidate_holter_table_cache()
                         log.warning(f"Holter 表候选不可用，继续尝试下一个表: {table_name} | {last_error}")
                         continue
                     # 非“表/字段不存在”错误不再继续尝试，直接抛出。

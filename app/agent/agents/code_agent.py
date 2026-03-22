@@ -16,7 +16,6 @@ from constants.approval_constants import (
 )
 from utils.code_tools import execute_python_code
 from utils.custom_logger import get_logger
-from agent.graphs.checkpointer import checkpointer # 使用全局 Checkpointer
 from agent.prompts.code_prompt import CodePrompt
 
 log = get_logger(__name__)
@@ -36,7 +35,6 @@ class CodeAgent(BaseAgent):
         if not req.model:
             raise ValueError("Code Agent 模型初始化失败，请检查配置。")
         self.llm = req.model
-        self.checkpointer = checkpointer  # 使用全局单例
         self.subgraph_id = "code_agent"
 
         # 提示词

@@ -1,0 +1,1558 @@
+2026-03-19 10:19:45,902 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 71, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-19 10:23:06,772 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 10:24:38,567 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-19 10:24:39,114 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 10:24:51,405 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 10:25:05,180 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 10:25:13,412 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 10:26:14,667 - langsmith.client - WARNING - Failed to multipart ingest runs: Connection error caused failure to POST https://api.smith.langchain.com/runs/multipart in LangSmith API. Please confirm your internet connection. ConnectionError(MaxRetryError("HTTPSConnectionPool(host='api.smith.langchain.com', port=443): Max retries exceeded with url: /runs/multipart (Caused by ProtocolError('Connection aborted.', TimeoutError('The write operation timed out')))"))
+Content-Length: 2262771
+API Key: lsv2_********************************************54trace=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2,id=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2; trace=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2,id=019d03e9-455a-7bc3-b10f-a84cc264578b; trace=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2,id=019d03e9-4564-77c3-847a-4c7bbaa7d8c7; trace=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2,id=019d03e9-4567-7081-ba7d-c568a280e482; trace=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2,id=019d03e9-456f-7bd1-9d83-cdb8f0bfeddd; trace=019d03e9-40d8-7aa2-98fb-af5e92f6b4b2,id=019d03e9-4572-78d1-81ca-5062d2e4ccb9
+2026-03-19 12:52:10,568 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 12:52:10,571 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 12:52:20,699 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-19 12:52:21,114 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:05:27,314 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:05:27,318 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:05:29,752 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:21:55,695 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:21:55,696 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:21:59,907 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:22:01,536 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:38:21,369 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:38:21,371 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:38:21,848 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:38:30,605 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:38:35,104 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:38:35,105 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:38:35,654 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 13:46:59,900 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:46:59,948 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:48:26,777 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:48:26,821 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:48:56,772 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 13:49:14,080 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 13:49:34,763 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 13:53:12,455 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 13:53:12,505 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 13:53:31,034 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 13:53:50,947 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 14:11:32,758 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 14:11:32,802 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 14:11:33,657 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 14:12:03,952 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-19 16:03:34,852 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 16:03:34,895 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 16:03:47,997 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-19 16:03:48,781 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 16:21:52,031 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 16:21:52,076 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 16:21:57,271 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 16:21:59,155 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 19:33:31,287 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 77, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-19 19:41:54,718 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 19:41:54,769 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 19:42:48,721 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-19 19:42:49,195 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 19:48:25,400 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 20:45:02,923 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-19 20:45:02,998 - app.main - INFO - SessionPool 启动完成。
+2026-03-19 20:45:03,189 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 21:28:54,036 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 21:29:28,175 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 21:56:09,247 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 21:57:29,070 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 21:57:30,174 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 22:00:51,232 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 22:00:51,864 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-19 22:05:30,015 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 10:21:20,691 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-20 10:21:20,748 - app.main - INFO - SessionPool 启动完成。
+2026-03-20 10:21:29,716 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-20 10:21:30,981 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 10:38:14,810 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 10:47:50,034 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 10:47:50,620 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 10:47:51,128 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 10:52:24,799 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 11:00:50,374 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 11:00:51,548 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 11:04:07,560 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 11:07:09,152 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 11:24:53,306 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 11:29:45,983 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 18:21:30,271 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-20 18:49:26,970 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-20 18:49:27,019 - app.main - INFO - SessionPool 启动完成。
+2026-03-20 18:49:34,705 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-20 18:49:35,302 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:01:52,372 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:11:34,978 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:14:08,835 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:16:05,258 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:25:32,957 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:32:34,732 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-20 19:47:53,793 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 17:14:38,578 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-21 17:14:38,631 - app.main - INFO - SessionPool 启动完成。
+2026-03-21 17:14:46,714 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-21 17:14:47,347 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 17:42:35,807 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 17:49:28,433 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:19:02,975 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:21:57,760 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:22:09,656 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:29:35,828 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:29:44,282 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-21 18:58:21,936 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:58:31,466 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:58:36,084 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:58:37,655 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 18:58:44,509 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-21 18:59:10,631 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-21 18:59:30,480 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-21 18:59:52,871 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-21 20:59:45,759 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 21:01:14,430 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 21:05:48,428 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-21 21:06:04,626 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-22 09:30:04,071 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-22 09:30:04,128 - app.main - INFO - SessionPool 启动完成。
+2026-03-22 09:30:12,939 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-22 09:30:13,514 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-22 09:31:04,991 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-22 09:31:14,695 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-22 09:33:33,957 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-22 12:25:19,381 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:02:53,920 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:03,871 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 836, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 836, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:19,455 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 77, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:23,843 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 77, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:04:06,236 - app.main - INFO - 数据库表结构检查完成（create_all）。
+2026-03-22 13:04:06,301 - app.main - INFO - SessionPool 启动完成。
+2026-03-22 13:04:08,139 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-22 13:04:08,573 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-22 13:04:31,845 - api.v1.model_setting_api - INFO - Retrieved 10 model services
+2026-03-22 13:04:41,892 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-22 13:05:14,542 - openai._base_client - INFO - Retrying request to /chat/completions in 0.427085 seconds
+2026-03-22 13:05:22,046 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-22 13:05:31,144 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-22 13:05:47,101 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/coding/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-03-22 13:37:37,673 - api.v1.model_setting_api - INFO - Retrieved 10 model services

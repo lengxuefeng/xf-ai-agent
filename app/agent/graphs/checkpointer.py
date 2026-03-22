@@ -7,6 +7,7 @@ import threading
 from collections.abc import AsyncIterator, Iterator, Sequence
 from typing import Any, Callable
 
+from config.runtime_settings import CHECKPOINTER_POLICY
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.base import (
     BaseCheckpointSaver,
@@ -358,22 +359,70 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         return _wrapped
 
 
-def _create_checkpointer() -> Any:
-    """初始化全局 checkpointer。"""
-    backend = os.getenv("CHECKPOINTER_BACKEND", "postgres").strip().lower()
+_DURABLE_KINDS = {"supervisor", "sql_agent", "yunyou_agent"}
+_CHECKPOINTERS: dict[str, Any] = {}
+_REGISTERED_FOR_CLOSE: set[int] = set()
+_CP_LOCK = threading.RLock()
+
+
+def _safe_backend(backend: str) -> str:
+    normalized = str(backend or "").strip().lower()
+    if normalized not in {"postgres", "memory"}:
+        return "memory"
+    return normalized
+
+
+def _select_backend(kind: str = "default") -> str:
+    """
+    根据策略与调用方类型选择后端。
+
+    策略:
+    - all_durable: 全部走 CHECKPOINTER_BACKEND
+    - all_memory: 全部走 memory
+    - hybrid(默认): supervisor/sql_agent/yunyou_agent 走 CHECKPOINTER_BACKEND，其他走 memory
+    """
+    policy = str(CHECKPOINTER_POLICY or "hybrid").strip().lower()
+    env_backend = _safe_backend(os.getenv("CHECKPOINTER_BACKEND", "postgres"))
+    if policy == "all_memory":
+        return "memory"
+    if policy == "all_durable":
+        return env_backend
+    safe_kind = str(kind or "default").strip().lower()
+    if safe_kind in _DURABLE_KINDS:
+        return env_backend
+    return "memory"
+
+
+def _create_checkpointer(backend: str) -> Any:
+    """按后端创建 checkpointer 实例。"""
+    safe_backend = _safe_backend(backend)
     postgres_uri = _build_postgres_uri()
     try:
-        cp = ResilientCheckpointer(backend=backend, postgres_uri=postgres_uri)
+        cp = ResilientCheckpointer(backend=safe_backend, postgres_uri=postgres_uri)
     except Exception as exc:
         # 生产兜底：若 Postgres 暂不可用，不让服务整体启动失败，降级到内存模式保障可用性。
-        if backend == "postgres":
+        if safe_backend == "postgres":
             log.warning(f"Checkpointer: PostgreSQL 初始化失败，已降级为内存模式。原因: {exc}")
             cp = ResilientCheckpointer(backend="memory", postgres_uri=postgres_uri)
         else:
             raise
-    atexit.register(cp.close)
     return cp
 
 
-# 导出单例对象，供 supervisor.py 和各 Agent 引用
-checkpointer = _create_checkpointer()
+def get_checkpointer(kind: str = "default") -> Any:
+    """获取按策略路由后的 checkpointer（单例缓存）。"""
+    backend = _select_backend(kind)
+    with _CP_LOCK:
+        cp = _CHECKPOINTERS.get(backend)
+        if cp is None:
+            cp = _create_checkpointer(backend)
+            _CHECKPOINTERS[backend] = cp
+        cp_id = id(cp)
+        if cp_id not in _REGISTERED_FOR_CLOSE:
+            atexit.register(cp.close)
+            _REGISTERED_FOR_CLOSE.add(cp_id)
+        return cp
+
+
+# 兼容旧调用：默认导出仍可直接使用
+checkpointer = get_checkpointer("default")

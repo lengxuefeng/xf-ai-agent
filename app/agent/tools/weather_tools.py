@@ -1,3 +1,4 @@
+import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
@@ -7,6 +8,7 @@ import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 
+from config.runtime_settings import WEATHER_TOOL_TIMEOUT_SECONDS
 from constants.weather_tool_constants import (
     WEATHER_CITY_NOT_FOUND_MESSAGE,
     WEATHER_CITY_REQUIRED_MESSAGE,
@@ -39,7 +41,11 @@ class WeatherAPIClient:
     def _make_request(self, url: str, params: Dict) -> Dict:
         """执行 API 请求并处理错误"""
         try:
-            response = requests.get(url, params={**self.base_params, **params}, timeout=15)
+            response = requests.get(
+                url,
+                params={**self.base_params, **params},
+                timeout=int(WEATHER_TOOL_TIMEOUT_SECONDS),
+            )
             response.raise_for_status()
             data = response.json()
             return data
@@ -154,27 +160,31 @@ def location_search(city_or_location: str) -> str:
 
 
 @tool
-def get_weathers(city_names: List[str], max_threads: int = 4) -> List[str]:
+async def get_weathers(city_names: List[str], max_threads: int = 4) -> List[str]:
     """
-    根据指定城市名称查询实时天气。
+    根据指定城市名称查询实时天气（异步并发版）。
 
     Args:
         city_names (List[str]): 城市名称列表。
-        max_threads (int): 最大并发线程数，默认 4。
+        max_threads (int): 保留参数（兼容旧接口），异步版本忽略此参数，
+                           直接用 asyncio.gather 并发，无需线程池。
 
     Returns:
-        str: 格式化的天气信息或错误信息。
+        List[str]: 格式化的天气信息列表。
     """
-    # 参数兜底：空列表时直接返回标准追问文案
     normalized_city_names = [str(item).strip() for item in (city_names or []) if str(item).strip()]
     if not normalized_city_names:
         return [WEATHER_CITY_REQUIRED_MESSAGE]
 
-    # 并发参数保护，避免极值误配置
-    safe_max_threads = max(1, min(int(max_threads or 1), 8))
-    with ThreadPoolExecutor(max_workers=safe_max_threads) as executor:
-        results = list(executor.map(location_search, normalized_city_names))
-    return results
+    # 用 asyncio.to_thread 将同步 location_search 包裹为协程，asyncio.gather 并发执行
+    tasks = [asyncio.to_thread(location_search, city) for city in normalized_city_names]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # 将异常结果转换为友好文案
+    return [
+        r if isinstance(r, str) else f"天气服务暂时不可用：{r}"
+        for r in results
+    ]
 
 
 if __name__ == "__main__":

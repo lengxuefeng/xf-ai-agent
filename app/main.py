@@ -12,6 +12,11 @@ FastAPI 应用主入口模块。
 import logging
 import os
 
+from utils.tracing_guard import apply_tracing_env_guard
+
+# tracing 全局守卫：默认关闭时，统一压制兼容 tracing 开关，避免被环境变量反向开启。
+apply_tracing_env_guard()
+
 from fastapi import APIRouter
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,6 +32,7 @@ from api.v1.user_model_api import router as user_model_router
 from api.v1.user_mcp_api import router as user_mcp_router
 from api.v1.interrupt_api import interrupt_router
 from api.v1.metrics_api import metrics_router
+from api.v1.health_api import health_router
 from core.logger import setup_logger
 from db import Base, engine
 import models  # noqa: F401  # 确保所有 ORM 模型在 create_all 前被加载
@@ -56,24 +62,46 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_initialize_tables():
     """
-    启动阶段初始化数据库表结构（可开关）。
+    启动阶段初始化数据库表结构并启动 SessionPool 预热。
 
     设计说明：
     - 避免在模块 import 阶段就触发数据库连接，降低导入副作用；
     - 保留原有 create_all 行为，兼容当前项目运行方式；
     - 若禁用 AUTO_CREATE_TABLES，建议使用 Alembic 管理迁移。
+    - SessionPool 在表结构就绪后启动，预热默认 Supervisor 图实例。
     """
     if not AUTO_CREATE_TABLES:
         logging.getLogger(__name__).info("AUTO_CREATE_TABLES=false，跳过 create_all，建议使用 Alembic 迁移。")
-        return
+    else:
+        try:
+            Base.metadata.create_all(bind=engine)
+            logging.getLogger(__name__).info("数据库表结构检查完成（create_all）。")
+        except Exception as exc:
+            # 启动期数据库不可用属于关键故障，直接抛出，防止服务带病启动
+            logging.getLogger(__name__).exception(f"数据库初始化失败: {exc}")
+            raise
 
+    # 启动 Supervisor 图预热池（后台 daemon 线程，不阻塞服务启动）
     try:
-        Base.metadata.create_all(bind=engine)
-        logging.getLogger(__name__).info("数据库表结构检查完成（create_all）。")
+        from services.session_pool import session_pool
+        from constants.chat_service_constants import CHAT_DEFAULT_MODEL_CONFIG
+        import asyncio
+        # 在后台线程中执行预热（create_supervisor_graph 是同步阻塞操作）
+        await asyncio.to_thread(session_pool.start, dict(CHAT_DEFAULT_MODEL_CONFIG))
+        logging.getLogger(__name__).info("SessionPool 启动完成。")
+    except Exception as pool_exc:
+        # 预热池启动失败不阻断主服务，降级为按需编译
+        logging.getLogger(__name__).warning(f"SessionPool 启动失败，已降级为按需编译: {pool_exc}")
+
+
+@app.on_event("shutdown")
+async def shutdown_session_pool():
+    """服务关闭时停止 SessionPool 后台线程，释放资源。"""
+    try:
+        from services.session_pool import session_pool
+        session_pool.stop()
     except Exception as exc:
-        # 启动期数据库不可用属于关键故障，直接抛出，防止服务带病启动
-        logging.getLogger(__name__).exception(f"数据库初始化失败: {exc}")
-        raise
+        logging.getLogger(__name__).warning(f"SessionPool 停止异常: {exc}")
 
 
 # ====== 辅助函数：获取请求体 ======
@@ -159,6 +187,7 @@ api_v1_router.include_router(user_model_router)
 api_v1_router.include_router(user_mcp_router)
 api_v1_router.include_router(interrupt_router)
 api_v1_router.include_router(metrics_router)
+api_v1_router.include_router(health_router)
 
 # 在主应用中包含 v1 路由
 app.include_router(api_v1_router)

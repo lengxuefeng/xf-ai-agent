@@ -292,8 +292,8 @@ GRAPH_RUNNER_TUNING = GraphRunnerTuning(
 
 # 云柚 HTTP 调用配置实例
 YUNYOU_HTTP_CONFIG = YunyouHttpConfig(
-    # 请求超时（环境变量：YUNYOU_HTTP_TIMEOUT_SECONDS，默认 12，范围 3-120）
-    timeout_seconds=_as_int("YUNYOU_HTTP_TIMEOUT_SECONDS", 12, min_value=3, max_value=120),
+    # 请求超时（环境变量：YUNYOU_HTTP_TIMEOUT_SECONDS，默认 8，范围 3-120）
+    timeout_seconds=_as_int("YUNYOU_HTTP_TIMEOUT_SECONDS", 8, min_value=3, max_value=120),
 
     # 允许重定向（环境变量：YUNYOU_HTTP_ALLOW_REDIRECTS，默认 False）
     allow_redirects=_as_bool("YUNYOU_HTTP_ALLOW_REDIRECTS", False),
@@ -316,8 +316,8 @@ YUNYOU_HTTP_CONFIG = YunyouHttpConfig(
     # 错误预览字符数（环境变量：YUNYOU_HTTP_ERROR_PREVIEW_CHARS，默认 500，范围 100-5000）
     error_preview_chars=_as_int("YUNYOU_HTTP_ERROR_PREVIEW_CHARS", 500, min_value=100, max_value=5000),
 
-    # 重试次数（环境变量：YUNYOU_HTTP_RETRY_ATTEMPTS，默认 2，范围 1-5）
-    retry_attempts=_as_int("YUNYOU_HTTP_RETRY_ATTEMPTS", 2, min_value=1, max_value=5),
+    # 重试次数（环境变量：YUNYOU_HTTP_RETRY_ATTEMPTS，默认 1，范围 1-5）
+    retry_attempts=_as_int("YUNYOU_HTTP_RETRY_ATTEMPTS", 1, min_value=1, max_value=5),
 
     # 重试退避（环境变量：YUNYOU_HTTP_RETRY_BACKOFF_MS，默认 300ms，范围 50-5000）
     retry_backoff_ms=_as_int("YUNYOU_HTTP_RETRY_BACKOFF_MS", 300, min_value=50, max_value=5000),
@@ -441,4 +441,91 @@ AGGREGATOR_CONFIG = AggregatorConfig(
 
     # 每个任务结果最大字符数（环境变量：AGGREGATOR_MAX_RESULT_CHARS，默认 2000，范围 200-20000）
     max_result_chars=_as_int("AGGREGATOR_MAX_RESULT_CHARS", 2000, min_value=200, max_value=20000),
+)
+
+# Chat 兜底节点流式开关（环境变量：CHAT_NODE_STREAM_ENABLED，默认 true）
+CHAT_NODE_STREAM_ENABLED = _as_bool("CHAT_NODE_STREAM_ENABLED", True)
+
+# Chat 兜底节点首 token 超时（环境变量：CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC，默认 8.0，范围 1-120）
+CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC = _as_float(
+    "CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC",
+    8.0,
+    min_value=1.0,
+    max_value=120.0,
+)
+
+# Chat 兜底节点总超时（环境变量：CHAT_NODE_TOTAL_TIMEOUT_SEC，默认 25.0，范围 2-300）
+CHAT_NODE_TOTAL_TIMEOUT_SEC = _as_float(
+    "CHAT_NODE_TOTAL_TIMEOUT_SEC",
+    25.0,
+    min_value=2.0,
+    max_value=300.0,
+)
+
+# 流式聊天历史窗口（环境变量：CHAT_STREAM_HISTORY_LIMIT，默认 30，范围 1-200）
+CHAT_STREAM_HISTORY_LIMIT = _as_int("CHAT_STREAM_HISTORY_LIMIT", 30, min_value=1, max_value=200)
+
+# 自定义日志异步写入开关（环境变量：LOG_ASYNC_MODE，默认 true）
+LOG_ASYNC_MODE = _as_bool("LOG_ASYNC_MODE", True)
+
+# 子 Agent 实时正文流开关（环境变量：AGENT_LIVE_STREAM_ENABLED，默认 true）
+AGENT_LIVE_STREAM_ENABLED = _as_bool("AGENT_LIVE_STREAM_ENABLED", True)
+
+# Checkpointer 策略（环境变量：CHECKPOINTER_POLICY，默认 hybrid）
+# - hybrid: supervisor/sql/yunyou 使用持久化，其它 Agent 使用内存
+# - all_durable: 所有图都使用持久化
+# - all_memory: 所有图都使用内存
+CHECKPOINTER_POLICY = (os.getenv("CHECKPOINTER_POLICY", "hybrid") or "hybrid").strip().lower()
+
+# SQL schema 缓存 TTL（环境变量：SQL_SCHEMA_CACHE_TTL_SECONDS，默认 120，范围 1-3600）
+SQL_SCHEMA_CACHE_TTL_SECONDS = _as_int("SQL_SCHEMA_CACHE_TTL_SECONDS", 120, min_value=1, max_value=3600)
+
+# 云柚 Holter 表发现缓存 TTL（环境变量：YUNYOU_TABLE_DISCOVERY_CACHE_TTL_SECONDS，默认 300，范围 1-3600）
+YUNYOU_TABLE_DISCOVERY_CACHE_TTL_SECONDS = _as_int(
+    "YUNYOU_TABLE_DISCOVERY_CACHE_TTL_SECONDS", 300, min_value=1, max_value=3600
+)
+
+# 搜索工具超时预算（环境变量：TAVILY_TIMEOUT_SEC，默认 6，范围 1-60）
+SEARCH_TOOL_TIMEOUT_SECONDS = _as_int("TAVILY_TIMEOUT_SEC", 6, min_value=1, max_value=60)
+
+# 天气工具超时预算（环境变量：WEATHER_TOOL_TIMEOUT_SEC，默认 6，范围 1-60）
+WEATHER_TOOL_TIMEOUT_SECONDS = _as_int("WEATHER_TOOL_TIMEOUT_SEC", 6, min_value=1, max_value=60)
+
+
+@dataclass(frozen=True)
+class SessionPoolConfig:
+    """Supervisor 图实例预热池配置。"""
+
+    # 是否启用预热池（关闭则退化为按需编译）
+    enabled: bool
+
+    # 池中预热的实例数量上限
+    pool_size: int
+
+    # 实例最大空闲存活时间（秒），超过后被替换
+    max_idle_seconds: float
+
+    # 后台预热任务的检查间隔（秒）
+    refill_interval_seconds: float
+
+    # 从池中借取实例时的最长等待时间（秒），超时则按需创建
+    borrow_timeout_seconds: float
+
+
+# Session 预热池配置实例
+SESSION_POOL_CONFIG = SessionPoolConfig(
+    # 是否启用（环境变量：SESSION_POOL_ENABLED，默认 true）
+    enabled=_as_bool("SESSION_POOL_ENABLED", True),
+
+    # 预热实例数（环境变量：SESSION_POOL_SIZE，默认 4，范围 1-32）
+    pool_size=_as_int("SESSION_POOL_SIZE", 4, min_value=1, max_value=32),
+
+    # 最大空闲时间（环境变量：SESSION_POOL_MAX_IDLE_SECONDS，默认 300，范围 30-3600）
+    max_idle_seconds=_as_float("SESSION_POOL_MAX_IDLE_SECONDS", 300.0, min_value=30.0, max_value=3600.0),
+
+    # 预热检查间隔（环境变量：SESSION_POOL_REFILL_INTERVAL_SECONDS，默认 60，范围 5-600）
+    refill_interval_seconds=_as_float("SESSION_POOL_REFILL_INTERVAL_SECONDS", 60.0, min_value=5.0, max_value=600.0),
+
+    # 借取超时（环境变量：SESSION_POOL_BORROW_TIMEOUT_SECONDS，默认 0.1，范围 0.01-5）
+    borrow_timeout_seconds=_as_float("SESSION_POOL_BORROW_TIMEOUT_SECONDS", 0.1, min_value=0.01, max_value=5.0),
 )

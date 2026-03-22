@@ -4,14 +4,16 @@
 支持按日期分类、灵活控制输出目标（日志文件/思考过程）
 """
 import os
+import atexit
 import logging
 import logging.handlers
-from datetime import datetime
+import threading
 from enum import Enum
 from typing import Optional, Dict, Any, List
 from queue import Queue
 import json
 
+from config.runtime_settings import LOG_ASYNC_MODE
 from constants.sse_constants import SseEventType
 
 
@@ -52,25 +54,28 @@ class CustomLogger:
     # 全局 SSE 回调函数列表
     _global_sse_callbacks: List[callable] = []
 
+    # 共享文件处理器（按日志目录复用），避免每个 logger 独立创建多文件句柄
+    _shared_handlers: Dict[str, List[logging.Handler]] = {}
+    _shared_queue_handlers: Dict[str, logging.Handler] = {}
+    _shared_queue_listeners: Dict[str, logging.handlers.QueueListener] = {}
+    _handler_lock = threading.RLock()
+
     @classmethod
     def add_global_sse_callback(cls, callback: callable):
         """添加全局 SSE 回调函数"""
         if callback not in cls._global_sse_callbacks:
             cls._global_sse_callbacks.append(callback)
-            print(f"[CustomLogger] 已添加全局回调，当前回调数: {len(cls._global_sse_callbacks)}")
 
     @classmethod
     def remove_global_sse_callback(cls, callback: callable):
         """移除全局 SSE 回调函数"""
         if callback in cls._global_sse_callbacks:
             cls._global_sse_callbacks.remove(callback)
-            print(f"[CustomLogger] 已移除全局回调，当前回调数: {len(cls._global_sse_callbacks)}")
 
     @classmethod
     def clear_global_sse_callbacks(cls):
         """清空所有全局 SSE 回调函数"""
         cls._global_sse_callbacks.clear()
-        print(f"[CustomLogger] 已清空所有全局回调")
 
     def __init__(self, name: str, log_dir: Optional[str] = None):
         """
@@ -98,85 +103,82 @@ class CustomLogger:
         self._setup_handlers()
 
     def _setup_handlers(self):
-        """配置日志处理器"""
-        # 清除已存在的处理器
+        """配置日志处理器（共享后端，减少 I/O 放大）。"""
         self.logger.handlers.clear()
+        self.logger.propagate = False
+        for handler in self._get_shared_handlers(self.log_dir):
+            self.logger.addHandler(handler)
 
-        # 控制台处理器（开发调试用）
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_formatter = logging.Formatter(
+    @classmethod
+    def _build_sink_handlers(cls, log_dir: str) -> List[logging.Handler]:
+        formatter = logging.Formatter(
             fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
-        console_handler.setFormatter(console_formatter)
-        self.logger.addHandler(console_handler)
 
-        # 文件处理器（按日期）
-        for level, prefix in self.LOG_PREFIXES.items():
-            # 今天的日志文件
-            today = datetime.now().strftime('%Y-%m-%d')
-            filename = f"{today}_{prefix}.log"
-            filepath = os.path.join(self.log_dir, filename)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(formatter)
 
-            # 创建按天滚动的文件处理器
-            file_handler = logging.handlers.TimedRotatingFileHandler(
-                filename=filepath,
-                when='midnight',
-                interval=1,
-                backupCount=30,
-                encoding='utf-8',
-            )
-            file_handler.setLevel(level)
-            file_formatter = logging.Formatter(
-                fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
-            )
-            file_handler.setFormatter(file_formatter)
-            self.logger.addHandler(file_handler)
+        info_handler = logging.handlers.TimedRotatingFileHandler(
+            filename=os.path.join(log_dir, "info.log"),
+            when='midnight',
+            interval=1,
+            backupCount=30,
+            encoding='utf-8',
+        )
+        info_handler.setLevel(logging.INFO)
+        info_handler.setFormatter(formatter)
 
-        # 同时创建最新的链接文件（info.log, error.log 等）
-        self._create_latest_links()
+        error_handler = logging.handlers.TimedRotatingFileHandler(
+            filename=os.path.join(log_dir, "error.log"),
+            when='midnight',
+            interval=1,
+            backupCount=30,
+            encoding='utf-8',
+        )
+        error_handler.setLevel(logging.ERROR)
+        error_handler.setFormatter(formatter)
+        return [console_handler, info_handler, error_handler]
 
-    def _create_latest_links(self):
-        """创建最新的日志文件链接"""
-        import shutil
-        today = datetime.now().strftime('%Y-%m-%d')
-
-        for level, prefix in self.LOG_PREFIXES.items():
-            # 原始文件
-            source_file = os.path.join(self.log_dir, f"{today}_{prefix}.log")
-            # 链接文件
-            link_file = os.path.join(self.log_dir, f"{prefix}.log")
-
-            # 如果源文件存在，创建符号链接或复制
-            if os.path.exists(source_file):
-                # 删除旧链接/旧文件（并发场景下允许失败后重试）
+    @classmethod
+    def _stop_listener(cls, log_dir: str):
+        with cls._handler_lock:
+            listener = cls._shared_queue_listeners.pop(log_dir, None)
+            if listener is not None:
                 try:
-                    if os.path.lexists(link_file):
-                        os.unlink(link_file)
-                except FileNotFoundError:
-                    # 并发删除导致文件不存在，忽略即可
-                    pass
+                    listener.stop()
                 except Exception:
-                    # 某些系统下删除失败时不抛出到主流程，交由后续 copy 兜底
                     pass
 
-                # 创建符号链接（Unix）或复制（Windows）
-                try:
-                    os.symlink(source_file, link_file)
-                except (OSError, AttributeError):
-                    # 若目标与源实际是同一文件，说明链接已就位或并发写入完成，直接跳过。
-                    try:
-                        if os.path.exists(link_file) and os.path.samefile(source_file, link_file):
-                            continue
-                    except Exception:
-                        pass
-                    try:
-                        shutil.copy2(source_file, link_file)
-                    except shutil.SameFileError:
-                        # 兜底复制时遇到同文件，说明最终状态已正确，无需处理。
-                        continue
+    @classmethod
+    def _get_shared_handlers(cls, log_dir: str) -> List[logging.Handler]:
+        with cls._handler_lock:
+            if LOG_ASYNC_MODE:
+                q_handler = cls._shared_queue_handlers.get(log_dir)
+                if q_handler is not None:
+                    return [q_handler]
+                sink_handlers = cls._build_sink_handlers(log_dir)
+                log_queue: Queue = Queue(-1)
+                q_handler = logging.handlers.QueueHandler(log_queue)
+                listener = logging.handlers.QueueListener(
+                    log_queue,
+                    *sink_handlers,
+                    respect_handler_level=True,
+                )
+                listener.start()
+                cls._shared_handlers[log_dir] = sink_handlers
+                cls._shared_queue_handlers[log_dir] = q_handler
+                cls._shared_queue_listeners[log_dir] = listener
+                atexit.register(cls._stop_listener, log_dir)
+                return [q_handler]
+
+            cached = cls._shared_handlers.get(log_dir)
+            if cached is not None:
+                return cached
+            sink_handlers = cls._build_sink_handlers(log_dir)
+            cls._shared_handlers[log_dir] = sink_handlers
+            return sink_handlers
 
     def set_sse_queue(self, queue: Queue):
         """设置 SSE 输出队列"""

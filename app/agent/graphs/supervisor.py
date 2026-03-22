@@ -2,7 +2,8 @@ import functools
 import re
 import json
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+import queue
+import threading
 from typing import Optional, List, Dict, Any, TypedDict, Type
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -14,7 +15,7 @@ from langgraph.constants import Send
 from pydantic import BaseModel, Field
 
 from agent.graph_state import AgentRequest
-from agent.graphs.checkpointer import checkpointer
+from agent.graphs.checkpointer import get_checkpointer
 from agent.graphs.state import GraphState, SubTask, WorkerResult
 from agent.llm.unified_loader import create_model_from_config
 from agent.registry import agent_classes, MEMBERS
@@ -35,11 +36,16 @@ from constants.workflow_constants import (
 )
 from config.runtime_settings import (
     AGENT_LOOP_CONFIG,
+    AGENT_LIVE_STREAM_ENABLED,
     AGGREGATOR_CONFIG,
+    CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC,
+    CHAT_NODE_STREAM_ENABLED,
+    CHAT_NODE_TOTAL_TIMEOUT_SEC,
     MODEL_TIERING_CONFIG,
     ROUTER_POLICY_CONFIG,
 )
 from services.route_metrics_service import route_metrics_service
+from services.agent_stream_bus import agent_stream_bus
 from services.request_cancellation_service import request_cancellation_service
 from utils.custom_logger import get_logger
 from utils.date_utils import get_agent_date_context
@@ -93,6 +99,41 @@ class WorkerState(TypedDict):
     context_slots: Dict[str, Any]  # 会话结构化槽位
     context_summary: str  # 会话摘要
     messages: List[BaseMessage]  # 最近对话窗口
+
+
+class _ChatNodeStreamFailure(Exception):
+    """chat_node 首包/流式阶段失败。"""
+
+    def __init__(self, detail: str, *, partial_output_emitted: bool = False) -> None:
+        super().__init__(detail)
+        self.partial_output_emitted = partial_output_emitted
+
+
+def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
+    """统一归类 Agent 执行失败，避免将内部异常直接暴露为正文。"""
+    detail = str(exc or "").strip()
+    lower = detail.lower()
+    timeout_markers = (
+        "timeout",
+        "timed out",
+        "readtimeout",
+        "first_token_timeout",
+        "total_timeout",
+        "超时",
+    )
+    connection_markers = (
+        "connection",
+        "connecterror",
+        "connectionerror",
+        "apiconnectionerror",
+        "连接失败",
+        "连接断开",
+    )
+    if isinstance(exc, TimeoutError) or any(marker in lower for marker in timeout_markers):
+        return "处理超时，请稍后重试。", detail
+    if isinstance(exc, ConnectionError) or any(marker in lower for marker in connection_markers):
+        return "模型服务连接异常，请稍后重试。", detail
+    return "底层服务执行异常，请稍后重试。", detail
 
 
 def _looks_like_sql_request(text: str) -> bool:
@@ -215,7 +256,61 @@ def _looks_like_code_request(text: str) -> bool:
     if not t:
         return False
     keywords = tuple(k.lower() for k in AGENT_KEYWORDS[AgentKeywordGroup.CODE])
-    return any(k in t for k in keywords)
+    if not any(k in t for k in keywords):
+        return False
+
+    learning_hints = (
+        "能学吗",
+        "值得学吗",
+        "好学吗",
+        "难学吗",
+        "怎么学",
+        "学习路线",
+        "学习路径",
+        "入门",
+        "前景",
+        "就业",
+        "转行",
+        "零基础",
+    )
+    code_action_hints = (
+        "写",
+        "实现",
+        "生成",
+        "代码",
+        "函数",
+        "脚本",
+        "程序",
+        "接口",
+        "类",
+        "编译",
+        "运行",
+        "执行",
+        "报错",
+        "bug",
+        "异常",
+        "修复",
+        "调试",
+        "优化",
+        "重构",
+        "算法",
+    )
+
+    if any(hint in t for hint in code_action_hints):
+        return True
+
+    if any(hint in t for hint in learning_hints):
+        return False
+
+    if re.search(r"(class\s+\w+|def\s+\w+|function\s+\w+|if\s*\(|for\s*\(|while\s*\(|print\s*\()", t):
+        return True
+
+    # 仅提到语言名但没有执行/排障动作时，视为泛问答而不是代码代理。
+    language_only_markers = ("python", "java", "javascript", "typescript", "go", "rust", "c++", "c#", "php", "ruby")
+    if any(marker in t for marker in language_only_markers):
+        return False
+
+    return any(k in t for k in keywords if k not in {"python", "java", "编程"})
 
 
 def _looks_like_general_chat_request(text: str) -> bool:
@@ -339,7 +434,14 @@ def _looks_like_location_fragment(text: str) -> bool:
     t = (text or "").strip()
     if not t or len(t) > 40:
         return False
-    if any(sep in t for sep in ("，", ",", "。", "！", "!", "？", "?", "\n")):
+    # 支持多城市补充：如“南京，北京，上海”
+    if any(sep in t for sep in ("，", ",", "、", "；", ";", "\n")):
+        parts = [part.strip() for part in re.split(r"[，,、；;\n]+", t) if part.strip()]
+        if not (1 <= len(parts) <= 5):
+            return False
+        # 递归复用“单城市片段”判定逻辑
+        return all(_looks_like_location_fragment(part) for part in parts)
+    if any(sep in t for sep in ("。", "！", "!", "？", "?")):
         return False
     if any(k in t for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.NON_LOCATION_EMOTION_WORDS]):
         return False
@@ -1100,12 +1202,27 @@ def _invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str)
     - 这里统一加“可配置超时预算”，超时后快速回退到规则路径。
     """
     safe_timeout = max(1.0, float(timeout_sec or 1.0))
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(callable_fn)
+    result_queue: queue.Queue = queue.Queue(maxsize=1)
+
+    def _runner():
         try:
-            return future.result(timeout=safe_timeout)
-        except FutureTimeoutError as exc:
-            raise TimeoutError(f"{timeout_label} 超时: {safe_timeout:.1f}s") from exc
+            result_queue.put(("ok", callable_fn()))
+        except Exception as exc:
+            result_queue.put(("error", exc))
+
+    worker = threading.Thread(target=_runner, daemon=True, name=f"invoke-timeout-{timeout_label}")
+    worker.start()
+    try:
+        status, payload = result_queue.get(timeout=safe_timeout)
+    except queue.Empty as exc:
+        # 关键：这里不等待 worker 结束，直接快速失败，避免“超时后仍阻塞”。
+        raise TimeoutError(f"{timeout_label} 超时: {safe_timeout:.1f}s") from exc
+
+    if status == "error":
+        if isinstance(payload, Exception):
+            raise payload
+        raise RuntimeError(str(payload))
+    return payload
 
 
 def _invoke_structured_output_with_fallback(
@@ -2176,11 +2293,193 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
         prompt = ChatFallbackPrompt.get_system_prompt()
         # Chat 兜底只保留最近窗口，避免超长历史拖慢响应。
         recent_messages = state.get("messages", [])[-AGENT_LOOP_CONFIG.context_history_messages:]
-        response = model.invoke(
-            [("system", prompt), ("system", get_agent_date_context())] + recent_messages,
-            config=config
-        )
-        msg = AIMessage(content=response.content, name="ChatAgent")
+        request_messages = [("system", prompt), ("system", get_agent_date_context())] + recent_messages
+        runtime_config = _build_non_streaming_config(config)
+        run_id = str(
+            config.get("configurable", {}).get("run_id")
+            or state.get("session_id")
+            or config.get("configurable", {}).get("thread_id")
+            or ""
+        ).strip()
+
+        first_token_timeout_sec = float(CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC)
+        total_timeout_sec = float(CHAT_NODE_TOTAL_TIMEOUT_SEC)
+
+        def _publish_live_chunk(text: str) -> bool:
+            if not (AGENT_LIVE_STREAM_ENABLED and run_id and text.strip()):
+                return False
+            agent_stream_bus.publish(
+                run_id=run_id,
+                agent_name="ChatAgent",
+                content=text,
+            )
+            return True
+
+        def _build_retry_messages() -> list[Any]:
+            compact_window = max(1, min(4, AGENT_LOOP_CONFIG.context_history_messages))
+            compact_history = recent_messages[-compact_window:]
+            return [("system", prompt), ("system", get_agent_date_context())] + compact_history
+
+        def _retry_compact_invoke() -> str:
+            retry_timeout_sec = min(max(total_timeout_sec * 0.4, 1.0), 8.0)
+            response = _invoke_with_timeout(
+                lambda: model.invoke(_build_retry_messages(), config=runtime_config),
+                timeout_sec=retry_timeout_sec,
+                timeout_label="chat_node.retry_invoke",
+            )
+            return _content_to_text(getattr(response, "content", "")).strip()
+
+        def _stream_with_timeout() -> tuple[str, bool]:
+            """
+            用队列桥接同步节点与流式模型，支持首 token/总时长双超时。
+
+            Returns:
+                (content, live_streamed)
+            """
+            live_streamed = False
+            assembled_parts: list[str] = []
+            event_queue: queue.Queue = queue.Queue()
+            stop_signal = threading.Event()
+
+            def _producer():
+                try:
+                    for chunk in model.stream(request_messages, config=runtime_config):
+                        if stop_signal.is_set():
+                            break
+                        piece = _content_to_text(getattr(chunk, "content", chunk))
+                        if piece:
+                            event_queue.put(("chunk", piece))
+                    event_queue.put(("done", None))
+                except Exception as exc:
+                    event_queue.put(("error", exc))
+
+            producer_thread = threading.Thread(target=_producer, daemon=True)
+            producer_thread.start()
+
+            started = time.perf_counter()
+            first_deadline = started + max(0.1, first_token_timeout_sec)
+            total_deadline = started + max(0.2, total_timeout_sec)
+            first_chunk_seen = False
+
+            try:
+                while True:
+                    now = time.perf_counter()
+                    if now >= total_deadline:
+                        stop_signal.set()
+                        raise _ChatNodeStreamFailure(
+                            f"chat_node.total_timeout: {total_timeout_sec:.1f}s",
+                            partial_output_emitted=bool(assembled_parts),
+                        )
+
+                    wait_timeout = min(0.2, max(0.01, total_deadline - now))
+                    if not first_chunk_seen:
+                        wait_timeout = min(wait_timeout, max(0.01, first_deadline - now))
+
+                    try:
+                        event_type, payload = event_queue.get(timeout=wait_timeout)
+                    except queue.Empty:
+                        if (not first_chunk_seen) and (time.perf_counter() >= first_deadline):
+                            stop_signal.set()
+                            raise _ChatNodeStreamFailure(
+                                f"chat_node.first_token_timeout: {first_token_timeout_sec:.1f}s",
+                                partial_output_emitted=bool(assembled_parts),
+                            )
+                        continue
+
+                    if event_type == "chunk":
+                        first_chunk_seen = True
+                        chunk_text = str(payload)
+                        assembled_parts.append(chunk_text)
+                        if _publish_live_chunk(chunk_text):
+                            live_streamed = True
+                        continue
+
+                    if event_type == "error":
+                        raise _ChatNodeStreamFailure(
+                            str(payload),
+                            partial_output_emitted=bool(assembled_parts),
+                        )
+
+                    if event_type == "done":
+                        break
+            finally:
+                stop_signal.set()
+                producer_thread.join(timeout=0.2)
+
+            return "".join(assembled_parts).strip(), live_streamed
+
+        msg: Optional[AIMessage] = None
+        final_error: Optional[Exception] = None
+
+        if CHAT_NODE_STREAM_ENABLED:
+            try:
+                streamed_content, live_streamed = _stream_with_timeout()
+                if streamed_content:
+                    msg = AIMessage(
+                        content=streamed_content,
+                        name="ChatAgent",
+                        response_metadata={"synthetic": True, "live_streamed": live_streamed},
+                    )
+                else:
+                    final_error = RuntimeError("chat_node.empty_response")
+            except Exception as exc:
+                final_error = exc
+                partial_output_emitted = bool(getattr(exc, "partial_output_emitted", False))
+                can_retry = (
+                    (not partial_output_emitted)
+                    and total_timeout_sec >= 1.0
+                    and (not request_cancellation_service.is_cancelled(run_id))
+                )
+                if can_retry:
+                    try:
+                        retry_content = _retry_compact_invoke()
+                        if retry_content:
+                            msg = AIMessage(
+                                content=retry_content,
+                                name="ChatAgent",
+                                response_metadata={"synthetic": True, "force_emit": True},
+                            )
+                            final_error = None
+                    except Exception as retry_exc:
+                        final_error = retry_exc
+        else:
+            try:
+                response = _invoke_with_timeout(
+                    lambda: model.invoke(request_messages, config=runtime_config),
+                    timeout_sec=max(1.0, total_timeout_sec),
+                    timeout_label="chat_node.invoke",
+                )
+                content = _content_to_text(getattr(response, "content", "")).strip()
+                if content:
+                    msg = AIMessage(
+                        content=content,
+                        name="ChatAgent",
+                        response_metadata={"synthetic": True},
+                    )
+                else:
+                    final_error = RuntimeError("chat_node.empty_response")
+            except Exception as exc:
+                final_error = exc
+                if total_timeout_sec >= 1.0 and not request_cancellation_service.is_cancelled(run_id):
+                    try:
+                        retry_content = _retry_compact_invoke()
+                        if retry_content:
+                            msg = AIMessage(
+                                content=retry_content,
+                                name="ChatAgent",
+                                response_metadata={"synthetic": True},
+                            )
+                            final_error = None
+                    except Exception as retry_exc:
+                        final_error = retry_exc
+
+        if msg is None:
+            user_message, error_detail = _classify_agent_failure(final_error or RuntimeError("chat_node.empty_response"))
+            log.warning(f"chat_node 调用失败，返回 error 事件。detail={error_detail}")
+            elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+            log.info(f"⏱️ chat_node 模型耗时: {elapsed_ms}ms")
+            return {"error_message": user_message, "error_detail": error_detail}
+
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ chat_node 模型耗时: {elapsed_ms}ms")
     return {"messages": [msg]}
@@ -2208,7 +2507,18 @@ def single_agent_node(state: GraphState, agent_name: str, model: BaseChatModel, 
             payload = _normalize_interrupt_payload(content.get("payload"))
             payload["agent_name"] = payload.get("agent_name") or agent_name
             return {"interrupt_payload": payload}
-        res_msg = AIMessage(content=content, name=agent_name, response_metadata={"synthetic": True})
+        run_id = str(
+            config.get("configurable", {}).get("run_id")
+            or state.get("session_id")
+            or config.get("configurable", {}).get("thread_id")
+            or ""
+        ).strip()
+        live_streamed = AGENT_LIVE_STREAM_ENABLED and agent_stream_bus.has_streamed(run_id, agent_name)
+        res_msg = AIMessage(
+            content=content,
+            name=agent_name,
+            response_metadata={"synthetic": True, "live_streamed": live_streamed},
+        )
     except Exception as exc:
         err_msg = str(exc)
         if "Interrupt(" in err_msg or exc.__class__.__name__ == "GraphInterrupt":
@@ -2221,7 +2531,9 @@ def single_agent_node(state: GraphState, agent_name: str, model: BaseChatModel, 
                     "agent_name": agent_name,
                 }
             }
-        res_msg = AIMessage(content=f"⚠️ {agent_name} 执行异常: {exc}", name=agent_name, response_metadata={"synthetic": True})
+        user_message, error_detail = _classify_agent_failure(exc)
+        log.warning(f"Single Agent [{agent_name}] 执行失败，返回 error 事件。detail={error_detail}")
+        return {"error_message": user_message, "error_detail": error_detail}
     return {"messages": [res_msg]}
 
 
@@ -2336,4 +2648,4 @@ def create_graph(model_config: Optional[dict] = None):
         
     workflow.add_edge("aggregator_node", END)
 
-    return workflow.compile(checkpointer=checkpointer)
+    return workflow.compile(checkpointer=get_checkpointer("supervisor"))

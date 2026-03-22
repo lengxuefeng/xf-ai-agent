@@ -60,6 +60,34 @@ class ChatHistoryService:
             "order": "desc" if order_desc else "asc"
         }
 
+    def get_recent_session_messages(
+        self,
+        db: Session,
+        user_id: int,
+        session_id: str,
+        limit: int = 30,
+    ):
+        """
+        流式链路专用的轻量历史读取：
+        1) 仅查询最近 N 条；
+        2) 不做 count，避免额外一次聚合查询；
+        3) 最终按时间正序返回，便于直接拼接上下文。
+        """
+        sess = chat_session_db.get_by_session_id(db, session_id)
+        if not sess or sess.user_id != user_id:
+            return []
+
+        safe_limit = max(1, min(int(limit or 30), 200))
+        rows = chat_message_db.get_by_session_id(
+            db=db,
+            session_id=session_id,
+            skip=0,
+            limit=safe_limit,
+            order_desc=True,
+        )
+        # get_by_session_id(order_desc=True) 返回倒序，这里翻转为正序
+        return list(reversed(rows))
+
     def create_chat_message(self, db: Session, user_id: int, req: ChatMessageCreate):
         # 确保会话存在
         self.get_or_create_session(db, user_id, req.session_id, req.user_content[:20])

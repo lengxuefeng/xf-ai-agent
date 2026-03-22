@@ -3,11 +3,14 @@ from __future__ import annotations
 
 import json
 import re
+import threading
+import time
 from typing import Any
 
 from sqlalchemy import text
 
 from agent.policy.sql_policy_engine import sql_policy_engine
+from config.runtime_settings import SQL_SCHEMA_CACHE_TTL_SECONDS
 from constants.sql_tool_constants import (
     SCHEMA_COLUMN_LIST_SQL,
     SCHEMA_TABLE_LIST_SQL,
@@ -23,6 +26,10 @@ from services.semantic_cache_service import semantic_cache_service
 from utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
+
+_SCHEMA_CACHE_LOCK = threading.RLock()
+_SCHEMA_CACHE_VALUE = ""
+_SCHEMA_CACHE_EXPIRE_AT = 0.0
 
 
 def _normalize_sql(query: str) -> str:
@@ -209,6 +216,12 @@ def get_schema() -> str:
     """
     获取 PostgreSQL public schema 下的表结构信息。
     """
+    global _SCHEMA_CACHE_VALUE, _SCHEMA_CACHE_EXPIRE_AT
+    now = time.time()
+    with _SCHEMA_CACHE_LOCK:
+        if _SCHEMA_CACHE_VALUE and now < _SCHEMA_CACHE_EXPIRE_AT:
+            return _SCHEMA_CACHE_VALUE
+
     try:
         with get_db_context() as db:
             table_sql = text(SCHEMA_TABLE_LIST_SQL)
@@ -227,6 +240,10 @@ def get_schema() -> str:
                 for col in columns:
                     schema_lines.append(f"{col[0]} | {col[1]} | {col[2]} | {col[3]}")
 
-            return "\n".join(schema_lines)
+            schema_text = "\n".join(schema_lines)
+            with _SCHEMA_CACHE_LOCK:
+                _SCHEMA_CACHE_VALUE = schema_text
+                _SCHEMA_CACHE_EXPIRE_AT = time.time() + int(SQL_SCHEMA_CACHE_TTL_SECONDS)
+            return schema_text
     except Exception as e:
         return f"{SQL_MSG_SCHEMA_ERROR_PREFIX}{e}"

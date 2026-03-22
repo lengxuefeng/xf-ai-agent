@@ -53,6 +53,9 @@ class GraphQueueItemType(str, Enum):
     # 图执行事件
     GRAPH = "graph"
 
+    # 子 Agent 实时正文流事件
+    LIVE_STREAM = "live_stream"
+
     # 完成事件
     DONE = "done"
 

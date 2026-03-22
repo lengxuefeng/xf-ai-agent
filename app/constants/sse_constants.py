@@ -27,6 +27,9 @@ class SseEventType(str, Enum):
     # 日志事件
     LOG = "log"
 
+    # 结构化工作流事件
+    WORKFLOW_EVENT = "workflow_event"
+
 
 class SsePayloadField(str, Enum):
     """SSE 负载字段名枚举"""
@@ -36,6 +39,9 @@ class SsePayloadField(str, Enum):
 
     # 事件内容字段
     CONTENT = "content"
+
+    # 结构化负载字段
+    PAYLOAD = "payload"
 
 
 class SseMessage:
@@ -52,6 +58,12 @@ class SseMessage:
 
     # 超时错误提示
     ERROR_TIMEOUT = "处理超时，请稍后重试。"
+
+    # 连接异常错误提示
+    ERROR_CONNECTION = "模型服务连接异常，请稍后重试。"
+
+    # 运行期错误提示
+    ERROR_RUNTIME = "底层服务执行异常，请稍后重试。"
 
     # 空闲超时错误提示
     ERROR_IDLE_TIMEOUT = "长时间未收到模型响应，请重试。"

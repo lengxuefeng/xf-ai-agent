@@ -1,0 +1,1504 @@
+2026-03-20 00:07:10 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 00:07:10 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 00:07:10 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 00:07:10 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 03:19:40 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 03:19:40 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 03:19:40 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 03:19:40 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 04:05:09 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 04:05:09 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 04:05:09 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 04:05:09 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 05:42:01 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 05:42:01 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 05:42:01 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 05:42:01 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 05:42:01 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 05:42:01 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 05:42:01 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 05:42:01 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 06:02:11 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 06:02:11 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 06:02:11 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 06:02:11 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 07:07:02 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 07:07:02 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 07:07:02 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 07:07:02 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 07:53:51 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 07:53:51 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 07:53:51 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 07:53:51 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 08:08:28 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 08:08:28 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 08:08:28 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 08:08:28 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:42:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:42:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:42:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:42:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:42:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:42:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:42:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:42:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:42:22 - custom.core.middleware - INFO - [d3b7980f-9d31-44cc-bf28-5c88a3778200] HTTP Request START: POST /api/v1/user/refresh-token
+2026-03-20 09:42:22 - custom.core.middleware - INFO - [e443383b-e3e0-49b9-be00-ac6910fa28de] HTTP Request START: POST /api/v1/user/refresh-token
+2026-03-20 09:42:22 - custom.core.middleware - INFO - [d3b7980f-9d31-44cc-bf28-5c88a3778200] HTTP Request END: POST /api/v1/user/refresh-token (耗时: 0.0038s) - 404
+2026-03-20 09:42:22 - custom.core.middleware - INFO - [e443383b-e3e0-49b9-be00-ac6910fa28de] HTTP Request END: POST /api/v1/user/refresh-token (耗时: 0.0035s) - 404
+2026-03-20 09:43:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:43:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:43:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:43:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:53:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:53:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:53:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:53:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:54:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:54:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:54:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:54:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:55:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:55:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:55:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:55:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:56:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:56:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:56:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:56:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:56:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:56:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:56:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:56:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 09:57:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:57:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:57:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:57:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:58:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:58:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:58:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:58:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 09:59:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 09:59:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 09:59:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 09:59:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:00:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:00:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:00:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:00:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:01:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:01:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:01:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:01:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:01:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:01:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:01:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:01:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:02:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:02:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:02:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:02:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:03:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:03:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:03:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:03:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:04:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:04:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:04:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:04:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:05:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:05:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:05:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:05:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:06:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:06:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:06:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:06:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:06:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:06:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:06:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:06:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:07:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:07:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:07:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:07:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:08:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:08:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:08:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:08:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:09:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:09:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:09:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:09:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:10:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:10:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:10:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:10:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:11:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:11:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:11:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:11:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:11:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:11:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:11:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:11:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:12:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:12:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:12:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:12:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:13:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:13:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:13:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:13:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:14:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:14:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:14:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:14:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:15:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:15:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:15:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:15:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:16:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:16:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:16:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:16:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:16:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:16:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:16:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:16:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:17:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:17:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:17:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:17:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:18:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:18:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:18:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:18:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:19:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:19:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:19:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:19:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:20:24 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:20:24 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:20:24 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:20:24 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:21:18 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-20 10:21:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:21:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:21:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:21:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:21:20 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-20 10:21:20 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-20 10:21:29 - custom.core.middleware - INFO - [45d70ad0-4e98-4bb9-aba6-cf8c3e6bf965] HTTP Request START: POST /api/v1/user/login
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [45d70ad0-4e98-4bb9-aba6-cf8c3e6bf965] HTTP Request END: POST /api/v1/user/login (耗时: 0.7277s) - 200
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [f5828c97-b9cc-4eeb-99a4-0ada48c9af49] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [f5828c97-b9cc-4eeb-99a4-0ada48c9af49] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.1769s) - 200
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [1ce3604e-0f9f-4f84-89ab-12d6ad69f8c2] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [2df127c3-b01f-4abc-8254-0b12739ed123] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [ba241551-e061-4722-818a-ec4f62ab0ba8] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [ba241551-e061-4722-818a-ec4f62ab0ba8] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.2874s) - 200
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [2df127c3-b01f-4abc-8254-0b12739ed123] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.4926s) - 200
+2026-03-20 10:21:30 - custom.core.middleware - INFO - [1ce3604e-0f9f-4f84-89ab-12d6ad69f8c2] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.4959s) - 200
+2026-03-20 10:21:32 - custom.core.middleware - INFO - [4c11c9b2-a5b3-4b75-ab93-96ef717c1c14] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:21:32 - custom.core.middleware - INFO - [4c11c9b2-a5b3-4b75-ab93-96ef717c1c14] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0318s) - 200
+2026-03-20 10:21:32 - custom.core.middleware - INFO - [3c7b40e8-c610-4fc9-878c-f1df0bf5e146] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:21:32 - custom.core.middleware - INFO - [3c7b40e8-c610-4fc9-878c-f1df0bf5e146] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0295s) - 200
+2026-03-20 10:21:46 - custom.core.middleware - INFO - [c099595f-f88e-465d-97e9-488bf51bb761] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:21:46 - custom.core.middleware - INFO - [c099595f-f88e-465d-97e9-488bf51bb761] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0288s) - 200
+2026-03-20 10:21:46 - custom.core.middleware - INFO - [79f676be-bdde-4ceb-8381-707e3788b97e] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:21:46 - custom.core.middleware - INFO - [79f676be-bdde-4ceb-8381-707e3788b97e] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0282s) - 200
+2026-03-20 10:21:56 - custom.core.middleware - INFO - [86757c58-61d4-4cb9-9b3d-9e733f894194] HTTP Request START: POST /api/v1/chat/stream
+2026-03-20 10:21:56 - custom.core.middleware - INFO - [86757c58-61d4-4cb9-9b3d-9e733f894194] 中间件已成功为模型 19 挂载动态配置。
+2026-03-20 10:21:56 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d, 用户ID: 4
+2026-03-20 10:21:56 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-20 10:21:56 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d
+2026-03-20 10:21:56 - custom.core.middleware - INFO - [86757c58-61d4-4cb9-9b3d-9e733f894194] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0585s) - 200
+2026-03-20 10:21:56 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-20 10:21:56 - custom.agent.graph_runner - INFO - 首次编译 Supervisor 图，config_key=9304db7f...
+2026-03-20 10:21:56 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:21:57 - custom.agent.graphs.checkpointer - INFO - Checkpointer: PostgreSQL 状态表校验成功，连接已建立。
+2026-03-20 10:21:58 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule] -> WEB_SEARCH (conf=0.90)，耗时: 1ms
+2026-03-20 10:21:58 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.9], complex=[False]
+2026-03-20 10:21:58 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [domain_rule] -> weather_agent，耗时: 0ms
+2026-03-20 10:21:58 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → weather_agent (conf=0.90)
+2026-03-20 10:21:58 - custom.agent.graphs.supervisor - INFO - 上下文城市继承: weather_agent 自动沿用城市 [你是谁] (source=context_slots)
+2026-03-20 10:21:58 - custom.agent.tools.weather_tools - INFO - 天气工具格式化完成，城市=城市
+2026-03-20 10:21:58 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[weather_agent] 完成，耗时: 706ms
+2026-03-20 10:21:58 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d，总长: 198字符
+2026-03-20 10:22:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:22:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:22:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:22:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:22:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:22:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:22:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:22:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:22:28 - custom.core.middleware - INFO - [ab2cb8e7-2e79-433f-a792-07e662590090] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:22:28 - custom.core.middleware - INFO - [ab2cb8e7-2e79-433f-a792-07e662590090] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0298s) - 200
+2026-03-20 10:22:28 - custom.core.middleware - INFO - [3e9cd739-92eb-4e00-9288-a23b50ccc121] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:22:28 - custom.core.middleware - INFO - [3e9cd739-92eb-4e00-9288-a23b50ccc121] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0335s) - 200
+2026-03-20 10:22:34 - custom.core.middleware - INFO - [efc91710-326f-4466-9ac7-3921f6899a04] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:22:34 - custom.core.middleware - INFO - [efc91710-326f-4466-9ac7-3921f6899a04] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0294s) - 200
+2026-03-20 10:22:34 - custom.core.middleware - INFO - [1fa23c6e-0409-4d7d-ab49-9c60c1fbe521] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:22:35 - custom.core.middleware - INFO - [1fa23c6e-0409-4d7d-ab49-9c60c1fbe521] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0258s) - 200
+2026-03-20 10:23:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:23:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:23:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:23:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:24:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:24:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:24:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:24:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:25:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:25:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:25:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:25:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:26:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:26:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:26:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:26:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:27:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:27:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:27:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:27:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:27:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:27:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:27:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:27:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:28:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:28:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:28:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:28:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:29:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:29:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:29:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:29:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:30:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:30:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:30:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:30:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:31:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:31:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:31:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:31:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:32:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:32:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:32:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:32:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:32:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:32:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:32:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:32:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:33:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:33:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:33:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:33:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:34:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:34:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:34:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:34:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:35:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:35:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:35:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:35:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:36:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:36:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:36:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:36:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:37:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:37:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:37:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:37:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:37:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:37:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:37:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:37:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [90f3270d-d4fb-406d-ae21-37adc902e73e] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [3b6570c5-d658-4356-8e45-c7a411de4dbd] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [9a72ba28-887c-4a4d-963a-f1fdaa759174] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [6e6373ce-3c82-4db9-b440-8f9345813cd9] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [9a72ba28-887c-4a4d-963a-f1fdaa759174] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0412s) - 200
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [3b6570c5-d658-4356-8e45-c7a411de4dbd] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0427s) - 200
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [90f3270d-d4fb-406d-ae21-37adc902e73e] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0438s) - 200
+2026-03-20 10:38:14 - custom.core.middleware - INFO - [6e6373ce-3c82-4db9-b440-8f9345813cd9] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.1041s) - 200
+2026-03-20 10:38:20 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:38:20 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:38:20 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:38:20 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:39:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:39:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:39:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:39:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:40:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:40:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:40:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:40:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:41:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:41:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:41:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:41:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:42:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:42:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:42:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:42:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:42:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:42:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:42:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:42:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:43:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:43:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:43:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:43:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:44:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:44:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:44:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:44:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:45:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:45:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:45:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:45:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:46:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:46:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:46:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:46:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:47:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:47:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:47:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:47:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:47:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:47:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:47:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:47:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:47:49 - custom.core.middleware - INFO - [19b071ee-bfb7-4afe-b2a1-189649119254] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 10:47:49 - custom.core.middleware - INFO - [bb5ebfba-1d73-4162-b806-ee7fc6951130] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:47:49 - custom.core.middleware - INFO - [07032bfe-7c01-42eb-9523-7d638e7fecf3] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 10:47:49 - custom.core.middleware - INFO - [2e57e120-f514-4e87-9910-786dcf09c368] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [07032bfe-7c01-42eb-9523-7d638e7fecf3] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0398s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [bb5ebfba-1d73-4162-b806-ee7fc6951130] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0481s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [2e57e120-f514-4e87-9910-786dcf09c368] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0467s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [19b071ee-bfb7-4afe-b2a1-189649119254] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0502s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [4c8d85da-255f-486a-9df6-f0cb2f2a080e] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [4c3c9fc3-6f8e-4dfb-b565-0458ff60ecf5] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [5e2e3f42-774b-40ac-82e5-a065aa1bb8c1] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [40e3c37e-a3a7-4e1c-8914-3015b8be96b1] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [4c3c9fc3-6f8e-4dfb-b565-0458ff60ecf5] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0375s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [4c8d85da-255f-486a-9df6-f0cb2f2a080e] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0388s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [40e3c37e-a3a7-4e1c-8914-3015b8be96b1] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0405s) - 200
+2026-03-20 10:47:50 - custom.core.middleware - INFO - [5e2e3f42-774b-40ac-82e5-a065aa1bb8c1] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0476s) - 200
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [7cce79c0-9273-4a3c-b6c1-c527ef06c332] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [0acd511b-6a5c-4f2c-8e21-8321cef7ccde] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [a58fc03e-f73f-4da1-b868-448b36f5632a] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [94a32c33-770f-4ec3-b7b6-2ecd71dabe56] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [0acd511b-6a5c-4f2c-8e21-8321cef7ccde] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0424s) - 200
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [a58fc03e-f73f-4da1-b868-448b36f5632a] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0424s) - 200
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [94a32c33-770f-4ec3-b7b6-2ecd71dabe56] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0421s) - 200
+2026-03-20 10:47:51 - custom.core.middleware - INFO - [7cce79c0-9273-4a3c-b6c1-c527ef06c332] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0452s) - 200
+2026-03-20 10:48:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:48:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:48:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:48:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:49:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:49:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:49:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:49:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:50:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:50:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:50:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:50:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:51:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:51:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:51:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:51:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:52:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:52:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:52:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:52:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:52:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:52:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:52:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:52:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [fe82a5e6-7099-4ce5-a688-ddc3dc2a4ed0] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [ee95c894-c628-423a-88c4-4b95ed071f57] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [20bb35ba-a26f-436a-b58f-2fc2871506b1] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [dec8d650-e5f8-4b2b-a184-2b92a54a3add] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [dec8d650-e5f8-4b2b-a184-2b92a54a3add] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0404s) - 200
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [ee95c894-c628-423a-88c4-4b95ed071f57] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0412s) - 200
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [20bb35ba-a26f-436a-b58f-2fc2871506b1] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0416s) - 200
+2026-03-20 10:52:24 - custom.core.middleware - INFO - [fe82a5e6-7099-4ce5-a688-ddc3dc2a4ed0] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0433s) - 200
+2026-03-20 10:53:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:53:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:53:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:53:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:54:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:54:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:54:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:54:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:55:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:55:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:55:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:55:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:55:25 - custom.core.middleware - INFO - [c9acd54e-1bf9-41d0-b4c4-e054b452feca] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:55:25 - custom.core.middleware - INFO - [c9acd54e-1bf9-41d0-b4c4-e054b452feca] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0389s) - 200
+2026-03-20 10:55:25 - custom.core.middleware - INFO - [f95b9d25-cb16-4846-a3ba-85981a9e3625] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:55:25 - custom.core.middleware - INFO - [f95b9d25-cb16-4846-a3ba-85981a9e3625] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0261s) - 200
+2026-03-20 10:55:38 - custom.core.middleware - INFO - [df58761e-fce0-4c70-8fad-d6d4afabc4f1] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:55:38 - custom.core.middleware - INFO - [df58761e-fce0-4c70-8fad-d6d4afabc4f1] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0283s) - 200
+2026-03-20 10:55:38 - custom.core.middleware - INFO - [c0f9a329-f730-4332-bafa-09004e3b37a1] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 10:55:38 - custom.core.middleware - INFO - [c0f9a329-f730-4332-bafa-09004e3b37a1] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0316s) - 200
+2026-03-20 10:56:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:56:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:56:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:56:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:57:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:57:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:57:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:57:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:57:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:57:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:57:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:57:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 10:58:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:58:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:58:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:58:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 10:59:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 10:59:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 10:59:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 10:59:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:00:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:00:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:00:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:00:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [7ca407d6-d64d-4e6e-85c2-230144bee76f] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [23f6dc3a-79f2-4eff-8130-fb644492d41e] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [096b1cf3-56e3-40d6-9998-f0b3209e832d] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [e1787ad5-e15a-4579-b5b5-1f13bb9663b2] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [23f6dc3a-79f2-4eff-8130-fb644492d41e] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0489s) - 200
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [096b1cf3-56e3-40d6-9998-f0b3209e832d] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0465s) - 200
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [7ca407d6-d64d-4e6e-85c2-230144bee76f] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0503s) - 200
+2026-03-20 11:00:50 - custom.core.middleware - INFO - [e1787ad5-e15a-4579-b5b5-1f13bb9663b2] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0463s) - 200
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [17cba272-cfcf-4072-b220-06cf45d75556] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [0f946175-64c7-4511-8c3e-1cc5e7b924c7] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [943c600a-462b-4be6-a265-6cbd940264be] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [925fc08d-13d6-455b-87b4-4406103205fb] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [943c600a-462b-4be6-a265-6cbd940264be] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0357s) - 200
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [17cba272-cfcf-4072-b220-06cf45d75556] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0446s) - 200
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [0f946175-64c7-4511-8c3e-1cc5e7b924c7] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0438s) - 200
+2026-03-20 11:00:51 - custom.core.middleware - INFO - [925fc08d-13d6-455b-87b4-4406103205fb] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0414s) - 200
+2026-03-20 11:01:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:01:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:01:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:01:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:02:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:02:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:02:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:02:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:02:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:02:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:02:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:02:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:03:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:03:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:03:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:03:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [4598d237-bcd5-4b90-9bd3-94d9cc8a1d1c] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [7b239736-ee0f-447a-81af-f8c0b90604fa] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [03a31c2e-26a4-4976-b598-806465f270b2] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [cbe5680a-5c70-490b-915e-bcafdb680225] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [03a31c2e-26a4-4976-b598-806465f270b2] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0405s) - 200
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [7b239736-ee0f-447a-81af-f8c0b90604fa] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0437s) - 200
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [cbe5680a-5c70-490b-915e-bcafdb680225] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0426s) - 200
+2026-03-20 11:04:07 - custom.core.middleware - INFO - [4598d237-bcd5-4b90-9bd3-94d9cc8a1d1c] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0446s) - 200
+2026-03-20 11:04:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:04:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:04:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:04:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:05:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:05:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:05:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:05:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:06:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:06:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:06:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:06:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [23b8991b-9502-4179-9788-e3010764d482] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [c9b3d748-6335-4e4a-ac76-777a64123977] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [6e9add44-aea1-486e-99cd-38b7a700be5c] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [7be108b0-0028-4cc6-b34a-e0996b116965] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [6e9add44-aea1-486e-99cd-38b7a700be5c] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0492s) - 200
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [23b8991b-9502-4179-9788-e3010764d482] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0518s) - 200
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [c9b3d748-6335-4e4a-ac76-777a64123977] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0557s) - 200
+2026-03-20 11:07:09 - custom.core.middleware - INFO - [7be108b0-0028-4cc6-b34a-e0996b116965] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0511s) - 200
+2026-03-20 11:07:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:07:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:07:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:07:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:07:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:07:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:07:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:07:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:08:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:08:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:08:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:08:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:09:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:09:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:09:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:09:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:10:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:10:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:10:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:10:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:11:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:11:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:11:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:11:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:12:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:12:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:12:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:12:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:12:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:12:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:12:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:12:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:13:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:13:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:13:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:13:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:14:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:14:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:14:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:14:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:15:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:15:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:15:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:15:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:16:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:16:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:16:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:16:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:17:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:17:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:17:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:17:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:17:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:17:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:17:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:17:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:18:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:18:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:18:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:18:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:19:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:19:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:19:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:19:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:20:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:20:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:20:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:20:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:21:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:21:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:21:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:21:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:22:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:22:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:22:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:22:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:22:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:22:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:22:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:22:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:23:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:23:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:23:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:23:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:24:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:24:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:24:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:24:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [321b02c4-4ecf-4246-9ae8-7c386bab5214] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [4c92a77c-5663-4259-9e07-5d91eeee1122] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [75b541cc-56c2-4cf3-8783-2fade410815b] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [ffde17d6-cb15-4dd1-a8af-2e056cd15e96] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [4c92a77c-5663-4259-9e07-5d91eeee1122] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0496s) - 200
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [ffde17d6-cb15-4dd1-a8af-2e056cd15e96] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.1999s) - 200
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [321b02c4-4ecf-4246-9ae8-7c386bab5214] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.2237s) - 200
+2026-03-20 11:24:53 - custom.core.middleware - INFO - [75b541cc-56c2-4cf3-8783-2fade410815b] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.2229s) - 200
+2026-03-20 11:25:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:25:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:25:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:25:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:26:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:26:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:26:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:26:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:27:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:27:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:27:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:27:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:27:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:27:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:27:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:27:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 11:28:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:28:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:28:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:28:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:29:23 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:29:23 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:29:23 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:29:23 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [2735a670-95c8-4a6c-9fe1-68f29900daf2] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [45ed0179-bb95-437c-a382-e5fd0e333a1e] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [d586e37b-5aee-475f-a53f-ea22286a37d9] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [4b77143b-63a6-455e-be44-488b6bb24036] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [45ed0179-bb95-437c-a382-e5fd0e333a1e] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0518s) - 200
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [2735a670-95c8-4a6c-9fe1-68f29900daf2] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0566s) - 200
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [d586e37b-5aee-475f-a53f-ea22286a37d9] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0559s) - 200
+2026-03-20 11:29:45 - custom.core.middleware - INFO - [4b77143b-63a6-455e-be44-488b6bb24036] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0558s) - 200
+2026-03-20 11:32:54 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 11:32:54 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 11:32:54 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 11:32:54 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 12:55:07 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 12:55:07 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 12:55:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 12:55:07 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 13:31:25 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 13:31:25 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 13:31:25 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 13:31:25 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 13:31:25 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 13:31:25 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 13:31:25 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 13:31:25 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 14:31:51 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 14:31:51 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 14:31:51 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 14:31:51 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 14:43:33 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 14:43:33 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 14:43:33 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 14:43:33 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 15:33:17 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 15:33:17 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 15:33:17 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 15:33:17 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 15:53:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 15:53:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 15:53:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 15:53:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 16:40:05 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 16:40:05 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 16:40:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 16:40:05 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 16:40:05 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 16:40:05 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 16:40:05 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 16:40:05 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 16:46:12 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 16:46:12 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 16:46:12 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 16:46:12 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 17:35:22 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 17:35:22 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 17:35:22 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 17:35:22 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:16:31 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:16:31 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:16:31 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:16:31 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:19:49 - custom.core.middleware - INFO - [52225e84-2931-4009-80e4-42b0a5bedcb2] HTTP Request START: POST /api/v1/user/refresh-token
+2026-03-20 18:19:49 - custom.core.middleware - INFO - [282c53f3-9062-4222-a768-7a040c40dd8f] HTTP Request START: POST /api/v1/user/refresh-token
+2026-03-20 18:19:49 - custom.core.middleware - INFO - [52225e84-2931-4009-80e4-42b0a5bedcb2] HTTP Request END: POST /api/v1/user/refresh-token (耗时: 0.0024s) - 404
+2026-03-20 18:19:49 - custom.core.middleware - INFO - [282c53f3-9062-4222-a768-7a040c40dd8f] HTTP Request END: POST /api/v1/user/refresh-token (耗时: 0.0010s) - 404
+2026-03-20 18:19:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:19:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:19:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:19:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:20:15 - custom.core.middleware - INFO - [149a30eb-c0cc-43ab-90c2-2b1b0e94f3d3] HTTP Request START: POST /api/v1/user/login
+2026-03-20 18:20:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:20:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:20:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:20:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:20:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:20:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:20:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:20:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:21:30 - custom.db - ERROR - 数据库事务异常回滚: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-20 18:21:30 - custom.core.middleware - ERROR - [149a30eb-c0cc-43ab-90c2-2b1b0e94f3d3] 框架内部未捕获异常抛出: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-20 18:21:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:21:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:21:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:21:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:22:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:22:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:22:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:22:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:23:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:23:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:23:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:23:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:24:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:24:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:24:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:24:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:25:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:25:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:25:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:25:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:25:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:25:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:25:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:25:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:26:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:26:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:26:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:26:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:27:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:27:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:27:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:27:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:28:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:28:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:28:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:28:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:29:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:29:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:29:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:29:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:30:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:30:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:30:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:30:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:30:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:30:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:30:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:30:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:31:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:31:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:31:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:31:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:32:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:32:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:32:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:32:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:33:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:33:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:33:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:33:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:34:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:34:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:34:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:34:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:35:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:35:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:35:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:35:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:35:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:35:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:35:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:35:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:36:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:36:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:36:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:36:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:37:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:37:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:37:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:37:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:38:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:38:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:38:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:38:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:39:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:39:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:39:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:39:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:40:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:40:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:40:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:40:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:40:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:40:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:40:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:40:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:41:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:41:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:41:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:41:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:42:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:42:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:42:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:42:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:43:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:43:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:43:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:43:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:44:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:44:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:44:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:44:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:45:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:45:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:45:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:45:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:45:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:45:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:45:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:45:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:46:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:46:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:46:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:46:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:47:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:47:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:47:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:47:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:48:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:48:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:48:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:48:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:49:22 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-20 18:49:22 - custom.services.session_pool - INFO - SessionPool 已停止。
+2026-03-20 18:49:24 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-20 18:49:26 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:49:26 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:49:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:49:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:49:27 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-20 18:49:27 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-20 18:49:34 - custom.core.middleware - INFO - [d0176ec3-de4b-49de-bddb-3e6f9fe75943] HTTP Request START: POST /api/v1/user/login
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [d0176ec3-de4b-49de-bddb-3e6f9fe75943] HTTP Request END: POST /api/v1/user/login (耗时: 0.5440s) - 200
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [980e345b-4be9-46a1-a75a-3a8af4120794] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [980e345b-4be9-46a1-a75a-3a8af4120794] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0751s) - 200
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [489968dc-ece3-4c91-aeb5-eaf5662d0dda] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [6a6e4c91-8aeb-43cf-b4b2-740a091c4f07] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [a93bcf6a-9da2-4863-8119-298b4d39335f] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [489968dc-ece3-4c91-aeb5-eaf5662d0dda] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0955s) - 200
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [a93bcf6a-9da2-4863-8119-298b4d39335f] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.1634s) - 200
+2026-03-20 18:49:35 - custom.core.middleware - INFO - [6a6e4c91-8aeb-43cf-b4b2-740a091c4f07] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.1639s) - 200
+2026-03-20 18:49:42 - custom.core.middleware - INFO - [658ccac1-382d-4bf1-8b25-514e99b8784c] HTTP Request START: POST /api/v1/chat/stream
+2026-03-20 18:49:42 - custom.core.middleware - INFO - [658ccac1-382d-4bf1-8b25-514e99b8784c] 中间件已成功为模型 19 挂载动态配置。
+2026-03-20 18:49:42 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d, 用户ID: 4
+2026-03-20 18:49:42 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-20 18:49:42 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d
+2026-03-20 18:49:42 - custom.core.middleware - INFO - [658ccac1-382d-4bf1-8b25-514e99b8784c] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0333s) - 200
+2026-03-20 18:49:42 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-20 18:49:42 - custom.agent.graph_runner - INFO - Pre-Graph 规则拦截生效: [query_identity]
+2026-03-20 18:49:42 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d，总长: 70字符
+2026-03-20 18:49:59 - custom.core.middleware - INFO - [86f20451-bcdd-4053-9efd-eb802bd6f02f] HTTP Request START: POST /api/v1/chat/stream
+2026-03-20 18:49:59 - custom.core.middleware - INFO - [86f20451-bcdd-4053-9efd-eb802bd6f02f] 中间件已成功为模型 19 挂载动态配置。
+2026-03-20 18:49:59 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d, 用户ID: 4
+2026-03-20 18:49:59 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-20 18:49:59 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d
+2026-03-20 18:49:59 - custom.core.middleware - INFO - [86f20451-bcdd-4053-9efd-eb802bd6f02f] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0348s) - 200
+2026-03-20 18:50:00 - custom.agent.graph_runner - INFO - 首次编译 Supervisor 图，config_key=9304db7f...
+2026-03-20 18:50:00 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:50:00 - custom.agent.graphs.checkpointer - INFO - Checkpointer: PostgreSQL 状态表校验成功，连接已建立。
+2026-03-20 18:50:01 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule] -> WEB_SEARCH (conf=0.90)，耗时: 0ms
+2026-03-20 18:50:01 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.9], complex=[False]
+2026-03-20 18:50:01 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [domain_rule] -> weather_agent，耗时: 0ms
+2026-03-20 18:50:01 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → weather_agent (conf=0.90)
+2026-03-20 18:50:01 - custom.agent.graphs.supervisor - INFO - 上下文城市继承: weather_agent 自动沿用城市 [你是谁] (source=context_slots)
+2026-03-20 18:50:02 - custom.agent.tools.weather_tools - INFO - 天气工具格式化完成，城市=城市
+2026-03-20 18:50:02 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[weather_agent] 完成，耗时: 835ms
+2026-03-20 18:50:02 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: c178434b-6c0d-4a63-b08f-aca92352b36d，总长: 200字符
+2026-03-20 18:50:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:50:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:50:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:51:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:51:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:51:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:51:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:52:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:52:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:52:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:52:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:53:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:53:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:53:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:53:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:54:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:54:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:54:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:54:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:55:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:55:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:55:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 18:56:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:56:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:56:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:56:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:57:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:57:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:57:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:57:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:58:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:58:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:58:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:58:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 18:59:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 18:59:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 18:59:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 18:59:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:00:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:00:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:00:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:00:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:00:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:00:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:00:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:00:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:01:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:01:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:01:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:01:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [7e53db2d-2654-4c1d-af78-df9f63597f61] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [3bb02dd7-897c-445d-8409-36270eeec584] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [95296e65-c9d5-4658-88e2-df570c99e916] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [df678252-d331-4c4c-aa47-45e7392a6699] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [3bb02dd7-897c-445d-8409-36270eeec584] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0464s) - 200
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [7e53db2d-2654-4c1d-af78-df9f63597f61] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0478s) - 200
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [95296e65-c9d5-4658-88e2-df570c99e916] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0469s) - 200
+2026-03-20 19:01:52 - custom.core.middleware - INFO - [df678252-d331-4c4c-aa47-45e7392a6699] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.1008s) - 200
+2026-03-20 19:02:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:02:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:02:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:02:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:03:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:03:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:03:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:03:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:04:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:04:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:04:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:04:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:05:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:05:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:05:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:05:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:05:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:05:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:05:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:05:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:06:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:06:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:06:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:06:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:07:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:07:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:07:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:07:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:08:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:08:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:08:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:08:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:09:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:09:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:09:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:09:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:10:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:10:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:10:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:10:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:10:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:10:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:10:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:10:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:11:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:11:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:11:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:11:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [5e527415-f81e-4029-b461-55e327e33d67] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [c69c02fc-0e7e-47b8-8417-7c6296e359bf] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [278e8068-2725-47db-bb9e-469239ee384e] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [b7685eab-7129-4d56-ba7b-7434d539ccd7] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [278e8068-2725-47db-bb9e-469239ee384e] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0418s) - 200
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [c69c02fc-0e7e-47b8-8417-7c6296e359bf] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0473s) - 200
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [b7685eab-7129-4d56-ba7b-7434d539ccd7] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0501s) - 200
+2026-03-20 19:11:34 - custom.core.middleware - INFO - [5e527415-f81e-4029-b461-55e327e33d67] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0530s) - 200
+2026-03-20 19:12:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:12:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:12:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:12:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:13:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:13:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:13:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:13:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [3f76bab7-e597-4ec4-b28c-2905e8c4d7a8] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [24244408-215b-4126-aa90-9625187a3a48] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [d9deed84-e749-486d-82b7-84b9cd210e28] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [4fdc7c5b-93e4-468f-9597-d550f0f8fc39] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [24244408-215b-4126-aa90-9625187a3a48] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0304s) - 200
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [4fdc7c5b-93e4-468f-9597-d550f0f8fc39] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0362s) - 200
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [d9deed84-e749-486d-82b7-84b9cd210e28] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0374s) - 200
+2026-03-20 19:14:08 - custom.core.middleware - INFO - [3f76bab7-e597-4ec4-b28c-2905e8c4d7a8] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0386s) - 200
+2026-03-20 19:14:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:14:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:14:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:14:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:15:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:15:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:15:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:15:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:15:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:15:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:15:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:15:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [d2f5ed4f-e1c5-48c7-b4cf-1bed895255ca] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [e01f5f1d-346c-4d7b-8c01-e96bd07e66d9] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [52882244-dacf-40d2-9828-be28fb5c80b7] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [9d6de7c7-339a-47bd-9139-a07932562307] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [9d6de7c7-339a-47bd-9139-a07932562307] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0421s) - 200
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [e01f5f1d-346c-4d7b-8c01-e96bd07e66d9] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0459s) - 200
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [d2f5ed4f-e1c5-48c7-b4cf-1bed895255ca] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0469s) - 200
+2026-03-20 19:16:05 - custom.core.middleware - INFO - [52882244-dacf-40d2-9828-be28fb5c80b7] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0438s) - 200
+2026-03-20 19:16:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:16:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:16:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:16:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:17:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:17:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:17:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:17:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:18:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:18:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:18:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:18:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:19:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:19:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:19:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:19:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:20:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:20:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:20:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:20:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:20:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:20:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:20:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:20:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:21:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:21:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:21:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:21:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:22:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:22:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:22:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:22:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:23:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:23:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:23:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:23:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:24:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:24:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:24:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:24:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:25:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:25:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:25:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:25:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:25:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:25:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:25:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:25:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [d3a8502f-ea2b-449a-96b7-5102bf30cb0b] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [2361bf97-8032-4e9a-a10c-91de44fec329] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [5b70b282-9559-4987-a765-f51a68dcfeb6] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [3473c2ad-7741-4b99-ba74-e888f7f6a7af] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [2361bf97-8032-4e9a-a10c-91de44fec329] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0450s) - 200
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [d3a8502f-ea2b-449a-96b7-5102bf30cb0b] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0460s) - 200
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [5b70b282-9559-4987-a765-f51a68dcfeb6] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0501s) - 200
+2026-03-20 19:25:32 - custom.core.middleware - INFO - [3473c2ad-7741-4b99-ba74-e888f7f6a7af] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0505s) - 200
+2026-03-20 19:26:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:26:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:26:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:26:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:27:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:27:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:27:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:27:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:28:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:28:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:28:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:28:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:29:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:29:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:29:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:29:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:30:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:30:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:30:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:30:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:30:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:30:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:30:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:30:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:31:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:31:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:31:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:31:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:32:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:32:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:32:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:32:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [39cefa10-24df-4a0f-bda1-e79206445582] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [2a919b09-6d9d-4c26-a472-ff41417bea68] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [d103e3da-bf22-40ef-a832-f2c5591581ca] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [3d377804-b898-4718-9dc7-bcb3cc7bad5f] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [2a919b09-6d9d-4c26-a472-ff41417bea68] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0457s) - 200
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [d103e3da-bf22-40ef-a832-f2c5591581ca] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0454s) - 200
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [3d377804-b898-4718-9dc7-bcb3cc7bad5f] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0450s) - 200
+2026-03-20 19:32:34 - custom.core.middleware - INFO - [39cefa10-24df-4a0f-bda1-e79206445582] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0490s) - 200
+2026-03-20 19:33:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:33:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:33:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:33:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:34:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:34:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:34:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:34:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:35:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:35:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:35:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:35:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:35:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:35:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:35:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:35:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:36:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:36:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:36:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:36:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:37:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:37:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:37:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:37:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:38:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:38:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:38:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:38:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:39:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:39:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:39:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:39:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:40:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:40:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:40:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:40:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:40:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:40:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:40:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:40:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:41:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:41:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:41:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:41:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:42:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:42:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:42:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:42:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:43:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:43:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:43:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:43:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:44:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:44:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:44:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:44:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:45:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:45:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:45:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:45:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:45:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:45:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:45:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:45:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:46:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:46:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:46:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:46:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:47:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:47:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:47:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:47:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [54c969bd-b58d-475f-90a0-2d4c532452ed] HTTP Request START: GET /api/v1/model_setting/
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [ea055abd-f4ec-4524-b270-a786961e183e] HTTP Request START: GET /api/v1/user_model/
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [8f8f58a1-e9e1-40b6-8150-803c88862d7e] HTTP Request START: GET /api/v1/user_model/active
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [56855cc4-af3e-4cd9-b842-46b9f8dd95e7] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [ea055abd-f4ec-4524-b270-a786961e183e] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0511s) - 200
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [8f8f58a1-e9e1-40b6-8150-803c88862d7e] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0685s) - 200
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [54c969bd-b58d-475f-90a0-2d4c532452ed] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0700s) - 200
+2026-03-20 19:47:53 - custom.core.middleware - INFO - [56855cc4-af3e-4cd9-b842-46b9f8dd95e7] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0696s) - 200
+2026-03-20 19:48:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:48:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:48:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:48:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:49:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:49:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:49:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:49:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:50:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:50:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:50:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:50:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:51:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:51:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:51:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:51:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:52:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:52:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:52:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:52:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:53:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:53:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:53:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:53:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:54:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:54:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:54:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:54:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:55:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:55:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:55:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-20 19:56:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:56:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:56:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:56:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:57:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:57:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:57:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:57:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:58:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:58:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:58:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:58:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:59:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-20 19:59:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-20 19:59:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-20 19:59:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-20 19:59:52 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-20 19:59:52 - custom.services.session_pool - INFO - SessionPool 已停止。

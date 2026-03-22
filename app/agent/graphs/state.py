@@ -117,3 +117,5 @@ class GraphState(TypedDict):
     current_node: Optional[str]
     next: Optional[str]
     interrupt_payload: Optional[Dict]
+    error_message: Optional[str]
+    error_detail: Optional[str]

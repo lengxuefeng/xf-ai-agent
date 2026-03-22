@@ -58,7 +58,7 @@ class SearchAgent(BaseAgent):
         self.graph = self._build_graph()
 
     def _build_graph(self) -> Runnable:
-        """构建搜索子图，限制工具循环次数防止死循环"""
+        """使用通用 ReAct 工厂构建搜索子图，消除重复拓扑样板。"""
         workflow = StateGraph(SearchAgentState)
 
         def _latest_human_text(messages: List[BaseMessage]) -> str:
@@ -132,22 +132,10 @@ class SearchAgent(BaseAgent):
                         ai_msg = AIMessage(content=SEARCH_TOPIC_DRIFT_BLOCK_MESSAGE)
             return {"tool_loop_count": loop_count + 1, "messages": [ai_msg]}
 
-        def route_after_agent(state: SearchAgentState):
-            """判断是否继续调用工具"""
-            if int(state.get("tool_loop_count", 0) or 0) > AGENT_LOOP_CONFIG.search_max_tool_loops:
-                return END
-            return tools_condition(state)
-
-        tool_node = ToolNode(self.tools)
-
-        workflow.add_node("agent", model_node)
-        workflow.add_node("tools", tool_node)
-
-        workflow.add_edge(START, "agent")
-
-        # 条件边：如果模型决定调用工具，去 tools；否则结束
-        workflow.add_conditional_edges("agent", route_after_agent)
-
-        workflow.add_edge("tools", "agent")
-
-        return workflow.compile(checkpointer=self.checkpointer)
+        return self._build_react_graph(
+            state_schema=SearchAgentState,
+            model_node_fn=model_node,
+            tools=self.tools,
+            max_tool_loops=AGENT_LOOP_CONFIG.search_max_tool_loops,
+            loop_exceeded_message=SEARCH_TOOL_LOOP_EXCEEDED_MESSAGE,
+        )

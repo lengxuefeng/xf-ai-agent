@@ -1,6 +1,9 @@
 import unittest
+from unittest.mock import patch
 
-from agent.graphs.supervisor import aggregator_node, dispatcher_node, reducer_node
+from langchain_core.messages import HumanMessage
+
+from agent.graphs.supervisor import aggregator_node, dispatcher_node, reducer_node, single_agent_node
 from constants.workflow_constants import TaskStatus, WORKER_CANCELLED_RESULT
 
 
@@ -82,6 +85,26 @@ class SupervisorStateMachineTest(unittest.TestCase):
         }
         out = aggregator_node(state, model=None, config={})
         self.assertEqual(out.get("direct_answer"), "")
+        self.assertNotIn("messages", out)
+
+    def test_single_agent_node_returns_error_state_on_timeout(self):
+        state = {
+            "messages": [HumanMessage(content="帮我查天气")],
+            "session_id": "s-single-timeout",
+        }
+        with patch(
+            "agent.graphs.supervisor._run_agent_to_completion",
+            side_effect=TimeoutError("single_agent_node.total_timeout: 3.0s"),
+        ):
+            out = single_agent_node(
+                state=state,
+                agent_name="weather_agent",
+                model=None,
+                config={"configurable": {"run_id": "rid-single-timeout"}},
+            )
+
+        self.assertEqual(out.get("error_message"), "处理超时，请稍后重试。")
+        self.assertIn("single_agent_node.total_timeout", out.get("error_detail", ""))
         self.assertNotIn("messages", out)
 
 

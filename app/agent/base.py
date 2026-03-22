@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 import re
 from typing import Generator, Any, Dict, Optional
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessageChunk, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import Runnable, RunnableConfig
+from langgraph.graph import START, StateGraph
 from agent.graph_state import AgentRequest
-from agent.graphs.checkpointer import checkpointer
+from agent.graphs.checkpointer import get_checkpointer
 from constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
-from config.runtime_settings import AGENT_LOOP_CONFIG
+from config.runtime_settings import AGENT_LOOP_CONFIG, AGENT_LIVE_STREAM_ENABLED
+from services.agent_stream_bus import agent_stream_bus
 from utils.history_compressor import compress_history_messages
 from utils.custom_logger import get_logger
 from utils.date_utils import get_agent_date_context, get_current_time_context
@@ -32,6 +34,20 @@ class BaseAgent(ABC):
         content = getattr(msg, "content", "")
         if isinstance(content, str):
             return content.strip()
+        if isinstance(content, list):
+            parts: list[str] = []
+            for item in content:
+                if isinstance(item, str):
+                    parts.append(item)
+                elif isinstance(item, dict):
+                    text = item.get("text") or item.get("content") or ""
+                    if isinstance(text, str):
+                        parts.append(text)
+            return "\n".join(part for part in parts if part).strip()
+        if isinstance(content, dict):
+            text = content.get("text") or content.get("content") or ""
+            if isinstance(text, str):
+                return text.strip()
         return str(content or "").strip()
 
     @staticmethod
@@ -158,12 +174,73 @@ class BaseAgent(ABC):
         self.session_id = req.session_id
         # 子图标识，用于状态隔离
         self.subgraph_id = getattr(req, "subgraph_id", None) or self.__class__.__name__
-        self.checkpointer = checkpointer
+        self.checkpointer = get_checkpointer(self.subgraph_id)
 
     @abstractmethod
     def _build_graph(self) -> Runnable:
         """子类必须实现此方法，返回编译后的 StateGraph"""
         pass
+
+    # ------------------------------------------------------------------ #
+    #  通用 ReAct 拓扑工厂（简化子类实现）                                  #
+    # ------------------------------------------------------------------ #
+
+    def _build_react_graph(
+        self,
+        *,
+        state_schema: type,
+        model_node_fn,
+        tools: list,
+        max_tool_loops: int,
+        loop_exceeded_message: str,
+    ) -> Runnable:
+        """
+        通用 ReAct 子图工厂：START → agent → (tools_condition) → tools → agent → END。
+
+        消除各 Agent 中重复的 StateGraph 样板代码，统一拓扑结构，
+        各 Agent 只需提供差异化的 model_node_fn 和 tools 列表。
+
+        Args:
+            state_schema:          子图 State TypedDict 类型。
+            model_node_fn:         Agent 节点函数 (state) -> dict，包含业务逻辑。
+            tools:                 绑定到 ToolNode 的工具列表。
+            max_tool_loops:        最大工具调用循环次数（超过则强制收尾）。
+            loop_exceeded_message: 循环次数超限时返回的提示文本。
+
+        Returns:
+            编译好的 CompiledGraph，绑定了当前 Agent 的 checkpointer。
+        """
+        from langgraph.prebuilt import ToolNode, tools_condition
+
+        workflow = StateGraph(state_schema)
+
+        def _guarded_model_node(state):
+            """在业务 model_node 外包一层循环上限保护。"""
+            loop_count = int(state.get("tool_loop_count", 0) or 0)
+            if loop_count >= max_tool_loops:
+                from langchain_core.messages import AIMessage
+                return {
+                    "tool_loop_count": loop_count,
+                    "messages": [AIMessage(content=loop_exceeded_message)],
+                }
+            return model_node_fn(state)
+
+        def _route_after_agent(state):
+            """条件边：循环超限直接 END，否则走 tools_condition 判断。"""
+            if int(state.get("tool_loop_count", 0) or 0) > max_tool_loops:
+                from langgraph.graph import END
+                return END
+            return tools_condition(state)
+
+        tool_node = ToolNode(tools)
+
+        workflow.add_node("agent", _guarded_model_node)
+        workflow.add_node("tools", tool_node)
+        workflow.add_edge(START, "agent")
+        workflow.add_conditional_edges("agent", _route_after_agent)
+        workflow.add_edge("tools", "agent")
+
+        return workflow.compile(checkpointer=self.checkpointer)
 
     def run(self, req: AgentRequest, config: Optional[RunnableConfig] = None) -> Generator[Dict[str, Any], None, None]:
         """
@@ -214,9 +291,43 @@ class BaseAgent(ABC):
         input_message = {"messages": input_messages}
 
         try:
-            # 流式传输 updates；若子图触发 native interrupt()，会在 except 中透传 interrupt payload
-            for event in self.graph.stream(input_message, config=final_config, stream_mode="updates"):
-                yield event
+            # 同时监听 updates/messages；updates 供状态推进，messages 用于子 Agent 实时出字。
+            stream_channel_id = str(configurable.get("run_id") or "").strip()
+            stream_mode = ["updates", "messages"] if AGENT_LIVE_STREAM_ENABLED else ["updates"]
+            for raw_event in self.graph.stream(
+                input_message,
+                config=final_config,
+                stream_mode=stream_mode,
+            ):
+                event_type = "updates"
+                event_payload = raw_event
+                if isinstance(raw_event, tuple) and len(raw_event) == 2:
+                    event_type, event_payload = raw_event
+
+                if event_type == "updates":
+                    if isinstance(event_payload, dict):
+                        yield event_payload
+                    continue
+
+                if event_type == "messages":
+                    if not AGENT_LIVE_STREAM_ENABLED:
+                        continue
+                    if not (isinstance(event_payload, tuple) and len(event_payload) == 2):
+                        continue
+                    msg_chunk, _metadata = event_payload
+                    if not isinstance(msg_chunk, AIMessageChunk):
+                        continue
+                    if not stream_channel_id:
+                        continue
+                    if getattr(msg_chunk, "tool_calls", None):
+                        continue
+                    chunk_text = self._message_text(msg_chunk)
+                    if chunk_text:
+                        agent_stream_bus.publish(
+                            run_id=stream_channel_id,
+                            agent_name=self.subgraph_id,
+                            content=chunk_text,
+                        )
         except Exception as e:
             err_msg = str(e)
             if "Interrupt(" in err_msg or e.__class__.__name__ == "GraphInterrupt":

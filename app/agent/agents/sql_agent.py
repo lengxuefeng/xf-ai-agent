@@ -29,7 +29,6 @@ from constants.sql_agent_keywords import (
 )
 from constants.sql_tool_constants import SQL_MSG_EXEC_ERROR_PREFIX
 from utils.custom_logger import get_logger, LogTarget
-from agent.graphs.checkpointer import checkpointer # 使用全局 Checkpointer
 from agent.prompts.sql_prompt import SqlPrompt
 
 log = get_logger(__name__)
@@ -39,6 +38,7 @@ class SqlAgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
     sql_to_execute: str  # 待执行的SQL
     sql_result: str  # SQL执行结果
+    schema_info: str  # schema 缓存，避免同一轮重复查询
 
 
 class SqlAgent(BaseAgent):
@@ -49,24 +49,6 @@ class SqlAgent(BaseAgent):
         if not req.model:
             raise ValueError("SQL 模型初始化失败，请检查配置。")
         self.llm = req.model
-        self.checkpointer = checkpointer  # 使用全局单例
-        self.subgraph_id = "sql_agent"
-
-        # 提示词模板
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", SqlPrompt.GENERATE_SQL),
-                MessagesPlaceholder(variable_name="messages")
-            ]
-        )
-        self.graph = self._build_graph()
-
-    def __init__(self, req: AgentRequest):
-        super().__init__(req)
-        if not req.model:
-            raise ValueError("SQL 模型初始化失败，请检查配置。")
-        self.llm = req.model
-        self.checkpointer = checkpointer  # 使用全局单例
         self.subgraph_id = "sql_agent"
         
         # 提示词模板
@@ -216,10 +198,13 @@ class SqlAgent(BaseAgent):
         schema_info = get_schema()
         # 将 schema 信息作为 ToolMessage 添加到历史记录（模拟工具调用结果）
         # 或者直接作为 SystemMessage 的一部分（这里为了简单，作为上下文消息）
-        return {"messages": [AIMessage(content=SQL_AGENT_SCHEMA_LOADED_MESSAGE)]}
+        return {
+            "schema_info": schema_info,
+            "messages": [AIMessage(content=SQL_AGENT_SCHEMA_LOADED_MESSAGE)],
+        }
 
     def _generate_sql_node(self, state: SqlAgentState):
-        schema_info = get_schema() # 重新获取或从 state 获取
+        schema_info = state.get("schema_info") or get_schema()
         messages = state.get("messages", [])
         latest_user_text = self._latest_human_text(messages)
         holter_intent = self._infer_holter_intent(messages)

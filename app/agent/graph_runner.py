@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
 import hashlib
 import json
 import queue
@@ -57,7 +58,12 @@ from constants.approval_constants import (
     SQL_APPROVAL_ACTION_NAME,
 )
 from constants.sse_constants import SseEventType, SseMessage, SsePayloadField
-from constants.workflow_constants import GRAPH_STREAM_MODES, GraphQueueItemType
+from constants.workflow_constants import (
+    GRAPH_STREAM_MODES,
+    GraphQueueItemType,
+    WORKER_CANCELLED_RESULT,
+    WORKER_PENDING_APPROVAL_RESULT,
+)
 from services.agent_stream_bus import agent_stream_bus
 from services.interrupt_service import interrupt_service
 from services.request_cancellation_service import request_cancellation_service
@@ -85,6 +91,82 @@ class GraphRunner:
         self._supervisor_cache: Dict[str, Any] = {}
 
     # ------------------------------------------------------------------ #
+    #  Workflow 事件工具                                                   #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _workflow_timestamp() -> str:
+        """返回统一的 UTC 时间戳，供前端流程轨迹排序使用。"""
+        return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    @staticmethod
+    def _workflow_role_for_agent(agent_name: str) -> str:
+        """根据 Agent 名称推断流程展示中的角色。"""
+        normalized = str(agent_name or "").strip()
+        if normalized in {"ChatAgent", "Aggregator", "chat_node", "aggregator_node"}:
+            return "supervisor"
+        if normalized:
+            return "worker"
+        return "system"
+
+    @staticmethod
+    def _workflow_display_name(agent_name: str) -> str:
+        """将内部 Agent 名称转换为更适合前端展示的标签。"""
+        normalized = str(agent_name or "").strip()
+        display_map = {
+            "ChatAgent": "掌柜",
+            "Aggregator": "总管汇总",
+            "yunyou_agent": "云柚专员",
+            "sql_agent": "账房先生",
+            "weather_agent": "天象司",
+            "search_agent": "典籍司",
+            "medical_agent": "医馆参谋",
+            "code_agent": "工坊司",
+            "chat_node": "掌柜",
+            "aggregator_node": "总管汇总",
+        }
+        return display_map.get(normalized, normalized or "流程节点")
+
+    @classmethod
+    def _build_workflow_event(
+        cls,
+        *,
+        session_id: str,
+        run_id: str,
+        phase: str,
+        title: str,
+        summary: str = "",
+        status: str = "info",
+        role: str = "system",
+        agent_name: str = "",
+        task_id: str = "",
+        node_name: str = "",
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """构造统一结构化流程事件。"""
+        payload: Dict[str, Any] = {
+            "id": uuid.uuid4().hex,
+            "session_id": session_id,
+            "run_id": run_id,
+            "phase": phase,
+            "title": title,
+            "summary": summary,
+            "status": status,
+            "role": role,
+            "timestamp": cls._workflow_timestamp(),
+        }
+        if agent_name:
+            payload["agent_name"] = agent_name
+            payload["agent_label"] = cls._workflow_display_name(agent_name)
+        if task_id:
+            payload["task_id"] = task_id
+        if node_name:
+            payload["node_name"] = node_name
+        if meta:
+            payload["meta"] = meta
+        return payload
+
+    # ------------------------------------------------------------------ #
     #  Supervisor 缓存管理                                                  #
     # ------------------------------------------------------------------ #
 
@@ -98,17 +180,42 @@ class GraphRunner:
         stable_json = json.dumps(model_config or {}, sort_keys=True, ensure_ascii=False)
         return hashlib.md5(stable_json.encode("utf-8")).hexdigest()
 
-    def _get_or_create_supervisor(self, model_config: Dict[str, Any]) -> Any:
+    def _get_or_create_supervisor(
+        self,
+        model_config: Dict[str, Any],
+        borrow_timeout: Optional[float] = None,
+    ) -> Any:
         """
         获取（或创建）Supervisor 编译图实例。
 
-        命中缓存时直接返回，未命中时编译后写入缓存，实现懒加载。
+        优先级：
+        1. 实例缓存（同进程内相同 config_key）
+        2. SessionPool 预热池（跨请求共享预热实例）
+        3. 按需编译（冷启动降级）
         """
         cache_key = self._build_config_key(model_config)
         if cache_key not in self._supervisor_cache:
-            log.info(f"首次编译 Supervisor 图，config_key={cache_key[:8]}...")
-            self._supervisor_cache[cache_key] = create_supervisor_graph(model_config)
+            # 先尝试从预热池借取，命中则直接写入本地缓存
+            from services.session_pool import session_pool
+            pooled = session_pool.borrow(model_config, timeout=borrow_timeout)
+            if pooled is not None:
+                log.info(f"从 SessionPool 借取预热实例，config_key={cache_key[:8]}...")
+                self._supervisor_cache[cache_key] = pooled
+            else:
+                log.info(f"首次编译 Supervisor 图，config_key={cache_key[:8]}...")
+                self._supervisor_cache[cache_key] = create_supervisor_graph(model_config)
+                # 编译完成后通知池注册该配置，下次 refill 时预热备用实例
+                session_pool.register_config(model_config)
         return self._supervisor_cache[cache_key]
+
+    def _get_supervisor(self, model_config: Dict[str, Any]) -> Any:
+        """
+        兼容旧代码路径：保留历史方法名。
+
+        旧单测/调用方仍可能 patch `_get_supervisor`，这里转发到新实现，
+        避免接口重构带来非功能性回归。
+        """
+        return self._get_or_create_supervisor(model_config)
 
     # ------------------------------------------------------------------ #
     #  核心公共接口：stream_run                                             #
@@ -146,10 +253,11 @@ class GraphRunner:
         session_context = session_context or {}
         # 实例默认配置与本次请求配置合并，请求级配置优先级更高
         effective_config = {**self.model_config, **(model_config or {})}
-        graph = self._get_or_create_supervisor(effective_config)
+        run_id = f"{session_id}:{uuid.uuid4().hex}"
 
         # ── 分支一：审批恢复流程 ──────────────────────────────────────────
         if user_input == "[RESUME]":
+            graph = self._get_or_create_supervisor(effective_config, borrow_timeout=0.0)
             async for chunk in self._handle_resume_stream_async(
                 session_id=session_id,
                 graph=graph,
@@ -170,10 +278,62 @@ class GraphRunner:
             thinking_hint, rule_content = rule_result
             if emit_response_start:
                 yield self._fmt_sse(SseEventType.RESPONSE_START.value, "")
+            yield self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="user_message_received",
+                    title="老板下达任务",
+                    summary=user_input,
+                    status="completed",
+                    role="boss",
+                    meta={"input_length": len(user_input or "")},
+                )
+            )
+            yield self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="rule_intercepted",
+                    title="总管快速裁决",
+                    summary=thinking_hint,
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                )
+            )
             yield self._fmt_sse(SseEventType.THINKING.value, thinking_hint)
             yield self._fmt_sse(SseEventType.STREAM.value, rule_content)
+            yield self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="final_report_delivered",
+                    title="总管回禀老板",
+                    summary=rule_content[:160],
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                )
+            )
             yield self._fmt_sse(SseEventType.RESPONSE_END.value, "")
             return
+
+        # response_start 必须在任何内容之前发出，让前端进入流式接收模式
+        if emit_response_start:
+            yield self._fmt_sse(SseEventType.RESPONSE_START.value, "")
+        yield self._fmt_workflow_event(
+            self._build_workflow_event(
+                session_id=session_id,
+                run_id=run_id,
+                phase="user_message_received",
+                title="老板下达任务",
+                summary=user_input,
+                status="completed",
+                role="boss",
+                meta={"input_length": len(user_input or "")},
+            )
+        )
 
         # ── 构造入图消息列表 ──────────────────────────────────────────────
         messages = self._build_input_messages(history_messages, user_input, session_context)
@@ -181,9 +341,28 @@ class GraphRunner:
         # ── RAG 上下文注入（可选） ────────────────────────────────────────
         rag_thinking_text = self._inject_rag_context(messages, user_input, effective_config)
 
+        if rag_thinking_text:
+            yield self._fmt_sse(SseEventType.THINKING.value, rag_thinking_text)
+            yield self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="knowledge_augmented",
+                    title="总管调阅知识卷宗",
+                    summary=rag_thinking_text,
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                )
+            )
+
+        # 非阻塞借取：避免在事件循环线程等待 SessionPool 轮询 sleep。
+        graph = self._get_or_create_supervisor(effective_config, borrow_timeout=0.0)
+
         # ── 构造图执行 Config ─────────────────────────────────────────────
-        run_id = f"{session_id}:{uuid.uuid4().hex}"
         request_cancellation_service.register_request(run_id)
+        if session_id:
+            request_cancellation_service.link_request(session_id, run_id)
         graph_config = {"configurable": {"thread_id": session_id, "run_id": run_id}}
         graph_inputs = {
             "messages": messages,
@@ -192,13 +371,6 @@ class GraphRunner:
             "context_slots": session_context.get("context_slots") or {},
             "context_summary": session_context.get("context_summary") or "",
         }
-
-        # response_start 必须在任何内容之前发出，让前端进入流式接收模式
-        if emit_response_start:
-            yield self._fmt_sse(SseEventType.RESPONSE_START.value, "")
-
-        if rag_thinking_text:
-            yield self._fmt_sse(SseEventType.THINKING.value, rag_thinking_text)
 
         # ── 启动后台图执行并消费事件队列（异步） ──────────────────────────
         async for chunk in self._run_graph_stream_async(
@@ -487,7 +659,18 @@ class GraphRunner:
 
             遇到 Interrupt 异常（子图挂起等待审批）视为正常终止，
             其他未知异常推入 ERROR 事件由消费协程处理。
+
+            【事件循环说明】
+            LangGraph ToolNode 遇到 async 工具时会调用 asyncio.run()，
+            该函数要求当前线程没有运行中的事件循环。后台工作线程默认
+            没有事件循环，asyncio.run() 会自动创建并销毁，行为正确。
+            此处显式设置新 loop 是为了兼容某些 Python 版本在子线程中
+            无法通过 get_event_loop() 获取 loop 的边界情况。
             """
+            # 为后台线程创建独立事件循环，确保异步工具（async tool）
+            # 通过 asyncio.run() 或 loop.run_until_complete() 可正常调用。
+            _thread_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(_thread_loop)
             owner_thread_ids.add(threading.get_ident())
             with request_cancellation_service.bind_request(run_id):
                 try:
@@ -508,7 +691,18 @@ class GraphRunner:
                         _safe_enqueue((GraphQueueItemType.DONE.value, None))
                     else:
                         log.exception(f"Graph Worker 执行异常: {worker_exc}")
-                        _safe_enqueue((GraphQueueItemType.ERROR.value, err_msg))
+                        _safe_enqueue(
+                            (
+                                GraphQueueItemType.ERROR.value,
+                                self._normalize_graph_error_message(worker_exc),
+                            )
+                        )
+                finally:
+                    # 关闭线程本地事件循环，释放资源
+                    try:
+                        _thread_loop.close()
+                    except Exception:
+                        pass
 
         # 注册日志拦截回调
         CustomLogger.add_global_sse_callback(_log_interceptor)
@@ -656,23 +850,31 @@ class GraphRunner:
                 yield item_data
 
             elif item_type == GraphQueueItemType.LIVE_STREAM.value:
-                sse_chunk = self._handle_live_stream_event(item_data, live_streamed_agents)
-                if sse_chunk:
+                for sse_chunk in self._handle_live_stream_event(
+                    payload=item_data,
+                    live_streamed_agents=live_streamed_agents,
+                    session_id=session_id,
+                    run_id=run_id,
+                ):
+                    if not sse_chunk:
+                        continue
                     progress_emitted = True
-                    stream_content_emitted = True
+                    if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
+                        stream_content_emitted = True
                     yield sse_chunk
 
             elif item_type == GraphQueueItemType.GRAPH.value:
                 ev_type, ev = item_data
 
                 if ev_type == "messages":
-                    sse_chunk, router_prefix_buffer, router_prefix_done = self._handle_message_chunk(
-                        ev, router_prefix_buffer, router_prefix_done
+                    sse_chunks, router_prefix_buffer, router_prefix_done = self._handle_message_chunk(
+                        ev, router_prefix_buffer, router_prefix_done, session_id, run_id
                     )
-                    if sse_chunk:
-                        progress_emitted = True
-                        stream_content_emitted = True
-                        yield sse_chunk
+                    for sse_chunk in sse_chunks:
+                        if sse_chunk:
+                            progress_emitted = True
+                            stream_content_emitted = True
+                            yield sse_chunk
 
                 elif ev_type == "updates":
                     for sse_chunk in self._handle_updates_event(
@@ -682,13 +884,19 @@ class GraphRunner:
                         live_streamed_agents=live_streamed_agents,
                         interrupt_emitted=interrupt_emitted,
                         active_agent_candidates=active_agent_candidates,
+                        run_id=run_id,
                     ):
                         progress_emitted = True
                         if sse_chunk.startswith(f"event: {SseEventType.INTERRUPT.value}"):
                             interrupt_emitted = True
+                        if sse_chunk.startswith(f"event: {SseEventType.ERROR.value}"):
+                            error_emitted = True
                         if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
                             stream_content_emitted = True
                         yield sse_chunk
+                    if error_emitted:
+                        request_cancellation_service.cancel_request(run_id)
+                        break
 
         # ── 循环结束后的兜底处理 ─────────────────────────────────────────
 
@@ -702,6 +910,7 @@ class GraphRunner:
                 session_id=session_id,
                 effective_config=effective_config,
                 candidate_names=list(active_agent_candidates),
+                run_id=run_id,
             ):
                 yield chunk
 
@@ -721,32 +930,67 @@ class GraphRunner:
     #  事件处理子方法                                                        #
     # ------------------------------------------------------------------ #
 
-    @staticmethod
+    @classmethod
     def _handle_live_stream_event(
+        cls,
         payload: Any,
         live_streamed_agents: Set[str],
-    ) -> str:
+        session_id: str,
+        run_id: str,
+    ) -> List[str]:
         """
         处理子 Agent 实时正文流事件。
 
         记录已推流的 Agent 名称，供后续抑制 synthetic 重复输出。
         """
         if not isinstance(payload, dict):
-            return ""
+            return []
         visible_content = str(payload.get("content") or "").strip()
         if not visible_content:
-            return ""
+            return []
         source_agent = str(payload.get("agent_name") or "").strip()
+        role = cls._workflow_role_for_agent(source_agent)
+        phase = "direct_response_streaming" if role == "supervisor" else "worker_streaming"
+        title = (
+            f"{cls._workflow_display_name(source_agent)}正在直接回话"
+            if role == "supervisor"
+            else f"{cls._workflow_display_name(source_agent)}正在执行"
+        )
+        first_stream = bool(source_agent and source_agent not in live_streamed_agents)
         if source_agent:
             live_streamed_agents.add(source_agent)
-        return GraphRunner._fmt_sse(SseEventType.STREAM.value, visible_content)
+        workflow_chunks = []
+        if source_agent:
+            workflow_chunks.append(
+                cls._fmt_workflow_event(
+                    cls._build_workflow_event(
+                        session_id=session_id,
+                        run_id=run_id,
+                        phase=phase,
+                        title=title,
+                        summary=visible_content[:80],
+                        status="active",
+                        role=role,
+                        agent_name=source_agent,
+                        task_id=str(payload.get("task_id") or ""),
+                        meta={
+                            "preview": visible_content[:160],
+                            "first_stream": first_stream,
+                        },
+                    )
+                )
+            )
+        workflow_chunks.append(cls._fmt_sse(SseEventType.STREAM.value, visible_content))
+        return workflow_chunks
 
     def _handle_message_chunk(
         self,
         event: Tuple[Any, Any],
         router_prefix_buffer: str,
         router_prefix_done: bool,
-    ) -> Tuple[str, str, bool]:
+        session_id: str = "",
+        run_id: str = "",
+    ) -> Tuple[List[str], str, bool]:
         """
         处理 messages 模式下的流式 token chunk。
 
@@ -757,7 +1001,7 @@ class GraphRunner:
         """
         msg_chunk, metadata = event
         if not isinstance(msg_chunk, AIMessageChunk):
-            return "", router_prefix_buffer, router_prefix_done
+            return [], router_prefix_buffer, router_prefix_done
 
         node_name = metadata.get("langgraph_node", "")
 
@@ -773,25 +1017,40 @@ class GraphRunner:
         }
 
         if node_name in _silenced_nodes:
-            return "", router_prefix_buffer, router_prefix_done
+            return [], router_prefix_buffer, router_prefix_done
 
-        # 工具调用 chunk 只通过 THINKING 展示，不做文本推流
+        # 工具调用 chunk 展示，同时下发 WORKFLOW_EVENT 供前端详情面板展示
         if getattr(msg_chunk, "tool_calls", None):
-            tool_thinking = ""
+            chunks = []
             for tc in msg_chunk.tool_calls:
-                tool_thinking = f"🔧 正在调度: {tc.get('name', '...')}"
-            if tool_thinking:
-                return self._fmt_sse(SseEventType.THINKING.value, tool_thinking), router_prefix_buffer, router_prefix_done
-            return "", router_prefix_buffer, router_prefix_done
+                tool_name = tc.get("name", "...")
+                chunks.append(self._fmt_sse(SseEventType.THINKING.value, f"🔧 正在调度: {tool_name}"))
+                chunks.append(self._fmt_workflow_event(
+                    self._build_workflow_event(
+                        session_id=session_id,
+                        run_id=run_id,
+                        phase="tool_called",
+                        title=f"调用工具: {tool_name}",
+                        summary=json.dumps(tc.get("args", {}), ensure_ascii=False),
+                        status="active",
+                        role=self._workflow_role_for_agent(node_name),
+                        agent_name=node_name,
+                        node_name=node_name,
+                        meta={"args": tc.get("args", {}), "tool_call_id": tc.get("id")}
+                    )
+                ))
+            if chunks:
+                return chunks, router_prefix_buffer, router_prefix_done
+            return [], router_prefix_buffer, router_prefix_done
 
         if not msg_chunk.content:
-            return "", router_prefix_buffer, router_prefix_done
+            return [], router_prefix_buffer, router_prefix_done
 
         # 只允许主路径与专业 Agent 的正文流推送
         from agent.registry import agent_classes as _agent_classes
         allowed_names = {None, "", "ChatAgent", "Aggregator", *_agent_classes.keys()}
         if getattr(msg_chunk, "name", None) not in allowed_names:
-            return "", router_prefix_buffer, router_prefix_done
+            return [], router_prefix_buffer, router_prefix_done
 
         # 单 chunk 路由 JSON 过滤
         visible = self._strip_router_json_prefix_single(msg_chunk.content)
@@ -800,10 +1059,10 @@ class GraphRunner:
             visible, router_prefix_buffer, router_prefix_done
         )
 
-        if not (isinstance(visible, str) and visible.strip()):
-            return "", router_prefix_buffer, router_prefix_done
+        if not isinstance(visible, str) or not visible:
+            return [], router_prefix_buffer, router_prefix_done
 
-        return self._fmt_sse(SseEventType.STREAM.value, visible), router_prefix_buffer, router_prefix_done
+        return [self._fmt_sse(SseEventType.STREAM.value, visible)], router_prefix_buffer, router_prefix_done
 
     # ------------------------------------------------------------------ #
     #  SSE 格式化工具                                                       #
@@ -823,6 +1082,54 @@ class GraphRunner:
             ensure_ascii=False,
         )
         return f"event: {event_type}\ndata: {payload}\n\n"
+
+    @staticmethod
+    def _fmt_workflow_event(payload: Dict[str, Any]) -> str:
+        """将结构化流程负载格式化为独立 SSE 事件。"""
+        body = json.dumps(
+            {
+                SsePayloadField.TYPE.value: SseEventType.WORKFLOW_EVENT.value,
+                SsePayloadField.CONTENT.value: str(payload.get("summary") or payload.get("title") or ""),
+                SsePayloadField.PAYLOAD.value: payload,
+            },
+            ensure_ascii=False,
+        )
+        return f"event: {SseEventType.WORKFLOW_EVENT.value}\ndata: {body}\n\n"
+
+    @staticmethod
+    def _normalize_graph_error_message(error: Any) -> str:
+        """
+        将内部异常归一为稳定的用户可见错误文案。
+
+        优先读取节点显式提供的 `user_message`，否则按常见错误类型降级。
+        """
+        user_message = str(getattr(error, "user_message", "") or "").strip()
+        if user_message:
+            return user_message
+
+        raw = str(error or "").strip()
+        lower = raw.lower()
+        timeout_markers = (
+            "timeout",
+            "timed out",
+            "readtimeout",
+            "chat_node.first_token_timeout",
+            "chat_node.total_timeout",
+            "超时",
+        )
+        connection_markers = (
+            "connection",
+            "connecterror",
+            "connectionerror",
+            "apiconnectionerror",
+            "连接失败",
+            "连接断开",
+        )
+        if isinstance(error, TimeoutError) or any(marker in lower for marker in timeout_markers):
+            return SseMessage.ERROR_TIMEOUT
+        if isinstance(error, ConnectionError) or any(marker in lower for marker in connection_markers):
+            return SseMessage.ERROR_CONNECTION
+        return SseMessage.ERROR_RUNTIME
 
     # ------------------------------------------------------------------ #
     #  路由 JSON 前缀过滤                                                   #
@@ -1121,6 +1428,7 @@ class GraphRunner:
         live_streamed_agents: Set[str],
         interrupt_emitted: bool,
         active_agent_candidates: Set[str],
+        run_id: str = "",
     ) -> Generator[str, None, None]:
         """
         处理 updates 模式下的图状态更新事件。
@@ -1138,7 +1446,12 @@ class GraphRunner:
                 active_agent_candidates.add(node_name)
 
             # ── 路由节点日志 ────────────────────────────────────────────
-            yield from self._emit_router_thinking(node_name, node_val)
+            yield from self._emit_router_thinking(
+                node_name=node_name,
+                node_val=node_val,
+                session_id=session_id,
+                run_id=run_id,
+            )
 
             # ── Interrupt 提取 ──────────────────────────────────────────
             if not interrupt_emitted:
@@ -1147,17 +1460,84 @@ class GraphRunner:
                     source_node, payload = inband_interrupt
                     interrupt_event = self._format_interrupt_payload(session_id, payload)
                     self._register_interrupts(session_id, interrupt_event, effective_config)
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="worker_pending_approval",
+                            title=f"{self._workflow_display_name(source_node)}等待老板批示",
+                            summary=str(interrupt_event.get("message") or DEFAULT_INTERRUPT_MESSAGE),
+                            status="waiting",
+                            role=self._workflow_role_for_agent(source_node),
+                            agent_name=str(interrupt_event.get("agent_name") or source_node),
+                            task_id=str(interrupt_event.get("message_id") or ""),
+                            node_name=source_node,
+                            meta={"interrupt": interrupt_event},
+                        )
+                    )
                     yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.NEED_MANUAL_APPROVAL)
                     yield self._fmt_sse(
                         SseEventType.INTERRUPT.value,
                         json.dumps(interrupt_event, ensure_ascii=False),
                     )
 
+            # ── 节点显式错误 ────────────────────────────────────────────
+            node_error_message = self._extract_node_error_message(node_val)
+            if node_error_message:
+                if node_name == "chat_node":
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="direct_response_failed",
+                            title="掌柜回禀失败",
+                            summary=node_error_message,
+                            status="error",
+                            role="supervisor",
+                            agent_name="ChatAgent",
+                            node_name=node_name,
+                        )
+                    )
+                elif node_name in _agent_classes:
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="worker_failed",
+                            title=f"{self._workflow_display_name(node_name)}执行受阻",
+                            summary=node_error_message,
+                            status="error",
+                            role="worker",
+                            agent_name=node_name,
+                            node_name=node_name,
+                        )
+                    )
+                yield self._fmt_sse(SseEventType.ERROR.value, node_error_message)
+                continue
+
             # ── Agent 操作日志与 synthetic 消息 ────────────────────────
             if not isinstance(node_val, dict) or "messages" not in node_val:
                 continue
 
             for msg in node_val.get("messages", []):
+                from langchain_core.messages import ToolMessage
+                if isinstance(msg, ToolMessage):
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="tool_completed",
+                            title=f"工具执行完毕: {msg.name}",
+                            summary=str(msg.content)[:120],
+                            status="completed",
+                            role=self._workflow_role_for_agent(node_name),
+                            agent_name=node_name,
+                            node_name=node_name,
+                            meta={"result": str(msg.content), "tool_call_id": getattr(msg, "tool_call_id", "")}
+                        )
+                    )
+                    continue
+
                 if not isinstance(msg, AIMessage):
                     continue
                 metadata = getattr(msg, "response_metadata", {}) or {}
@@ -1167,18 +1547,115 @@ class GraphRunner:
                 # synthetic 消息：由于未走正常 LLM stream，需直接推送给前端
                 should_emit = metadata.get("synthetic") and bool(msg.content)
                 source_agent_name = str(getattr(msg, "name", "") or node_name or "")
-                if metadata.get("live_streamed"):
-                    should_emit = False
-                elif live_streamed_agents and source_agent_name in live_streamed_agents:
-                    should_emit = False
+                visible = self._strip_router_json_prefix_single(msg.content)
+                visible_text = visible if isinstance(visible, str) else ""
+
+                if node_name == "aggregator_node" and visible_text.strip():
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="aggregator_completed",
+                            title="总管完成汇总",
+                            summary=visible_text[:160],
+                            status="completed",
+                            role="supervisor",
+                            agent_name="Aggregator",
+                            node_name=node_name,
+                            meta={"force_emit": bool(metadata.get("force_emit"))},
+                        )
+                    )
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="final_report_delivered",
+                            title="总管向老板回禀",
+                            summary=visible_text[:160],
+                            status="completed",
+                            role="supervisor",
+                            agent_name="Aggregator",
+                            node_name=node_name,
+                        )
+                    )
+                elif node_name == "chat_node" and visible_text.strip():
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="direct_response_completed",
+                            title="掌柜直接回复老板",
+                            summary=visible_text[:160],
+                            status="completed",
+                            role="supervisor",
+                            agent_name="ChatAgent",
+                            node_name=node_name,
+                        )
+                    )
+                elif node_name in _agent_classes and visible_text.strip():
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="worker_completed",
+                            title=f"{self._workflow_display_name(node_name)}提交结果",
+                            summary=visible_text[:160],
+                            status="completed",
+                            role="worker",
+                            agent_name=node_name,
+                            node_name=node_name,
+                            meta={"live_streamed": bool(metadata.get("live_streamed"))},
+                        )
+                    )
+                # 仅对 ChatAgent 执行“live_stream 后抑制 synthetic”；
+                # 工具型 Agent 可能先流出过渡句，再产出最终结果，若统一抑制会导致“有前奏、无结论”。
+                if source_agent_name == "ChatAgent":
+                    if metadata.get("live_streamed"):
+                        should_emit = False
+                    elif live_streamed_agents and source_agent_name in live_streamed_agents:
+                        should_emit = False
                 if should_emit and (node_name != "aggregator_node" or metadata.get("force_emit")):
-                    visible = self._strip_router_json_prefix_single(msg.content)
-                    if isinstance(visible, str) and visible.strip():
-                        yield self._fmt_sse(SseEventType.STREAM.value, visible)
+                    if visible_text.strip():
+                        yield self._fmt_sse(SseEventType.STREAM.value, visible_text)
+
+    def _process_supervisor_event(
+        self,
+        event: Dict[str, Any],
+        live_streamed_agents: Optional[Set[str]] = None,
+    ) -> Generator[str, None, None]:
+        """
+        兼容旧接口：转发到新的 updates 事件处理器。
+
+        旧单测与部分历史调用路径仍引用该方法名，保留适配层可降低重构成本。
+        """
+        yield from self._handle_updates_event(
+            event=event or {},
+            session_id="",
+            run_id="",
+            effective_config={},
+            live_streamed_agents=live_streamed_agents or set(),
+            interrupt_emitted=False,
+            active_agent_candidates=set(),
+        )
+
+    @staticmethod
+    def _extract_node_error_message(node_val: Any) -> Optional[str]:
+        """从节点更新值中提取显式用户错误文案。"""
+        if not isinstance(node_val, dict):
+            return None
+        error_message = str(node_val.get("error_message") or "").strip()
+        if error_message:
+            return error_message
+        return None
 
                 
     @staticmethod
-    def _emit_router_thinking(node_name: str, node_val: Any) -> Generator[str, None, None]:
+    def _emit_router_thinking(
+        node_name: str,
+        node_val: Any,
+        session_id: str,
+        run_id: str,
+    ) -> Generator[str, None, None]:
         """
         为各路由/规划节点生成可读的 thinking 日志事件。
 
@@ -1192,6 +1669,25 @@ class GraphRunner:
         if node_name == "Domain_Router_Node" and "data_domain" in node_val:
             elapsed = node_val.get("domain_elapsed_ms")
             elapsed_text = f"，耗时: {int(elapsed)}ms" if isinstance(elapsed, (int, float)) else ""
+            yield GraphRunner._fmt_workflow_event(
+                GraphRunner._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="domain_routed",
+                    title="总管完成数据域判断",
+                    summary=f"路由至 {node_val.get('data_domain')}",
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                    node_name=node_name,
+                    meta={
+                        "data_domain": node_val.get("data_domain"),
+                        "confidence": float(node_val.get("domain_confidence", 0) or 0),
+                        "source": node_val.get("domain_route_source", "unknown"),
+                        "route_strategy": node_val.get("route_strategy", "single_domain"),
+                    },
+                )
+            )
             yield GraphRunner._fmt_sse(
                 SseEventType.THINKING.value,
                 f"数据域路由: {node_val.get('data_domain')} "
@@ -1205,9 +1701,44 @@ class GraphRunner:
         if node_name == "Intent_Router_Node" and "intent" in node_val:
             elapsed = node_val.get("intent_elapsed_ms")
             elapsed_text = f"，耗时: {int(elapsed)}ms" if isinstance(elapsed, (int, float)) else ""
+            intent_name = str(node_val.get("intent") or "CHAT")
+            is_complex = bool(node_val.get("is_complex"))
+            if is_complex:
+                workflow_phase = "complex_route_escalated"
+                workflow_title = "总管决定拆解多环节任务"
+                workflow_summary = f"改走任务编排，目标意图 {intent_name}"
+                workflow_status = "active"
+            elif intent_name == "CHAT":
+                workflow_phase = "direct_chat_selected"
+                workflow_title = "总管决定亲自答复"
+                workflow_summary = "无需分派员工，掌柜直接处理"
+                workflow_status = "active"
+            else:
+                workflow_phase = "direct_agent_selected"
+                workflow_title = f"总管指派 {GraphRunner._workflow_display_name(intent_name)}"
+                workflow_summary = f"目标意图 {intent_name}"
+                workflow_status = "active"
+            yield GraphRunner._fmt_workflow_event(
+                GraphRunner._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase=workflow_phase,
+                    title=workflow_title,
+                    summary=workflow_summary,
+                    status=workflow_status,
+                    role="supervisor",
+                    agent_name="ChatAgent" if intent_name == "CHAT" else intent_name,
+                    node_name=node_name,
+                    meta={
+                        "intent": intent_name,
+                        "confidence": float(node_val.get("intent_confidence", 0) or 0),
+                        "is_complex": is_complex,
+                    },
+                )
+            )
             yield GraphRunner._fmt_sse(
                 SseEventType.THINKING.value,
-                f"智能路由指派: {node_val['intent']} "
+                f"智能路由指派: {intent_name} "
                 f"(置信度: {node_val.get('intent_confidence', 0):.2f}{elapsed_text})",
             )
             return
@@ -1217,6 +1748,23 @@ class GraphRunner:
             elapsed = node_val.get("planner_elapsed_ms")
             elapsed_text = f"，耗时: {int(elapsed)}ms" if isinstance(elapsed, (int, float)) else ""
             tasks = node_val.get("task_list") or []
+            yield GraphRunner._fmt_workflow_event(
+                GraphRunner._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="tasks_planned",
+                    title="总管拆解任务",
+                    summary=f"共拆解 {len(tasks)} 个子任务",
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                    node_name=node_name,
+                    meta={
+                        "planner_source": node_val.get("planner_source", "unknown"),
+                        "tasks": tasks,
+                    },
+                )
+            )
             yield GraphRunner._fmt_sse(
                 SseEventType.THINKING.value,
                 f"任务拆解完成: {len(tasks)} 个子任务 "
@@ -1229,6 +1777,28 @@ class GraphRunner:
             count = len(node_val.get("active_tasks", []))
             wave = node_val.get("current_wave", "?")
             if count > 0:
+                for task in node_val.get("active_tasks", []):
+                    if not isinstance(task, dict):
+                        continue
+                    agent_name = str(task.get("agent") or "")
+                    yield GraphRunner._fmt_workflow_event(
+                        GraphRunner._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="task_dispatched",
+                            title=f"总管派发 {GraphRunner._workflow_display_name(agent_name)}",
+                            summary=str(task.get("input") or "")[:120],
+                            status="active",
+                            role=GraphRunner._workflow_role_for_agent(agent_name),
+                            agent_name=agent_name,
+                            task_id=str(task.get("id") or ""),
+                            node_name=node_name,
+                            meta={
+                                "wave": wave,
+                                "depends_on": task.get("depends_on") or [],
+                            },
+                        )
+                    )
                 yield GraphRunner._fmt_sse(
                     SseEventType.THINKING.value,
                     f"🚀 DAG 第 {wave} 波次：派发 {count} 个并行子任务",
@@ -1240,11 +1810,48 @@ class GraphRunner:
             for worker_item in (node_val.get("worker_results") or []):
                 if not isinstance(worker_item, dict):
                     continue
+                task_id = str(worker_item.get("task_id") or "")
+                agent_name = str(worker_item.get("agent") or "")
+                error_text = str(worker_item.get("error") or "").strip()
+                result_text = str(worker_item.get("result") or "")
+                if error_text:
+                    phase = "worker_failed"
+                    status = "error"
+                    title = f"{GraphRunner._workflow_display_name(agent_name)}执行受阻"
+                    summary = error_text
+                elif result_text == WORKER_PENDING_APPROVAL_RESULT:
+                    phase = "worker_pending_approval"
+                    status = "waiting"
+                    title = f"{GraphRunner._workflow_display_name(agent_name)}等待老板批示"
+                    summary = "该子任务需要人工审批后继续"
+                elif result_text == WORKER_CANCELLED_RESULT:
+                    phase = "worker_cancelled"
+                    status = "cancelled"
+                    title = f"{GraphRunner._workflow_display_name(agent_name)}停止执行"
+                    summary = "任务已被取消"
+                else:
+                    phase = "worker_completed"
+                    status = "completed"
+                    title = f"{GraphRunner._workflow_display_name(agent_name)}完成任务"
+                    summary = result_text[:120]
+                yield GraphRunner._fmt_workflow_event(
+                    GraphRunner._build_workflow_event(
+                        session_id=session_id,
+                        run_id=run_id,
+                        phase=phase,
+                        title=title,
+                        summary=summary,
+                        status=status,
+                        role=GraphRunner._workflow_role_for_agent(agent_name),
+                        agent_name=agent_name,
+                        task_id=task_id,
+                        node_name=node_name,
+                        meta={"elapsed_ms": worker_item.get("elapsed_ms")},
+                    )
+                )
                 elapsed = worker_item.get("elapsed_ms")
                 if not isinstance(elapsed, (int, float)):
                     continue
-                task_id = str(worker_item.get("task_id") or "")
-                agent_name = str(worker_item.get("agent") or "")
                 label = f"{task_id}:{agent_name}" if task_id and agent_name else task_id or agent_name or "worker"
                 yield GraphRunner._fmt_sse(
                     SseEventType.THINKING.value,
@@ -1283,6 +1890,7 @@ class GraphRunner:
         session_id: str,
         effective_config: Dict[str, Any],
         candidate_names: List[str],
+        run_id: str = "",
     ) -> Generator[str, None, None]:
         """流结束后定向扫描子图快照是否存在未处理的 Interrupt（默认关闭）。"""
         try:
@@ -1296,6 +1904,21 @@ class GraphRunner:
             return
         if interrupt_event:
             self._register_interrupts(session_id, interrupt_event, effective_config)
+            agent_name = str(interrupt_event.get("agent_name") or "")
+            yield self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="worker_pending_approval",
+                    title=f"{self._workflow_display_name(agent_name)}等待老板批示",
+                    summary=str(interrupt_event.get("message") or DEFAULT_INTERRUPT_MESSAGE),
+                    status="waiting",
+                    role=self._workflow_role_for_agent(agent_name),
+                    agent_name=agent_name,
+                    task_id=str(interrupt_event.get("message_id") or ""),
+                    meta={"interrupt": interrupt_event},
+                )
+            )
             yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.NEED_MANUAL_APPROVAL)
             yield self._fmt_sse(
                 SseEventType.INTERRUPT.value,
@@ -1320,14 +1943,28 @@ class GraphRunner:
         if not resume_meta:
             yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.INVALID_RESUME_PARAM)
             return
+        resume_run_id = f"{session_id}:resume:{uuid.uuid4().hex}"
         if emit_response_start:
             yield self._fmt_sse(SseEventType.RESPONSE_START.value, "")
+        yield self._fmt_workflow_event(
+            self._build_workflow_event(
+                session_id=session_id,
+                run_id=resume_run_id,
+                phase="resume_requested",
+                title="老板批示已送达",
+                summary=f"审批结果：{resume_meta.get('decision')}",
+                status="completed",
+                role="boss",
+                meta={"message_id": resume_meta.get("message_id")},
+            )
+        )
         yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.RESUME_DETECTED)
         for chunk in self._handle_resume(
             session_id=session_id,
             resume_meta=resume_meta,
             supervisor_graph=graph,
             effective_config=effective_config,
+            run_id=resume_run_id,
         ):
             yield chunk
         yield self._fmt_sse(SseEventType.RESPONSE_END.value, "")
@@ -1366,6 +2003,7 @@ class GraphRunner:
         resume_meta: Dict[str, Any],
         supervisor_graph: Any,
         effective_config: Dict[str, Any],
+        run_id: str = "",
     ) -> Generator[str, None, None]:
         """
         恢复被 Interrupt 挂起的子 Agent 执行。
@@ -1439,6 +2077,19 @@ class GraphRunner:
             f"Resume target={target_agent.subgraph_id}, thread={subgraph_thread_id}, "
             f"ckpt={preferred_ckpt_id}, decision={decision}"
         )
+        yield self._fmt_workflow_event(
+            self._build_workflow_event(
+                session_id=session_id,
+                run_id=run_id,
+                phase="worker_resumed",
+                title=f"{self._workflow_display_name(target_agent.subgraph_id)}恢复执行",
+                summary=f"审批结果：{decision}",
+                status="active",
+                role=self._workflow_role_for_agent(target_agent.subgraph_id),
+                agent_name=target_agent.subgraph_id,
+                meta={"message_id": message_id},
+            )
+        )
 
         final_msgs: List[AIMessage] = []
         try:
@@ -1467,6 +2118,27 @@ class GraphRunner:
         if message_id:
             interrupt_service.mark_approval_consumed(session_id, message_id)
         self._backfill_supervisor_state(supervisor_graph, session_id, final_msgs)
+        final_text = next(
+            (
+                str(msg.content or "").strip()
+                for msg in reversed(final_msgs)
+                if isinstance(msg.content, str) and str(msg.content or "").strip()
+            ),
+            "",
+        )
+        if final_text:
+            yield self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="final_report_delivered",
+                    title="恢复执行后已向老板回禀",
+                    summary=final_text[:160],
+                    status="completed",
+                    role=self._workflow_role_for_agent(target_agent.subgraph_id),
+                    agent_name=target_agent.subgraph_id,
+                )
+            )
 
 
     def _handle_resume_exception(
@@ -1554,60 +2226,6 @@ class GraphRunner:
         """将子 Agent 恢复结果回填到 Supervisor 状态，保证会话连续性。"""
         if not final_msgs:
             return
-        sup_config = {"configurable": {"thread_id": session_id}}
-        try:
-            sup_state = supervisor_graph.get_state(sup_config)
-            if getattr(sup_state, "values", None):
-                supervisor_graph.update_state(sup_config, {"messages": final_msgs})
-        except Exception as exc:
-            log.warning(f"恢复后回填 Supervisor 状态失败，已降级跳过: {exc}")
-
-    def _handle_resume_exception(self, session_id, resume_meta, resume_exc, target_agent, effective_config, message_id, decision):
-        """处理恢复执行时抛出的异常，区分 Interrupt 挂起和真实错误。"""
-        err_msg = str(resume_exc)
-        if "Interrupt(" in err_msg or resume_exc.__class__.__name__ == "GraphInterrupt":
-            interrupt_event = self._scan_subgraph_interrupts(session_id, effective_config=effective_config, candidate_agent_names=[target_agent.subgraph_id])
-            if interrupt_event:
-                if message_id: interrupt_service.mark_approval_consumed(session_id, message_id)
-                self._register_interrupts(session_id, interrupt_event, effective_config)
-                yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.RESUME_NEED_MANUAL_APPROVAL)
-                yield self._fmt_sse(SseEventType.INTERRUPT.value, json.dumps(interrupt_event, ensure_ascii=False))
-            else:
-                yield self._fmt_sse(SseEventType.ERROR.value, "恢复执行进入审批状态，但未获取到审批详情，请重试。")
-            return
-        log.exception(f"Resume non-interrupt failure: {err_msg}")
-        if "1214" in err_msg and resume_meta.get("action_name") == SQL_APPROVAL_ACTION_NAME and decision == ApprovalDecision.APPROVE.value:
-            approved_sql = (resume_meta.get("action_args") or {}).get("sql")
-            if approved_sql:
-                try:
-                    from agent.tools.sql_tools import execute_sql, format_sql_result_for_user
-                    result = execute_sql(approved_sql, domain="LOCAL_DB")
-                    yield self._fmt_sse(SseEventType.STREAM.value, format_sql_result_for_user(approved_sql, result))
-                    if message_id: interrupt_service.mark_approval_consumed(session_id, message_id)
-                    return
-                except Exception as sql_exc:
-                    yield self._fmt_sse(SseEventType.ERROR.value, f"任务恢复失败且SQL兜底执行失败: {sql_exc}")
-                    return
-        yield self._fmt_sse(SseEventType.ERROR.value, f"任务恢复失败: {err_msg}")
-
-    def _handle_resume_empty_result(self, session_id, decision, message_id, target_agent, effective_config):
-        """处理恢复执行后无 AI 消息输出的情况。"""
-        if decision == ApprovalDecision.REJECT.value:
-            if message_id: interrupt_service.mark_approval_consumed(session_id, message_id)
-            yield self._fmt_sse(SseEventType.STREAM.value, GRAPH_RUNNER_REJECTED_MESSAGE)
-            return
-        interrupt_event = self._scan_subgraph_interrupts(session_id, effective_config=effective_config, candidate_agent_names=[target_agent.subgraph_id])
-        if interrupt_event:
-            if message_id: interrupt_service.mark_approval_consumed(session_id, message_id)
-            self._register_interrupts(session_id, interrupt_event, effective_config)
-            yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.RESUME_NEED_MANUAL_APPROVAL)
-            yield self._fmt_sse(SseEventType.INTERRUPT.value, json.dumps(interrupt_event, ensure_ascii=False))
-        else:
-            yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_RESUME_EMPTY_RESULT)
-
-    def _backfill_supervisor_state(self, supervisor_graph, session_id, final_msgs):
-        """将子 Agent 恢复结果回填到 Supervisor 状态，保证会话连续性。"""
-        if not final_msgs: return
         sup_config = {"configurable": {"thread_id": session_id}}
         try:
             sup_state = supervisor_graph.get_state(sup_config)
