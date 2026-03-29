@@ -29,7 +29,7 @@ def create_chat_session(
         db: Session = Depends(get_db),
         user_id: int = Depends(verify_token)
 ):
-    """创建新会话"""
+    """创建新会话；若 session_id 已存在则复用已有会话。"""
     result = chat_history_service.create_session(db, user_id, req)
     data = ChatSession.model_validate(result).model_dump()
     return ResponseModel.success(data=data, message="会话创建成功")
@@ -42,10 +42,14 @@ def get_chat_sessions(
         db: Session = Depends(get_db),
         user_id: int = Depends(verify_token)
 ):
-    """获取会话列表"""
-    sessions = chat_history_service.get_user_sessions(db, user_id, page, size)
-    # 列表推导式进行批量验证
-    data = [ChatSession.model_validate(s).model_dump() for s in sessions]
+    """分页获取会话列表，同时返回 total，方便前端做无限滚动。"""
+    result = chat_history_service.get_user_sessions(db, user_id, page, size)
+    data = {
+        "items": [ChatSession.model_validate(s).model_dump() for s in result.get("items", [])],
+        "total": result.get("total", 0),
+        "page": result.get("page", page),
+        "size": result.get("size", size),
+    }
     return ResponseModel.success(data=data)
 
 
@@ -82,3 +86,40 @@ def create_chat_message(
     result = chat_history_service.create_chat_message(db, user_id, req)
     data = ChatMessage.model_validate(result).model_dump()
     return ResponseModel.success(data=data)
+
+
+@chat_history_router.put("/sessions/{session_id}", response_model=ResponseModel)
+def rename_chat_session(
+        session_id: str,
+        req: ChatSessionIn,
+        db: Session = Depends(get_db),
+        user_id: int = Depends(verify_token)
+):
+    """重命名会话标题，供前端聊天列表和标题栏同步使用。"""
+    result = chat_history_service.rename_session(db, user_id, session_id, req.title or "")
+    data = ChatSession.model_validate(result).model_dump()
+    return ResponseModel.success(data=data, message="会话重命名成功")
+
+
+@chat_history_router.delete("/sessions/{session_id}", response_model=ResponseModel)
+def delete_chat_session(
+        session_id: str,
+        db: Session = Depends(get_db),
+        user_id: int = Depends(verify_token)
+):
+    """软删除会话，并同步隐藏会话下的历史消息。"""
+    result = chat_history_service.delete_session(db, user_id, session_id)
+    data = ChatSession.model_validate(result).model_dump()
+    return ResponseModel.success(data=data, message="会话已删除")
+
+
+@chat_history_router.delete("/messages/{message_id}", response_model=ResponseModel)
+def delete_chat_message(
+        message_id: int,
+        db: Session = Depends(get_db),
+        user_id: int = Depends(verify_token)
+):
+    """软删除单条消息，避免前端删除后刷新又重新出现。"""
+    result = chat_history_service.delete_message(db, user_id, message_id)
+    data = ChatMessage.model_validate(result).model_dump()
+    return ResponseModel.success(data=data, message="消息已删除")

@@ -44,6 +44,14 @@ class CRUDUserModel(CRUDBase[UserModel, UserModelCreate, UserModelUpdate]):
             self.model.is_active == True
         ).first()
 
+    def deactivate_all_by_user_id(self, db: Session, user_id: int):
+        """批量取消用户名下全部激活模型，保证激活态切换时状态一致。"""
+        return (
+            db.query(self.model)
+            .filter(self.model.user_id == user_id, self.model.is_active == True)
+            .update({"is_active": False}, synchronize_session=False)
+        )
+
 
 class CRUDModelSetting(CRUDBase[ModelSetting, ModelServiceCreate, ModelServiceUpdate]):
     def get_all_enabled(self, db: Session):
@@ -64,6 +72,13 @@ class CRUDChatSession(CRUDBase[ChatSessionModel, ChatSessionCreate, ChatSessionU
             self.model.user_id == user_id,
             self.model.is_deleted == False
         ).order_by(self.model.create_time.desc()).offset(skip).limit(limit).all()
+
+    def count_by_user_id(self, db: Session, user_id: int) -> int:
+        """统计用户当前未删除的会话总数，供分页接口返回总量。"""
+        return db.query(self.model).filter(
+            self.model.user_id == user_id,
+            self.model.is_deleted == False
+        ).count()
 
     def get_by_session_id(self, db: Session, session_id: str):
         """根据会话 ID 查找"""

@@ -1,0 +1,16 @@
+{
+  "session_id": "session_1774343185069_6hfn94g56",
+  "run_id": "session_1774343185069_6hfn94g56:3676fb9f13894e7180e794dee32f61d2",
+  "user_input": "基于当前工作目录，帮我补一个 Electron 本地桌面版打包方案",
+  "history_size": 1,
+  "session_context": {
+    "context_slots": {
+      "city": "你是谁",
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=基于当前工作目录，帮我补一个 Electron 本地桌面版打包方案"
+      ]
+    },
+    "context_summary": "【会话关键上下文】\n- 当前城市: 你是谁\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=基于当前工作目录，帮我补一个 Electron 本地桌面版打包方案"
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "key": "project_agents_md",
+    "source": "AGENTS.md",
+    "content": "# XF AI Agent Runtime Memory\n\n## 项目定位\n- 这是一个偏业务编排型的多 Agent 系统，不只是简单聊天机器人。\n- 用户希望从前端清晰看到“老板发令 -> 掌柜调度 -> 司员执行 -> 汇总回禀”的全过程。\n\n## 运行时原则\n- 优先保证可解释性、可观测性和审批安全。\n- 工具调用、外部查询、代码执行、记忆注入都应尽量结构化。\n- 能直接答复的问题由掌柜直办；需要专业能力时再调度司员。\n\n## 前端风格\n- 国风简约\n- 宣纸、卷轴、印章、墨色层次\n- 不要堆砌科技风默认样式\n\n## 质量要求\n- 尽量保留流式体验\n- 流程事件要能持久化并回放\n- 高风险执行必须支持审批",
+    "scope": "project"
+  },
+  {
+    "key": "current_request",
+    "source": "run_context",
+    "content": "当前用户输入：hello",
+    "scope": "request"
+  }
+]

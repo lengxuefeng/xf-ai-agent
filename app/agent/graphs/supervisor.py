@@ -17,12 +17,45 @@ from pydantic import BaseModel, Field
 from agent.graph_state import AgentRequest
 from agent.graphs.checkpointer import get_checkpointer
 from agent.graphs.state import GraphState, SubTask, WorkerResult
+from agent.graphs.supervisor_support import (
+    build_non_streaming_config as _support_build_non_streaming_config,
+    can_reuse_weather_context as _support_can_reuse_weather_context,
+    content_to_text as _support_content_to_text,
+    extract_city_from_context_slots as _support_extract_city_from_context_slots,
+    extract_recent_city_from_history as _support_extract_recent_city_from_history,
+    extract_interrupt_from_snapshot as _support_extract_interrupt_from_snapshot,
+    has_recent_weather_fact as _support_has_recent_weather_fact,
+    history_hint_intent as _support_history_hint_intent,
+    history_requests_location as _support_history_requests_location,
+    input_has_location_anchor as _support_input_has_location_anchor,
+    is_followup_supplement as _support_is_followup_supplement,
+    invoke_with_timeout as _support_invoke_with_timeout,
+    latest_human_message as _support_latest_human_message,
+    looks_like_location_fragment as _support_looks_like_location_fragment,
+    looks_like_weather_reuse_query as _support_looks_like_weather_reuse_query,
+    normalize_interrupt_payload as _support_normalize_interrupt_payload,
+    parse_json_from_text as _support_parse_json_from_text,
+    wants_weather_refresh as _support_wants_weather_refresh,
+)
+from agent.graphs.supervisor_rule_support import (
+    analyze_request_payload as _support_analyze_request_payload,
+    build_agent_specific_task_input as _support_build_agent_specific_task_input,
+    build_planner_fallback_tasks as _support_build_planner_fallback_tasks,
+    build_rule_based_multidomain_tasks as _support_build_rule_based_multidomain_tasks,
+    collect_intent_signals as _support_collect_intent_signals,
+    dedupe_keep_order as _support_dedupe_keep_order,
+    extract_agent_focus_text as _support_extract_agent_focus_text,
+    has_dependency_hint as _support_has_dependency_hint,
+    is_explicit_request_clause as _support_is_explicit_request_clause,
+    looks_like_compound_request as _support_looks_like_compound_request,
+    select_primary_agent_for_clause as _support_select_primary_agent_for_clause,
+    split_query_clauses as _support_split_query_clauses,
+)
 from agent.llm.unified_loader import create_model_from_config
 from agent.registry import agent_classes, MEMBERS
 from agent.prompts.supervisor_prompt import IntentRouterPrompt, ChatFallbackPrompt, PlannerPrompt, AggregatorPrompt
 from constants.agent_registry_keywords import AGENT_KEYWORDS, AgentKeywordGroup
 from constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
-from constants.search_keywords import SEARCH_REAL_ESTATE_KEYWORDS, SEARCH_WEATHER_KEYWORDS
 from constants.supervisor_keywords import SUPERVISOR_KEYWORDS, SupervisorKeywordGroup
 from constants.workflow_constants import (
     AGENT_DOMAIN_MAP,
@@ -52,6 +85,43 @@ from utils.date_utils import get_agent_date_context
 
 log = get_logger(__name__)
 INTERRUPT_RESULT_TYPE = WORKFLOW_INTERRUPT_RESULT_TYPE
+
+
+def _parse_json_from_text(text: str) -> dict:
+    """沿用原有私有函数入口，内部转调独立支持模块。"""
+    return _support_parse_json_from_text(text, log=log)
+
+
+def _build_non_streaming_config(config: RunnableConfig) -> RunnableConfig:
+    """沿用原有私有函数入口，内部转调独立支持模块。"""
+    return _support_build_non_streaming_config(config)
+
+
+def _invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str):
+    """沿用原有私有函数入口，内部转调独立支持模块。"""
+    return _support_invoke_with_timeout(
+        callable_fn,
+        timeout_sec=timeout_sec,
+        timeout_label=timeout_label,
+    )
+
+
+def _normalize_interrupt_payload(val: Any) -> dict:
+    """沿用原有私有函数入口，补齐默认审核文案和允许操作。"""
+    return _support_normalize_interrupt_payload(
+        val,
+        default_message=DEFAULT_INTERRUPT_MESSAGE,
+        default_allowed_decisions=list(DEFAULT_ALLOWED_DECISIONS),
+    )
+
+
+def _extract_interrupt_from_snapshot(snapshot: Any) -> Optional[dict]:
+    """沿用原有私有函数入口，从快照里提取并规整 interrupt。"""
+    return _support_extract_interrupt_from_snapshot(
+        snapshot,
+        default_message=DEFAULT_INTERRUPT_MESSAGE,
+        default_allowed_decisions=list(DEFAULT_ALLOWED_DECISIONS),
+    )
 
 # --- Models ---
 class IntentDecision(BaseModel):
@@ -332,536 +402,159 @@ def _looks_like_general_chat_request(text: str) -> bool:
 
 # --- Helpers ---
 def _latest_human_message(messages: List[BaseMessage]) -> str:
-    for msg in reversed(messages):
-        if isinstance(msg, HumanMessage):
-            content = msg.content
-            if isinstance(content, str):
-                return content.strip()
-            if isinstance(content, list):
-                parts: List[str] = []
-                for item in content:
-                    if isinstance(item, str):
-                        parts.append(item)
-                    elif isinstance(item, dict):
-                        text = item.get("text") or item.get("content") or ""
-                        if isinstance(text, str):
-                            parts.append(text)
-                return " ".join(parts).strip()
-            return str(content or "").strip()
-    return ""
+    """沿用原有私有函数入口，读取最近一条用户消息文本。"""
+    return _support_latest_human_message(messages)
 
 
 def _content_to_text(content: Any) -> str:
-    """将 LLM content（str / block list / other）统一转为可展示文本。"""
-    if content is None:
-        return ""
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        parts: List[str] = []
-        for item in content:
-            if isinstance(item, str):
-                parts.append(item)
-                continue
-            if isinstance(item, dict):
-                text = item.get("text") or item.get("content") or ""
-                if isinstance(text, str) and text:
-                    parts.append(text)
-        if parts:
-            return "\n".join(parts)
-        return str(content)
-    if isinstance(content, dict):
-        text = content.get("text") or content.get("content")
-        if isinstance(text, str):
-            return text
-        return json.dumps(content, ensure_ascii=False)
-    return str(content)
+    """沿用原有私有函数入口，统一规整消息内容文本。"""
+    return _support_content_to_text(content)
 
 
 def _history_requests_location(messages: Optional[List[BaseMessage]]) -> bool:
-    """判断最近一轮 AI 是否明确向用户追问过城市。"""
-    if not messages:
-        return False
-    city_request_hints = (
-        "哪个城市",
-        "所在城市",
-        "请告诉我城市",
-        "请提供城市",
-        "城市名",
-        "告诉我你在哪个城市",
-    )
-    for msg in reversed(messages[-6:]):
-        if not isinstance(msg, AIMessage):
-            continue
-        text = _content_to_text(getattr(msg, "content", "")).lower()
-        if any(hint in text for hint in city_request_hints):
-            return True
-    return False
+    """沿用原有私有函数入口，判断最近是否追问过城市。"""
+    return _support_history_requests_location(messages)
 
 
 def _is_followup_supplement(text: str, messages: Optional[List[BaseMessage]] = None) -> bool:
-    """识别用户是否在补充上轮追问信息（日期、确认词、简短参数）。"""
-    t = (text or "").strip().lower()
-    if not t:
-        return False
-
-    if t in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.FOLLOWUP_CONFIRM]:
-        return True
-
-    if any(k in t for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.FOLLOWUP_REFERENCE]):
-        return True
-
-    # 仅包含日期/分隔符/空白的短文本，通常是对“请补充时间范围”的回答
-    if len(t) <= 60 and re.fullmatch(r"[0-9\-\s:~至到/,，.]+", t):
-        return True
-
-    if len(t) <= 80 and re.search(r"\b20\d{2}-\d{2}-\d{2}\b", t):
-        return True
-
-    # 排序/条数/字段补充，常见于“你先查最近数据，再补一句按 id 倒序前 5 条”
-    if len(t) <= 120 and any(k in t for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.FOLLOWUP_ORDER_HINT]):
-        return True
-
-    # 仅当“上一轮明确追问过城市”时，才把短词当作地点补充，避免把“开心/难受”等误判为城市。
-    if _history_requests_location(messages) and _looks_like_location_fragment(t):
-        return True
-
-    return False
+    """沿用原有私有函数入口，识别是否为补充说明输入。"""
+    return _support_is_followup_supplement(text, messages)
 
 
 def _looks_like_location_fragment(text: str) -> bool:
-    """识别“仅城市名”这类补充输入。"""
-    t = (text or "").strip()
-    if not t or len(t) > 40:
-        return False
-    # 支持多城市补充：如“南京，北京，上海”
-    if any(sep in t for sep in ("，", ",", "、", "；", ";", "\n")):
-        parts = [part.strip() for part in re.split(r"[，,、；;\n]+", t) if part.strip()]
-        if not (1 <= len(parts) <= 5):
-            return False
-        # 递归复用“单城市片段”判定逻辑
-        return all(_looks_like_location_fragment(part) for part in parts)
-    if any(sep in t for sep in ("。", "！", "!", "？", "?")):
-        return False
-    if any(k in t for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.NON_LOCATION_EMOTION_WORDS]):
-        return False
-    patterns = SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.FOLLOWUP_LOCATION_REGEX]
-    if not any(re.fullmatch(p, t) for p in patterns):
-        return False
-
-    # 无行政后缀时，只接受短城市名（如“郑州”“南京”），过滤普通短语误判。
-    has_admin_suffix = t.endswith(("市", "县", "区", "州", "盟", "旗"))
-    if has_admin_suffix:
-        return True
-    return 1 < len(t) <= 4
+    """沿用原有私有函数入口，识别短地点片段。"""
+    return _support_looks_like_location_fragment(text)
 
 
 def _extract_recent_city_from_history(messages: List[BaseMessage]) -> Optional[str]:
-    """从最近人类消息中提取城市名，用于后续问题的上下文补全。"""
-    if not messages:
-        return None
-
-    ignore_keywords = ("附近", "哪里", "什么", "怎么", "为什么", "好玩", "天气", "活动", "房价", "小区", "推荐")
-    suffix_particles_pattern = re.compile(r"[的了呀啊呢吧吗嘛～~\s,，。！!？?]+")
-
-    for msg in reversed(messages[-12:]):
-        if not isinstance(msg, HumanMessage):
-            continue
-        text = _content_to_text(getattr(msg, "content", "")).strip()
-        if not text:
-            continue
-
-        # 先尝试抽取“在郑州/去上海/位于杭州”这类明确表达
-        m = re.search(r"(?:在|到|去|位于)([\u4e00-\u9fa5]{2,8}(?:市|县|区|州|盟|旗)?)", text)
-        if m:
-            city = m.group(1).strip()
-            if city and not any(k in city for k in ignore_keywords):
-                return city
-
-        # 再尝试“郑州的呀”这种口语补充
-        normalized = suffix_particles_pattern.sub("", text)
-        if 1 < len(normalized) <= 6 and _looks_like_location_fragment(normalized):
-            if not any(k in normalized for k in ignore_keywords):
-                return normalized
-
-    # 兜底：从最近 AI 天气回复中抽取城市（如“郑州的实时天气详情”）
-    for msg in reversed(messages[-12:]):
-        if not isinstance(msg, AIMessage):
-            continue
-        text = _content_to_text(getattr(msg, "content", "")).strip()
-        if not text:
-            continue
-        m = re.search(r"([\u4e00-\u9fa5]{2,8})(?:市)?的(?:实时)?天气", text)
-        if m:
-            city = m.group(1).strip()
-            if city and not any(k in city for k in ignore_keywords):
-                return city
-
-    return None
+    """沿用原有私有函数入口，从历史消息推断城市。"""
+    return _support_extract_recent_city_from_history(messages)
 
 
 def _extract_city_from_context_slots(context_slots: Optional[Dict[str, Any]]) -> Optional[str]:
-    """从结构化槽位里读取城市。"""
-    if not isinstance(context_slots, dict):
-        return None
-    city_value = context_slots.get("city")
-    if isinstance(city_value, str):
-        normalized_city = city_value.strip()
-        if normalized_city:
-            return normalized_city
-    return None
+    """沿用原有私有函数入口，从结构化槽位里读取城市。"""
+    return _support_extract_city_from_context_slots(context_slots)
 
 
 def _input_has_location_anchor(text: str) -> bool:
-    """判断输入中是否已显式包含位置锚点，避免重复注入上下文城市。"""
-    t = (text or "").strip()
-    if not t:
-        return False
-    if _looks_like_location_fragment(t):
-        return True
-    if re.search(r"(?:在|到|去|位于)\s*[\u4e00-\u9fa5]{2,8}(?:市|县|区|州|盟|旗)?", t):
-        return True
-    if re.search(r"[\u4e00-\u9fa5]{2,8}(?:市|县|区|州|盟|旗)", t):
-        return True
-    return False
+    """沿用原有私有函数入口，判断输入是否已带地点锚点。"""
+    return _support_input_has_location_anchor(text)
 
 
 def _history_hint_intent(messages: List[BaseMessage], latest_user_text: str = "") -> Optional[str]:
-    """从最近上下文中推断业务域，避免补充信息被错误路由到 CHAT。"""
-    recent = " ".join(
-        _content_to_text(getattr(msg, "content", "")) for msg in messages[-8:]
-        if isinstance(msg, (HumanMessage, AIMessage))
-    ).lower()
-    latest = (latest_user_text or "").strip().lower()
-
-    # 当前问题优先：房产/小区问题优先继承 search，避免被历史天气上下文污染。
-    if latest:
-        if any(k in latest for k in SEARCH_REAL_ESTATE_KEYWORDS) and not any(k in latest for k in SEARCH_WEATHER_KEYWORDS):
-            return "search_agent"
-        if any(k in latest for k in SEARCH_WEATHER_KEYWORDS):
-            return "weather_agent"
-
-    if any(k in recent for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_HOLTER]):
-        return "yunyou_agent"
-    if any(k in recent for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_SQL]):
-        return "sql_agent"
-    if any(k in recent for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_WEATHER]):
-        return "weather_agent"
-    if any(k in recent for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_SEARCH]):
-        return "search_agent"
-    return None
+    """沿用原有私有函数入口，根据历史上下文提示意图。"""
+    return _support_history_hint_intent(messages, latest_user_text)
 
 
 def _has_recent_weather_fact(messages: List[BaseMessage]) -> bool:
-    """判断最近上下文中是否已经包含可复用的天气事实数据。"""
-    recent_ai_texts = [
-        _content_to_text(getattr(msg, "content", ""))
-        for msg in messages[-10:]
-        if isinstance(msg, AIMessage)
-    ]
-    if not recent_ai_texts:
-        return False
-    joined = "\n".join(recent_ai_texts).lower()
-    return any(k in joined for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_WEATHER_FACT])
+    """沿用原有私有函数入口，判断是否已有可复用天气事实。"""
+    return _support_has_recent_weather_fact(messages)
 
 
 def _looks_like_weather_reuse_query(text: str) -> bool:
-    """
-    识别“基于已有天气结果做建议”的追问。
-    例如：这个天气适合出去吗、要不要带伞、穿什么等。
-    """
-    t = (text or "").strip().lower()
-    if not t:
-        return False
-    return any(k in t for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.WEATHER_REUSE_QUERY])
+    """沿用原有私有函数入口，识别天气建议类追问。"""
+    return _support_looks_like_weather_reuse_query(text)
 
 
 def _wants_weather_refresh(text: str) -> bool:
-    """识别用户是否明确要求重新查询实时天气。"""
-    t = (text or "").strip().lower()
-    if not t:
-        return False
-    return any(k in t for k in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.WEATHER_REFRESH_HINT])
+    """沿用原有私有函数入口，识别重新查询天气的要求。"""
+    return _support_wants_weather_refresh(text)
 
 
 def _can_reuse_weather_context(messages: List[BaseMessage], latest_user_text: str) -> bool:
-    """
-    判断天气追问是否可直接复用历史上下文，避免重复调用 weather_agent。
-    仅当：
-    1) 用户问的是“建议类追问”
-    2) 用户没有明确要求“重新拉取实时天气”
-    3) 最近对话里已有天气事实数据
-    """
-    if not _looks_like_weather_reuse_query(latest_user_text):
-        return False
-    if _wants_weather_refresh(latest_user_text):
-        return False
-    return _has_recent_weather_fact(messages)
+    """沿用原有私有函数入口，判断天气上下文是否可以直接复用。"""
+    return _support_can_reuse_weather_context(messages, latest_user_text)
 
 
 def _collect_intent_signals(text: str) -> List[str]:
-    """
-    收集一条输入中命中的意图信号集合（去重后按优先级返回）。
-
-    用途：
-    1. 判断是否是“多域混合问题”；
-    2. 给规则规划器提供稳定的任务拆分候选。
-    """
-    t = (text or "").strip().lower()
-    if not t:
-        return []
-
-    signals: List[str] = []
-    holter_hit = _looks_like_holter_request(t)
-    sql_hit = _looks_like_sql_request(t)
-    weather_hit = _looks_like_weather_request(t)
-    search_hit = _looks_like_search_request(t)
-    medical_hit = _looks_like_medical_request(t)
-    code_hit = _looks_like_code_request(t)
-
-    if holter_hit:
-        signals.append("yunyou_agent")
-    if sql_hit:
-        signals.append("sql_agent")
-    # 天气意图：若同句已命中更强业务域，且天气不是显式天气请求，按“背景描述”处理，不单独派发任务。
-    weather_is_explicit = _is_weather_actionable_clause(t)
-    strong_business_present = holter_hit or sql_hit or medical_hit or code_hit
-    if weather_hit and (weather_is_explicit or (not strong_business_present)):
-        signals.append("weather_agent")
-
-    # 搜索意图：若仅由泛词触发且同时命中业务域，不单独拆 search 任务。
-    search_is_explicit = _is_search_actionable_clause(t)
-    if search_hit and (search_is_explicit or (not strong_business_present)):
-        signals.append("search_agent")
-    if medical_hit:
-        signals.append("medical_agent")
-    if code_hit:
-        signals.append("code_agent")
-
-    # 保持顺序去重，且使用统一优先级，避免节点之间顺序不一致。
-    ordered_unique: List[str] = []
-    for candidate_name in MULTI_DOMAIN_AGENT_PRIORITY:
-        if candidate_name in signals and candidate_name not in ordered_unique:
-            ordered_unique.append(candidate_name)
-    return ordered_unique
+    """沿用原有私有函数入口，统一收集当前输入命中的意图候选。"""
+    return _support_collect_intent_signals(
+        text,
+        looks_like_holter_request=_looks_like_holter_request,
+        looks_like_sql_request=_looks_like_sql_request,
+        looks_like_weather_request=_looks_like_weather_request,
+        looks_like_search_request=_looks_like_search_request,
+        looks_like_medical_request=_looks_like_medical_request,
+        looks_like_code_request=_looks_like_code_request,
+        is_weather_actionable_clause=_is_weather_actionable_clause,
+        is_search_actionable_clause=_is_search_actionable_clause,
+        multi_domain_agent_priority=MULTI_DOMAIN_AGENT_PRIORITY,
+    )
 
 
 def _dedupe_keep_order(values: List[str]) -> List[str]:
-    """按出现顺序去重。"""
-    deduped: List[str] = []
-    for value_item in values:
-        if value_item not in deduped:
-            deduped.append(value_item)
-    return deduped
+    """沿用原有私有函数入口，按出现顺序去重。"""
+    return _support_dedupe_keep_order(values)
 
 
 def _has_dependency_hint(text: str) -> bool:
-    """判断是否包含明显的先后依赖语义。"""
-    normalized_text = (text or "").strip().lower()
-    if not normalized_text:
-        return False
-    sequential_patterns = (
-        ("先", "再"),
-        ("先", "然后"),
-        ("第一步", "第二步"),
-    )
-    for first_hint, second_hint in sequential_patterns:
-        if first_hint in normalized_text and second_hint in normalized_text:
-            return True
-    return False
+    """沿用原有私有函数入口，识别输入里的先后依赖提示。"""
+    return _support_has_dependency_hint(text)
 
 
 def _is_explicit_request_clause(text: str) -> bool:
-    """判断一个子句是否是“明确要求系统执行动作”的请求子句。"""
-    t = (text or "").strip().lower()
-    if not t:
-        return False
-    if any(mark in t for mark in ("?", "？")):
-        return True
-    if t.endswith(("吗", "么", "呢")):
-        return True
-    # 兜底：中文疑问起手式通常代表独立诉求，即使未出现“请/帮我/查询”等动作词也应保留为任务子句。
-    interrogative_patterns = (
-        r"^(怎么|如何|怎样|为何|为什么|能否|可否|是否|要不要|有没有|需不需要)",
-        r"(怎么|如何|怎样|为何|为什么|能否|可否|是否|要不要|有没有|需不需要).{0,12}(做|办|处理|操作|安排|推进|落地|实现|解决)",
+    """沿用原有私有函数入口，判断子句是否为显式执行请求。"""
+    return _support_is_explicit_request_clause(
+        text,
+        request_action_hints=SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.REQUEST_ACTION_HINT],
     )
-    if any(re.search(pattern, t) for pattern in interrogative_patterns):
-        return True
-    action_hints = SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.REQUEST_ACTION_HINT]
-    return any(hint in t for hint in action_hints)
 
 
 def _analyze_request(user_text: str) -> RequestAnalysisDecision:
-    """
-    统一请求分析器（根因修复核心）。
-
-    设计原则：
-    1. 先做“候选域/候选意图”分析，再进入 Domain/Intent/Planner；
-    2. 一次分析结果在全链路复用，避免每个节点各自猜测导致冲突。
-    """
-    normalized_text = (user_text or "").strip().lower()
-    if not normalized_text:
+    """沿用原有私有函数入口，统一分析候选意图与路由策略。"""
+    payload = _support_analyze_request_payload(
+        user_text,
+        split_query_clauses_fn=_split_query_clauses,
+        collect_intent_signals_fn=_collect_intent_signals,
+        is_explicit_request_clause_fn=_is_explicit_request_clause,
+        is_weather_actionable_clause_fn=_is_weather_actionable_clause,
+        is_search_actionable_clause_fn=_is_search_actionable_clause,
+        has_dependency_hint_fn=_has_dependency_hint,
+        dedupe_keep_order_fn=_dedupe_keep_order,
+        agent_domain_map=AGENT_DOMAIN_MAP,
+        route_strategy_single=RouteStrategy.SINGLE_DOMAIN.value,
+        route_strategy_complex_single=RouteStrategy.COMPLEX_SINGLE_DOMAIN.value,
+        route_strategy_multi_split=RouteStrategy.MULTI_DOMAIN_SPLIT.value,
+    )
+    if not payload:
         return RequestAnalysisDecision()
-
-    clauses = _split_query_clauses(normalized_text) or [normalized_text]
-    candidate_agents = _collect_intent_signals(normalized_text)
-    # “显式请求”优先：多子句里只把真正请求子句计入多意图判定，避免背景描述触发误拆分。
-    explicit_clause_agents: List[str] = []
-    for clause in clauses:
-        if not _is_explicit_request_clause(clause):
-            continue
-        clause_agents = _collect_intent_signals(clause)
-        if clause_agents:
-            explicit_clause_agents.extend(clause_agents)
-        else:
-            # 显式请求但未命中垂直域关键词：保留为通用 CHAT 子任务，避免被整句吞掉。
-            explicit_clause_agents.append("CHAT")
-    explicit_clause_agents = _dedupe_keep_order(explicit_clause_agents)
-    if explicit_clause_agents:
-        candidate_agents = explicit_clause_agents
-
-    # 根因治理：若存在强业务域（云柚/本地SQL/医疗/代码），
-    # 且天气/搜索在本轮未形成显式请求，则移除弱域候选，避免“背景句触发误拆分”。
-    strong_agents = {"yunyou_agent", "sql_agent", "medical_agent", "code_agent"}
-    if any(agent_name in strong_agents for agent_name in candidate_agents):
-        filtered_candidates = list(candidate_agents)
-        if "weather_agent" in filtered_candidates:
-            weather_explicit = any(_is_weather_actionable_clause(clause) for clause in clauses)
-            if not weather_explicit:
-                filtered_candidates = [agent_name for agent_name in filtered_candidates if agent_name != "weather_agent"]
-        if "search_agent" in filtered_candidates:
-            search_explicit = any(_is_search_actionable_clause(clause) for clause in clauses)
-            if not search_explicit:
-                filtered_candidates = [agent_name for agent_name in filtered_candidates if agent_name != "search_agent"]
-        candidate_agents = filtered_candidates
-
-    candidate_domains = _dedupe_keep_order(
-        [AGENT_DOMAIN_MAP.get(agent_name, "GENERAL") for agent_name in candidate_agents]
-    )
-    multi_intent = len(candidate_agents) >= 2
-    multi_domain = len([domain for domain in candidate_domains if domain != "GENERAL"]) >= 2
-    dependency_hint = _has_dependency_hint(normalized_text)
-
-    if multi_intent:
-        return RequestAnalysisDecision(
-            candidate_agents=candidate_agents,
-            candidate_domains=candidate_domains,
-            is_multi_intent=True,
-            is_multi_domain=multi_domain,
-            has_dependency_hint=dependency_hint,
-            route_strategy=RouteStrategy.MULTI_DOMAIN_SPLIT.value,
-            reason="multiple_intents_detected",
-        )
-
-    if dependency_hint:
-        return RequestAnalysisDecision(
-            candidate_agents=candidate_agents,
-            candidate_domains=candidate_domains or ["GENERAL"],
-            is_multi_intent=False,
-            is_multi_domain=False,
-            has_dependency_hint=True,
-            route_strategy=RouteStrategy.COMPLEX_SINGLE_DOMAIN.value,
-            reason="dependency_hint_detected",
-        )
-
-    return RequestAnalysisDecision(
-        candidate_agents=candidate_agents,
-        candidate_domains=candidate_domains or ["GENERAL"],
-        is_multi_intent=False,
-        is_multi_domain=False,
-        has_dependency_hint=False,
-        route_strategy=RouteStrategy.SINGLE_DOMAIN.value,
-        reason="single_domain",
-    )
+    return RequestAnalysisDecision(**payload)
 
 
 def _split_query_clauses(user_text: str) -> List[str]:
-    """将复合问题拆成子句，供规则规划器生成任务。"""
-    normalized_text = (user_text or "").strip()
-    if not normalized_text:
-        return []
-    # 逗号也作为软分句符，避免“天气..., 再查 holter ...”被误当成单子句。
-    normalized_text = re.sub(r"[，,；;。！？?!]+", "|", normalized_text)
-    normalized_text = re.sub(
-        r"(并且|而且|同时|然后|再帮我|顺便|另外|以及)",
-        "|",
-        normalized_text,
-    )
-    clauses = [item.strip(" ,，\n\t") for item in normalized_text.split("|")]
-    return [item for item in clauses if item]
+    """沿用原有私有函数入口，把复合输入切成子句。"""
+    return _support_split_query_clauses(user_text)
 
 
 def _select_primary_agent_for_clause(clause_text: str, fallback_candidates: List[str]) -> Optional[str]:
-    """为单个子句挑选最合适的 Agent。"""
-    clause_candidates = _collect_intent_signals(clause_text)
-    # 子句内命中优先，避免被全句 fallback 候选“覆盖”导致错配。
-    if clause_candidates:
-        return clause_candidates[0]
-    for candidate_name in fallback_candidates:
-        if candidate_name in MULTI_DOMAIN_AGENT_PRIORITY:
-            return candidate_name
-    return None
+    """沿用原有私有函数入口，为单子句挑选优先 Agent。"""
+    return _support_select_primary_agent_for_clause(
+        clause_text,
+        fallback_candidates,
+        collect_intent_signals_fn=_collect_intent_signals,
+        multi_domain_agent_priority=MULTI_DOMAIN_AGENT_PRIORITY,
+    )
 
 
 def _extract_agent_focus_text(agent_name: str, clause_text: str, full_text: str) -> str:
-    """
-    从复合子句中提取与目标 Agent 相关的片段。
-
-    例子：
-    - 子句“查天气和holter最近数据”
-      - weather_agent -> “查天气”
-      - yunyou_agent  -> “holter最近数据”
-    """
-    normalized_clause = clause_text.strip() or full_text.strip()
-    if not normalized_clause:
-        return full_text.strip()
-
-    segment_parts = [
-        item.strip(" ,，;；\n\t")
-        for item in re.split(r"(?:和|并且|以及|然后|再|,|，|;|；)", normalized_clause)
-    ]
-    segment_parts = [item for item in segment_parts if item]
-    if not segment_parts:
-        return normalized_clause
-
-    focused_segments: List[str] = []
-    for part in segment_parts:
-        if agent_name in _collect_intent_signals(part):
-            focused_segments.append(part)
-    focused_segments = _dedupe_keep_order(focused_segments)
-    if focused_segments:
-        return "；".join(focused_segments)
-    return normalized_clause
+    """沿用原有私有函数入口，抽取与当前 Agent 更匹配的片段。"""
+    return _support_extract_agent_focus_text(
+        agent_name,
+        clause_text,
+        full_text,
+        collect_intent_signals_fn=_collect_intent_signals,
+        dedupe_keep_order_fn=_dedupe_keep_order,
+    )
 
 
 def _build_agent_specific_task_input(agent_name: str, clause_text: str, full_text: str) -> str:
-    """根据 Agent 类型构建明确且自包含的子任务输入。"""
-    normalized_clause = _extract_agent_focus_text(agent_name, clause_text, full_text)
-    if agent_name == "weather_agent":
-        return (
-            "你是天气执行子任务，仅允许输出天气结论与出行建议。"
-            "不要输出旅游路线、景点攻略或与天气无关内容。"
-            f"\n用户子任务：{normalized_clause}"
-        )
-    if agent_name == "search_agent":
-        return (
-            "你是互联网检索子任务，仅允许输出用户明确要求的活动/信息检索结果。"
-            "不要扩展到不相关主题。"
-            f"\n用户子任务：{normalized_clause}"
-        )
-    if agent_name == "yunyou_agent":
-        return (
-            "你是云柚 Holter 数据执行子任务，仅允许输出 Holter 数据查询结果或可执行失败原因。"
-            "不要输出本地 SQL 解释，除非用户明确要求 SQL 示例。"
-            f"\n用户子任务：{normalized_clause}"
-        )
-    if agent_name == "sql_agent":
-        return f"请仅处理本地数据库 SQL 查询相关诉求：{normalized_clause}"
-    if agent_name == "medical_agent":
-        return f"请仅处理医疗健康分析相关诉求：{normalized_clause}"
-    if agent_name == "code_agent":
-        return f"请仅处理代码开发相关诉求：{normalized_clause}"
-    return normalized_clause
+    """沿用原有私有函数入口，构造更自包含的子任务输入。"""
+    return _support_build_agent_specific_task_input(
+        agent_name,
+        clause_text,
+        full_text,
+        extract_agent_focus_text_fn=_extract_agent_focus_text,
+    )
 
 
 def _build_rule_based_multidomain_tasks(
@@ -870,122 +563,23 @@ def _build_rule_based_multidomain_tasks(
     candidate_agents: Optional[List[str]] = None,
     route_strategy: str = RouteStrategy.SINGLE_DOMAIN.value,
 ) -> Optional[List[SubTask]]:
-    """
-    规则任务规划器：将复合输入拆成可执行任务列表。
-
-    说明：
-    - 多域/多意图问题优先走规则规划，避免慢模型反复试探；
-    - 仅在规则无法拆分时回退到 LLM Planner。
-    """
-    normalized_text = (user_text or "").strip()
-    if not normalized_text:
-        return None
-
-    fallback_candidates = _dedupe_keep_order(candidate_agents or _collect_intent_signals(normalized_text))
-
-    # 单域复杂任务：至少拆成“专业检索 + CHAT 汇总”两步，确保“先查再说”语义可执行。
-    if route_strategy == RouteStrategy.COMPLEX_SINGLE_DOMAIN.value and len(fallback_candidates) == 1:
-        primary_agent = fallback_candidates[0]
-        first_task: SubTask = {
-            "id": "t1",
-            "agent": primary_agent,
-            "input": _build_agent_specific_task_input(primary_agent, normalized_text, normalized_text),
-            "depends_on": [],
-            "status": TaskStatus.PENDING.value,
-            "result": None,
-        }
-        # 仅当用户明确需要“总结/分析/建议”等二次加工时，再追加 CHAT 汇总任务。
-        summary_hints = ("总结", "分析", "解释", "建议", "报告", "结论", "对比", "方案", "归纳")
-        needs_chat_summary = any(hint in normalized_text for hint in summary_hints)
-        if not needs_chat_summary:
-            return [first_task]
-
-        second_task: SubTask = {
-            "id": "t2",
-            "agent": "CHAT",
-            "input": f"基于 t1 的执行结果，给出用户需要的最终建议与结论：{normalized_text}",
-            "depends_on": ["t1"],
-            "status": TaskStatus.PENDING.value,
-            "result": None,
-        }
-        return [first_task, second_task]
-
-    if route_strategy != RouteStrategy.MULTI_DOMAIN_SPLIT.value and len(fallback_candidates) < 2:
-        return None
-
-    clauses = _split_query_clauses(normalized_text)
-    if not clauses:
-        clauses = [normalized_text]
-    clause_request_flags = [_is_explicit_request_clause(clause) for clause in clauses]
-    has_explicit_clause = any(clause_request_flags)
-
-    # 先按子句提取 Agent，若子句无法识别则回退到候选列表。
-    clause_pairs: List[tuple[str, str]] = []
-    for idx, clause in enumerate(clauses):
-        # 存在显式请求子句时，忽略纯背景描述子句，防止“天气不好”被拆成独立任务。
-        if has_explicit_clause and (not clause_request_flags[idx]):
-            continue
-        # 一个显式子句里可能同时包含多个动作（如“查天气并查holter”），需要保留多候选而不是只取第一个。
-        clause_candidates = _collect_intent_signals(clause)
-        if clause_request_flags[idx] and len(clause_candidates) >= 2:
-            for candidate_name in clause_candidates:
-                clause_pairs.append((candidate_name, clause))
-            continue
-        if clause_request_flags[idx]:
-            if clause_candidates:
-                clause_pairs.append((clause_candidates[0], clause))
-            else:
-                # 显式请求但无法命中垂直域时，交给通用 CHAT 承接该子句。
-                clause_pairs.append(("CHAT", clause))
-            continue
-        selected_agent = _select_primary_agent_for_clause(clause, fallback_candidates)
-        if selected_agent:
-            clause_pairs.append((selected_agent, clause))
-
-    if not clause_pairs:
-        # 子句级未命中时，先尝试全句主任务；再兜底到候选并行。
-        full_agent = _select_primary_agent_for_clause(normalized_text, fallback_candidates)
-        if full_agent:
-            clause_pairs = [(full_agent, normalized_text)]
-        else:
-            clause_pairs = [(agent_name, normalized_text) for agent_name in fallback_candidates]
-
-    # 合并连续相同 Agent 的子句，避免重复派发。
-    merged_pairs: List[tuple[str, str]] = []
-    for agent_name, clause in clause_pairs:
-        if merged_pairs and merged_pairs[-1][0] == agent_name:
-            merged_agent, merged_clause = merged_pairs[-1]
-            merged_pairs[-1] = (merged_agent, f"{merged_clause}；{clause}")
-        else:
-            merged_pairs.append((agent_name, clause))
-
-    # 根因治理：没有显式子句时采用“保守单任务”策略，避免误拆成并行多任务。
-    # 只有明确拆分信号时才进行多任务编排。
-    if len(merged_pairs) < 2 and len(fallback_candidates) >= 2 and (not has_explicit_clause):
-        merged_pairs = [(fallback_candidates[0], normalized_text)]
-
-    # 单任务也可直接执行，避免被强制回退到 LLM Planner 造成漂移。
-    if len(merged_pairs) < 1:
-        return None
-
-    sequential_mode = _has_dependency_hint(normalized_text)
-    task_list: List[SubTask] = []
-    previous_task_id: Optional[str] = None
-    for index, (agent_name, clause) in enumerate(merged_pairs, start=1):
-        task_id = f"t{index}"
-        depends_on = [previous_task_id] if (sequential_mode and previous_task_id) else []
-        task_list.append(
-            {
-                "id": task_id,
-                "agent": agent_name,
-                "input": _build_agent_specific_task_input(agent_name, clause, normalized_text),
-                "depends_on": depends_on,
-                "status": TaskStatus.PENDING.value,
-                "result": None,
-            }
-        )
-        previous_task_id = task_id
-    return task_list
+    """沿用原有私有函数入口，用规则方式构造多任务执行计划。"""
+    return _support_build_rule_based_multidomain_tasks(
+        user_text,
+        candidate_agents=candidate_agents,
+        route_strategy=route_strategy,
+        split_query_clauses_fn=_split_query_clauses,
+        collect_intent_signals_fn=_collect_intent_signals,
+        is_explicit_request_clause_fn=_is_explicit_request_clause,
+        select_primary_agent_for_clause_fn=_select_primary_agent_for_clause,
+        build_agent_specific_task_input_fn=_build_agent_specific_task_input,
+        dedupe_keep_order_fn=_dedupe_keep_order,
+        has_dependency_hint_fn=_has_dependency_hint,
+        route_strategy_single=RouteStrategy.SINGLE_DOMAIN.value,
+        route_strategy_complex_single=RouteStrategy.COMPLEX_SINGLE_DOMAIN.value,
+        route_strategy_multi_split=RouteStrategy.MULTI_DOMAIN_SPLIT.value,
+        pending_status=TaskStatus.PENDING.value,
+    )
 
 
 def _build_planner_fallback_tasks(
@@ -995,129 +589,31 @@ def _build_planner_fallback_tasks(
     route_strategy: str,
     fallback_intent: str,
 ) -> List[SubTask]:
-    """
-    构建确定性 Planner 兜底任务。
-
-    目标：
-    1. 在 LLM Planner 不可用/禁用时仍可稳定收敛；
-    2. 保证任务拆分结果可解释，不出现“乱拆/跑偏”。
-    """
-    normalized_text = (user_text or "").strip()
-    if not normalized_text:
-        normalized_text = "请基于当前会话给出可执行结论。"
-
-    deduped_candidates: List[str] = []
-    for candidate_name in intent_candidates:
-        if (
-            candidate_name in MULTI_DOMAIN_AGENT_PRIORITY
-            or candidate_name == "CHAT"
-        ) and candidate_name not in deduped_candidates:
-            deduped_candidates.append(candidate_name)
-
-    # 单域优先：如果已有明确单一候选，直接生成一个单任务，避免多余 DAG。
-    if route_strategy == RouteStrategy.SINGLE_DOMAIN.value and len(deduped_candidates) == 1:
-        only_agent = deduped_candidates[0]
-        return [
-            {
-                "id": "t1",
-                "agent": only_agent,
-                "input": _build_agent_specific_task_input(only_agent, normalized_text, normalized_text),
-                "depends_on": [],
-                "status": TaskStatus.PENDING.value,
-                "result": None,
-            }
-        ]
-
-    # 多域兜底：按候选优先级构建并行/串行任务，绝不回退为自由生成。
-    if route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value and len(deduped_candidates) >= 2:
-        sequential_mode = _has_dependency_hint(normalized_text)
-        fallback_tasks: List[SubTask] = []
-        previous_task_id: Optional[str] = None
-        for index, agent_name in enumerate(deduped_candidates, start=1):
-            task_id = f"t{index}"
-            depends_on = [previous_task_id] if (sequential_mode and previous_task_id) else []
-            fallback_tasks.append(
-                {
-                    "id": task_id,
-                    "agent": agent_name,
-                    "input": _build_agent_specific_task_input(agent_name, normalized_text, normalized_text),
-                    "depends_on": depends_on,
-                    "status": TaskStatus.PENDING.value,
-                    "result": None,
-                }
-            )
-            previous_task_id = task_id
-        return fallback_tasks
-
-    # 复杂单域：优先使用候选，其次使用 intent 字段，最后回落 CHAT。
-    if deduped_candidates:
-        primary_agent = deduped_candidates[0]
-    elif fallback_intent in MEMBERS:
-        primary_agent = fallback_intent
-    else:
-        primary_agent = "CHAT"
-
-    return [
-        {
-            "id": "t1",
-            "agent": primary_agent,
-            "input": _build_agent_specific_task_input(primary_agent, normalized_text, normalized_text),
-            "depends_on": [],
-            "status": TaskStatus.PENDING.value,
-            "result": None,
-        }
-    ]
+    """沿用原有私有函数入口，为 Planner 不可用时生成确定性兜底任务。"""
+    return _support_build_planner_fallback_tasks(
+        user_text=user_text,
+        intent_candidates=intent_candidates,
+        route_strategy=route_strategy,
+        fallback_intent=fallback_intent,
+        build_agent_specific_task_input_fn=_build_agent_specific_task_input,
+        has_dependency_hint_fn=_has_dependency_hint,
+        route_strategy_single=RouteStrategy.SINGLE_DOMAIN.value,
+        route_strategy_multi_split=RouteStrategy.MULTI_DOMAIN_SPLIT.value,
+        multi_domain_agent_priority=MULTI_DOMAIN_AGENT_PRIORITY,
+        members=MEMBERS,
+        pending_status=TaskStatus.PENDING.value,
+    )
 
 
 def _looks_like_compound_request(text: str) -> bool:
-    """判断用户输入是否属于复合任务（多意图或有先后依赖）。"""
-    analysis = _analyze_request(text)
-    if analysis.route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value:
-        return True
-    if analysis.route_strategy == RouteStrategy.COMPLEX_SINGLE_DOMAIN.value:
-        return True
-
-    normalized_text = (text or "").strip().lower()
-    if not normalized_text:
-        return False
-    if len(re.findall(r"[?？]", normalized_text)) >= 2:
-        return True
-    if any(token in normalized_text for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.COMPLEX_CONNECTOR_HINT]):
-        return len(normalized_text) >= 30
-    return False
-
-def _parse_json_from_text(text: str) -> dict:
-    """从 LLM 返回文本中提取 JSON 对象（支持嵌套花括号）。"""
-    # 找到第一个 '{' 后进行括号配对，避免非贪婪匹配截断嵌套结构
-    start = text.find('{')
-    if start == -1:
-        # 日志只打印预览，避免把长文本整段刷入日志导致排障困难。
-        preview_limit = 800
-        preview_text = (text or "")[:preview_limit]
-        if len(text or "") > preview_limit:
-            preview_text += "...(truncated)"
-        log.error(f"Failed to find JSON object in text. Raw text preview:\n{preview_text}")
-        raise ValueError("No JSON object found in text")
-    depth = 0
-    for i in range(start, len(text)):
-        if text[i] == '{':
-            depth += 1
-        elif text[i] == '}':
-            depth -= 1
-            if depth == 0:
-                json_str = text[start:i+1]
-                # 清除由于大模型吐字不规范带来的尾部逗号 (Trailing Commas)
-                json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
-                return json.loads(json_str)
-    raise ValueError("Unbalanced braces in JSON")
-
-
-def _build_non_streaming_config(config: RunnableConfig) -> RunnableConfig:
-    """构建去回调版配置，避免路由/规划阶段把中间 token 噪声写进前端流。"""
-    runtime_config = dict(config or {})
-    runtime_config.pop("callbacks", None)
-    return runtime_config
-
+    """沿用原有私有函数入口，判断当前输入是否更适合走复合任务。"""
+    return _support_looks_like_compound_request(
+        text,
+        analyze_request_fn=_analyze_request,
+        route_strategy_complex_single=RouteStrategy.COMPLEX_SINGLE_DOMAIN.value,
+        route_strategy_multi_split=RouteStrategy.MULTI_DOMAIN_SPLIT.value,
+        complex_connector_hints=SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.COMPLEX_CONNECTOR_HINT],
+    )
 
 def _build_worker_history_messages_for_agent(
     *,
@@ -1193,38 +689,6 @@ def _build_worker_history_messages_for_agent(
     return selected
 
 
-def _invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str):
-    """
-    对同步模型调用增加超时保护。
-
-    说明：
-    - 第三方模型 SDK 在网络抖动时可能长时间阻塞；
-    - 这里统一加“可配置超时预算”，超时后快速回退到规则路径。
-    """
-    safe_timeout = max(1.0, float(timeout_sec or 1.0))
-    result_queue: queue.Queue = queue.Queue(maxsize=1)
-
-    def _runner():
-        try:
-            result_queue.put(("ok", callable_fn()))
-        except Exception as exc:
-            result_queue.put(("error", exc))
-
-    worker = threading.Thread(target=_runner, daemon=True, name=f"invoke-timeout-{timeout_label}")
-    worker.start()
-    try:
-        status, payload = result_queue.get(timeout=safe_timeout)
-    except queue.Empty as exc:
-        # 关键：这里不等待 worker 结束，直接快速失败，避免“超时后仍阻塞”。
-        raise TimeoutError(f"{timeout_label} 超时: {safe_timeout:.1f}s") from exc
-
-    if status == "error":
-        if isinstance(payload, Exception):
-            raise payload
-        raise RuntimeError(str(payload))
-    return payload
-
-
 def _invoke_structured_output_with_fallback(
     *,
     prompt: ChatPromptTemplate,
@@ -1290,38 +754,6 @@ def _invoke_structured_output_with_fallback(
         if last_structured_exc is not None:
             log.warning(f"{log_name}: 结构化输出失败，JSON 回退仍失败。structured_error={last_structured_exc}, json_error={exc}")
         raise
-
-
-def _normalize_interrupt_payload(val: Any) -> dict:
-    """将不同形态的 Interrupt 值转成统一 payload。"""
-    if hasattr(val, "value"):
-        return _normalize_interrupt_payload(getattr(val, "value"))
-
-    if isinstance(val, dict):
-        payload = dict(val)
-    elif hasattr(val, "__dict__"):
-        payload = dict(getattr(val, "__dict__", {}))
-    else:
-        payload = {"message": str(val)}
-
-    payload.setdefault("message", DEFAULT_INTERRUPT_MESSAGE)
-    payload.setdefault("allowed_decisions", list(DEFAULT_ALLOWED_DECISIONS))
-    payload.setdefault("action_requests", [])
-    return payload
-
-
-def _extract_interrupt_from_snapshot(snapshot: Any) -> Optional[dict]:
-    tasks = getattr(snapshot, "tasks", None) or []
-    for task in tasks:
-        interrupts = getattr(task, "interrupts", None) or []
-        if not interrupts:
-            continue
-        first_interrupt = interrupts[0]
-        payload = getattr(first_interrupt, "value", first_interrupt)
-        return _normalize_interrupt_payload(payload)
-    return None
-
-
 def _run_agent_to_completion(
     agent_name: str,
     user_input: str,

@@ -1,0 +1,1786 @@
+2026-03-22 09:30:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:30:12,939 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-22 09:31:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:32:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:33:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:34:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:35:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:36:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:37:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:38:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:39:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:40:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:41:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:42:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:43:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:44:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:45:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:46:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:47:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:48:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:49:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:50:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:51:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:52:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:53:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:54:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:55:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:56:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:57:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:58:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 09:59:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:00:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:01:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:02:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:03:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:04:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:05:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:06:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:07:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:08:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:09:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:10:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:11:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:12:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:13:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:14:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:15:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:16:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:17:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:18:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:19:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:20:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:21:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:22:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:23:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:24:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:25:04 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:26:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:27:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:28:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:29:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:30:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:31:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:32:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:33:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:34:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:35:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:36:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:37:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:38:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:39:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:40:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:41:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:42:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:43:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:44:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:45:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:46:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:47:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:48:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:49:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:50:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:51:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:52:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:53:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:54:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:55:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:56:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:57:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:58:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 10:59:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:00:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:01:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:02:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:03:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:04:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:05:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:06:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:07:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:08:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:09:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:10:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:11:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:12:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:13:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:14:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:15:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:16:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:17:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:18:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:19:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:20:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:21:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:22:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:23:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:24:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:25:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:26:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:27:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:28:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:29:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:30:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:31:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:32:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:33:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:34:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:35:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:36:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:37:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:38:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:39:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:40:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:41:05 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:42:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:43:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:44:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:45:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:46:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:47:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:48:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:49:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:50:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:51:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:52:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:53:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:54:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:55:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:56:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:57:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:58:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 11:59:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:00:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:01:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:02:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:03:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:04:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:05:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:06:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:07:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:08:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:09:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:10:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:11:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:12:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:13:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:14:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:15:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:16:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:17:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:18:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:19:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:20:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:21:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:22:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:23:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:24:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:25:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:25:19 - custom.db - ERROR - 数据库事务异常回滚: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 12:25:19 - custom.core.middleware - ERROR - [e1db45fb-508c-4f8c-8e74-6f7ea37d9099] 框架内部未捕获异常抛出: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 12:25:19,381 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Operation timed out
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 12:26:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:27:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:28:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:29:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:30:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:31:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:32:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:33:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:34:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:35:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:36:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:37:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:38:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:39:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:40:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:41:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:42:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:43:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:44:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:45:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:46:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:47:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:48:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:49:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:50:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:51:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:52:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:53:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:54:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:55:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:56:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:57:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:58:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 12:59:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:00:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:01:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:02:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:02:53 - custom.db - ERROR - 数据库事务异常回滚: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:02:53 - custom.core.middleware - ERROR - [82b6f92a-32a3-49d1-a0f0-01cc72a0bafb] 框架内部未捕获异常抛出: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:02:53,920 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 865, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:03 - custom.db - ERROR - 数据库事务异常回滚: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:03 - custom.core.middleware - ERROR - [0da46f36-27ad-4da9-92a5-188b676849b6] 框架内部未捕获异常抛出: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 836, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 836, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:03,871 - app.main - ERROR - Unhandled Exception | method=POST | url=http://localhost:8000/api/v1/user/login | error=(psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8) | body={}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 836, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 40, in dispatch
+    raise e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 37, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 77, in dispatch
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 159, in call_next
+    raise app_exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/middleware.py", line 63, in __call__
+    return await super().__call__(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 215, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/user_info_api.py", line 20, in login_user_info
+    user_info_resp = user_info_service.login(db, req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/services/user_info_service.py", line 69, in login
+    db_user = user_info_db.query(db).filter(self.model.user_name == user.user_name).first()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2108, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 716, in checkout
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 714, in checkout
+    dbapi_connection = rec.get_connection()
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 836, in get_connection
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:07 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:03:19,455 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 77, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:03:23,843 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 77, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Host is down
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-22 13:04:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:04:08,139 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-22 13:05:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:06:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:07:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:08:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:09:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:10:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:11:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:12:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:13:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:14:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:15:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:16:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:17:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:18:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:19:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:20:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:21:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:22:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:23:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:24:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:25:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:26:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:27:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:28:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:29:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:30:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:31:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:32:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:33:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:34:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:35:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:36:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:37:06 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:38:46 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-22 13:39:46 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable

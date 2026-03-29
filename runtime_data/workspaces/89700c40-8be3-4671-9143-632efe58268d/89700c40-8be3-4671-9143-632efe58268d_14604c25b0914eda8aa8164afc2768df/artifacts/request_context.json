@@ -1,0 +1,15 @@
+{
+  "session_id": "89700c40-8be3-4671-9143-632efe58268d",
+  "run_id": "89700c40-8be3-4671-9143-632efe58268d:14604c25b0914eda8aa8164afc2768df",
+  "user_input": "写一个java程序",
+  "history_size": 0,
+  "session_context": {
+    "context_slots": {
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=写一个java程序"
+      ]
+    },
+    "context_summary": "【会话关键上下文】\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=写一个java程序"
+  }
+}

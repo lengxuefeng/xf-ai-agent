@@ -46,6 +46,8 @@ class StreamChatRequest(BaseSchema):
     rag_enabled: bool = Field(default=False, description="RAG是否启用")
     embedding_model: str = Field(default='bge-m3:latest', description="嵌入模型")
     embedding_model_key: str = Field(default='', description="嵌入模型的key")
+    workspace_root: Optional[str] = Field(default=None, description="受控执行工作目录")
+    resume_message_id: Optional[str] = Field(default=None, description="指定恢复的审批消息 ID")
 
     # 【核心优化】利用 Pydantic V2 内置校验，代替手动编写的 validator
     # ge: greater than or equal (>=)

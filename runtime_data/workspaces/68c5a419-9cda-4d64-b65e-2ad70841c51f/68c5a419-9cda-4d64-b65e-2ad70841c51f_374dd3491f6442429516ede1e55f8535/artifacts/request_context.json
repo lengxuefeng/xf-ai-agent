@@ -1,0 +1,15 @@
+{
+  "session_id": "68c5a419-9cda-4d64-b65e-2ad70841c51f",
+  "run_id": "68c5a419-9cda-4d64-b65e-2ad70841c51f:374dd3491f6442429516ede1e55f8535",
+  "user_input": "帮我梳理这个项目的前端结构，并指出最影响可用性的 3 个问题",
+  "history_size": 0,
+  "session_context": {
+    "context_slots": {
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=帮我梳理这个项目的前端结构，并指出最影响可用性的 3 个问题"
+      ]
+    },
+    "context_summary": "【会话关键上下文】\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=帮我梳理这个项目的前端结构，并指出最影响可用性的 3 个问题"
+  }
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "d7c9aa40f79448ed8a6fce0bba78310e",
+    "session_id": "session_1774343185069_6hfn94g56",
+    "run_id": "session_1774343185069_6hfn94g56:4f309edc455c417da83c130092b37845",
+    "phase": "user_message_received",
+    "title": "老板下达任务",
+    "summary": "你是谁",
+    "status": "completed",
+    "role": "boss",
+    "timestamp": "2026-03-24T09:06:25+00:00",
+    "meta": {
+      "input_length": 3
+    }
+  },
+  {
+    "id": "017961d5b1b74b61b37280df8ac7d240",
+    "session_id": "session_1774343185069_6hfn94g56",
+    "run_id": "session_1774343185069_6hfn94g56:4f309edc455c417da83c130092b37845",
+    "phase": "rule_intercepted",
+    "title": "总管快速裁决",
+    "summary": "⚡ 极速拦截复合意图：命中 [query_identity]",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-24T09:06:25+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜"
+  },
+  {
+    "id": "73562aa2ce53490b8e57f70f90481a53",
+    "session_id": "session_1774343185069_6hfn94g56",
+    "run_id": "session_1774343185069_6hfn94g56:4f309edc455c417da83c130092b37845",
+    "phase": "final_report_delivered",
+    "title": "总管回禀老板",
+    "summary": "您好，我是基于先进 Agent 架构打造的复合型智能助手。我融合了 LLM 的深度推理与极速本地规则引擎，致力于为您提供既聪明又高效的服务！",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-24T09:06:25+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜"
+  }
+]

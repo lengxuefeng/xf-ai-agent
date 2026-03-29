@@ -341,6 +341,35 @@ class InterruptService:
                     return d
             return None
 
+    def fetch_resolved_approval_by_message(self, session_id: str, message_id: str) -> Optional[Dict[str, Any]]:
+        """按审批消息 ID 精确读取已审批且未消费的审批记录。"""
+        if not message_id:
+            return None
+        try:
+            with get_db_context() as db:
+                row = self._query_by_message(db, session_id, message_id)
+                if not row:
+                    return None
+                row_data = self._row_to_dict(row)
+                if row_data["status"] not in {ApprovalStatus.APPROVE.value, ApprovalStatus.REJECT.value}:
+                    return None
+                if row_data["is_consumed"]:
+                    return None
+                return row_data
+        except Exception as e:
+            log.error(f"按消息读取恢复审批记录(PG)失败，降级内存: {e}", target=LogTarget.ALL)
+            data = self.pending_approvals.get(session_id, {}).get(message_id)
+            if not data:
+                return None
+            if data.get("status") not in {ApprovalStatus.APPROVE.value, ApprovalStatus.REJECT.value}:
+                return None
+            if data.get("is_consumed", False):
+                return None
+            result = dict(data)
+            result["session_id"] = session_id
+            result["message_id"] = message_id
+            return result
+
     def mark_approval_consumed(self, session_id: str, message_id: str):
         """标记审批为已消费，防止重复恢复"""
         if not message_id:

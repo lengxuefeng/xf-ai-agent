@@ -1,0 +1,149 @@
+2026-03-23 10:14:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:14:54,888 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-23 10:15:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:16:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:17:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:18:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:19:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:20:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:21:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:22:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:23:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:24:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:25:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:26:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:27:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:28:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:29:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:30:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:31:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:32:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:33:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:14:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:14:50,227 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-23 19:15:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:15:27,504 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"default","workspace_root":"/Users/lengxuefeng/Downloads/1/test","command_text":"ls"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 48, in start_command
+    workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 62, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 57, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-23 19:15:38,168 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"default","workspace_root":"/Users/lengxuefeng/Downloads/1/test","command_text":"ls"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 48, in start_command
+    workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 62, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 57, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-23 19:16:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:17:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:17:47,872 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"a0b42618-8069-4939-a52f-b8c5422cb60c","workspace_root":"/Users/lengxuefeng/Downloads/1/test","command_text":"ls"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 48, in start_command
+    workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 62, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 57, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-23 19:18:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:18:43,683 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=当前命令未被受控终端策略允许。 | body={"session_id":"a0b42618-8069-4939-a52f-b8c5422cb60c","workspace_root":"/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/111","command_text":"lsadas"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 49, in start_command
+    snapshot = command_session_service.start_command(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/exec/command_session_service.py", line 98, in start_command
+    raise ValueError("当前命令未被受控终端策略允许。")
+ValueError: 当前命令未被受控终端策略允许。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 57, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 当前命令未被受控终端策略允许。
+2026-03-23 19:19:22 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:20:22 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable

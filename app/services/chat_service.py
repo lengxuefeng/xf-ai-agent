@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import asyncio
-import json
 import time
 from typing import AsyncGenerator, Generator, Optional, Dict, Any
 
@@ -9,14 +8,11 @@ from starlette.responses import StreamingResponse
 
 from agent.graph_runner import GraphRunner
 from constants.chat_service_constants import (
-    CHAT_AI_CONTENT_TYPES,
     CHAT_DEFAULT_MODEL_CONFIG,
     CHAT_SERVICE_ERROR_CONNECTION,
     CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE,
     CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE,
     CHAT_SERVICE_ERROR_TIMEOUT,
-    CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE,
-    CHAT_SERVICE_INTERRUPTED_TEMPLATE,
     STREAM_HEADERS,
 )
 from constants.sse_constants import SseEventType, SsePayloadField
@@ -25,6 +21,16 @@ from db import get_db_context
 from schemas.chat_history_schemas import ChatMessageCreate
 from schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
+from services.chat_stream_support import (
+    build_chat_extra_data,
+    build_final_response,
+    close_stream_safely,
+    collect_trace_from_chunk,
+    extract_ai_content_from_chunk,
+    format_error_event,
+    iterate_stream_sync,
+    normalize_history_messages,
+)
 from services.exception_service import exception_handler
 from services.route_metrics_service import route_metrics_service
 from services.session_state_service import session_state_service
@@ -84,7 +90,7 @@ class ChatService:
         except Exception as exc:
             log.exception(f"流式聊天准备阶段异常: {exc}", target=LogTarget.ALL)
             async def _error_gen():
-                yield self._format_error_event(str(exc))
+                yield format_error_event(str(exc))
             return StreamingResponse(
                 _error_gen(),
                 media_type="text/event-stream",
@@ -168,164 +174,20 @@ class ChatService:
         )
 
     @staticmethod
-    def _is_async_stream(stream_obj: Any) -> bool:
-        """判断对象是否为 async 可迭代流。"""
-        return hasattr(stream_obj, "__aiter__")
-
-    def _iterate_stream_sync(self, stream_obj: Any) -> Generator[str, None, None]:
-        """
-        兼容遍历同步/异步流对象。
-
-        说明：
-        - GraphRunner 已升级为 async 生成器，但同步兼容入口仍可能被调用；
-        - 此方法在同步上下文中桥接 async 流，避免直接 `for` 触发类型错误。
-        """
-        if not self._is_async_stream(stream_obj):
-            yield from stream_obj
-            return
-
-        loop = asyncio.new_event_loop()
-        async_iter = stream_obj.__aiter__()
-        try:
-            while True:
-                try:
-                    chunk = loop.run_until_complete(async_iter.__anext__())
-                except StopAsyncIteration:
-                    break
-                yield chunk
-        finally:
-            try:
-                aclose = getattr(stream_obj, "aclose", None)
-                if callable(aclose):
-                    loop.run_until_complete(aclose())
-            except Exception:
-                pass
-            loop.close()
-
-    def _close_stream_safely(self, stream_obj: Any) -> None:
-        """统一关闭同步/异步流对象，供 GeneratorExit 场景复用。"""
-        if stream_obj is None:
-            return
-        close_fn = getattr(stream_obj, "close", None)
-        if callable(close_fn):
-            try:
-                close_fn()
-                return
-            except Exception:
-                pass
-        aclose_fn = getattr(stream_obj, "aclose", None)
-        if callable(aclose_fn):
-            loop = asyncio.new_event_loop()
-            try:
-                loop.run_until_complete(aclose_fn())
-            except Exception:
-                pass
-            finally:
-                loop.close()
-
-    @staticmethod
-    def _parse_sse_payload(chunk: str) -> Optional[Dict[str, Any]]:
-        """从 SSE chunk 中提取 JSON 负载，兼容 event/data 与纯 data 两种格式。"""
-        try:
-            if chunk.startswith("event: "):
-                lines = chunk.split("\n")
-                data_line = next((line for line in lines if line.startswith("data: ")), None)
-                if data_line:
-                    return json.loads(data_line[6:])
-            elif chunk.startswith("data: "):
-                return json.loads(chunk[6:])
-        except (json.JSONDecodeError, KeyError, TypeError):
-            return None
-        return None
-
-    @staticmethod
-    def _append_workflow_trace(
-        workflow_trace: list[dict],
-        payload: Dict[str, Any],
-    ) -> None:
-        """将结构化流程事件追加到轨迹中，对高频 streaming 事件做就地合并。"""
-        workflow_payload = payload.get(SsePayloadField.PAYLOAD.value)
-        if not isinstance(workflow_payload, dict):
-            return
-
-        normalized = dict(workflow_payload)
-        phase = str(normalized.get("phase") or "")
-        agent_name = str(normalized.get("agent_name") or "")
-        task_id = str(normalized.get("task_id") or "")
-
-        # 高频 worker_streaming 事件只保留该员工最近一条预览，避免轨迹膨胀。
-        if phase in {"worker_streaming", "direct_response_streaming"}:
-            for index in range(len(workflow_trace) - 1, -1, -1):
-                existing = workflow_trace[index]
-                if not isinstance(existing, dict):
-                    continue
-                if (
-                    str(existing.get("phase") or "") == phase
-                    and str(existing.get("agent_name") or "") == agent_name
-                    and str(existing.get("task_id") or "") == task_id
-                ):
-                    workflow_trace[index] = normalized
-                    return
-
-        workflow_trace.append(normalized)
-
-    @staticmethod
-    def _append_thinking_entry(thinking_entries: list[str], entry: str) -> None:
-        """累积思考过程文本，并避免连续重复项。"""
-        normalized = str(entry or "").strip()
-        if not normalized:
-            return
-        if thinking_entries and thinking_entries[-1] == normalized:
-            return
-        thinking_entries.append(normalized)
-
-    def _collect_trace_from_chunk(
-        self,
-        chunk: str,
-        thinking_entries: list[str],
-        workflow_trace: list[dict],
-    ) -> None:
-        """从流式 chunk 中提取可持久化的思考过程与流程轨迹。"""
-        data = self._parse_sse_payload(chunk)
-        if not data:
-            return
-
-        event_type = str(data.get(SsePayloadField.TYPE.value) or "")
-        if event_type == SseEventType.WORKFLOW_EVENT.value:
-            self._append_workflow_trace(workflow_trace, data)
-            return
-
-        if event_type == SseEventType.THINKING.value:
-            self._append_thinking_entry(thinking_entries, str(data.get(SsePayloadField.CONTENT.value) or ""))
-            return
-
-        if event_type == SseEventType.LOG.value:
-            self._append_thinking_entry(thinking_entries, str(data.get("message") or ""))
-            return
-
-        if event_type == SseEventType.INTERRUPT.value:
-            interrupt_content = data.get(SsePayloadField.CONTENT.value)
-            if isinstance(interrupt_content, str):
-                self._append_thinking_entry(thinking_entries, interrupt_content)
-            elif isinstance(interrupt_content, dict):
-                self._append_thinking_entry(
-                    thinking_entries,
-                    str(interrupt_content.get("message") or ""),
-                )
-
-    @staticmethod
     def _build_extra_data(
         thinking_entries: list[str],
         workflow_trace: list[dict],
+        *,
+        session_id: str = "",
+        final_response: str = "",
     ) -> Optional[Dict[str, Any]]:
-        """构造消息持久化所需的扩展数据。"""
-        extra_data: Dict[str, Any] = {}
-        if thinking_entries:
-            extra_data["thinking_trace"] = "\n\n".join(thinking_entries)
-        if workflow_trace:
-            extra_data["workflow_trace"] = workflow_trace
-            extra_data["workflow_version"] = 1
-        return extra_data or None
+        """兼容旧调用方，内部改由独立辅助模块组装扩展数据。"""
+        return build_chat_extra_data(
+            thinking_entries,
+            workflow_trace,
+            session_id=session_id,
+            final_response=final_response,
+        )
 
     def _build_model_config_from_user_model(self, user_model_id: int, user_id: Optional[int] = None) -> Optional[
         Dict[str, Any]]:
@@ -426,8 +288,8 @@ class ChatService:
                 emit_response_start=False,
             ):
                 yield chunk
-                self._collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
-                ai_content = self._extract_ai_content_from_chunk(chunk)
+                collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
+                ai_content = extract_ai_content_from_chunk(chunk)
                 if ai_content:
                     ai_response += ai_content
 
@@ -441,19 +303,19 @@ class ChatService:
             error_occurred = True
             error_message = "模型响应超时，请重试"
             log.warning(f"异步流式聊天超时: {session_id}", target=LogTarget.LOG)
-            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
+            yield format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
 
         except ConnectionError:
             error_occurred = True
             error_message = "远端服务连接断开"
             log.warning(f"异步流式聊天连接异常: {session_id}", target=LogTarget.LOG)
-            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
+            yield format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
 
         except Exception as e:
             error_occurred = True
             error_message = str(e)
             log.exception(f"异步聊天流处理异常: {error_message}", target=LogTarget.ALL)
-            yield self._format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
+            yield format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
 
         finally:
             # 收尾落库：在线程池中执行，避免阻塞事件循环
@@ -463,7 +325,12 @@ class ChatService:
                     self._save_chat_history,
                     user_id, session_id, user_input, ai_response,
                     model_config, start_time, error_occurred, error_message,
-                    self._build_extra_data(thinking_entries, workflow_trace),
+                    self._build_extra_data(
+                        thinking_entries,
+                        workflow_trace,
+                        session_id=session_id,
+                        final_response=ai_response,
+                    ),
                 )
 
     def _init_session_and_load_history(
@@ -491,7 +358,7 @@ class ChatService:
                         session_id=session_id,
                         limit=history_limit,
                     )
-                    loaded_history = self._normalize_history_messages(recent_history)
+                    loaded_history = normalize_history_messages(recent_history)
                     loaded_context = session_state_service.build_runtime_context(
                         db=db,
                         user_id=user_id,
@@ -521,12 +388,7 @@ class ChatService:
         阻塞式落库。设计为可在 asyncio.to_thread 中调用的纯同步方法。
         """
         with get_db_context() as db:
-            final_content = ai_response
-            if error_occurred:
-                if not ai_response:
-                    final_content = CHAT_SERVICE_INTERRUPTED_TEMPLATE.format(error=error_message)
-                else:
-                    final_content += CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE.format(error=error_message)
+            final_content = build_final_response(ai_response, error_occurred, error_message)
 
             if final_content:
                 chat_data = ChatMessageCreate(
@@ -571,12 +433,12 @@ class ChatService:
         except GeneratorExit:
             raise
         except TimeoutError:
-            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
+            yield format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
         except ConnectionError:
-            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
+            yield format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
         except Exception as e:
             log.error(f"匿名异步聊天异常: {e}")
-            yield self._format_error_event(CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE.format(error=str(e)))
+            yield format_error_event(CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE.format(error=str(e)))
 
     def stream_chat_with_history(
             self,
@@ -624,7 +486,7 @@ class ChatService:
                             session_id=session_id,
                             limit=history_limit,
                         )
-                        history_messages = self._normalize_history_messages(recent_history)
+                        history_messages = normalize_history_messages(recent_history)
                         runtime_context = session_state_service.build_runtime_context(
                             db=db,
                             user_id=user_id,
@@ -646,18 +508,18 @@ class ChatService:
                 emit_response_start=False,
             )
             # 1. 遍历 GraphRunner 推送过来的每一个流式事件
-            for chunk in self._iterate_stream_sync(runner_stream):
+            for chunk in iterate_stream_sync(runner_stream):
                 yield chunk
-                self._collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
+                collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
                 # 2. 只有当事件包含大模型的正文时，才拼接到 ai_response 里准备落库
-                ai_content = self._extract_ai_content_from_chunk(chunk)
+                ai_content = extract_ai_content_from_chunk(chunk)
                 if ai_content:
                     ai_response += ai_content
 
         except GeneratorExit:
             # 前端主动断开连接 (比如关掉网页/点击停止生成)
             if runner_stream is not None:
-                self._close_stream_safely(runner_stream)
+                close_stream_safely(runner_stream)
             log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
             error_occurred = True
             error_message = "客户端主动断开连接"
@@ -667,20 +529,20 @@ class ChatService:
             error_occurred = True
             error_message = "模型响应超时，请重试"
             log.warning(f"流式聊天超时: {session_id}", target=LogTarget.LOG)
-            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
+            yield format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
 
         except ConnectionError:
             error_occurred = True
             error_message = "远端服务连接断开"
             log.warning(f"流式聊天连接异常: {session_id}", target=LogTarget.LOG)
-            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
+            yield format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
 
         except Exception as e:
             # 流式传输中断裂，必须以 SSE 格式告诉前端
             error_occurred = True
             error_message = str(e)
             log.exception(f"聊天流处理异常: {error_message}", target=LogTarget.ALL)
-            yield self._format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
+            yield format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
 
         finally:
             # 3. 收尾动作：落库。无论是正常结束、报错，还是前端断开，只要有话出来，统统存下。
@@ -689,12 +551,7 @@ class ChatService:
                 log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
                 with get_db_context() as db:
                     # 组装要入库的最终回答文本
-                    final_content = ai_response
-                    if error_occurred:
-                        if not ai_response:
-                            final_content = CHAT_SERVICE_INTERRUPTED_TEMPLATE.format(error=error_message)
-                        else:
-                            final_content += CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE.format(error=error_message)
+                    final_content = build_final_response(ai_response, error_occurred, error_message)
 
                     # 仅当本轮有可存内容时才写聊天消息，避免空白消息污染历史
                     if final_content:
@@ -706,7 +563,12 @@ class ChatService:
                             model_name=model_config.get('model'),
                             latency_ms=int((time.time() - start_time) * 1000),
                             tokens=ChatUtils.estimate_tokens(user_input + ai_response),
-                            extra_data=self._build_extra_data(thinking_entries, workflow_trace),
+                            extra_data=self._build_extra_data(
+                                thinking_entries,
+                                workflow_trace,
+                                session_id=session_id,
+                                final_response=final_content,
+                            ),
                         )
                         chat_history_service.create_chat_message(db, user_id, chat_data)
 
@@ -738,70 +600,19 @@ class ChatService:
                 history_messages=history_messages or [],
                 session_context=runtime_context or {},
             )
-            for chunk in self._iterate_stream_sync(runner_stream):
+            for chunk in iterate_stream_sync(runner_stream):
                 yield chunk
         except GeneratorExit:
             if runner_stream is not None:
-                self._close_stream_safely(runner_stream)
+                close_stream_safely(runner_stream)
             raise
         except TimeoutError:
-            yield self._format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
+            yield format_error_event(CHAT_SERVICE_ERROR_TIMEOUT)
         except ConnectionError:
-            yield self._format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
+            yield format_error_event(CHAT_SERVICE_ERROR_CONNECTION)
         except Exception as e:
             log.error(f"匿名聊天异常: {e}")
-            yield self._format_error_event(CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE.format(error=str(e)))
-
-    def _extract_ai_content_from_chunk(self, chunk: str) -> Optional[str]:
-        """
-        安全提取 SSE 格式内容
-        SSE 格式标准为:
-        event: message
-        data: {"type": "message", "content": "你好"}
-        """
-        try:
-            if chunk.startswith('event: '):
-                lines = chunk.split('\n')
-                data_line = next((line for line in lines if line.startswith('data: ')), None)
-                if data_line:
-                    data = json.loads(data_line[6:])
-                    # 只记录主输出正文，忽略 thinking/interrupt 等中间状态
-                    if data.get(SsePayloadField.TYPE.value) in CHAT_AI_CONTENT_TYPES:
-                        return data.get(SsePayloadField.CONTENT.value, '')
-            elif chunk.startswith('data: '):
-                # 兼容旧版本纯 data 输出
-                data = json.loads(chunk[6:])
-                if data.get(SsePayloadField.TYPE.value) in CHAT_AI_CONTENT_TYPES:
-                    return data.get(SsePayloadField.CONTENT.value, '')
-        except (json.JSONDecodeError, KeyError):
-            pass
-        return None
-
-    @staticmethod
-    def _normalize_history_messages(history_data: Any) -> list[dict]:
-        if not history_data:
-            return []
-
-        # 兼容 chat_history_service 返回 {"messages": [...]} 的结构
-        if isinstance(history_data, dict):
-            source_items = history_data.get("messages", []) or []
-        elif isinstance(history_data, list):
-            source_items = history_data
-        else:
-            source_items = []
-
-        normalized = []
-        for item in source_items:
-            if isinstance(item, dict):
-                normalized.append(item)
-                continue
-
-            normalized.append({
-                "user_content": getattr(item, "user_content", ""),
-                "model_content": getattr(item, "model_content", ""),
-                "name": getattr(item, "model_name", None),
-            })
-        return normalized
+            yield format_error_event(CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE.format(error=str(e)))
 
     def _build_model_config_from_request(self, req: StreamChatRequest) -> Dict[str, Any]:
         """从请求中构建模型配置"""
@@ -821,6 +632,8 @@ class ChatService:
             max_tokens=req.max_tokens,
             model_key=req.model_key,
             model_url=req.model_url,
+            workspace_root=req.workspace_root,
+            resume_message_id=req.resume_message_id,
         )
 
     def build_model_config(
@@ -839,7 +652,9 @@ class ChatService:
             top_p: Optional[float] = None,
             max_tokens: Optional[int] = None,
             model_key: Optional[str] = None,
-            model_url: Optional[str] = None
+            model_url: Optional[str] = None,
+            workspace_root: Optional[str] = None,
+            resume_message_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         defaults = CHAT_DEFAULT_MODEL_CONFIG
         return {
@@ -858,18 +673,12 @@ class ChatService:
             'max_tokens': defaults["max_tokens"] if max_tokens is None else max_tokens,
             'model_key': model_key if model_key is not None else defaults["model_key"],
             'model_url': model_url if model_url is not None else defaults["model_url"],
+            'workspace_root': workspace_root or '',
+            'resume_message_id': resume_message_id or '',
         }
 
     def _get_stream_headers(self) -> Dict[str, str]:
         return dict(STREAM_HEADERS)
-
-    @staticmethod
-    def _format_error_event(message: str) -> str:
-        """构造统一错误事件，避免服务层重复拼接 SSE 字符串。"""
-        return ChatUtils.format_sse_data(
-            event_type=SseEventType.ERROR.value,
-            data={SsePayloadField.CONTENT.value: message},
-        )
 
 
 # 创建全局实例

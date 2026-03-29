@@ -1,0 +1,933 @@
+2026-03-24 09:09:37 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 09:48:13 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 11:58:32 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 11:58:34 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 11:58:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 11:58:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 11:58:34 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 11:58:34 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-24 11:58:34 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-24 11:58:44 - custom.core.middleware - INFO - [37847aa1-e866-4b77-8a2c-558546997d04] HTTP Request START: POST /api/v1/user/login
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [37847aa1-e866-4b77-8a2c-558546997d04] HTTP Request END: POST /api/v1/user/login (耗时: 0.3824s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [f6401131-b898-417c-bff1-6864af5a9de7] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [f6401131-b898-417c-bff1-6864af5a9de7] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0529s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [908b02f1-8ab7-4155-8c25-90caa49c1b52] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [06563984-3b5b-42e6-8037-73399ac3ab5f] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [de3c9fc7-bee5-41ec-b947-1a57bb6672e3] HTTP Request START: GET /api/v1/model_setting/
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [a8b2f9b6-76ef-40b8-9637-36c57f297df5] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [53ccac99-586b-4601-9228-e1d384a8e896] HTTP Request START: GET /api/v1/user_model/active
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [908b02f1-8ab7-4155-8c25-90caa49c1b52] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0053s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [06563984-3b5b-42e6-8037-73399ac3ab5f] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0045s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [b83c6232-476e-4fa7-a21b-0521f42cb197] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [350a17b1-7a21-4480-bf92-a2234bd1cb34] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [b83c6232-476e-4fa7-a21b-0521f42cb197] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0025s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [350a17b1-7a21-4480-bf92-a2234bd1cb34] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0038s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [abd5a4b3-3d1f-4f22-84ec-0d0be1fdd2cb] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [b9713d3a-b2ad-4051-963d-fac5003fc4f4] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [abd5a4b3-3d1f-4f22-84ec-0d0be1fdd2cb] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0019s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [b9713d3a-b2ad-4051-963d-fac5003fc4f4] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0019s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [de3c9fc7-bee5-41ec-b947-1a57bb6672e3] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0754s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [6eb1158a-0b44-46a8-820e-082b318ab5b1] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [507e42e3-91a7-43f2-b278-e17981165378] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [507e42e3-91a7-43f2-b278-e17981165378] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0011s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [6eb1158a-0b44-46a8-820e-082b318ab5b1] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0016s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [a8b2f9b6-76ef-40b8-9637-36c57f297df5] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.1635s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [53ccac99-586b-4601-9228-e1d384a8e896] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.1625s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [bd0e86c7-c2f3-4b59-a998-2d6cd268c10c] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [6b49da5b-54b1-4fac-878a-cee607b501f1] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [bd0e86c7-c2f3-4b59-a998-2d6cd268c10c] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0012s) - 200
+2026-03-24 11:58:45 - custom.core.middleware - INFO - [6b49da5b-54b1-4fac-878a-cee607b501f1] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0012s) - 200
+2026-03-24 11:58:48 - custom.core.middleware - INFO - [be811525-7504-4423-8ec7-68fd8dee298d] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:48 - custom.core.middleware - INFO - [9c2b3d15-b75c-4d35-a3e3-f0f6044b3b76] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:48 - custom.core.middleware - INFO - [be811525-7504-4423-8ec7-68fd8dee298d] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0032s) - 200
+2026-03-24 11:58:48 - custom.core.middleware - INFO - [9c2b3d15-b75c-4d35-a3e3-f0f6044b3b76] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0033s) - 200
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [6723f2cf-6c5a-44b4-ab41-d2de264a22f1] HTTP Request START: POST /api/v1/terminal/workspace/bind
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [6723f2cf-6c5a-44b4-ab41-d2de264a22f1] HTTP Request END: POST /api/v1/terminal/workspace/bind (耗时: 0.0029s) - 200
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [99158601-ac44-47b8-8c88-d05a77d4174e] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [99158601-ac44-47b8-8c88-d05a77d4174e] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0058s) - 200
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [c2133b53-ca2a-4c35-9ed4-1f3bddeea1f6] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [bb8c4683-c9f7-4364-9642-4445c918e6ed] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [c2133b53-ca2a-4c35-9ed4-1f3bddeea1f6] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0029s) - 200
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [bb8c4683-c9f7-4364-9642-4445c918e6ed] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0032s) - 200
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [8813a39a-3a88-4692-b3bc-51efb4c986dd] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:49 - custom.core.middleware - INFO - [8813a39a-3a88-4692-b3bc-51efb4c986dd] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0025s) - 200
+2026-03-24 11:58:50 - custom.core.middleware - INFO - [8740f2df-cf61-4646-adbc-67845e1784aa] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:50 - custom.core.middleware - INFO - [8740f2df-cf61-4646-adbc-67845e1784aa] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0087s) - 200
+2026-03-24 11:58:52 - custom.core.middleware - INFO - [02563e7f-ea97-4fde-b478-da46aadbb769] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:52 - custom.core.middleware - INFO - [79b447f8-6137-4dbb-883b-92c98666141e] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:52 - custom.core.middleware - INFO - [02563e7f-ea97-4fde-b478-da46aadbb769] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0030s) - 200
+2026-03-24 11:58:52 - custom.core.middleware - INFO - [79b447f8-6137-4dbb-883b-92c98666141e] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0036s) - 200
+2026-03-24 11:58:52 - custom.core.middleware - INFO - [cd30ecad-fe05-49bb-a933-a398624547c1] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:52 - custom.core.middleware - INFO - [cd30ecad-fe05-49bb-a933-a398624547c1] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0017s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [75cf4e61-50b4-4f8f-b3c7-d8687e0055de] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [75cf4e61-50b4-4f8f-b3c7-d8687e0055de] 中间件已成功为模型 19 挂载动态配置。
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [1647c3aa-affe-44d1-9929-cd5ff51f53d7] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [2ef65ebe-28a7-4823-8d15-437bbdb6f702] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [1647c3aa-affe-44d1-9929-cd5ff51f53d7] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0035s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [2ef65ebe-28a7-4823-8d15-437bbdb6f702] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0032s) - 200
+2026-03-24 11:58:57 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-24 11:58:57 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-24 11:58:57 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [75cf4e61-50b4-4f8f-b3c7-d8687e0055de] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0419s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [fc478040-c89d-4441-8ac7-30ac7e973639] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [fc478040-c89d-4441-8ac7-30ac7e973639] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0015s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [0f593edd-f494-490a-8994-d1419b2cff52] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [cc37e902-38e9-45b2-b39c-f26b9fcb794e] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [0f593edd-f494-490a-8994-d1419b2cff52] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0013s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [cc37e902-38e9-45b2-b39c-f26b9fcb794e] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0013s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [53b0d7a3-287a-48f9-8844-f43a06d2cdb6] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [53b0d7a3-287a-48f9-8844-f43a06d2cdb6] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0009s) - 200
+2026-03-24 11:58:57 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-24 11:58:57 - custom.agent.graph_runner - INFO - Pre-Graph 规则拦截生效: [query_identity]
+2026-03-24 11:58:57 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 70字符
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [775010b2-f31d-442a-8d2a-c669b6f47f08] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [7f7f75ae-090c-4af6-9597-67de99bda766] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [7f7f75ae-090c-4af6-9597-67de99bda766] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0024s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [775010b2-f31d-442a-8d2a-c669b6f47f08] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0030s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [d7202ecf-be51-4bad-9713-a1f119b0206c] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [d7202ecf-be51-4bad-9713-a1f119b0206c] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0018s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [361f8ffb-27a4-4e9b-8244-2f1f39ac31af] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [a36e4a5a-ad50-4206-9365-c905cce16612] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [361f8ffb-27a4-4e9b-8244-2f1f39ac31af] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0012s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [a36e4a5a-ad50-4206-9365-c905cce16612] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0015s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [29e115b8-038c-4761-a853-2dea2bae3873] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [29e115b8-038c-4761-a853-2dea2bae3873] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0013s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [6d9516e4-c423-4bf2-9783-c45d9eb6f44d] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [e9318392-ccf9-498b-b565-b84f192f4ce5] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [e9318392-ccf9-498b-b565-b84f192f4ce5] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0044s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [6d9516e4-c423-4bf2-9783-c45d9eb6f44d] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0050s) - 200
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [7be71b9f-30bf-4e5a-a9d1-2f2d4f15fbeb] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:58:57 - custom.core.middleware - INFO - [7be71b9f-30bf-4e5a-a9d1-2f2d4f15fbeb] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0009s) - 200
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [06006c10-8fff-4894-9d70-8d8df1bc1d0e] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [06006c10-8fff-4894-9d70-8d8df1bc1d0e] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0111s) - 200
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [011e0aca-00cf-496d-a072-521e9ae738b6] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [6a351750-c1e2-41da-9d88-fa156eb9640f] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [011e0aca-00cf-496d-a072-521e9ae738b6] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0025s) - 200
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [6a351750-c1e2-41da-9d88-fa156eb9640f] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0022s) - 200
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [c07dd923-0512-47e5-9eb4-47859863e658] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:09 - custom.core.middleware - INFO - [c07dd923-0512-47e5-9eb4-47859863e658] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0014s) - 200
+2026-03-24 11:59:12 - custom.core.middleware - INFO - [da60db2c-9e45-40eb-98f9-dbeca20ff2af] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:12 - custom.core.middleware - INFO - [099fd29a-8d64-4823-b579-d4e8befd997a] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:12 - custom.core.middleware - INFO - [da60db2c-9e45-40eb-98f9-dbeca20ff2af] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0081s) - 200
+2026-03-24 11:59:12 - custom.core.middleware - INFO - [099fd29a-8d64-4823-b579-d4e8befd997a] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0070s) - 200
+2026-03-24 11:59:12 - custom.core.middleware - INFO - [6c964df6-45a3-4a2a-918d-ba37de3cabba] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:12 - custom.core.middleware - INFO - [6c964df6-45a3-4a2a-918d-ba37de3cabba] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0012s) - 200
+2026-03-24 11:59:21 - custom.core.middleware - INFO - [4eef0f90-011f-43e5-963d-7da6f5ba0b0f] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:21 - custom.core.middleware - INFO - [97175987-460d-4acb-8ce7-7c2a6d9cbac4] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:21 - custom.core.middleware - INFO - [4eef0f90-011f-43e5-963d-7da6f5ba0b0f] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0040s) - 200
+2026-03-24 11:59:21 - custom.core.middleware - INFO - [97175987-460d-4acb-8ce7-7c2a6d9cbac4] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0040s) - 200
+2026-03-24 11:59:21 - custom.core.middleware - INFO - [3dbe2ce1-f986-409b-9434-ee02f679d58e] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:21 - custom.core.middleware - INFO - [3dbe2ce1-f986-409b-9434-ee02f679d58e] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0011s) - 200
+2026-03-24 11:59:22 - custom.core.middleware - INFO - [24afce0a-fbf9-413c-bde6-c19998319c08] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:22 - custom.core.middleware - INFO - [83a6d532-df2d-4d6d-b173-b0c94c5e10e4] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:22 - custom.core.middleware - INFO - [24afce0a-fbf9-413c-bde6-c19998319c08] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0041s) - 200
+2026-03-24 11:59:22 - custom.core.middleware - INFO - [83a6d532-df2d-4d6d-b173-b0c94c5e10e4] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0039s) - 200
+2026-03-24 11:59:22 - custom.core.middleware - INFO - [1310d5b6-9f56-4183-823f-1ebec22d5202] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:22 - custom.core.middleware - INFO - [1310d5b6-9f56-4183-823f-1ebec22d5202] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0020s) - 200
+2026-03-24 11:59:34 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 11:59:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 11:59:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 11:59:34 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [3d8a3d0d-7eee-4833-a83d-fbdb6018b1cf] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [3d8a3d0d-7eee-4833-a83d-fbdb6018b1cf] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0074s) - 200
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [8f7e6ff6-cabf-4a54-a968-7a16f1ed3f07] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [5f0cc886-a6a1-4487-a39f-5621642cf751] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [8f7e6ff6-cabf-4a54-a968-7a16f1ed3f07] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0049s) - 200
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [5f0cc886-a6a1-4487-a39f-5621642cf751] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0045s) - 200
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [ceeca4d3-3312-4061-bd56-73f604270c75] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:36 - custom.core.middleware - INFO - [ceeca4d3-3312-4061-bd56-73f604270c75] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0014s) - 200
+2026-03-24 11:59:39 - custom.core.middleware - INFO - [3b81d640-5f0a-4f1e-8a0a-d81a30d6197b] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:39 - custom.core.middleware - INFO - [5e5cad73-4e9a-4101-af17-59d8d8f68eb6] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:39 - custom.core.middleware - INFO - [3b81d640-5f0a-4f1e-8a0a-d81a30d6197b] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0042s) - 200
+2026-03-24 11:59:39 - custom.core.middleware - INFO - [5e5cad73-4e9a-4101-af17-59d8d8f68eb6] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0041s) - 200
+2026-03-24 11:59:39 - custom.core.middleware - INFO - [669836b7-26fb-4b98-bc6d-d3e7533ca528] HTTP Request START: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 11:59:39 - custom.core.middleware - INFO - [669836b7-26fb-4b98-bc6d-d3e7533ca528] HTTP Request END: GET /api/v1/terminal/fs/tree/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0008s) - 200
+2026-03-24 12:00:34 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 12:00:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 12:00:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 12:00:34 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 12:01:02 - custom.core.middleware - INFO - [2eb60c0b-f99a-4c47-bf19-fdb00b13a0cb] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 12:01:02 - custom.core.middleware - INFO - [2eb60c0b-f99a-4c47-bf19-fdb00b13a0cb] 中间件已成功为模型 19 挂载动态配置。
+2026-03-24 12:01:02 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-24 12:01:02 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-24 12:01:02 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-24 12:01:02 - custom.core.middleware - INFO - [2eb60c0b-f99a-4c47-bf19-fdb00b13a0cb] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0411s) - 200
+2026-03-24 12:01:02 - custom.agent.graph_runner - INFO - 首次编译 Supervisor 图，config_key=8e39f89c...
+2026-03-24 12:01:02 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 12:01:02 - custom.agent.graphs.checkpointer - INFO - Checkpointer: PostgreSQL 状态表校验成功，连接已建立。
+2026-03-24 12:01:03 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule] -> WEB_SEARCH (conf=0.90)，耗时: 0ms
+2026-03-24 12:01:03 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.9], complex=[False]
+2026-03-24 12:01:03 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [domain_rule] -> weather_agent，耗时: 1ms
+2026-03-24 12:01:03 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → weather_agent (conf=0.90)
+2026-03-24 12:01:03 - custom.agent.graphs.supervisor - INFO - 上下文城市继承: weather_agent 自动沿用城市 [你是谁] (source=context_slots)
+2026-03-24 12:01:03 - custom.agent.tools.weather_tools - INFO - 天气工具格式化完成，城市=城市
+2026-03-24 12:01:03 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[weather_agent] 完成，耗时: 702ms
+2026-03-24 12:01:04 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 201字符
+2026-03-24 12:01:34 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 12:01:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 12:01:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 12:01:34 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 12:01:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 12:01:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 12:01:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 12:01:34 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 12:01:49 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-24 12:01:49 - custom.services.session_pool - INFO - SessionPool 已停止。
+2026-03-24 16:54:24 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 16:54:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 16:54:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 16:54:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:54:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 16:54:27 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-24 16:54:27 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [35ac98ee-d871-4dc5-9c8b-28767db25ac2] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [e5457e38-b470-4ef2-aa6d-18568318847d] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [35ac98ee-d871-4dc5-9c8b-28767db25ac2] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu (耗时: 0.0028s) - 401
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [e5457e38-b470-4ef2-aa6d-18568318847d] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu (耗时: 0.0026s) - 401
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [b41411bd-241e-4bbc-8623-d24e072dccde] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [5443d387-865d-4100-8495-702b02be3e3f] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [b41411bd-241e-4bbc-8623-d24e072dccde] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu (耗时: 0.0027s) - 401
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [5443d387-865d-4100-8495-702b02be3e3f] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu (耗时: 0.0035s) - 401
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [d78cee1c-fc58-430e-a281-32f67069ef6b] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [4f61e92e-6734-429d-99e8-f9ea8d7d6624] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [d78cee1c-fc58-430e-a281-32f67069ef6b] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu (耗时: 0.0024s) - 401
+2026-03-24 16:54:27 - custom.core.middleware - INFO - [4f61e92e-6734-429d-99e8-f9ea8d7d6624] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu (耗时: 0.0031s) - 401
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [ee30d56d-fa82-46d2-bec2-5975a9bc0144] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342468937_euik6e68o
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [7fbe7944-94f0-4e51-b6a9-cf961e636378] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342468937_euik6e68o
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [7fbe7944-94f0-4e51-b6a9-cf961e636378] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342468937_euik6e68o (耗时: 0.0013s) - 401
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [ee30d56d-fa82-46d2-bec2-5975a9bc0144] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342468937_euik6e68o (耗时: 0.0017s) - 401
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [993ba1a1-b10e-4fd2-b6b2-9ed980d09456] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342468937_euik6e68o
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [842029c3-dd5f-4fba-b7ad-0f3fe17e99a2] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342468937_euik6e68o
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [842029c3-dd5f-4fba-b7ad-0f3fe17e99a2] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342468937_euik6e68o (耗时: 0.0015s) - 401
+2026-03-24 16:54:32 - custom.core.middleware - INFO - [993ba1a1-b10e-4fd2-b6b2-9ed980d09456] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342468937_euik6e68o (耗时: 0.0017s) - 401
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [71b93121-6aed-4601-9b84-c242c29cdaa9] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342473661_6ti34440g
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [0a6ebae9-71b2-4d31-a758-0547f3d21603] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342473661_6ti34440g
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [71b93121-6aed-4601-9b84-c242c29cdaa9] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342473661_6ti34440g (耗时: 0.0019s) - 401
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [0a6ebae9-71b2-4d31-a758-0547f3d21603] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342473661_6ti34440g (耗时: 0.0018s) - 401
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [d92c05c4-3c1a-40ce-bf7e-2b12d5b4e668] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342473661_6ti34440g
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [0d29fdd3-7c96-4cdb-ada7-f805f5c671d3] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342473661_6ti34440g
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [d92c05c4-3c1a-40ce-bf7e-2b12d5b4e668] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342473661_6ti34440g (耗时: 0.0019s) - 401
+2026-03-24 16:54:36 - custom.core.middleware - INFO - [0d29fdd3-7c96-4cdb-ada7-f805f5c671d3] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342473661_6ti34440g (耗时: 0.0018s) - 401
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [f8d85321-2b17-4b8a-ac47-f9c8fca9a2e7] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342478185_oy9jpwzix
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [a6deb946-7dca-4bc5-82be-804952e4e3cc] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342478185_oy9jpwzix
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [f8d85321-2b17-4b8a-ac47-f9c8fca9a2e7] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342478185_oy9jpwzix (耗时: 0.0041s) - 401
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [a6deb946-7dca-4bc5-82be-804952e4e3cc] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342478185_oy9jpwzix (耗时: 0.0039s) - 401
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [db69961d-21f8-46c4-a4b8-75dd6cfa2006] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342478185_oy9jpwzix
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [0daee2f0-cd87-492b-b5bc-5800662aa8c2] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342478185_oy9jpwzix
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [db69961d-21f8-46c4-a4b8-75dd6cfa2006] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342478185_oy9jpwzix (耗时: 0.0048s) - 401
+2026-03-24 16:54:45 - custom.core.middleware - INFO - [0daee2f0-cd87-492b-b5bc-5800662aa8c2] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342478185_oy9jpwzix (耗时: 0.0047s) - 401
+2026-03-24 16:54:50 - custom.core.middleware - INFO - [0932442b-8137-47b7-81b1-b914f6f07c2f] HTTP Request START: POST /api/v1/chat-history/sessions
+2026-03-24 16:54:50 - custom.db - ERROR - 数据库事务异常回滚: 401: 缺少认证信息
+2026-03-24 16:54:50 - custom.core.middleware - INFO - [0932442b-8137-47b7-81b1-b914f6f07c2f] HTTP Request END: POST /api/v1/chat-history/sessions (耗时: 0.0087s) - 401
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [19d13529-bcfa-4e95-b841-a904d80dd036] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342512459_r5xdzyuax
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [a84f401c-7a43-4dfd-be13-ea8ad4017ff9] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342512459_r5xdzyuax
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [19d13529-bcfa-4e95-b841-a904d80dd036] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342512459_r5xdzyuax (耗时: 0.0063s) - 401
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [a84f401c-7a43-4dfd-be13-ea8ad4017ff9] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342512459_r5xdzyuax (耗时: 0.0058s) - 401
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [63e35cf4-043b-42ce-b3e2-add4d11afd05] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342512459_r5xdzyuax
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [c872a98f-c9c9-45e5-825d-e309d1f54ca4] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342512459_r5xdzyuax
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [c872a98f-c9c9-45e5-825d-e309d1f54ca4] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342512459_r5xdzyuax (耗时: 0.0036s) - 401
+2026-03-24 16:55:18 - custom.core.middleware - INFO - [63e35cf4-043b-42ce-b3e2-add4d11afd05] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342512459_r5xdzyuax (耗时: 0.0044s) - 401
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [d138aa80-fa25-454a-8b46-b767fb1f22b7] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342520291_jflmdio3u
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [a6a4dd6c-c587-462f-8cd9-e21000b25393] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342520291_jflmdio3u
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [d138aa80-fa25-454a-8b46-b767fb1f22b7] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342520291_jflmdio3u (耗时: 0.0059s) - 401
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [a6a4dd6c-c587-462f-8cd9-e21000b25393] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342520291_jflmdio3u (耗时: 0.0056s) - 401
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [06a52437-90d8-40e7-b3ac-f4003de5f3ee] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342520291_jflmdio3u
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [65f9c6aa-1b5e-4525-b0d4-d63804eeb761] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342520291_jflmdio3u
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [65f9c6aa-1b5e-4525-b0d4-d63804eeb761] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342520291_jflmdio3u (耗时: 0.0034s) - 401
+2026-03-24 16:55:21 - custom.core.middleware - INFO - [06a52437-90d8-40e7-b3ac-f4003de5f3ee] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342520291_jflmdio3u (耗时: 0.0039s) - 401
+2026-03-24 16:55:26 - custom.core.middleware - INFO - [ddf64893-d1a0-4272-a99e-cffb40ba59ea] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 16:55:26 - custom.db - ERROR - 数据库事务异常回滚: 401: 缺少认证信息
+2026-03-24 16:55:26 - custom.core.middleware - INFO - [ddf64893-d1a0-4272-a99e-cffb40ba59ea] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0039s) - 401
+2026-03-24 16:55:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 16:55:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 16:55:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:55:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 16:55:33 - custom.core.middleware - INFO - [1d0e30f6-fd43-47a6-aab7-f04c28c250d8] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 16:55:33 - custom.db - ERROR - 数据库事务异常回滚: 401: 缺少认证信息
+2026-03-24 16:55:33 - custom.core.middleware - INFO - [1d0e30f6-fd43-47a6-aab7-f04c28c250d8] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0031s) - 401
+2026-03-24 16:56:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 16:56:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 16:56:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:56:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 16:57:27 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 16:57:27 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 16:57:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:57:27 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [56d65efe-1ac1-4797-bd30-f28897c60fde] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342534549_ezq3he9hq
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [5a11c294-17be-49eb-b751-15eb5bd8f932] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342534549_ezq3he9hq
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [56d65efe-1ac1-4797-bd30-f28897c60fde] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342534549_ezq3he9hq (耗时: 0.0052s) - 401
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [5a11c294-17be-49eb-b751-15eb5bd8f932] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342534549_ezq3he9hq (耗时: 0.0057s) - 401
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [b367f4ee-a007-4702-9586-aa3523d83d9c] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342534549_ezq3he9hq
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [59eeacb4-00bb-4d42-828c-5805aa7373cd] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342534549_ezq3he9hq
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [b367f4ee-a007-4702-9586-aa3523d83d9c] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342534549_ezq3he9hq (耗时: 0.0019s) - 401
+2026-03-24 16:57:29 - custom.core.middleware - INFO - [59eeacb4-00bb-4d42-828c-5805aa7373cd] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342534549_ezq3he9hq (耗时: 0.0019s) - 401
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [8100f81d-df7f-40d5-b828-41a582e418d9] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342651065_h8aaaxlr3
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [d469954b-0826-4c5b-960a-bfafd9b191d8] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342651065_h8aaaxlr3
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [8100f81d-df7f-40d5-b828-41a582e418d9] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342651065_h8aaaxlr3 (耗时: 0.0074s) - 401
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [d469954b-0826-4c5b-960a-bfafd9b191d8] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342651065_h8aaaxlr3 (耗时: 0.0076s) - 401
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [192567ab-0972-4ca9-899f-4eb7f15f6337] HTTP Request START: GET /api/v1/terminal/workspace/chat_1774342651065_h8aaaxlr3
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [337a1b2f-f954-4cde-b8ee-5ee7f5a83a69] HTTP Request START: GET /api/v1/terminal/session/latest/chat_1774342651065_h8aaaxlr3
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [192567ab-0972-4ca9-899f-4eb7f15f6337] HTTP Request END: GET /api/v1/terminal/workspace/chat_1774342651065_h8aaaxlr3 (耗时: 0.0052s) - 401
+2026-03-24 16:57:33 - custom.core.middleware - INFO - [337a1b2f-f954-4cde-b8ee-5ee7f5a83a69] HTTP Request END: GET /api/v1/terminal/session/latest/chat_1774342651065_h8aaaxlr3 (耗时: 0.0037s) - 401
+2026-03-24 17:04:34 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 17:04:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:04:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:04:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:04:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:04:35 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-24 17:04:35 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-24 17:04:52 - custom.core.middleware - INFO - [e910745e-8a7b-4b34-b37e-0c20cdf8ad3f] HTTP Request START: POST /api/v1/user/login
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [e910745e-8a7b-4b34-b37e-0c20cdf8ad3f] HTTP Request END: POST /api/v1/user/login (耗时: 0.3292s) - 200
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [14db489e-0968-4f4b-844f-4f125056063a] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [14db489e-0968-4f4b-844f-4f125056063a] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0277s) - 200
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [e923ef00-b222-4e8f-98d2-2a99b95bbd3e] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [30133e63-28b8-446f-9d87-3c7af53711db] HTTP Request START: GET /api/v1/model_setting/
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [281e6575-bd71-47cc-a1b8-3bd3a8f0e431] HTTP Request START: GET /api/v1/user_model/active
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [e923ef00-b222-4e8f-98d2-2a99b95bbd3e] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0297s) - 200
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [281e6575-bd71-47cc-a1b8-3bd3a8f0e431] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0847s) - 200
+2026-03-24 17:04:53 - custom.core.middleware - INFO - [30133e63-28b8-446f-9d87-3c7af53711db] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0859s) - 200
+2026-03-24 17:04:54 - custom.core.middleware - INFO - [ada64001-8ee5-4660-9c6d-5404acf93ca9] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:04:54 - custom.core.middleware - INFO - [76a141d0-13f1-48d2-b070-6bea345a2f7f] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:04:54 - custom.core.middleware - INFO - [ada64001-8ee5-4660-9c6d-5404acf93ca9] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0013s) - 200
+2026-03-24 17:04:54 - custom.core.middleware - INFO - [76a141d0-13f1-48d2-b070-6bea345a2f7f] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0014s) - 200
+2026-03-24 17:04:56 - custom.core.middleware - INFO - [57f3ca98-0a46-4911-92d4-0b4bf2ae3c7e] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:04:56 - custom.core.middleware - INFO - [778ca5cb-2633-449e-aabb-fa8fcd7e5ec5] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:04:56 - custom.core.middleware - INFO - [57f3ca98-0a46-4911-92d4-0b4bf2ae3c7e] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0014s) - 200
+2026-03-24 17:04:56 - custom.core.middleware - INFO - [778ca5cb-2633-449e-aabb-fa8fcd7e5ec5] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0016s) - 200
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [5ca9bf7f-ead6-4d02-af41-64373eeed198] HTTP Request START: POST /api/v1/terminal/workspace/bind
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [5ca9bf7f-ead6-4d02-af41-64373eeed198] HTTP Request END: POST /api/v1/terminal/workspace/bind (耗时: 0.0056s) - 400
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [22fa1b1e-e797-4093-8e31-fb81a16c40f5] HTTP Request START: GET /api/v1/terminal/fs/tree/default
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [22fa1b1e-e797-4093-8e31-fb81a16c40f5] HTTP Request END: GET /api/v1/terminal/fs/tree/default (耗时: 0.0012s) - 400
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [311672b2-e4d9-4cd8-96dc-2063792c0fe2] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [f8fabba1-398d-468a-b64e-fe4847837a22] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [311672b2-e4d9-4cd8-96dc-2063792c0fe2] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0014s) - 200
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [f8fabba1-398d-468a-b64e-fe4847837a22] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0015s) - 200
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [f586f974-5703-4f53-958c-4fb0a6c2bc7a] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [0de843ba-adb3-42be-97c4-5b8d15c95c99] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [f586f974-5703-4f53-958c-4fb0a6c2bc7a] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0014s) - 200
+2026-03-24 17:04:58 - custom.core.middleware - INFO - [0de843ba-adb3-42be-97c4-5b8d15c95c99] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0014s) - 200
+2026-03-24 17:05:01 - custom.core.middleware - INFO - [7e4f797f-e122-43de-91ad-492b5d9cdca6] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-24 17:05:01 - custom.core.middleware - INFO - [7e4f797f-e122-43de-91ad-492b5d9cdca6] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0031s) - 400
+2026-03-24 17:05:01 - custom.core.middleware - INFO - [6829e6f0-2ccc-426a-a29e-356e30793d70] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:01 - custom.core.middleware - INFO - [1a4f5f8e-938c-41e1-b124-989f259e4ad9] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:01 - custom.core.middleware - INFO - [1a4f5f8e-938c-41e1-b124-989f259e4ad9] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0013s) - 200
+2026-03-24 17:05:01 - custom.core.middleware - INFO - [6829e6f0-2ccc-426a-a29e-356e30793d70] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0018s) - 200
+2026-03-24 17:05:04 - custom.core.middleware - INFO - [4ab2be96-3d04-48c9-b321-ab70e111b7d1] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:04 - custom.core.middleware - INFO - [996bb78f-3c26-4e1d-b3ce-3d4590609d76] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:04 - custom.core.middleware - INFO - [996bb78f-3c26-4e1d-b3ce-3d4590609d76] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0027s) - 200
+2026-03-24 17:05:04 - custom.core.middleware - INFO - [4ab2be96-3d04-48c9-b321-ab70e111b7d1] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0038s) - 200
+2026-03-24 17:05:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:05:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:05:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:05:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:05:37 - custom.core.middleware - INFO - [052dc74b-93c2-46f0-960b-9d0b388c7207] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:37 - custom.core.middleware - INFO - [61ef02c5-7563-482a-8614-f1f3a46b2f8d] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:37 - custom.core.middleware - INFO - [052dc74b-93c2-46f0-960b-9d0b388c7207] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0021s) - 200
+2026-03-24 17:05:37 - custom.core.middleware - INFO - [61ef02c5-7563-482a-8614-f1f3a46b2f8d] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0022s) - 200
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [e3cea21a-5f66-47ec-9bbb-a52b7cd155ca] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [3119982a-a15f-4ad0-be86-b68e17d1d38c] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [86a88246-d85c-49b7-84f8-b2aed4c299c6] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [3119982a-a15f-4ad0-be86-b68e17d1d38c] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0019s) - 200
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [e3cea21a-5f66-47ec-9bbb-a52b7cd155ca] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0023s) - 200
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [86a88246-d85c-49b7-84f8-b2aed4c299c6] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0287s) - 200
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [aa82bcaf-86db-49e5-a077-34fb2082014c] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:05:39 - custom.core.middleware - INFO - [aa82bcaf-86db-49e5-a077-34fb2082014c] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0360s) - 200
+2026-03-24 17:05:43 - custom.core.middleware - INFO - [f95769da-53bb-455c-b4f5-8af69fe5efd9] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:43 - custom.core.middleware - INFO - [03e7a6a9-3e37-4aa9-ab5d-2985d54e523f] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:43 - custom.core.middleware - INFO - [f95769da-53bb-455c-b4f5-8af69fe5efd9] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0037s) - 200
+2026-03-24 17:05:43 - custom.core.middleware - INFO - [03e7a6a9-3e37-4aa9-ab5d-2985d54e523f] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0035s) - 200
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [a305b7e2-4989-4d56-ae6e-2d402402d505] HTTP Request START: PUT /api/v1/user_model/19
+2026-03-24 17:05:44 - custom.api.v1.user_model_api - INFO - 收到更新模型配置请求: id=19, model=GLM-4.7
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [bb730379-b9de-43e7-ab86-6ff5e32bfef5] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [b0106aa7-a338-4398-83ba-04aae70f0526] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [bb730379-b9de-43e7-ab86-6ff5e32bfef5] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0015s) - 200
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [b0106aa7-a338-4398-83ba-04aae70f0526] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0014s) - 200
+2026-03-24 17:05:44 - custom.services.user_model_service - INFO - 模型配置 ID=19 更新成功
+2026-03-24 17:05:44 - custom.api.v1.user_model_api - INFO - 模型配置更新完成: id=19
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [a305b7e2-4989-4d56-ae6e-2d402402d505] HTTP Request END: PUT /api/v1/user_model/19 (耗时: 0.1156s) - 200
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [3e14b695-259e-48af-8c0f-40c23990e010] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [3e14b695-259e-48af-8c0f-40c23990e010] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0246s) - 200
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [a619da79-2700-4e39-a178-6d534d91720f] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [3b19431d-b065-47d1-b275-9258de868af8] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [a619da79-2700-4e39-a178-6d534d91720f] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0016s) - 200
+2026-03-24 17:05:44 - custom.core.middleware - INFO - [3b19431d-b065-47d1-b275-9258de868af8] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0017s) - 200
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [7c7b882d-3a52-4e8a-b047-836d2c248e20] HTTP Request START: PUT /api/v1/user_model/19
+2026-03-24 17:05:45 - custom.api.v1.user_model_api - INFO - 收到更新模型配置请求: id=19, model=GLM-4.6
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [7af34d11-84f1-4521-a52b-a1cf3f4ed54b] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [2a3c7834-bff4-4e74-b159-a8bd6cabc1b5] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [7af34d11-84f1-4521-a52b-a1cf3f4ed54b] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0022s) - 200
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [2a3c7834-bff4-4e74-b159-a8bd6cabc1b5] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0023s) - 200
+2026-03-24 17:05:45 - custom.services.user_model_service - INFO - 模型配置 ID=19 更新成功
+2026-03-24 17:05:45 - custom.api.v1.user_model_api - INFO - 模型配置更新完成: id=19
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [7c7b882d-3a52-4e8a-b047-836d2c248e20] HTTP Request END: PUT /api/v1/user_model/19 (耗时: 0.0500s) - 200
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [2ca6904b-7814-4c44-9c61-56a6d681c0c6] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [2ca6904b-7814-4c44-9c61-56a6d681c0c6] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0250s) - 200
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [cfbeeec5-19ae-4d46-a660-be69102d9380] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [729d1896-e5e7-4197-8e6c-17f838922609] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [729d1896-e5e7-4197-8e6c-17f838922609] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0033s) - 200
+2026-03-24 17:05:45 - custom.core.middleware - INFO - [cfbeeec5-19ae-4d46-a660-be69102d9380] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0042s) - 200
+2026-03-24 17:05:49 - custom.core.middleware - INFO - [247b9246-bf61-4f83-9412-08720bf009ac] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:49 - custom.core.middleware - INFO - [e76a1109-9f6c-4f0b-ae67-5cf3edf778fe] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:49 - custom.core.middleware - INFO - [247b9246-bf61-4f83-9412-08720bf009ac] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0027s) - 200
+2026-03-24 17:05:49 - custom.core.middleware - INFO - [e76a1109-9f6c-4f0b-ae67-5cf3edf778fe] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0026s) - 200
+2026-03-24 17:05:52 - custom.core.middleware - INFO - [a5a40085-7411-4ddc-af1d-506739dc42e5] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:05:52 - custom.core.middleware - INFO - [3847581d-fc1c-4590-9d8b-a528b3f8a112] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:05:52 - custom.core.middleware - INFO - [a5a40085-7411-4ddc-af1d-506739dc42e5] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0048s) - 200
+2026-03-24 17:05:52 - custom.core.middleware - INFO - [3847581d-fc1c-4590-9d8b-a528b3f8a112] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0060s) - 200
+2026-03-24 17:06:03 - custom.core.middleware - INFO - [d871cb8f-6a5d-4587-ae3b-a104059dc590] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:03 - custom.core.middleware - INFO - [4988b134-df1a-4c35-b1f0-debac32e49cc] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:03 - custom.core.middleware - INFO - [d871cb8f-6a5d-4587-ae3b-a104059dc590] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0037s) - 200
+2026-03-24 17:06:03 - custom.core.middleware - INFO - [4988b134-df1a-4c35-b1f0-debac32e49cc] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0039s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [b46870e9-1be2-4dcc-ba1c-75403f1f9b63] HTTP Request START: PUT /api/v1/user_model/19
+2026-03-24 17:06:05 - custom.api.v1.user_model_api - INFO - 收到更新模型配置请求: id=19, model=GLM-4.6
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [0dac8d24-d745-4401-b2c7-8d85268db7e3] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [4b595bd0-9a30-4a3b-b9b2-162b751e0221] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [0dac8d24-d745-4401-b2c7-8d85268db7e3] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0021s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [4b595bd0-9a30-4a3b-b9b2-162b751e0221] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0017s) - 200
+2026-03-24 17:06:05 - custom.services.user_model_service - INFO - 模型配置 ID=19 更新成功
+2026-03-24 17:06:05 - custom.api.v1.user_model_api - INFO - 模型配置更新完成: id=19
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [b46870e9-1be2-4dcc-ba1c-75403f1f9b63] HTTP Request END: PUT /api/v1/user_model/19 (耗时: 0.0410s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [970802e8-4611-4878-83ae-5bac040e560d] HTTP Request START: GET /api/v1/model_setting/
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [9f209e64-f08f-4795-8043-eb8b9781c502] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [dd2ddb15-52ce-4bbd-9407-d51ecd4eecbb] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [dd2ddb15-52ce-4bbd-9407-d51ecd4eecbb] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0026s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [9f209e64-f08f-4795-8043-eb8b9781c502] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0034s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [970802e8-4611-4878-83ae-5bac040e560d] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0293s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [60f8d4fb-4662-4d9c-9f72-e3c268595ca2] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [9cd0fea6-c6f2-4ac1-88d9-31fe3e5be951] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [9cd0fea6-c6f2-4ac1-88d9-31fe3e5be951] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0031s) - 200
+2026-03-24 17:06:05 - custom.core.middleware - INFO - [60f8d4fb-4662-4d9c-9f72-e3c268595ca2] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0041s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ecb341d6-febb-4e9a-999d-8d5bcaf6efb8] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ecb341d6-febb-4e9a-999d-8d5bcaf6efb8] 中间件已成功为模型 19 挂载动态配置。
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [71a2fe5d-bba4-4ce0-9f49-a346cec9e27c] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ea126927-03e5-4435-9518-fdfaee71e917] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ea126927-03e5-4435-9518-fdfaee71e917] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0015s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [71a2fe5d-bba4-4ce0-9f49-a346cec9e27c] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0027s) - 200
+2026-03-24 17:06:07 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: session_1774343167397_2wonky6na, 用户ID: 4
+2026-03-24 17:06:07 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-24 17:06:07 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: session_1774343167397_2wonky6na
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ecb341d6-febb-4e9a-999d-8d5bcaf6efb8] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0574s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [a62a4735-8b59-482d-b915-3c63277c4810] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [0204de02-e0c3-4881-9ed7-d359a5304e61] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [a62a4735-8b59-482d-b915-3c63277c4810] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0014s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [0204de02-e0c3-4881-9ed7-d359a5304e61] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0016s) - 200
+2026-03-24 17:06:07 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-24 17:06:07 - custom.agent.graph_runner - INFO - Pre-Graph 规则拦截生效: [query_identity]
+2026-03-24 17:06:07 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: session_1774343167397_2wonky6na，总长: 70字符
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [4794d365-817f-4fcb-995b-43245a114a91] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [d0baf8a4-fdf6-444d-8712-6b7e940c996f] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [d0baf8a4-fdf6-444d-8712-6b7e940c996f] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0014s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [4794d365-817f-4fcb-995b-43245a114a91] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0019s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [66a24ecb-e1fa-441e-b9bc-3e93900e70c1] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [d1ecf2a0-488c-4faa-b96b-d51130a16298] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [66a24ecb-e1fa-441e-b9bc-3e93900e70c1] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0014s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [d1ecf2a0-488c-4faa-b96b-d51130a16298] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0016s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ae03f203-c56b-4037-952f-03139326426c] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [69afeda2-f7c2-403a-9ad1-e1019a7f587c] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [69afeda2-f7c2-403a-9ad1-e1019a7f587c] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0030s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [ae03f203-c56b-4037-952f-03139326426c] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0036s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [a4b98df3-236b-489f-bba4-53598e457881] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [f80f548c-644e-43af-b728-d3bc4960ca2a] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [a4b98df3-236b-489f-bba4-53598e457881] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0014s) - 200
+2026-03-24 17:06:07 - custom.core.middleware - INFO - [f80f548c-644e-43af-b728-d3bc4960ca2a] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0012s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [2cd6aaa4-d217-4349-81ac-a76bdc83b045] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [2cd6aaa4-d217-4349-81ac-a76bdc83b045] 中间件已成功为模型 19 挂载动态配置。
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [96aa03d5-61fc-478d-b734-5bf920aa6a0d] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [440e2fe1-61b7-47c3-a217-df31304b78bc] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:25 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: session_1774343185069_6hfn94g56, 用户ID: 4
+2026-03-24 17:06:25 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [96aa03d5-61fc-478d-b734-5bf920aa6a0d] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0026s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [440e2fe1-61b7-47c3-a217-df31304b78bc] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0026s) - 200
+2026-03-24 17:06:25 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: session_1774343185069_6hfn94g56
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [2cd6aaa4-d217-4349-81ac-a76bdc83b045] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0322s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [da5b7c76-9463-47ca-ae67-d60671f556e7] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [36a7eaba-6980-44cb-8ca6-cc6915c740cc] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [da5b7c76-9463-47ca-ae67-d60671f556e7] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0015s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [36a7eaba-6980-44cb-8ca6-cc6915c740cc] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0017s) - 200
+2026-03-24 17:06:25 - custom.agent.graph_runner - INFO - Pre-Graph 规则拦截生效: [query_identity]
+2026-03-24 17:06:25 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: session_1774343185069_6hfn94g56，总长: 70字符
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [8eb9f36d-0e43-475f-96bd-914efff18a35] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [3dac779a-be93-4b1c-a6f3-630ebe249dad] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [8eb9f36d-0e43-475f-96bd-914efff18a35] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0018s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [3dac779a-be93-4b1c-a6f3-630ebe249dad] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0019s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [2a1dcdb9-a665-4179-b168-60ab1872c763] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [8bf66222-0317-4a47-be4a-fb926c851c63] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [8bf66222-0317-4a47-be4a-fb926c851c63] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0035s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [2a1dcdb9-a665-4179-b168-60ab1872c763] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0041s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [eee86b55-97db-4301-bbd2-baf345b9aa18] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [6cd5c579-5efa-44b4-8261-698582a468c4] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [eee86b55-97db-4301-bbd2-baf345b9aa18] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0015s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [6cd5c579-5efa-44b4-8261-698582a468c4] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0014s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [9a2043dc-4caf-417f-8501-4d8df03a589f] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [e68af298-772f-49b2-bc30-a29b17e646fd] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [9a2043dc-4caf-417f-8501-4d8df03a589f] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0016s) - 200
+2026-03-24 17:06:25 - custom.core.middleware - INFO - [e68af298-772f-49b2-bc30-a29b17e646fd] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0017s) - 200
+2026-03-24 17:06:31 - custom.core.middleware - INFO - [466d0d8b-9d58-4097-83f1-49a89902b861] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:31 - custom.core.middleware - INFO - [49518607-112c-486a-af5e-7101f6383c37] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:31 - custom.core.middleware - INFO - [466d0d8b-9d58-4097-83f1-49a89902b861] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0030s) - 200
+2026-03-24 17:06:31 - custom.core.middleware - INFO - [49518607-112c-486a-af5e-7101f6383c37] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0031s) - 200
+2026-03-24 17:06:34 - custom.core.middleware - INFO - [92f4657b-3aa5-4ad8-8e42-1f20efca7622] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:34 - custom.core.middleware - INFO - [14eafcd3-7437-44a1-b91a-d3dc34e204ce] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:34 - custom.core.middleware - INFO - [92f4657b-3aa5-4ad8-8e42-1f20efca7622] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0031s) - 200
+2026-03-24 17:06:34 - custom.core.middleware - INFO - [14eafcd3-7437-44a1-b91a-d3dc34e204ce] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0034s) - 200
+2026-03-24 17:06:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:06:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:06:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:06:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:06:39 - custom.core.middleware - INFO - [3c7db712-4610-4bb9-8ab9-d98428fcde9a] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-24 17:06:39 - custom.core.middleware - INFO - [3c7db712-4610-4bb9-8ab9-d98428fcde9a] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0024s) - 400
+2026-03-24 17:06:39 - custom.core.middleware - INFO - [71e7165e-aece-494b-a5b4-71e62f788275] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:39 - custom.core.middleware - INFO - [8f1a0b41-0a1d-4d95-9e35-6aec61bd9408] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:39 - custom.core.middleware - INFO - [71e7165e-aece-494b-a5b4-71e62f788275] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0065s) - 200
+2026-03-24 17:06:39 - custom.core.middleware - INFO - [8f1a0b41-0a1d-4d95-9e35-6aec61bd9408] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0064s) - 200
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [afc76275-39d9-4099-a4aa-b492410c7b89] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [e27d6113-daac-4d8e-96e9-05e97e95c616] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [e27d6113-daac-4d8e-96e9-05e97e95c616] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0030s) - 200
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [afc76275-39d9-4099-a4aa-b492410c7b89] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0042s) - 200
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [3f658a9c-0a63-4d34-ae7a-07d836f50b39] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [3f658a9c-0a63-4d34-ae7a-07d836f50b39] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0017s) - 400
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [8a6685c6-43e1-42bf-84ae-a858062153a5] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [cc50872f-44f6-41b4-a7d2-cf5f8eec8540] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [8a6685c6-43e1-42bf-84ae-a858062153a5] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0015s) - 200
+2026-03-24 17:06:42 - custom.core.middleware - INFO - [cc50872f-44f6-41b4-a7d2-cf5f8eec8540] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0014s) - 200
+2026-03-24 17:06:46 - custom.core.middleware - INFO - [b37cd626-a629-429c-bb6b-f15e3f5f1882] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:06:46 - custom.core.middleware - INFO - [480bbb01-1774-4b00-95bf-2b80529f9ae1] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:06:46 - custom.core.middleware - INFO - [b37cd626-a629-429c-bb6b-f15e3f5f1882] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0013s) - 200
+2026-03-24 17:06:46 - custom.core.middleware - INFO - [480bbb01-1774-4b00-95bf-2b80529f9ae1] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0015s) - 200
+2026-03-24 17:07:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:07:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:07:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:07:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:08:34 - custom.core.middleware - INFO - [51842c52-2fce-4ec6-9e5f-45ea49264374] HTTP Request START: GET /api/v1/terminal/fs/tree/default
+2026-03-24 17:08:34 - custom.core.middleware - INFO - [51842c52-2fce-4ec6-9e5f-45ea49264374] HTTP Request END: GET /api/v1/terminal/fs/tree/default (耗时: 0.0052s) - 400
+2026-03-24 17:08:34 - custom.core.middleware - INFO - [ca76d4d8-6f95-4b5f-812a-51033594620d] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:08:34 - custom.core.middleware - INFO - [da3a4682-88e2-41f3-97f4-127afcbfedfe] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:08:34 - custom.core.middleware - INFO - [ca76d4d8-6f95-4b5f-812a-51033594620d] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0036s) - 200
+2026-03-24 17:08:34 - custom.core.middleware - INFO - [da3a4682-88e2-41f3-97f4-127afcbfedfe] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0029s) - 200
+2026-03-24 17:08:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:08:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:08:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:08:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:08:35 - custom.core.middleware - INFO - [1a80b728-f316-4803-85ee-f1f9894553c7] HTTP Request START: GET /api/v1/terminal/fs/tree/default
+2026-03-24 17:08:35 - custom.core.middleware - INFO - [1a80b728-f316-4803-85ee-f1f9894553c7] HTTP Request END: GET /api/v1/terminal/fs/tree/default (耗时: 0.0028s) - 400
+2026-03-24 17:08:35 - custom.core.middleware - INFO - [0133a52e-e16a-40a7-876f-d42fe59212c4] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:08:35 - custom.core.middleware - INFO - [aaa9ce8e-4880-4708-a011-328f829d37ce] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:08:35 - custom.core.middleware - INFO - [0133a52e-e16a-40a7-876f-d42fe59212c4] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0051s) - 200
+2026-03-24 17:08:35 - custom.core.middleware - INFO - [aaa9ce8e-4880-4708-a011-328f829d37ce] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0040s) - 200
+2026-03-24 17:08:37 - custom.core.middleware - INFO - [5123365a-8397-4e40-aa84-f24ba2fddec2] HTTP Request START: GET /api/v1/terminal/fs/tree/default
+2026-03-24 17:08:37 - custom.core.middleware - INFO - [5123365a-8397-4e40-aa84-f24ba2fddec2] HTTP Request END: GET /api/v1/terminal/fs/tree/default (耗时: 0.0037s) - 400
+2026-03-24 17:08:37 - custom.core.middleware - INFO - [aa8f817d-2596-4aad-a08a-4614d64faa8b] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:08:37 - custom.core.middleware - INFO - [80cdf812-086d-46ac-8e30-158f7f8a29a3] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:08:37 - custom.core.middleware - INFO - [aa8f817d-2596-4aad-a08a-4614d64faa8b] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0031s) - 200
+2026-03-24 17:08:37 - custom.core.middleware - INFO - [80cdf812-086d-46ac-8e30-158f7f8a29a3] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0027s) - 200
+2026-03-24 17:08:41 - custom.core.middleware - INFO - [67165227-2556-443f-a1be-053637e0bc73] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:08:41 - custom.core.middleware - INFO - [56135390-5b36-41f1-8767-1244a7874ee5] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:08:41 - custom.core.middleware - INFO - [56135390-5b36-41f1-8767-1244a7874ee5] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0036s) - 200
+2026-03-24 17:08:41 - custom.core.middleware - INFO - [67165227-2556-443f-a1be-053637e0bc73] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0046s) - 200
+2026-03-24 17:08:43 - custom.core.middleware - INFO - [de9045e8-e50b-4f67-971f-c6d5a2df67bb] HTTP Request START: GET /api/v1/terminal/fs/tree/default
+2026-03-24 17:08:43 - custom.core.middleware - INFO - [de9045e8-e50b-4f67-971f-c6d5a2df67bb] HTTP Request END: GET /api/v1/terminal/fs/tree/default (耗时: 0.0032s) - 400
+2026-03-24 17:08:43 - custom.core.middleware - INFO - [0c9a8103-7143-4f48-b659-7463f31442b1] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:08:43 - custom.core.middleware - INFO - [99f0859b-a135-403c-b8e2-a48de5ee1d52] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:08:43 - custom.core.middleware - INFO - [0c9a8103-7143-4f48-b659-7463f31442b1] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0075s) - 200
+2026-03-24 17:08:43 - custom.core.middleware - INFO - [99f0859b-a135-403c-b8e2-a48de5ee1d52] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0074s) - 200
+2026-03-24 17:08:46 - custom.core.middleware - INFO - [0589eb1e-8a52-46f4-8b8b-ff7ab3872efc] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:08:46 - custom.core.middleware - INFO - [46a333f6-84de-4076-8f62-c2f93fa84ad9] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:08:46 - custom.core.middleware - INFO - [46a333f6-84de-4076-8f62-c2f93fa84ad9] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0031s) - 200
+2026-03-24 17:08:46 - custom.core.middleware - INFO - [0589eb1e-8a52-46f4-8b8b-ff7ab3872efc] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0043s) - 200
+2026-03-24 17:09:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:09:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:09:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:09:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:10:15 - custom.core.middleware - INFO - [d7d4b079-edc3-4f16-a76d-10d04fe5b9ef] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:15 - custom.core.middleware - INFO - [0e13935e-17a4-4576-8216-46d8d69a56e8] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:15 - custom.core.middleware - INFO - [d7d4b079-edc3-4f16-a76d-10d04fe5b9ef] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0036s) - 200
+2026-03-24 17:10:15 - custom.core.middleware - INFO - [0e13935e-17a4-4576-8216-46d8d69a56e8] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0065s) - 200
+2026-03-24 17:10:18 - custom.core.middleware - INFO - [6f2da64b-9937-44db-b60d-03f2f10db827] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:18 - custom.core.middleware - INFO - [72582074-d1b7-4741-9b31-9df934bfc574] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:19 - custom.core.middleware - INFO - [72582074-d1b7-4741-9b31-9df934bfc574] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0026s) - 200
+2026-03-24 17:10:19 - custom.core.middleware - INFO - [6f2da64b-9937-44db-b60d-03f2f10db827] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0032s) - 200
+2026-03-24 17:10:19 - custom.core.middleware - INFO - [e3315b89-18ea-485c-b40a-afb3927a7f2a] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:19 - custom.core.middleware - INFO - [d6826dfc-a3ae-47e4-b4f4-c876c76176a8] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:19 - custom.core.middleware - INFO - [d6826dfc-a3ae-47e4-b4f4-c876c76176a8] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0046s) - 200
+2026-03-24 17:10:19 - custom.core.middleware - INFO - [e3315b89-18ea-485c-b40a-afb3927a7f2a] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0053s) - 200
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [7b91dec3-6b9c-4eb9-bf1d-d517c0cdbd8f] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [2b7c5a7a-4a0e-44a0-8c67-859f035ee6b0] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [7b91dec3-6b9c-4eb9-bf1d-d517c0cdbd8f] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0039s) - 200
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [2b7c5a7a-4a0e-44a0-8c67-859f035ee6b0] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0035s) - 200
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [eaf5a984-c3d3-451a-a6d1-b10fce3a90f1] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [f41d4e57-cf66-42df-8369-13762db2afd6] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [f41d4e57-cf66-42df-8369-13762db2afd6] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0023s) - 200
+2026-03-24 17:10:21 - custom.core.middleware - INFO - [eaf5a984-c3d3-451a-a6d1-b10fce3a90f1] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0035s) - 200
+2026-03-24 17:10:22 - custom.core.middleware - INFO - [8a509342-d68a-4a53-9db4-6d08f156eb0d] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:22 - custom.core.middleware - INFO - [25b6cf17-f6eb-4147-ab31-01e1a3d5dacd] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:22 - custom.core.middleware - INFO - [8a509342-d68a-4a53-9db4-6d08f156eb0d] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0034s) - 200
+2026-03-24 17:10:22 - custom.core.middleware - INFO - [25b6cf17-f6eb-4147-ab31-01e1a3d5dacd] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0030s) - 200
+2026-03-24 17:10:23 - custom.core.middleware - INFO - [03d99c16-a549-44a7-a0e7-4965338b0d46] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:23 - custom.core.middleware - INFO - [f74c61d1-f931-4ce8-ad57-69b6b1699816] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:23 - custom.core.middleware - INFO - [03d99c16-a549-44a7-a0e7-4965338b0d46] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0018s) - 200
+2026-03-24 17:10:23 - custom.core.middleware - INFO - [f74c61d1-f931-4ce8-ad57-69b6b1699816] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0019s) - 200
+2026-03-24 17:10:24 - custom.core.middleware - INFO - [239a4216-3456-43b0-8305-a624f09737fa] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:24 - custom.core.middleware - INFO - [156d63c7-66d9-44ad-b51f-e490ed6e9907] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:24 - custom.core.middleware - INFO - [156d63c7-66d9-44ad-b51f-e490ed6e9907] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0050s) - 200
+2026-03-24 17:10:24 - custom.core.middleware - INFO - [239a4216-3456-43b0-8305-a624f09737fa] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0057s) - 200
+2026-03-24 17:10:25 - custom.core.middleware - INFO - [f2ad7952-0f62-43b9-beac-25cbd14566c9] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:25 - custom.core.middleware - INFO - [176c0011-91cc-4047-938c-076b5cba75e0] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:25 - custom.core.middleware - INFO - [f2ad7952-0f62-43b9-beac-25cbd14566c9] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0030s) - 200
+2026-03-24 17:10:25 - custom.core.middleware - INFO - [176c0011-91cc-4047-938c-076b5cba75e0] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0026s) - 200
+2026-03-24 17:10:28 - custom.core.middleware - INFO - [3fca80d8-0b38-4875-b1ec-e00372aa92cc] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-24 17:10:28 - custom.core.middleware - INFO - [100cf2e9-36cc-4029-903b-5bfe3e89973f] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-24 17:10:28 - custom.core.middleware - INFO - [100cf2e9-36cc-4029-903b-5bfe3e89973f] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0013s) - 200
+2026-03-24 17:10:28 - custom.core.middleware - INFO - [3fca80d8-0b38-4875-b1ec-e00372aa92cc] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0016s) - 200
+2026-03-24 17:10:35 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:10:35 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:10:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:10:35 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:54:55 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 17:54:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:54:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:54:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:54:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:54:59 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-24 17:54:59 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [d43cff49-230c-47ba-b68a-edc97f2b24cf] HTTP Request START: POST /api/v1/user/login
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [d43cff49-230c-47ba-b68a-edc97f2b24cf] HTTP Request END: POST /api/v1/user/login (耗时: 0.4007s) - 200
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [9569ffd0-9a2e-41f3-8dab-339b08939758] HTTP Request START: GET /api/v1/user_model/active
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [f2998ccb-5931-460e-82af-b61041b0710e] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [5dbdb675-33e3-45fa-b81d-9aef90c18519] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [52d1ee39-d88c-4c59-860d-a1f92439b78c] HTTP Request START: GET /api/v1/model_setting/
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [9569ffd0-9a2e-41f3-8dab-339b08939758] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0237s) - 200
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [52d1ee39-d88c-4c59-860d-a1f92439b78c] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0967s) - 200
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [5dbdb675-33e3-45fa-b81d-9aef90c18519] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0969s) - 200
+2026-03-24 17:55:06 - custom.core.middleware - INFO - [f2998ccb-5931-460e-82af-b61041b0710e] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0976s) - 200
+2026-03-24 17:55:08 - custom.core.middleware - INFO - [fdb7f3c8-3472-42af-867d-f7c3409be946] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:08 - custom.core.middleware - INFO - [a7ba9d53-dc88-4807-b020-ae8beed3b007] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:08 - custom.core.middleware - INFO - [fdb7f3c8-3472-42af-867d-f7c3409be946] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0019s) - 200
+2026-03-24 17:55:08 - custom.core.middleware - INFO - [a7ba9d53-dc88-4807-b020-ae8beed3b007] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0026s) - 200
+2026-03-24 17:55:10 - custom.core.middleware - INFO - [75903a39-380d-47a1-b2d0-d9679fb8e71b] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:10 - custom.core.middleware - INFO - [eeab53c9-4798-44f6-a385-2f2e57cec1a9] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:10 - custom.core.middleware - INFO - [75903a39-380d-47a1-b2d0-d9679fb8e71b] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0113s) - 200
+2026-03-24 17:55:10 - custom.core.middleware - INFO - [eeab53c9-4798-44f6-a385-2f2e57cec1a9] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0103s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [bc7c9173-5c98-4952-a23e-dd7e439855bb] HTTP Request START: POST /api/v1/terminal/workspace/bind
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [55ca38a4-cc70-4247-b54f-77a7fd11975f] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [5edb74c7-08c3-4ed7-aa88-9fb817df6567] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [bc7c9173-5c98-4952-a23e-dd7e439855bb] HTTP Request END: POST /api/v1/terminal/workspace/bind (耗时: 0.0164s) - 400
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [55ca38a4-cc70-4247-b54f-77a7fd11975f] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0056s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [5edb74c7-08c3-4ed7-aa88-9fb817df6567] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0056s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [a9d6cc45-9ad5-4c1f-8bdc-66fc8b48395c] HTTP Request START: GET /api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [a9d6cc45-9ad5-4c1f-8bdc-66fc8b48395c] HTTP Request END: GET /api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56 (耗时: 0.0169s) - 400
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [22304916-30ab-43f0-ad3d-8a8322b4881d] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [2b1c5095-d4ba-42a3-b3ef-9157be5bd78d] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [2b1c5095-d4ba-42a3-b3ef-9157be5bd78d] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0049s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [22304916-30ab-43f0-ad3d-8a8322b4881d] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0055s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [6b45dd1c-cd29-47cc-8560-a6a802fca378] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [c1a8c683-0a1a-41ff-ab89-f8333222270e] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [6b45dd1c-cd29-47cc-8560-a6a802fca378] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0019s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [c1a8c683-0a1a-41ff-ab89-f8333222270e] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0020s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [79186a91-4265-4fca-a793-f9f532a54591] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [79186a91-4265-4fca-a793-f9f532a54591] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0009s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [1b585e76-4049-44ea-ad8e-33bdcbf9f4b7] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [b11c1b19-2fd1-4b99-ad70-65df7f61a78d] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [1b585e76-4049-44ea-ad8e-33bdcbf9f4b7] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0014s) - 200
+2026-03-24 17:55:15 - custom.core.middleware - INFO - [b11c1b19-2fd1-4b99-ad70-65df7f61a78d] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0015s) - 200
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [09776469-e9c7-47b8-af70-5db9283ba21c] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [09776469-e9c7-47b8-af70-5db9283ba21c] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0010s) - 200
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [b9fc7fa5-7be6-4017-8362-d16756e02d6e] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [42d5b352-5271-4a38-96cb-dc3a1cea3f9a] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [b9fc7fa5-7be6-4017-8362-d16756e02d6e] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0015s) - 200
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [42d5b352-5271-4a38-96cb-dc3a1cea3f9a] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0015s) - 200
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [b168b9da-f2d0-482a-a803-556f501f0bda] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [b168b9da-f2d0-482a-a803-556f501f0bda] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0009s) - 200
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [bf8e074b-67af-45c7-84f7-fcd3eb9ffa42] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [3d68e1ac-2917-4937-bfd0-eeafe9464326] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [bf8e074b-67af-45c7-84f7-fcd3eb9ffa42] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0014s) - 200
+2026-03-24 17:55:17 - custom.core.middleware - INFO - [3d68e1ac-2917-4937-bfd0-eeafe9464326] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0014s) - 200
+2026-03-24 17:55:21 - custom.core.middleware - INFO - [e101c69c-eda4-4505-aa2b-f7a721ceec7c] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:21 - custom.core.middleware - INFO - [926b059f-fe2c-47af-91d1-7d624b930532] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:21 - custom.core.middleware - INFO - [926b059f-fe2c-47af-91d1-7d624b930532] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 17:55:21 - custom.core.middleware - INFO - [e101c69c-eda4-4505-aa2b-f7a721ceec7c] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0039s) - 200
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [23e60248-c04e-41b6-ae50-a05db0301a8f] HTTP Request START: POST /api/v1/terminal/workspace/bind
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [23e60248-c04e-41b6-ae50-a05db0301a8f] HTTP Request END: POST /api/v1/terminal/workspace/bind (耗时: 0.0061s) - 400
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [9a09e76d-ffae-459a-8905-f14254e5729b] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [a9a87b8b-32db-41ba-97ae-f97f19c5989f] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [8723dfb3-d81b-49e5-9ccb-3ba8d827da8c] HTTP Request START: GET /api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [9a09e76d-ffae-459a-8905-f14254e5729b] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0048s) - 200
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [a9a87b8b-32db-41ba-97ae-f97f19c5989f] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0034s) - 200
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [8723dfb3-d81b-49e5-9ccb-3ba8d827da8c] HTTP Request END: GET /api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56 (耗时: 0.0051s) - 400
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [00ea191a-8bd4-4bcd-8999-ab31c0ba4199] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [2e6e22e6-0a83-4b32-b322-5161f932a267] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [2e6e22e6-0a83-4b32-b322-5161f932a267] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0025s) - 200
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [00ea191a-8bd4-4bcd-8999-ab31c0ba4199] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0029s) - 200
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [549a6221-c213-4aaa-a084-ceaa8d2da037] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [73abecc9-1743-4703-9593-397b69d7d482] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [549a6221-c213-4aaa-a084-ceaa8d2da037] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0027s) - 200
+2026-03-24 17:55:27 - custom.core.middleware - INFO - [73abecc9-1743-4703-9593-397b69d7d482] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0030s) - 200
+2026-03-24 17:55:31 - custom.core.middleware - INFO - [1f21d9ff-4cb8-49af-bf06-5f50d5a84ba0] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:31 - custom.core.middleware - INFO - [99b28115-ff3f-43f4-8d62-1fd15d116e24] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:31 - custom.core.middleware - INFO - [1f21d9ff-4cb8-49af-bf06-5f50d5a84ba0] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0029s) - 200
+2026-03-24 17:55:31 - custom.core.middleware - INFO - [99b28115-ff3f-43f4-8d62-1fd15d116e24] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0033s) - 200
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [677263e4-b65a-409e-9195-5d2910c26529] HTTP Request START: POST /api/v1/terminal/workspace/bind
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [677263e4-b65a-409e-9195-5d2910c26529] HTTP Request END: POST /api/v1/terminal/workspace/bind (耗时: 0.0049s) - 400
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [18985a32-27e0-4fce-b743-63db1604b6cc] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [f309234e-b215-42d7-bd43-3020a4343767] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [60f1980b-818c-416f-b067-888cc1c59bcd] HTTP Request START: GET /api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [18985a32-27e0-4fce-b743-63db1604b6cc] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0040s) - 200
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [f309234e-b215-42d7-bd43-3020a4343767] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0024s) - 200
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [60f1980b-818c-416f-b067-888cc1c59bcd] HTTP Request END: GET /api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56 (耗时: 0.0039s) - 400
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [2af34589-4727-4af3-9484-42375daf13cb] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [67b7275f-afe4-47e6-9d40-0190554f7ed8] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [2af34589-4727-4af3-9484-42375daf13cb] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0029s) - 200
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [67b7275f-afe4-47e6-9d40-0190554f7ed8] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0030s) - 200
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [0cd2681b-26dd-4a47-842f-3fdcb0f589cb] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [e2d461f4-2e4d-4ac9-8606-1b3986cd128b] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [0cd2681b-26dd-4a47-842f-3fdcb0f589cb] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 17:55:36 - custom.core.middleware - INFO - [e2d461f4-2e4d-4ac9-8606-1b3986cd128b] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 17:55:40 - custom.core.middleware - INFO - [5f731a67-0742-42f3-bfb9-4ed46317dd56] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:55:40 - custom.core.middleware - INFO - [8eef5ee0-ac5e-4c8d-b71c-fac835d7ba51] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:55:40 - custom.core.middleware - INFO - [5f731a67-0742-42f3-bfb9-4ed46317dd56] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0012s) - 200
+2026-03-24 17:55:40 - custom.core.middleware - INFO - [8eef5ee0-ac5e-4c8d-b71c-fac835d7ba51] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0013s) - 200
+2026-03-24 17:55:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:55:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:55:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:55:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:56:20 - custom.core.middleware - INFO - [c8b37401-8f8a-47e2-961f-7e89bda92ca8] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:20 - custom.core.middleware - INFO - [bb63a706-0654-41f2-921f-9857f591d25c] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:20 - custom.core.middleware - INFO - [c8b37401-8f8a-47e2-961f-7e89bda92ca8] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0044s) - 200
+2026-03-24 17:56:20 - custom.core.middleware - INFO - [bb63a706-0654-41f2-921f-9857f591d25c] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0043s) - 200
+2026-03-24 17:56:21 - custom.core.middleware - INFO - [a1a11845-1e0a-4ab4-93f0-47b5edf4b471] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:21 - custom.core.middleware - INFO - [3196dc98-fa68-49a8-997c-bef4e852fa1f] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:21 - custom.core.middleware - INFO - [a1a11845-1e0a-4ab4-93f0-47b5edf4b471] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0035s) - 200
+2026-03-24 17:56:21 - custom.core.middleware - INFO - [3196dc98-fa68-49a8-997c-bef4e852fa1f] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0036s) - 200
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [a0169926-898a-40fe-b14d-b73fe1245dfd] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [7d638037-a466-41a6-ad49-6ee00747a767] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [7d638037-a466-41a6-ad49-6ee00747a767] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0036s) - 200
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [a0169926-898a-40fe-b14d-b73fe1245dfd] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0050s) - 200
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [235915b3-e49f-4fd7-9585-f859aad381ac] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [32c42217-132c-400c-a3c2-c74995475493] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [235915b3-e49f-4fd7-9585-f859aad381ac] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0031s) - 200
+2026-03-24 17:56:22 - custom.core.middleware - INFO - [32c42217-132c-400c-a3c2-c74995475493] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0029s) - 200
+2026-03-24 17:56:24 - custom.core.middleware - INFO - [3f58f92c-6b98-4550-8623-8df16724724a] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:24 - custom.core.middleware - INFO - [7ce95234-f497-4126-ab36-2e0d889694fa] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:24 - custom.core.middleware - INFO - [3f58f92c-6b98-4550-8623-8df16724724a] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 17:56:24 - custom.core.middleware - INFO - [7ce95234-f497-4126-ab36-2e0d889694fa] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0036s) - 200
+2026-03-24 17:56:27 - custom.core.middleware - INFO - [492e794f-8027-431f-a81a-74bb2eddadf7] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:27 - custom.core.middleware - INFO - [30818133-a179-4a28-a002-40490939bae0] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:27 - custom.core.middleware - INFO - [492e794f-8027-431f-a81a-74bb2eddadf7] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0034s) - 200
+2026-03-24 17:56:27 - custom.core.middleware - INFO - [30818133-a179-4a28-a002-40490939bae0] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0027s) - 200
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [de5f8662-9214-42cd-8317-76873b2a45d2] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [945d0fe3-184d-4b6d-8449-12e7b88f04aa] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [2c092d26-a3a2-4572-ba58-e92a11e5a285] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [de5f8662-9214-42cd-8317-76873b2a45d2] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0050s) - 200
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [945d0fe3-184d-4b6d-8449-12e7b88f04aa] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0051s) - 200
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [2c092d26-a3a2-4572-ba58-e92a11e5a285] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0360s) - 200
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [2dda1988-25d7-4e7a-8dd4-11262c87bd0d] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:56:43 - custom.core.middleware - INFO - [2dda1988-25d7-4e7a-8dd4-11262c87bd0d] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0326s) - 200
+2026-03-24 17:56:58 - custom.core.middleware - INFO - [21cee961-147b-425a-a933-a122ec4eccf7] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:56:58 - custom.core.middleware - INFO - [c47f880f-1bb1-4f86-a8d5-cc99b5251f55] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:56:58 - custom.core.middleware - INFO - [21cee961-147b-425a-a933-a122ec4eccf7] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0037s) - 200
+2026-03-24 17:56:58 - custom.core.middleware - INFO - [c47f880f-1bb1-4f86-a8d5-cc99b5251f55] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0040s) - 200
+2026-03-24 17:56:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:56:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:56:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:56:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:57:00 - custom.core.middleware - INFO - [215f997c-7e44-4aff-bbd8-b619f8ca1a70] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:00 - custom.core.middleware - INFO - [4399dece-e6e8-4d0d-a85b-50fa4bb658b6] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:00 - custom.core.middleware - INFO - [215f997c-7e44-4aff-bbd8-b619f8ca1a70] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 17:57:00 - custom.core.middleware - INFO - [4399dece-e6e8-4d0d-a85b-50fa4bb658b6] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0029s) - 200
+2026-03-24 17:57:51 - custom.core.middleware - INFO - [a76d9434-f168-4f54-b110-bedbf461b11e] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:51 - custom.core.middleware - INFO - [8fa60c37-64bc-475d-8b98-30432117f1a7] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:51 - custom.core.middleware - INFO - [a76d9434-f168-4f54-b110-bedbf461b11e] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0034s) - 200
+2026-03-24 17:57:51 - custom.core.middleware - INFO - [8fa60c37-64bc-475d-8b98-30432117f1a7] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0037s) - 200
+2026-03-24 17:57:54 - custom.core.middleware - INFO - [fcda44ca-85e6-4673-9d26-b5e365c28d8e] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:54 - custom.core.middleware - INFO - [4f5c30f3-32e9-4765-ae72-239a9c72dd2f] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:54 - custom.core.middleware - INFO - [4f5c30f3-32e9-4765-ae72-239a9c72dd2f] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0040s) - 200
+2026-03-24 17:57:54 - custom.core.middleware - INFO - [fcda44ca-85e6-4673-9d26-b5e365c28d8e] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0055s) - 200
+2026-03-24 17:57:55 - custom.core.middleware - INFO - [b320b272-bc24-4f3b-92a0-d3ee94f3aa9e] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 17:57:55 - custom.core.middleware - INFO - [b320b272-bc24-4f3b-92a0-d3ee94f3aa9e] 中间件已成功为模型 19 挂载动态配置。
+2026-03-24 17:57:56 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: session_1774343185069_6hfn94g56, 用户ID: 4
+2026-03-24 17:57:56 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-24 17:57:56 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [b320b272-bc24-4f3b-92a0-d3ee94f3aa9e] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0536s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [567b3ea1-c61b-4207-8e56-bcd2de12e12c] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [590b52fc-1eee-42ab-a5f5-ad8ebc17fa3d] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [567b3ea1-c61b-4207-8e56-bcd2de12e12c] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0019s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [590b52fc-1eee-42ab-a5f5-ad8ebc17fa3d] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0009s) - 200
+2026-03-24 17:57:56 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-24 17:57:56 - custom.agent.graph_runner - INFO - 首次编译 Supervisor 图，config_key=8e39f89c...
+2026-03-24 17:57:56 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 17:57:56 - custom.agent.graphs.checkpointer - INFO - Checkpointer: PostgreSQL 状态表校验成功，连接已建立。
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [d78e251b-5d3f-4dca-8f23-f6ad8f7d4f03] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [55faffa1-f414-4184-8bcf-06f3ebb5964d] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [d78e251b-5d3f-4dca-8f23-f6ad8f7d4f03] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0017s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [55faffa1-f414-4184-8bcf-06f3ebb5964d] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0018s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [658a8435-aa44-4ad6-a7b3-974f6f66e445] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [fb1d94d5-54ae-4779-9fee-7fab51131c7d] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [658a8435-aa44-4ad6-a7b3-974f6f66e445] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0012s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [fb1d94d5-54ae-4779-9fee-7fab51131c7d] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0011s) - 200
+2026-03-24 17:57:56 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule_default_general] -> GENERAL (conf=0.88)，耗时: 0ms
+2026-03-24 17:57:56 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[CHAT], conf=[0.92], complex=[False]
+2026-03-24 17:57:56 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_general_chat_fastpath] -> CHAT，耗时: 0ms
+2026-03-24 17:57:56 - custom.agent.graphs.supervisor - INFO - 路由决策: 兜底对话 → chat_node (intent=CHAT, conf=0.92)
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [93eb20cf-f4bc-4ec7-89f5-20309cbbda3b] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [c0bc7b2d-82b5-4041-8788-787d03818c8f] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [c0bc7b2d-82b5-4041-8788-787d03818c8f] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0020s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [93eb20cf-f4bc-4ec7-89f5-20309cbbda3b] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0024s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [7544015d-9656-42ec-b500-84bdbc88a0f3] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [290e0203-7a62-48c2-b19b-f9b0f0fd2905] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [290e0203-7a62-48c2-b19b-f9b0f0fd2905] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0012s) - 200
+2026-03-24 17:57:56 - custom.core.middleware - INFO - [7544015d-9656-42ec-b500-84bdbc88a0f3] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0018s) - 200
+2026-03-24 17:57:57 - custom.core.middleware - INFO - [f10b0880-846a-4d72-a202-e0a449be96aa] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:57:57 - custom.core.middleware - INFO - [7a394305-83dc-4283-a344-7e42d9bf37d3] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:57:57 - custom.core.middleware - INFO - [f10b0880-846a-4d72-a202-e0a449be96aa] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0015s) - 200
+2026-03-24 17:57:57 - custom.core.middleware - INFO - [7a394305-83dc-4283-a344-7e42d9bf37d3] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0025s) - 200
+2026-03-24 17:57:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:57:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:57:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:57:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:57:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 17:57:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 17:57:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 17:57:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-24 17:58:01 - custom.core.middleware - INFO - [41ff41bc-7d16-4892-bf1b-6985c69d9199] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:01 - custom.core.middleware - INFO - [08d157ae-6621-44a6-a71b-e15ce2a029a6] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:01 - custom.core.middleware - INFO - [41ff41bc-7d16-4892-bf1b-6985c69d9199] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0043s) - 200
+2026-03-24 17:58:01 - custom.core.middleware - INFO - [08d157ae-6621-44a6-a71b-e15ce2a029a6] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0042s) - 200
+2026-03-24 17:58:07 - custom.core.middleware - INFO - [7f0fe388-44f9-4167-9258-ccfcfdbafaf9] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:07 - custom.core.middleware - INFO - [2c11aad8-5e36-4dd6-944b-d31bcec5dfc4] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:07 - custom.core.middleware - INFO - [7f0fe388-44f9-4167-9258-ccfcfdbafaf9] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 17:58:07 - custom.core.middleware - INFO - [2c11aad8-5e36-4dd6-944b-d31bcec5dfc4] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0022s) - 200
+2026-03-24 17:58:12 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.retry_invoke 超时: 8.0s
+2026-03-24 17:58:12 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 16216ms
+2026-03-24 17:58:13 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: session_1774343185069_6hfn94g56，总长: 0字符
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [4cc6187b-1b41-4b03-903b-46cb4ccc0cf9] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [ee7caf62-488e-4193-a865-d297f771d64c] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [4cc6187b-1b41-4b03-903b-46cb4ccc0cf9] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0053s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [ee7caf62-488e-4193-a865-d297f771d64c] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0054s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [0e691092-d9b1-4b98-b5f7-28a181378278] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [31cf55a8-6284-4df2-9ccf-d4ef17321ba0] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [0e691092-d9b1-4b98-b5f7-28a181378278] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0014s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [31cf55a8-6284-4df2-9ccf-d4ef17321ba0] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0013s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [47320847-d361-4ff0-aed5-e4e3b422a273] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [08b1f4e4-31ec-4671-b1ae-37a84aee198f] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [47320847-d361-4ff0-aed5-e4e3b422a273] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0013s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [08b1f4e4-31ec-4671-b1ae-37a84aee198f] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0015s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [7e3878e6-7453-4193-a03c-28bf068c951f] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [5a303b27-b096-491d-a609-b5e73a786dda] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [5a303b27-b096-491d-a609-b5e73a786dda] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0074s) - 200
+2026-03-24 17:58:13 - custom.core.middleware - INFO - [7e3878e6-7453-4193-a03c-28bf068c951f] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0084s) - 200
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [9f038011-9efc-4b9e-ba75-625ded1526a1] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [376e96bc-e12b-4a13-9d1c-27432ba71ea1] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [a9006626-3310-4f95-9627-17cd527a8aa0] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [9f038011-9efc-4b9e-ba75-625ded1526a1] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0023s) - 200
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [376e96bc-e12b-4a13-9d1c-27432ba71ea1] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0022s) - 200
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [a9006626-3310-4f95-9627-17cd527a8aa0] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0331s) - 200
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [2d1e7cd3-460b-4371-ae3a-1bf04de65471] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 17:58:24 - custom.core.middleware - INFO - [2d1e7cd3-460b-4371-ae3a-1bf04de65471] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0303s) - 200
+2026-03-24 17:58:28 - custom.core.middleware - INFO - [fd129da7-7353-4462-af69-cae808f5767c] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:28 - custom.core.middleware - INFO - [0e7304fd-935a-4fc2-8877-c475e088c274] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:28 - custom.core.middleware - INFO - [fd129da7-7353-4462-af69-cae808f5767c] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0016s) - 200
+2026-03-24 17:58:28 - custom.core.middleware - INFO - [0e7304fd-935a-4fc2-8877-c475e088c274] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0017s) - 200
+2026-03-24 17:58:30 - custom.core.middleware - INFO - [310c8500-d94b-4cfa-8963-83cc9c76cf0f] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 17:58:30 - custom.core.middleware - INFO - [0f4fa189-240c-4e6a-b740-485c751305e0] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 17:58:30 - custom.core.middleware - INFO - [0f4fa189-240c-4e6a-b740-485c751305e0] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0063s) - 200
+2026-03-24 17:58:30 - custom.core.middleware - INFO - [310c8500-d94b-4cfa-8963-83cc9c76cf0f] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0078s) - 200
+2026-03-24 17:58:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:58:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:58:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:58:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 17:59:59 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 17:59:59 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 17:59:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:59:59 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 18:00:04 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-24 18:00:04 - custom.services.session_pool - INFO - SessionPool 已停止。
+2026-03-24 21:01:55 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 21:02:41 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-24 21:02:43 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 21:02:43 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 21:02:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:02:43 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 21:02:43 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-24 21:02:43 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-24 21:03:06 - custom.core.middleware - INFO - [de3cbb6f-e5db-4725-a9c1-0ee37ca9747b] HTTP Request START: POST /api/v1/user/login
+2026-03-24 21:03:06 - custom.core.middleware - INFO - [de3cbb6f-e5db-4725-a9c1-0ee37ca9747b] HTTP Request END: POST /api/v1/user/login (耗时: 0.3358s) - 200
+2026-03-24 21:03:06 - custom.core.middleware - INFO - [6d5278e8-7bf0-4ae1-8267-b8b8c7d8a366] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-24 21:03:06 - custom.core.middleware - INFO - [6d5278e8-7bf0-4ae1-8267-b8b8c7d8a366] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0291s) - 200
+2026-03-24 21:03:07 - custom.core.middleware - INFO - [1ffe6dac-d917-4cc4-b22b-8a1ce4dbc0a2] HTTP Request START: GET /api/v1/model_setting/
+2026-03-24 21:03:07 - custom.core.middleware - INFO - [e5cf655e-708e-4456-92e2-46dfdadbb571] HTTP Request START: GET /api/v1/user_model/active
+2026-03-24 21:03:07 - custom.core.middleware - INFO - [a7dbffcb-8f03-4e76-a57a-e19e7f8ba255] HTTP Request START: GET /api/v1/user_model/
+2026-03-24 21:03:07 - custom.core.middleware - INFO - [1ffe6dac-d917-4cc4-b22b-8a1ce4dbc0a2] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0336s) - 200
+2026-03-24 21:03:07 - custom.core.middleware - INFO - [e5cf655e-708e-4456-92e2-46dfdadbb571] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0873s) - 200
+2026-03-24 21:03:07 - custom.core.middleware - INFO - [a7dbffcb-8f03-4e76-a57a-e19e7f8ba255] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0874s) - 200
+2026-03-24 21:03:14 - custom.core.middleware - INFO - [31b7ead3-a603-419c-b4ac-32744da86254] HTTP Request START: POST /api/v1/chat/stream
+2026-03-24 21:03:14 - custom.core.middleware - INFO - [31b7ead3-a603-419c-b4ac-32744da86254] 中间件已成功为模型 19 挂载动态配置。
+2026-03-24 21:03:14 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: session_1774343185069_6hfn94g56, 用户ID: 4
+2026-03-24 21:03:14 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-24 21:03:14 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: session_1774343185069_6hfn94g56
+2026-03-24 21:03:14 - custom.core.middleware - INFO - [31b7ead3-a603-419c-b4ac-32744da86254] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0402s) - 200
+2026-03-24 21:03:14 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-24 21:03:14 - custom.agent.graph_runner - INFO - Pre-Graph 规则拦截生效: [query_identity]
+2026-03-24 21:03:14 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: session_1774343185069_6hfn94g56，总长: 70字符
+2026-03-24 21:03:40 - custom.core.middleware - INFO - [4b243149-c031-4816-b319-622ec5151a05] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:03:40 - custom.core.middleware - INFO - [f973f164-b5c7-4878-9afd-0f9dd05afdc8] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:40 - custom.core.middleware - INFO - [4b243149-c031-4816-b319-622ec5151a05] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0041s) - 200
+2026-03-24 21:03:40 - custom.core.middleware - INFO - [f973f164-b5c7-4878-9afd-0f9dd05afdc8] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0041s) - 200
+2026-03-24 21:03:43 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 21:03:43 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 21:03:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:03:43 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [1d9c65ed-1938-45ac-b486-66fcc0573e76] HTTP Request START: POST /api/v1/terminal/workspace/bind
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [5e1b7d27-23c3-4894-9eee-6905482e8c24] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [8abd5d38-8958-4d30-871c-b78d139ef879] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [1d9c65ed-1938-45ac-b486-66fcc0573e76] HTTP Request END: POST /api/v1/terminal/workspace/bind (耗时: 0.0070s) - 400
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [5e1b7d27-23c3-4894-9eee-6905482e8c24] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0020s) - 200
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [8abd5d38-8958-4d30-871c-b78d139ef879] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0017s) - 200
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [f7a870f6-455e-4fb8-966c-a07e228cc639] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [b0ecda0b-8a95-4e8f-bd64-1c7ff0d3f861] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [b0ecda0b-8a95-4e8f-bd64-1c7ff0d3f861] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0024s) - 200
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [f7a870f6-455e-4fb8-966c-a07e228cc639] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0033s) - 200
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [5925927f-52ce-4ebc-9f6d-64eab4145df7] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [59ed9293-9457-4544-a80d-82f4b497856e] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [5925927f-52ce-4ebc-9f6d-64eab4145df7] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0021s) - 200
+2026-03-24 21:03:46 - custom.core.middleware - INFO - [59ed9293-9457-4544-a80d-82f4b497856e] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0020s) - 200
+2026-03-24 21:03:50 - custom.core.middleware - INFO - [fd36cf47-a181-40d7-9b21-a3ddb467fc90] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:50 - custom.core.middleware - INFO - [fc52b89c-7b28-48de-83ee-460ff0f7b8a0] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:03:50 - custom.core.middleware - INFO - [fd36cf47-a181-40d7-9b21-a3ddb467fc90] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0030s) - 200
+2026-03-24 21:03:50 - custom.core.middleware - INFO - [fc52b89c-7b28-48de-83ee-460ff0f7b8a0] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0032s) - 200
+2026-03-24 21:03:56 - custom.core.middleware - INFO - [b28b4bc7-bccf-46d3-a703-bb9727ee5cac] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:56 - custom.core.middleware - INFO - [b28b4bc7-bccf-46d3-a703-bb9727ee5cac] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0045s) - 200
+2026-03-24 21:03:56 - custom.core.middleware - INFO - [53f5b94d-57ea-4417-8f78-aafd3342a742] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:03:56 - custom.core.middleware - INFO - [7ad28394-2562-4512-b756-bc4945a7276c] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:03:56 - custom.core.middleware - INFO - [53f5b94d-57ea-4417-8f78-aafd3342a742] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0051s) - 200
+2026-03-24 21:03:56 - custom.core.middleware - INFO - [7ad28394-2562-4512-b756-bc4945a7276c] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0028s) - 200
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [bfcfad95-e0cc-40fd-9556-b20d8babffb5] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [f08a99a8-6243-4708-b441-233c7a292efd] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [bfcfad95-e0cc-40fd-9556-b20d8babffb5] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0037s) - 200
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [f08a99a8-6243-4708-b441-233c7a292efd] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0033s) - 200
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [37c3e858-95dc-4314-bd6c-ac27943eaa0b] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [37c3e858-95dc-4314-bd6c-ac27943eaa0b] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0033s) - 200
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [28221813-215b-492f-b8e6-5f54d4581e1d] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [58fc0e78-d47f-4048-aab9-8f90bc48c997] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [28221813-215b-492f-b8e6-5f54d4581e1d] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0047s) - 200
+2026-03-24 21:04:00 - custom.core.middleware - INFO - [58fc0e78-d47f-4048-aab9-8f90bc48c997] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0045s) - 200
+2026-03-24 21:04:03 - custom.core.middleware - INFO - [64d6af86-9ac5-4110-8095-09666385b565] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:04:03 - custom.core.middleware - INFO - [8f5cc0ac-b2b7-4d00-8737-dc8be1039af3] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:04:03 - custom.core.middleware - INFO - [8f5cc0ac-b2b7-4d00-8737-dc8be1039af3] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0041s) - 200
+2026-03-24 21:04:03 - custom.core.middleware - INFO - [64d6af86-9ac5-4110-8095-09666385b565] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0053s) - 200
+2026-03-24 21:04:04 - custom.core.middleware - INFO - [7b00685d-e32b-42bd-9619-04e43a7c5edb] HTTP Request START: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56
+2026-03-24 21:04:04 - custom.core.middleware - INFO - [20283b91-044f-4a5d-a837-6eff49f2c504] HTTP Request START: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56
+2026-03-24 21:04:04 - custom.core.middleware - INFO - [7b00685d-e32b-42bd-9619-04e43a7c5edb] HTTP Request END: GET /api/v1/terminal/workspace/session_1774343185069_6hfn94g56 (耗时: 0.0018s) - 200
+2026-03-24 21:04:04 - custom.core.middleware - INFO - [20283b91-044f-4a5d-a837-6eff49f2c504] HTTP Request END: GET /api/v1/terminal/session/latest/session_1774343185069_6hfn94g56 (耗时: 0.0017s) - 200
+2026-03-24 21:04:43 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 21:04:43 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 21:04:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:04:43 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 21:05:43 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 21:05:43 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 21:05:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:05:43 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 21:06:43 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-24 21:06:43 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-24 21:06:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:06:43 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-24 21:07:23 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-24 21:07:23 - custom.services.session_pool - INFO - SessionPool 已停止。

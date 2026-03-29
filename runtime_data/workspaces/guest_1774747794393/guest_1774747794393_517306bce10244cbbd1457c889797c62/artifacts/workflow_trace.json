@@ -1,0 +1,42 @@
+[
+  {
+    "id": "42406b8166b44ce688f0fce4d24da20b",
+    "session_id": "guest_1774747794393",
+    "run_id": "guest_1774747794393:517306bce10244cbbd1457c889797c62",
+    "phase": "user_message_received",
+    "title": "老板下达任务",
+    "summary": "今天几号",
+    "status": "completed",
+    "role": "boss",
+    "timestamp": "2026-03-29T01:38:48+00:00",
+    "meta": {
+      "input_length": 4
+    }
+  },
+  {
+    "id": "065f8e7b4d1c4725a46fe552c376fc2d",
+    "session_id": "guest_1774747794393",
+    "run_id": "guest_1774747794393:517306bce10244cbbd1457c889797c62",
+    "phase": "rule_intercepted",
+    "title": "总管快速裁决",
+    "summary": "⚡ 极速拦截复合意图：命中 [query_date]",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-29T01:38:48+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜"
+  },
+  {
+    "id": "da6b79bf56cf460a9f9a6f549a0e71aa",
+    "session_id": "guest_1774747794393",
+    "run_id": "guest_1774747794393:517306bce10244cbbd1457c889797c62",
+    "phase": "final_report_delivered",
+    "title": "总管回禀老板",
+    "summary": "今天是 2026年03月29日，农历 二零二六年二月十一 丙午年 (马年)，周日。\n需要我为您规划今天的日程或查询天气吗？\n",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-29T01:38:48+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜"
+  }
+]

@@ -61,6 +61,25 @@ def _check_cancellation_service() -> Dict[str, Any]:
         return {"status": "error", "detail": str(exc)[:200]}
 
 
+def _check_runtime_harness() -> Dict[str, Any]:
+    """检查 Runtime/Harness 主骨架状态。"""
+    try:
+        from runtime.exec.command_session_service import command_session_service
+        from runtime.core.run_state_store import run_state_store
+        from runtime.tools.tool_registry import runtime_tool_registry
+        from runtime.workspace.manager import workspace_manager
+
+        return {
+            "status": "ok",
+            "workspace_root": str(workspace_manager.root_dir),
+            "tool_registry": runtime_tool_registry.stats(),
+            "terminal_runtime": command_session_service.stats(),
+            "latest_run_snapshot_cached": bool(run_state_store._latest_by_session),  # noqa: SLF001
+        }
+    except Exception as exc:
+        return {"status": "error", "detail": str(exc)[:200]}
+
+
 @health_router.get("/health", summary="服务健康检查", include_in_schema=True)
 async def health_check() -> JSONResponse:
     """
@@ -77,16 +96,18 @@ async def health_check() -> JSONResponse:
     import asyncio
 
     # 并发执行所有检查，避免串行等待
-    db_result, pool_result, cancel_result = await asyncio.gather(
+    db_result, pool_result, cancel_result, runtime_result = await asyncio.gather(
         asyncio.to_thread(_check_database),
         asyncio.to_thread(_check_session_pool),
         asyncio.to_thread(_check_cancellation_service),
+        asyncio.to_thread(_check_runtime_harness),
     )
 
     checks = {
         "database": db_result,
         "session_pool": pool_result,
         "cancellation_service": cancel_result,
+        "runtime_harness": runtime_result,
     }
 
     # 有任一子系统 error 则整体 degraded

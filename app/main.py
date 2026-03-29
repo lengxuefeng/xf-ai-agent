@@ -33,6 +33,7 @@ from api.v1.user_mcp_api import router as user_mcp_router
 from api.v1.interrupt_api import interrupt_router
 from api.v1.metrics_api import metrics_router
 from api.v1.health_api import health_router
+from api.v1.terminal_api import terminal_router
 from core.logger import setup_logger
 from db import Base, engine
 import models  # noqa: F401  # 确保所有 ORM 模型在 create_all 前被加载
@@ -188,6 +189,7 @@ api_v1_router.include_router(user_mcp_router)
 api_v1_router.include_router(interrupt_router)
 api_v1_router.include_router(metrics_router)
 api_v1_router.include_router(health_router)
+api_v1_router.include_router(terminal_router)
 
 # 在主应用中包含 v1 路由
 app.include_router(api_v1_router)

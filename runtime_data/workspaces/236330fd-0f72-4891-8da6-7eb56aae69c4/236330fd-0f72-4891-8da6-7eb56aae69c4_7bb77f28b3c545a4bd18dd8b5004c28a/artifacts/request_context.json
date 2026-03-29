@@ -1,0 +1,15 @@
+{
+  "session_id": "236330fd-0f72-4891-8da6-7eb56aae69c4",
+  "run_id": "236330fd-0f72-4891-8da6-7eb56aae69c4:7bb77f28b3c545a4bd18dd8b5004c28a",
+  "user_input": "帮我写一个Java门方吧",
+  "history_size": 0,
+  "session_context": {
+    "context_slots": {
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=帮我写一个Java门方吧"
+      ]
+    },
+    "context_summary": "【会话关键上下文】\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=帮我写一个Java门方吧"
+  }
+}

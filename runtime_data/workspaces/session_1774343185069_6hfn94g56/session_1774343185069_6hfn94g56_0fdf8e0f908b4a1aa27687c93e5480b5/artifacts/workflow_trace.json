@@ -1,0 +1,42 @@
+[
+  {
+    "id": "d07eb00accea468cbe22559691f9b43f",
+    "session_id": "session_1774343185069_6hfn94g56",
+    "run_id": "session_1774343185069_6hfn94g56:0fdf8e0f908b4a1aa27687c93e5480b5",
+    "phase": "user_message_received",
+    "title": "老板下达任务",
+    "summary": "今天几号了",
+    "status": "completed",
+    "role": "boss",
+    "timestamp": "2026-03-25T00:26:03+00:00",
+    "meta": {
+      "input_length": 5
+    }
+  },
+  {
+    "id": "3eb478cf79c1404bb6b200c46e3d6075",
+    "session_id": "session_1774343185069_6hfn94g56",
+    "run_id": "session_1774343185069_6hfn94g56:0fdf8e0f908b4a1aa27687c93e5480b5",
+    "phase": "rule_intercepted",
+    "title": "总管快速裁决",
+    "summary": "⚡ 极速拦截复合意图：命中 [query_date]",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-25T00:26:03+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜"
+  },
+  {
+    "id": "594a6697e0114bfebf73ee685ac6f46e",
+    "session_id": "session_1774343185069_6hfn94g56",
+    "run_id": "session_1774343185069_6hfn94g56:0fdf8e0f908b4a1aa27687c93e5480b5",
+    "phase": "final_report_delivered",
+    "title": "总管回禀老板",
+    "summary": "今天是 2026年03月25日，农历 二零二六年二月初七 丙午年 (马年)，周三。\n需要我为您规划今天的日程或查询天气吗？\n",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-25T00:26:03+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜"
+  }
+]

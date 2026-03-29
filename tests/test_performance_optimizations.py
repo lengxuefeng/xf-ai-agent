@@ -10,6 +10,8 @@ from langchain_core.messages import AIMessage
 from agent.graph_runner import GraphRunner
 from agent.tools import sql_tools
 from constants.sse_constants import SseEventType
+from runtime.core.run_state_store import run_state_store
+from runtime.core.session_manager import runtime_session_manager
 from services.chat_service import ChatService
 from services.request_cancellation_service import request_cancellation_service
 from utils.custom_logger import get_logger
@@ -258,6 +260,59 @@ class PerformanceOptimizationsTest(unittest.TestCase):
         finally:
             request_cancellation_service.cleanup_request(run_id)
             request_cancellation_service.cleanup_request(session_id)
+
+    def test_runtime_session_manager_tracks_latest_workflow_event(self):
+        run_context = runtime_session_manager.create_run_context(
+            session_id="sess-runtime",
+            user_input="帮我整理一下任务",
+            model_config={"model": "x"},
+        )
+        try:
+            runtime_session_manager.register_run(run_context)
+            chunk = GraphRunner._fmt_workflow_event(
+                GraphRunner._build_workflow_event(
+                    session_id=run_context.session_id,
+                    run_id=run_context.run_id,
+                    phase="tasks_planned",
+                    title="掌柜拆解任务",
+                    summary="已拆成两个子任务",
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                )
+            )
+
+            runtime_session_manager.record_workflow_event_chunk(run_context, chunk)
+
+            snapshot = run_state_store.get(run_context.run_id)
+            self.assertIsNotNone(snapshot)
+            self.assertEqual(snapshot.current_phase, "tasks_planned")
+            self.assertEqual(snapshot.title, "掌柜拆解任务")
+            self.assertEqual(snapshot.status, "completed")
+            self.assertEqual(snapshot.agent_name, "ChatAgent")
+        finally:
+            runtime_session_manager.cleanup_run(run_context)
+            run_state_store.remove(run_context.run_id)
+
+    def test_runtime_session_manager_cancel_marks_snapshot(self):
+        run_context = runtime_session_manager.create_run_context(
+            session_id="sess-runtime-cancel",
+            user_input="取消这轮任务",
+            model_config={"model": "x"},
+        )
+        try:
+            runtime_session_manager.register_run(run_context)
+            runtime_session_manager.cancel_run(run_context, summary="客户端断开")
+
+            snapshot = run_state_store.get(run_context.run_id)
+            self.assertIsNotNone(snapshot)
+            self.assertEqual(snapshot.status, "cancelled")
+            self.assertEqual(snapshot.current_phase, "cancelled")
+            self.assertEqual(snapshot.summary, "客户端断开")
+            self.assertTrue(request_cancellation_service.is_cancelled(run_context.run_id))
+        finally:
+            runtime_session_manager.cleanup_run(run_context)
+            run_state_store.remove(run_context.run_id)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,446 @@
+2026-03-23 09:44:05 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 09:44:06 - custom.services.chat_service - INFO - 开始带历史的流式聊天，会话ID: sess-1
+2026-03-23 09:44:06 - custom.services.chat_service - INFO - 开始带历史的流式聊天，会话ID: sess-workflow
+2026-03-23 09:44:06 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: sess-workflow，总长: 4字符
+2026-03-23 09:44:07 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.first_token_timeout: 0.1s
+2026-03-23 09:44:07 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 203ms
+2026-03-23 09:44:07 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 0ms
+2026-03-23 09:48:55 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 09:48:57 - custom.services.chat_service - INFO - 开始带历史的流式聊天，会话ID: sess-1
+2026-03-23 09:48:57 - custom.services.chat_service - INFO - 开始带历史的流式聊天，会话ID: sess-workflow
+2026-03-23 09:48:57 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: sess-workflow，总长: 4字符
+2026-03-23 09:48:57 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.first_token_timeout: 0.1s
+2026-03-23 09:48:57 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 204ms
+2026-03-23 09:48:57 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 0ms
+2026-03-23 10:14:20 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 10:14:51 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 10:14:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:14:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:14:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:14:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:14:53 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-23 10:14:53 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-23 10:14:54 - custom.core.middleware - INFO - [84a3f0ec-95c4-468f-b52e-a5be822ddad5] HTTP Request START: POST /api/v1/user/login
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [84a3f0ec-95c4-468f-b52e-a5be822ddad5] HTTP Request END: POST /api/v1/user/login (耗时: 0.4028s) - 200
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [28a329d8-1ff1-4b1a-aad3-753a28f12b18] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [28a329d8-1ff1-4b1a-aad3-753a28f12b18] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.1661s) - 200
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [1f519fdb-ccaa-4e16-ba2b-7ab3dc1205ec] HTTP Request START: GET /api/v1/model_setting/
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [85b8f3c6-8834-43d3-9042-2dd0cec68d8f] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [59df8422-e600-4ae1-b8b5-a7499254eaac] HTTP Request START: GET /api/v1/user_model/active
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [1f519fdb-ccaa-4e16-ba2b-7ab3dc1205ec] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0666s) - 200
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [59df8422-e600-4ae1-b8b5-a7499254eaac] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.1169s) - 200
+2026-03-23 10:14:55 - custom.core.middleware - INFO - [85b8f3c6-8834-43d3-9042-2dd0cec68d8f] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.1174s) - 200
+2026-03-23 10:15:09 - custom.core.middleware - INFO - [4aab411e-8e48-4294-b9a7-487d9130d0bc] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:15:09 - custom.core.middleware - INFO - [4aab411e-8e48-4294-b9a7-487d9130d0bc] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:15:09 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:15:09 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:15:09 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:15:09 - custom.core.middleware - INFO - [4aab411e-8e48-4294-b9a7-487d9130d0bc] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0370s) - 200
+2026-03-23 10:15:10 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-23 10:15:10 - custom.agent.graph_runner - INFO - 首次编译 Supervisor 图，config_key=9304db7f...
+2026-03-23 10:15:10 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:15:11 - custom.agent.graphs.checkpointer - INFO - Checkpointer: PostgreSQL 状态表校验成功，连接已建立。
+2026-03-23 10:15:11 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule] -> WEB_SEARCH (conf=0.90)，耗时: 0ms
+2026-03-23 10:15:11 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.9], complex=[False]
+2026-03-23 10:15:11 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [domain_rule] -> weather_agent，耗时: 1ms
+2026-03-23 10:15:11 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → weather_agent (conf=0.90)
+2026-03-23 10:15:12 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[weather_agent] 完成，耗时: 742ms
+2026-03-23 10:15:12 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 39字符
+2026-03-23 10:15:34 - custom.core.middleware - INFO - [d4019e63-3e8e-484f-b6a5-d0034900eeb1] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:15:34 - custom.core.middleware - INFO - [d4019e63-3e8e-484f-b6a5-d0034900eeb1] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:15:34 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:15:34 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:15:34 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:15:34 - custom.core.middleware - INFO - [d4019e63-3e8e-484f-b6a5-d0034900eeb1] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0472s) - 200
+2026-03-23 10:15:34 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [history] -> WEB_SEARCH (conf=0.92)，耗时: 0ms
+2026-03-23 10:15:34 - custom.agent.graphs.supervisor - INFO - Intent follow-up carry-over: route to [weather_agent]
+2026-03-23 10:15:34 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.93], complex=[False]
+2026-03-23 10:15:34 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [followup_history] -> weather_agent，耗时: 0ms
+2026-03-23 10:15:34 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → weather_agent (conf=0.93)
+2026-03-23 10:15:35 - custom.agent.tools.weather_tools - INFO - 天气工具格式化完成，城市=南京
+2026-03-23 10:15:35 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[weather_agent] 完成，耗时: 399ms
+2026-03-23 10:15:35 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 200字符
+2026-03-23 10:15:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:15:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:15:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:15:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:15:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:15:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:15:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:15:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:16:08 - custom.core.middleware - INFO - [20b9ccaa-6730-4986-8561-ecae69bfa3ba] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:16:08 - custom.core.middleware - INFO - [20b9ccaa-6730-4986-8561-ecae69bfa3ba] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:16:08 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:16:08 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:16:08 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:16:08 - custom.core.middleware - INFO - [20b9ccaa-6730-4986-8561-ecae69bfa3ba] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0358s) - 200
+2026-03-23 10:16:08 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule] -> YUNYOU_DB (conf=0.98)，耗时: 0ms
+2026-03-23 10:16:08 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[yunyou_agent], conf=[0.98], complex=[False]
+2026-03-23 10:16:08 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [domain_rule] -> yunyou_agent，耗时: 0ms
+2026-03-23 10:16:08 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → yunyou_agent (conf=0.98)
+2026-03-23 10:16:08 - custom.schemas.base_skill - INFO - MIDDLEWARE: 正在从目录初始化技能: skills/yunyou
+2026-03-23 10:16:08 - custom.schemas.base_skill - INFO - SKILL_SUCCESS: 已加载技能 'yunyou_user_holter'
+2026-03-23 10:16:08 - custom.schemas.base_skill - INFO - ✅ 云柚代理工具加载成功: 1 个工具
+2026-03-23 10:16:17 - custom.agent.graphs.supervisor - INFO - 被动调度: 正在调用工具 holter_recent_db ...
+2026-03-23 10:16:17 - custom.agent.tools.yunyou_tools - WARNING - Holter 表候选不可用，继续尝试下一个表: t_holter_use_record | (psycopg2.errors.UndefinedTable) relation "t_holter_use_record" does not exist
+LINE 13:             FROM "t_holter_use_record"
+                          ^
+
+[SQL: 
+            SELECT
+                id,
+                user_id,
+                use_day,
+                begin_date_time,
+                end_date_time,
+                is_uploaded,
+                report_status,
+                holter_type,
+                add_time,
+                update_time
+            FROM "t_holter_use_record"
+         ORDER BY id DESC LIMIT %(limit)s]
+[parameters: {'limit': 10}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-03-23 10:16:17 - custom.agent.graphs.supervisor - INFO - ⏱️ 工具[holter_recent_db] 耗时: 369ms
+2026-03-23 10:16:17 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[yunyou_agent] 完成，耗时: 9487ms
+2026-03-23 10:16:17 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 243字符
+2026-03-23 10:16:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:16:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:16:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:16:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:17:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:17:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:17:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:17:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:18:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:18:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:18:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:18:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:19:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:19:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:19:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:19:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:20:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:20:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:20:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:20:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:20:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:20:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:20:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:20:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:21:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:21:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:21:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:21:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:22:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:22:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:22:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:22:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:23:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:23:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:23:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:23:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:24:07 - custom.core.middleware - INFO - [6d707a64-5273-423d-8abe-980008cdb2b2] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:24:07 - custom.core.middleware - INFO - [6d707a64-5273-423d-8abe-980008cdb2b2] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:24:07 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:24:07 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:24:07 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:24:07 - custom.core.middleware - INFO - [6d707a64-5273-423d-8abe-980008cdb2b2] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0404s) - 200
+2026-03-23 10:24:07 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule_default_general] -> GENERAL (conf=0.88)，耗时: 0ms
+2026-03-23 10:24:07 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[code_agent], conf=[0.9], complex=[False]
+2026-03-23 10:24:07 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_code_fastpath] -> code_agent，耗时: 0ms
+2026-03-23 10:24:07 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → code_agent (conf=0.90)
+2026-03-23 10:24:10 - custom.agent.base - INFO - Agent code_agent 触发原生中断挂起，等待审批恢复。
+2026-03-23 10:24:10 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[code_agent] 中断挂起，耗时: 3256ms
+2026-03-23 10:24:11 - custom.services.interrupt_service - WARNING - 注册待审核请求(PG): a0b42618-8069-4939-a52f-b8c5422cb60c:e4bbad2227bf4809a9f09d148c585c18
+2026-03-23 10:24:11 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 19字符
+2026-03-23 10:24:18 - custom.core.middleware - INFO - [6f263275-6943-40c1-b39a-36a10921b344] HTTP Request START: POST /api/v1/interrupt/approve
+2026-03-23 10:24:18 - custom.services.interrupt_service - WARNING - 未找到待审核请求(PG): a0b42618-8069-4939-a52f-b8c5422cb60c:bot_1774232647539
+2026-03-23 10:24:18 - custom.services.interrupt_service - WARNING - 使用兜底待审核ID(PG): a0b42618-8069-4939-a52f-b8c5422cb60c:e4bbad2227bf4809a9f09d148c585c18
+2026-03-23 10:24:18 - custom.services.interrupt_service - WARNING - ✅ 用户 4 批准了工具调用: unknown_action
+2026-03-23 10:24:18 - custom.services.interrupt_service - WARNING - 审核已批准，等待前端触发恢复执行。
+2026-03-23 10:24:18 - custom.core.middleware - INFO - [6f263275-6943-40c1-b39a-36a10921b344] HTTP Request END: POST /api/v1/interrupt/approve (耗时: 0.1014s) - 200
+2026-03-23 10:24:18 - custom.core.middleware - INFO - [00c6122a-1f37-461f-b185-3e171aa296a5] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:24:19 - custom.core.middleware - INFO - [00c6122a-1f37-461f-b185-3e171aa296a5] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:24:19 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:24:19 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:24:19 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:24:19 - custom.core.middleware - INFO - [00c6122a-1f37-461f-b185-3e171aa296a5] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0353s) - 200
+2026-03-23 10:24:19 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:24:19 - custom.schemas.base_skill - INFO - MIDDLEWARE: 命中技能缓存: skills/yunyou
+2026-03-23 10:24:19 - custom.schemas.base_skill - INFO - ✅ 云柚代理工具加载成功: 1 个工具
+2026-03-23 10:24:31 - custom.core.middleware - INFO - [e07574a6-a351-44a3-83f5-070a719419ea] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:24:31 - custom.core.middleware - INFO - [e07574a6-a351-44a3-83f5-070a719419ea] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:24:31 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:24:31 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:24:31 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:24:31 - custom.core.middleware - INFO - [e07574a6-a351-44a3-83f5-070a719419ea] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0325s) - 200
+2026-03-23 10:24:32 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule_default_general] -> GENERAL (conf=0.88)，耗时: 0ms
+2026-03-23 10:24:32 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[code_agent], conf=[0.9], complex=[False]
+2026-03-23 10:24:32 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_code_fastpath] -> code_agent，耗时: 0ms
+2026-03-23 10:24:32 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → code_agent (conf=0.90)
+2026-03-23 10:24:50 - custom.agent.base - INFO - Agent code_agent 触发原生中断挂起，等待审批恢复。
+2026-03-23 10:24:50 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[code_agent] 中断挂起，耗时: 18769ms
+2026-03-23 10:24:50 - custom.services.interrupt_service - WARNING - 注册待审核请求(PG): a0b42618-8069-4939-a52f-b8c5422cb60c:98c590109a6d408dbc141fe3326e8b08
+2026-03-23 10:24:50 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 19字符
+2026-03-23 10:24:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:24:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:24:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:24:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:25:16 - custom.core.middleware - INFO - [505a9c68-1f15-4341-9ac8-072cd6089900] HTTP Request START: POST /api/v1/interrupt/approve
+2026-03-23 10:25:16 - custom.services.interrupt_service - WARNING - 未找到待审核请求(PG): a0b42618-8069-4939-a52f-b8c5422cb60c:bot_1774232671839
+2026-03-23 10:25:16 - custom.services.interrupt_service - WARNING - 使用兜底待审核ID(PG): a0b42618-8069-4939-a52f-b8c5422cb60c:98c590109a6d408dbc141fe3326e8b08
+2026-03-23 10:25:16 - custom.services.interrupt_service - WARNING - ✅ 用户 4 批准了工具调用: unknown_action
+2026-03-23 10:25:16 - custom.services.interrupt_service - WARNING - 审核已批准，等待前端触发恢复执行。
+2026-03-23 10:25:16 - custom.core.middleware - INFO - [505a9c68-1f15-4341-9ac8-072cd6089900] HTTP Request END: POST /api/v1/interrupt/approve (耗时: 0.0673s) - 200
+2026-03-23 10:25:16 - custom.core.middleware - INFO - [ddd7d1e5-21d7-40c1-90e0-f4377ef49d4c] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 10:25:16 - custom.core.middleware - INFO - [ddd7d1e5-21d7-40c1-90e0-f4377ef49d4c] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 10:25:16 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 10:25:16 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 10:25:16 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 10:25:16 - custom.core.middleware - INFO - [ddd7d1e5-21d7-40c1-90e0-f4377ef49d4c] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0373s) - 200
+2026-03-23 10:25:16 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:25:16 - custom.schemas.base_skill - INFO - MIDDLEWARE: 命中技能缓存: skills/yunyou
+2026-03-23 10:25:16 - custom.schemas.base_skill - INFO - ✅ 云柚代理工具加载成功: 1 个工具
+2026-03-23 10:25:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:25:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:25:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:25:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:25:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:25:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:25:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:25:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:26:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:26:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:26:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:26:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:27:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:27:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:27:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:27:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:28:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:28:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:28:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:28:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:29:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:29:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:29:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:29:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:30:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:30:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:30:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:30:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:30:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:30:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:30:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:30:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.7 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 10:31:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:31:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:31:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:31:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:32:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:32:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:32:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:32:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:33:53 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 10:33:53 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 10:33:53 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 10:33:53 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 10:34:40 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-23 10:34:40 - custom.services.session_pool - INFO - SessionPool 已停止。
+2026-03-23 18:34:29 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[code_agent], conf=[0.9], complex=[False]
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_code_fastpath] -> code_agent，耗时: 0ms
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[CHAT], conf=[0.92], complex=[False]
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_general_chat_fastpath] -> CHAT，耗时: 0ms
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - Intent follow-up carry-over: route to [weather_agent]
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.93], complex=[False]
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [followup_history] -> weather_agent，耗时: 0ms
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.first_token_timeout: 0.1s
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 205ms
+2026-03-23 18:34:32 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 0ms
+2026-03-23 18:55:11 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 19:09:31 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[code_agent], conf=[0.9], complex=[False]
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_code_fastpath] -> code_agent，耗时: 0ms
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[CHAT], conf=[0.92], complex=[False]
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_general_chat_fastpath] -> CHAT，耗时: 2ms
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - Intent follow-up carry-over: route to [weather_agent]
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[weather_agent], conf=[0.93], complex=[False]
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [followup_history] -> weather_agent，耗时: 0ms
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.first_token_timeout: 0.1s
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 205ms
+2026-03-23 19:09:34 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 0ms
+2026-03-23 19:14:20 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 19:14:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:14:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:14:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:14:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:14:21 - custom.services.session_pool - INFO - SessionPool refill 线程启动，间隔=60.0s
+2026-03-23 19:14:21 - custom.services.session_pool - INFO - SessionPool 已启动，pool_size=4，max_idle=300.0s
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [621f7f3c-c15d-480c-b9f2-9a30778e0d0f] HTTP Request START: POST /api/v1/user/login
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [621f7f3c-c15d-480c-b9f2-9a30778e0d0f] HTTP Request END: POST /api/v1/user/login (耗时: 0.3527s) - 200
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [9b9b2d63-c4b9-4b62-8cc4-e1708cce7c3a] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [9b9b2d63-c4b9-4b62-8cc4-e1708cce7c3a] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0232s) - 200
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [ac42e5fe-f281-4581-9c17-7c0624c88662] HTTP Request START: GET /api/v1/model_setting/
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [f788128a-4990-4a3a-a507-8e8ea2f4f7e0] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [adc37937-157f-42da-bd3e-e33396fb6afb] HTTP Request START: GET /api/v1/user_model/active
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [ac42e5fe-f281-4581-9c17-7c0624c88662] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0244s) - 200
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [adc37937-157f-42da-bd3e-e33396fb6afb] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0807s) - 200
+2026-03-23 19:14:50 - custom.core.middleware - INFO - [f788128a-4990-4a3a-a507-8e8ea2f4f7e0] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0812s) - 200
+2026-03-23 19:14:57 - custom.core.middleware - INFO - [6fa59932-73d9-4858-9b07-750c588cbbc0] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-23 19:14:57 - custom.core.middleware - INFO - [58bf2636-4d88-40f0-b875-c41060014bae] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-23 19:14:57 - custom.core.middleware - INFO - [6fa59932-73d9-4858-9b07-750c588cbbc0] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0048s) - 200
+2026-03-23 19:14:57 - custom.core.middleware - INFO - [58bf2636-4d88-40f0-b875-c41060014bae] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0048s) - 200
+2026-03-23 19:15:11 - custom.core.middleware - INFO - [ee4df982-b4a1-4144-9337-49359b495395] HTTP Request START: GET /api/v1/terminal/workspace/default
+2026-03-23 19:15:11 - custom.core.middleware - INFO - [5cad67a7-e3ce-4844-baf7-9dcfb5299355] HTTP Request START: GET /api/v1/terminal/session/latest/default
+2026-03-23 19:15:11 - custom.core.middleware - INFO - [ee4df982-b4a1-4144-9337-49359b495395] HTTP Request END: GET /api/v1/terminal/workspace/default (耗时: 0.0017s) - 200
+2026-03-23 19:15:11 - custom.core.middleware - INFO - [5cad67a7-e3ce-4844-baf7-9dcfb5299355] HTTP Request END: GET /api/v1/terminal/session/latest/default (耗时: 0.0018s) - 200
+2026-03-23 19:15:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:15:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:15:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:15:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:15:27 - custom.core.middleware - INFO - [282bf3ad-bcb3-4268-841a-6c96817bcbaf] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-23 19:15:27 - custom.core.middleware - INFO - [282bf3ad-bcb3-4268-841a-6c96817bcbaf] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0075s) - 400
+2026-03-23 19:15:38 - custom.core.middleware - INFO - [631c18f3-ae1d-407d-babc-a5213c153b76] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-23 19:15:38 - custom.core.middleware - INFO - [631c18f3-ae1d-407d-babc-a5213c153b76] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0034s) - 400
+2026-03-23 19:15:43 - custom.core.middleware - INFO - [3f7e74d3-424f-48b2-a579-ff45e924b674] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:15:43 - custom.core.middleware - INFO - [3f7e74d3-424f-48b2-a579-ff45e924b674] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0296s) - 200
+2026-03-23 19:15:43 - custom.core.middleware - INFO - [cfcc19aa-f631-4800-84df-eb233da7143b] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:15:43 - custom.core.middleware - INFO - [cfcc19aa-f631-4800-84df-eb233da7143b] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0312s) - 200
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [09eee5ec-c073-4a32-9bdd-f6d014040889] HTTP Request START: PUT /api/v1/user_model/19
+2026-03-23 19:15:52 - custom.api.v1.user_model_api - INFO - 收到更新模型配置请求: id=19, model=GLM-4.7
+2026-03-23 19:15:52 - custom.services.user_model_service - INFO - 模型配置 ID=19 更新成功
+2026-03-23 19:15:52 - custom.api.v1.user_model_api - INFO - 模型配置更新完成: id=19
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [09eee5ec-c073-4a32-9bdd-f6d014040889] HTTP Request END: PUT /api/v1/user_model/19 (耗时: 0.1747s) - 200
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [1ceb7008-42cc-4cfd-aefd-2247c1a9bb5e] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [1ceb7008-42cc-4cfd-aefd-2247c1a9bb5e] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0221s) - 200
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [14780f5c-809b-41e4-8f51-d1e9c5963d96] HTTP Request START: PUT /api/v1/user_model/19
+2026-03-23 19:15:52 - custom.api.v1.user_model_api - INFO - 收到更新模型配置请求: id=19, model=GLM-4.6
+2026-03-23 19:15:52 - custom.services.user_model_service - INFO - 模型配置 ID=19 更新成功
+2026-03-23 19:15:52 - custom.api.v1.user_model_api - INFO - 模型配置更新完成: id=19
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [14780f5c-809b-41e4-8f51-d1e9c5963d96] HTTP Request END: PUT /api/v1/user_model/19 (耗时: 0.0656s) - 200
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [608a36da-f25c-4cac-8203-05a891c85ad3] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:15:52 - custom.core.middleware - INFO - [608a36da-f25c-4cac-8203-05a891c85ad3] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0306s) - 200
+2026-03-23 19:16:11 - custom.core.middleware - INFO - [6da780f4-e519-4e79-9e04-3c79cc6550fe] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 19:16:11 - custom.core.middleware - INFO - [6da780f4-e519-4e79-9e04-3c79cc6550fe] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 19:16:11 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: session_1774264571446_26x9ky2bw, 用户ID: 4
+2026-03-23 19:16:11 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 19:16:11 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: session_1774264571446_26x9ky2bw
+2026-03-23 19:16:11 - custom.core.middleware - INFO - [6da780f4-e519-4e79-9e04-3c79cc6550fe] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0351s) - 200
+2026-03-23 19:16:11 - custom.agent.rules.registry - INFO - 成功加载并刷新本地规则引擎配置表，共 8 条规则。
+2026-03-23 19:16:11 - custom.agent.graph_runner - INFO - 首次编译 Supervisor 图，config_key=8e39f89c...
+2026-03-23 19:16:11 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 19:16:12 - custom.agent.graphs.checkpointer - INFO - Checkpointer: PostgreSQL 状态表校验成功，连接已建立。
+2026-03-23 19:16:12 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule_default_general] -> GENERAL (conf=0.88)，耗时: 0ms
+2026-03-23 19:16:12 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[code_agent], conf=[0.9], complex=[False]
+2026-03-23 19:16:12 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_code_fastpath] -> code_agent，耗时: 0ms
+2026-03-23 19:16:12 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → code_agent (conf=0.90)
+2026-03-23 19:16:19 - custom.core.middleware - INFO - [facee246-0e78-4bfd-825c-0bc5f857cdb6] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:16:19 - custom.core.middleware - INFO - [facee246-0e78-4bfd-825c-0bc5f857cdb6] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0300s) - 200
+2026-03-23 19:16:19 - custom.core.middleware - INFO - [daf6cd21-4955-4e63-925a-933575988742] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:16:19 - custom.core.middleware - INFO - [daf6cd21-4955-4e63-925a-933575988742] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0265s) - 200
+2026-03-23 19:16:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:16:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:16:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:16:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:16:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 19:16:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 19:16:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 19:16:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: GLM-4.6 | BaseURL: https://open.bigmodel.cn/api/coding/paas/v4
+2026-03-23 19:16:28 - custom.core.middleware - INFO - [7d6f5299-7f50-4c34-942a-5fbcc6179ee8] HTTP Request START: PUT /api/v1/user_model/19
+2026-03-23 19:16:28 - custom.api.v1.user_model_api - INFO - 收到更新模型配置请求: id=19, model=GLM-4.6
+2026-03-23 19:16:28 - custom.services.user_model_service - INFO - 模型配置 ID=19 更新成功
+2026-03-23 19:16:28 - custom.api.v1.user_model_api - INFO - 模型配置更新完成: id=19
+2026-03-23 19:16:28 - custom.core.middleware - INFO - [7d6f5299-7f50-4c34-942a-5fbcc6179ee8] HTTP Request END: PUT /api/v1/user_model/19 (耗时: 0.0391s) - 200
+2026-03-23 19:16:28 - custom.core.middleware - INFO - [e93d5b5b-d8dd-4210-b81c-7f66b283d3ad] HTTP Request START: GET /api/v1/model_setting/
+2026-03-23 19:16:28 - custom.core.middleware - INFO - [e93d5b5b-d8dd-4210-b81c-7f66b283d3ad] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0312s) - 200
+2026-03-23 19:16:32 - custom.agent.graph_runner - WARNING - Graph Worker 线程未能在超时内退出，主流程继续。
+2026-03-23 19:16:32 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: session_1774264571446_26x9ky2bw，总长: 0字符
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [a73b1563-3a58-407d-ab49-c88ea0f401be] HTTP Request START: GET /api/v1/model_setting/
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [5a0be5d1-124a-453f-a901-50983b506b7c] HTTP Request START: GET /api/v1/user_model/
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [338baf3c-fd43-4a8a-95b9-f531948330b4] HTTP Request START: GET /api/v1/user_model/active
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [83768f98-569c-467d-bac3-010feb41f2df] HTTP Request START: GET /api/v1/chat-history/sessions
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [a73b1563-3a58-407d-ab49-c88ea0f401be] HTTP Request END: GET /api/v1/model_setting/ (耗时: 0.0260s) - 200
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [338baf3c-fd43-4a8a-95b9-f531948330b4] HTTP Request END: GET /api/v1/user_model/active (耗时: 0.0265s) - 200
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [5a0be5d1-124a-453f-a901-50983b506b7c] HTTP Request END: GET /api/v1/user_model/ (耗时: 0.0869s) - 200
+2026-03-23 19:16:32 - custom.core.middleware - INFO - [83768f98-569c-467d-bac3-010feb41f2df] HTTP Request END: GET /api/v1/chat-history/sessions (耗时: 0.0930s) - 200
+2026-03-23 19:16:34 - custom.core.middleware - INFO - [a8b550ab-b03b-41a9-b01d-7f403f1d03db] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 19:16:34 - custom.core.middleware - INFO - [a8b550ab-b03b-41a9-b01d-7f403f1d03db] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 19:16:34 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 19:16:34 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 19:16:34 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:16:34 - custom.core.middleware - INFO - [a8b550ab-b03b-41a9-b01d-7f403f1d03db] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0424s) - 200
+2026-03-23 19:16:34 - custom.agent.graph_runner - INFO - Pre-Graph 规则拦截生效: [query_identity]
+2026-03-23 19:16:34 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 70字符
+2026-03-23 19:16:49 - custom.agent.base - INFO - Agent code_agent 触发原生中断挂起，等待审批恢复。
+2026-03-23 19:16:49 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[code_agent] 中断挂起，耗时: 37427ms
+2026-03-23 19:16:56 - custom.core.middleware - INFO - [04cdb45b-69e9-461f-8d4c-f39f15cf9142] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 19:16:56 - custom.core.middleware - INFO - [04cdb45b-69e9-461f-8d4c-f39f15cf9142] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 19:16:56 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 19:16:56 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 19:16:56 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:16:56 - custom.core.middleware - INFO - [04cdb45b-69e9-461f-8d4c-f39f15cf9142] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0430s) - 200
+2026-03-23 19:16:56 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule_default_general] -> GENERAL (conf=0.88)，耗时: 0ms
+2026-03-23 19:16:56 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[code_agent], conf=[0.9], complex=[False]
+2026-03-23 19:16:56 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_code_fastpath] -> code_agent，耗时: 0ms
+2026-03-23 19:16:56 - custom.agent.graphs.supervisor - INFO - 路由决策: 高置信单兵 → code_agent (conf=0.90)
+2026-03-23 19:17:12 - custom.agent.graphs.supervisor - INFO - ⏱️ Agent[code_agent] 完成，耗时: 16330ms
+2026-03-23 19:17:12 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 898字符
+2026-03-23 19:17:17 - custom.core.middleware - INFO - [c41f9fa3-5af2-412b-b3e2-13d9ebcc4732] HTTP Request START: POST /api/v1/chat/stream
+2026-03-23 19:17:17 - custom.core.middleware - INFO - [c41f9fa3-5af2-412b-b3e2-13d9ebcc4732] 中间件已成功为模型 19 挂载动态配置。
+2026-03-23 19:17:17 - custom.services.chat_service - INFO - 收到异步流式聊天请求，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c, 用户ID: 4
+2026-03-23 19:17:17 - custom.services.chat_service - INFO - 使用中间件预加载的动态模型配置
+2026-03-23 19:17:17 - custom.services.chat_service - INFO - 开始异步带历史的流式聊天，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:17:17 - custom.core.middleware - INFO - [c41f9fa3-5af2-412b-b3e2-13d9ebcc4732] HTTP Request END: POST /api/v1/chat/stream (耗时: 0.0355s) - 200
+2026-03-23 19:17:17 - custom.agent.graphs.supervisor - INFO - ⏱️ Domain Router [rule_default_general] -> GENERAL (conf=0.88)，耗时: 0ms
+2026-03-23 19:17:17 - custom.agent.graphs.supervisor - INFO - Tier-1 Router: intent=[CHAT], conf=[0.92], complex=[False]
+2026-03-23 19:17:17 - custom.agent.graphs.supervisor - INFO - ⏱️ Intent Router [rule_general_chat_fastpath] -> CHAT，耗时: 0ms
+2026-03-23 19:17:17 - custom.agent.graphs.supervisor - INFO - 路由决策: 兜底对话 → chat_node (intent=CHAT, conf=0.92)
+2026-03-23 19:17:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:17:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:17:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:17:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:17:33 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.retry_invoke 超时: 8.0s
+2026-03-23 19:17:33 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 16228ms
+2026-03-23 19:17:33 - custom.services.chat_service - INFO - 保存聊天历史，会话ID: a0b42618-8069-4939-a52f-b8c5422cb60c，总长: 0字符
+2026-03-23 19:17:43 - custom.core.middleware - INFO - [6d140652-31c1-44df-8193-babeb6ca4a86] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:17:43 - custom.core.middleware - INFO - [49abb9fc-ba79-46d8-8338-9107c5d7fccb] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:17:43 - custom.core.middleware - INFO - [6d140652-31c1-44df-8193-babeb6ca4a86] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0017s) - 200
+2026-03-23 19:17:43 - custom.core.middleware - INFO - [49abb9fc-ba79-46d8-8338-9107c5d7fccb] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0016s) - 200
+2026-03-23 19:17:47 - custom.core.middleware - INFO - [dcfcf41c-2ccd-40cc-becb-fac14253cabf] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-23 19:17:47 - custom.core.middleware - INFO - [dcfcf41c-2ccd-40cc-becb-fac14253cabf] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0047s) - 400
+2026-03-23 19:18:21 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:18:21 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:18:21 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:18:21 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:18:34 - custom.core.middleware - INFO - [e5195756-c3de-4c3a-a8de-36b69a7eb2b0] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-23 19:18:34 - custom.core.middleware - INFO - [e5195756-c3de-4c3a-a8de-36b69a7eb2b0] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0147s) - 200
+2026-03-23 19:18:36 - custom.core.middleware - INFO - [082a17a8-ab38-4f3e-b866-ecc459422bd3] HTTP Request START: GET /api/v1/terminal/session/617a2e700cb54b09a39f373972c6ad22
+2026-03-23 19:18:36 - custom.core.middleware - INFO - [082a17a8-ab38-4f3e-b866-ecc459422bd3] HTTP Request END: GET /api/v1/terminal/session/617a2e700cb54b09a39f373972c6ad22 (耗时: 0.0020s) - 200
+2026-03-23 19:18:43 - custom.core.middleware - INFO - [27d18486-be9b-426b-87e1-b17f4830cec9] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-23 19:18:43 - custom.core.middleware - INFO - [27d18486-be9b-426b-87e1-b17f4830cec9] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0041s) - 400
+2026-03-23 19:18:46 - custom.core.middleware - INFO - [0928de78-1518-42f4-af58-30ec1791187f] HTTP Request START: POST /api/v1/terminal/session/start
+2026-03-23 19:18:46 - custom.core.middleware - INFO - [0928de78-1518-42f4-af58-30ec1791187f] HTTP Request END: POST /api/v1/terminal/session/start (耗时: 0.0062s) - 200
+2026-03-23 19:18:47 - custom.core.middleware - INFO - [fdbbc861-aa3f-4b2f-a42b-60213cf24096] HTTP Request START: GET /api/v1/terminal/session/75529fd820da45fbaf22047404b2f89e
+2026-03-23 19:18:47 - custom.core.middleware - INFO - [fdbbc861-aa3f-4b2f-a42b-60213cf24096] HTTP Request END: GET /api/v1/terminal/session/75529fd820da45fbaf22047404b2f89e (耗时: 0.0042s) - 200
+2026-03-23 19:19:10 - custom.core.middleware - INFO - [b4a3cb81-76db-44ec-b581-2207e106c10e] HTTP Request START: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:19:10 - custom.core.middleware - INFO - [53a73f8a-2ee3-467b-8653-8dae9ef5c304] HTTP Request START: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c
+2026-03-23 19:19:10 - custom.core.middleware - INFO - [b4a3cb81-76db-44ec-b581-2207e106c10e] HTTP Request END: GET /api/v1/terminal/workspace/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0038s) - 200
+2026-03-23 19:19:10 - custom.core.middleware - INFO - [53a73f8a-2ee3-467b-8653-8dae9ef5c304] HTTP Request END: GET /api/v1/terminal/session/latest/a0b42618-8069-4939-a52f-b8c5422cb60c (耗时: 0.0029s) - 200
+2026-03-23 19:19:22 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:19:22 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:19:22 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:19:22 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:20:22 - custom.agent.llm.loader_llm_multi - WARNING - ⚠️ 模型 glm-4.7 未提供 API Key
+2026-03-23 19:20:22 - custom.agent.llm.loader_llm_multi - INFO - 初始化 OpenAI 兼容模型: glm-4.7 | BaseURL: 
+2026-03-23 19:20:22 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-23 19:20:22 - custom.services.session_pool - WARNING - SessionPool 预热失败，跳过: 模型加载失败(zhipu): glm-4.7
+2026-03-23 19:20:43 - custom.services.session_pool - INFO - SessionPool refill 线程已退出。
+2026-03-23 19:20:43 - custom.services.session_pool - INFO - SessionPool 已停止。
+2026-03-23 20:48:05 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 21:07:00 - custom.agent.graphs.checkpointer - INFO - Checkpointer: 使用内存存储 (InMemorySaver)
+2026-03-23 21:07:03 - custom.agent.graphs.supervisor - WARNING - chat_node 调用失败，返回 error 事件。detail=chat_node.first_token_timeout: 0.1s
+2026-03-23 21:07:03 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 201ms
+2026-03-23 21:07:03 - custom.agent.graphs.supervisor - INFO - ⏱️ chat_node 模型耗时: 0ms

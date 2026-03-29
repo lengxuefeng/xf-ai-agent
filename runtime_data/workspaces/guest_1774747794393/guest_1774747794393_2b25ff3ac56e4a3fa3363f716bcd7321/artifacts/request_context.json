@@ -1,0 +1,17 @@
+{
+  "session_id": "guest_1774747794393",
+  "run_id": "guest_1774747794393:2b25ff3ac56e4a3fa3363f716bcd7321",
+  "user_input": "holter今天有多少人",
+  "history_size": 1,
+  "session_context": {
+    "context_slots": {
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=holter今天有多少人",
+        "时间=今天"
+      ],
+      "last_topic": "holter"
+    },
+    "context_summary": "【会话关键上下文】\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=holter今天有多少人；时间=今天"
+  }
+}

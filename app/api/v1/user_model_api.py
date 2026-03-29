@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from core.security import verify_token
@@ -46,8 +46,16 @@ def update_user_model(model_id: int, user_model_req: UserModelUpdate, db: Sessio
     更新指定ID的用户模型配置
     """
     log.info(f"收到更新模型配置请求: id={model_id}, model={user_model_req.selected_model}", target=LogTarget.LOG)
-    # 从服务层调用更新用户模型的方法，支持多个模型激活
-    updated_model = user_model_service.update_user_model(db, id=model_id, user_model=user_model_req, allow_multiple=True)
+    try:
+        updated_model = user_model_service.update_user_model(
+            db,
+            id=model_id,
+            user_model=user_model_req,
+            user_id=user_id,
+            allow_multiple=True,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     log.info(f"模型配置更新完成: id={model_id}", target=LogTarget.LOG)
     # 返回更新后的模型配置
     return ResponseModel(data=updated_model)
@@ -58,7 +66,10 @@ def activate_user_model(model_id: int, db: Session = Depends(get_db), user_id: i
     """
     激活指定ID的用户模型配置，支持多个模型同时激活
     """
-    activated_model = user_model_service.activate_user_model(db, id=model_id, user_id=user_id, allow_multiple=True)
+    try:
+        activated_model = user_model_service.activate_user_model(db, id=model_id, user_id=user_id, allow_multiple=True)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return ResponseModel(data=activated_model)
 
 
@@ -67,7 +78,10 @@ def deactivate_user_model(model_id: int, db: Session = Depends(get_db), user_id:
     """
     取消激活指定ID的用户模型配置
     """
-    deactivated_model = user_model_service.deactivate_user_model(db, id=model_id, user_id=user_id)
+    try:
+        deactivated_model = user_model_service.deactivate_user_model(db, id=model_id, user_id=user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return ResponseModel(data=deactivated_model)
 
 
@@ -85,5 +99,8 @@ def delete_user_model(model_id: int, db: Session = Depends(get_db), user_id: int
     """
     删除指定ID的用户模型配置
     """
-    user_model_service.remove_user_model(db, id=model_id)
+    try:
+        user_model_service.remove_user_model(db, id=model_id, user_id=user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return ResponseModel(data={"message": "删除成功"})

@@ -1,0 +1,576 @@
+2026-03-24 11:58:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 11:58:44,876 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-24 11:59:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 12:00:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 12:01:34 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:54:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:54:27,586 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:27,586 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:27,590 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:27,591 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:27,596 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774336863449_9bgg7urxu | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:27,596 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774336863449_9bgg7urxu | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:32,363 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342468937_euik6e68o | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:32,363 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342468937_euik6e68o | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:32,381 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342468937_euik6e68o | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:32,381 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342468937_euik6e68o | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:36,884 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342473661_6ti34440g | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:36,884 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342473661_6ti34440g | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:36,901 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342473661_6ti34440g | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:36,902 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342473661_6ti34440g | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:45,448 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342478185_oy9jpwzix | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:45,448 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342478185_oy9jpwzix | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:45,490 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342478185_oy9jpwzix | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:45,490 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342478185_oy9jpwzix | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:54:50 - custom.db - ERROR - 数据库事务异常回滚: 401: 缺少认证信息
+2026-03-24 16:54:50,599 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/chat-history/sessions | status_code=401 | detail=缺少认证信息 | body={"title":"新的对话"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 292, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 640, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/security.py", line 39, in verify_token
+    raise HTTPException(
+fastapi.exceptions.HTTPException: 401: 缺少认证信息
+2026-03-24 16:55:18,804 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342512459_r5xdzyuax | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:18,805 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342512459_r5xdzyuax | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:18,845 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342512459_r5xdzyuax | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:18,846 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342512459_r5xdzyuax | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:21,384 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342520291_jflmdio3u | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:21,384 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342520291_jflmdio3u | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:21,418 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342520291_jflmdio3u | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:21,418 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342520291_jflmdio3u | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:55:26 - custom.db - ERROR - 数据库事务异常回滚: 401: 缺少认证信息
+2026-03-24 16:55:26,367 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/chat/stream | status_code=401 | detail=缺少认证信息 | body={"user_input":"ls\n","session_id":"chat_1774342522820_9iilgoepg","user_model_id":null,"rag_enabled":false,"similarity_threshold":0.7,"embedding_model":"bge-m3:latest","deep_thinking_mode":"auto","model":"gemini-1.5-pro","model_service":"netlify-gemini","service_type":"openrouter","model_key":"","model_url":"","embedding_model_key":"","workspace_root":"/Users/lengxuefeng/Downloads/1/test","resume_message_id":"","temperature":0.2,"top_p":1,"max_tokens":2000}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 292, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 640, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/security.py", line 39, in verify_token
+    raise HTTPException(
+fastapi.exceptions.HTTPException: 401: 缺少认证信息
+2026-03-24 16:55:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:55:33 - custom.db - ERROR - 数据库事务异常回滚: 401: 缺少认证信息
+2026-03-24 16:55:33,063 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/chat/stream | status_code=401 | detail=缺少认证信息 | body={"user_input":"帮我梳理这个项目的前端结构，并指出最影响可用性的 3 个问题","session_id":"chat_1774342527866_4xysiy6yl","user_model_id":null,"rag_enabled":false,"similarity_threshold":0.7,"embedding_model":"bge-m3:latest","deep_thinking_mode":"auto","model":"gemini-1.5-pro","model_service":"netlify-gemini","service_type":"openrouter","model_key":"","model_url":"","embedding_model_key":"","workspace_root":"/Users/lengxuefeng/Downloads/1/test","resume_message_id":"","temperature":0.2,"top_p":1,"max_tokens":2000}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 292, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 640, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/core/security.py", line 39, in verify_token
+    raise HTTPException(
+fastapi.exceptions.HTTPException: 401: 缺少认证信息
+2026-03-24 16:56:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:57:27 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 16:57:29,602 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342534549_ezq3he9hq | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:29,604 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342534549_ezq3he9hq | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:29,634 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342534549_ezq3he9hq | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:29,635 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342534549_ezq3he9hq | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:33,082 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342651065_h8aaaxlr3 | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:33,082 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342651065_h8aaaxlr3 | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:33,125 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/workspace/chat_1774342651065_h8aaaxlr3 | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 16:57:33,125 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/session/latest/chat_1774342651065_h8aaaxlr3 | status_code=401 | detail=缺少认证信息 | body={}
+NoneType: None
+2026-03-24 17:04:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:04:52,903 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-24 17:04:58,672 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/workspace/bind | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"default","workspace_root":"/Users/lengxuefeng/Downloads/1/test"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 32, in bind_workspace
+    return {"code": 200, "message": "工作目录绑定成功", "data": workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)}
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 34, in bind_workspace
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:04:58,679 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/default?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:05:01,050 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"default","workspace_root":"/Users/lengxuefeng/Downloads/1/test","command_text":"ls"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 147, in start_command
+    workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 156, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:05:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:06:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:06:39,126 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"default","workspace_root":"/Users/lengxuefeng/Downloads/1/test","command_text":"ls"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 147, in start_command
+    workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 156, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:06:42,750 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/session/start | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"default","workspace_root":"/Users/lengxuefeng/Downloads/1/test","command_text":"ls"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 147, in start_command
+    workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 156, in start_command
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:07:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:08:34,125 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/default?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:08:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:08:35,565 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/default?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:08:37,710 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/default?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:08:43,105 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/default?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:09:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:10:35 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:54:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:55:06,066 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-24 17:55:15,103 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/workspace/bind | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"session_1774343185069_6hfn94g56","workspace_root":"/Users/lengxuefeng/Downloads/1/test"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 32, in bind_workspace
+    return {"code": 200, "message": "工作目录绑定成功", "data": workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)}
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 34, in bind_workspace
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:55:15,137 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:55:27,625 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/workspace/bind | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"session_1774343185069_6hfn94g56","workspace_root":"/Users/lengxuefeng/Downloads/1/test"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 32, in bind_workspace
+    return {"code": 200, "message": "工作目录绑定成功", "data": workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)}
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 34, in bind_workspace
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:55:27,639 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:55:36,680 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/workspace/bind | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"session_1774343185069_6hfn94g56","workspace_root":"/Users/lengxuefeng/Downloads/1/test"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 32, in bind_workspace
+    return {"code": 200, "message": "工作目录绑定成功", "data": workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)}
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 34, in bind_workspace
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 17:55:36,704 - app.main - ERROR - HTTPException | method=GET | url=http://localhost:8000/api/v1/terminal/fs/tree/session_1774343185069_6hfn94g56?path= | status_code=400 | detail=当前会话尚未绑定工作目录。 | body={}
+NoneType: None
+2026-03-24 17:55:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:56:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:57:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:58:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 17:59:59 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:01:57,651 - app.main - ERROR - 数据库初始化失败: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: connection to server at "192.168.1.10", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/main.py", line 78, in startup_initialize_tables
+    Base.metadata.create_all(bind=engine)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ^^^^^^^^^^^^
+  File "/Users/lengxuefeng/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "192.168.1.10", port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-03-24 21:02:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:03:06,630 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-03-24 21:03:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:03:46,795 - app.main - ERROR - HTTPException | method=POST | url=http://localhost:8000/api/v1/terminal/workspace/bind | status_code=400 | detail=指定目录超出了当前允许的工作区范围。 | body={"session_id":"session_1774343185069_6hfn94g56","workspace_root":"/Users/lengxuefeng/Downloads/1/test"}
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 32, in bind_workspace
+    return {"code": 200, "message": "工作目录绑定成功", "data": workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)}
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/manager.py", line 64, in bind_external_workspace
+    resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/runtime/workspace/path_guard.py", line 67, in resolve_workspace_root
+    raise ValueError("指定目录超出了当前允许的工作区范围。")
+ValueError: 指定目录超出了当前允许的工作区范围。
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 302, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 213, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/app/api/v1/terminal_api.py", line 34, in bind_workspace
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+fastapi.exceptions.HTTPException: 400: 指定目录超出了当前允许的工作区范围。
+2026-03-24 21:04:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:05:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2026-03-24 21:06:43 - custom.agent.llm.unified_loader - ERROR - 加载模型失败 - 服务: zhipu, 模型: glm-4.7, 错误详情: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable

@@ -49,13 +49,23 @@ class UserModelService:
         log.info(f"用户 {user_id} 创建了新模型配置: ID={new_model.id}")
         return new_model
 
-    def update_user_model(self, db: Session, id: int, user_model: UserModelUpdate, allow_multiple: bool = False):
+    def update_user_model(
+        self,
+        db: Session,
+        id: int,
+        user_model: UserModelUpdate,
+        user_id: Optional[int] = None,
+        allow_multiple: bool = False,
+    ):
         """
-        【安全优化】更新前确认记录存在
+        更新用户模型配置，并在需要时校验归属权。
+
+        这里显式接收 user_id，是为了让 API 层不会把“当前登录用户”信息丢在半路，
+        避免别人拿到配置 ID 后直接越权修改。
         """
-        existing_model = user_model_db.get(db, id)
+        existing_model = self.get_user_model_by_id(db, id, user_id)
         if not existing_model:
-            raise ValueError(f"要更新的模型配置不存在: ID={id}")
+            raise ValueError(f"要更新的模型配置不存在或无权操作: ID={id}")
 
         # exclude_unset=True 完美保留，只更新前端传了的字段
         update_data = user_model.model_dump(exclude_unset=True)
@@ -82,6 +92,24 @@ class UserModelService:
         activated_model = user_model_db.update(db, db_obj=existing_model, obj_in={'is_active': True})
         log.info(f"用户 {user_id} 成功激活了模型配置 ID={id}")
         return activated_model
+
+    def deactivate_user_model(self, db: Session, id: int, user_id: int):
+        """取消激活指定模型配置，避免前端点了停用却仍然保持激活态。"""
+        existing_model = self.get_user_model_by_id(db, id, user_id)
+        if not existing_model:
+            raise ValueError(f"模型配置不存在或无权操作: ID={id}")
+        deactivated_model = user_model_db.update(db, db_obj=existing_model, obj_in={"is_active": False})
+        log.info(f"用户 {user_id} 取消激活模型配置 ID={id}")
+        return deactivated_model
+
+    def remove_user_model(self, db: Session, id: int, user_id: int):
+        """删除用户模型配置前先校验归属权，避免直接按主键物理删除越权数据。"""
+        existing_model = self.get_user_model_by_id(db, id, user_id)
+        if not existing_model:
+            raise ValueError(f"模型配置不存在或无权操作: ID={id}")
+        removed_model = user_model_db.remove(db, id=id)
+        log.info(f"用户 {user_id} 删除模型配置 ID={id}")
+        return removed_model
 
 
 # 导出全局单例

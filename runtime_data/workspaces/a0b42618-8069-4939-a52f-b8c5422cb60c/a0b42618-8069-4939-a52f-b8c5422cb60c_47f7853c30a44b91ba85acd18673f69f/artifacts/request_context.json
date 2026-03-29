@@ -1,0 +1,19 @@
+{
+  "session_id": "a0b42618-8069-4939-a52f-b8c5422cb60c",
+  "run_id": "a0b42618-8069-4939-a52f-b8c5422cb60c:47f7853c30a44b91ba85acd18673f69f",
+  "user_input": "帮我在本地创建一个txt文件 并写入holter",
+  "history_size": 2,
+  "session_context": {
+    "context_slots": {
+      "city": "南京",
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=哎，人生苦短",
+        "需求=哎，现在的天气真的是糟糕透了",
+        "需求=帮我在本地创建一个txt文件 并写入holter"
+      ],
+      "last_topic": "holter"
+    },
+    "context_summary": "【会话关键上下文】\n- 当前城市: 南京\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=哎，人生苦短；需求=哎，现在的天气真的是糟糕透了；需求=帮我在本地创建一个txt文件 并写入holter"
+  }
+}
