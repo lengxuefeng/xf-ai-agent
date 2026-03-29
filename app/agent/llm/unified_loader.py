@@ -87,6 +87,7 @@ def create_model_from_config(
         model_key: str = '',
         model_url: str = '',
         embedding_model_key: str = '',
+        strict_embedding_init: bool = False,
         **kwargs
 ) -> tuple[BaseChatModel, Optional[Any]]:
     """
@@ -107,6 +108,18 @@ def create_model_from_config(
     )
 
     chat_model = UnifiedModelLoader.load_chat_model(config)
-    embedding_model_instance = UnifiedModelLoader.load_embedding_model(config) if rag_enabled else None
+    embedding_model_instance = None
+    if rag_enabled:
+        try:
+            embedding_model_instance = UnifiedModelLoader.load_embedding_model(config)
+        except Exception as exc:
+            if strict_embedding_init:
+                raise
+            # 当前主链路只依赖 chat_model，Embedding 初始化失败时直接降级禁用，
+            # 避免用户请求被无关的 RAG 预热异常整体打断。
+            log.warning(
+                f"Embedding 初始化失败，已降级跳过: "
+                f"service={service_type}, model={embedding_model}, detail={exc}"
+            )
 
     return chat_model, embedding_model_instance

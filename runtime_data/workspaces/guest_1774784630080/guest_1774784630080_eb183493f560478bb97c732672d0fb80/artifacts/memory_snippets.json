@@ -1,0 +1,26 @@
+[
+  {
+    "key": "project_agents_md",
+    "source": "AGENTS.md",
+    "content": "# XF AI Agent Runtime Memory\n\n## 项目定位\n- 这是一个偏业务编排型的多 Agent 系统，不只是简单聊天机器人。\n- 用户希望从前端清晰看到\"老板发令 -> 掌柜调度 -> 司员执行 -> 汇总回禀\"的全过程。\n- 核心特点：强编排 + Harness Runtime 执行底座 + 流式SSE响应\n\n## 架构设计\n- **编排层**: LangGraph 编排的多 Agent 系统，Supervisor 负责任务分发和协调\n- **运行时层**: Harness Runtime 提供文件系统、受控执行、记忆、搜索、上下文工程、Hooks 等能力\n- **接口层**: FastAPI + SSE 流式响应，支持前端实时接收\n- **服务层**: 业务服务层，处理会话、历史记录、审批、模型配置等\n\n## 核心模块\n- `app/agent/`: 多 Agent 编排层\n  - `graphs/supervisor.py`: Supervisor 编排图\n  - `agents/`: 各个专业 Agent（代码、搜索、SQL、天气等）\n  - `graph_runner.py`: 图执行器，负责驱动 Supervisor 并产生 SSE 流\n- `app/runtime/`: Harness Runtime 运行时\n  - `core/`: 运行时核心（run_context, session_manager, workflow_event_bus）\n  - `workspace/`: 文件系统和工作区管理\n  - `exec/`: 命令执行和受控代码运行\n  - `memory/`: 记忆管理和 AGENTS.md 注入\n  - `tools/`: 工具注册和执行（MCP、搜索等）\n  - `hooks/`: Hook 管理器和内置 hooks（审批、质量门禁、工具守卫）\n  - `context/`: 上下文构建和注入\n- `app/services/`: 业务服务层\n  - `chat_service.py`: 聊天服务\n  - `interrupt_service.py`: 中断和审批服务\n  - `chat_history_service.py`: 聊天历史管理\n- `app/api/`: FastAPI 接口层\n\n## 运行时原则\n- 优先保证可解释性、可观测性和审批安全\n- 工具调用、外部查询、代码执行、记忆注入都应尽量结构化\n- 能直接答复的问题由掌柜直办；需要专业能力时再调度司员\n- \"写代码\"和\"执行代码\"必须区分，只有明确执行意图才进入审批与执行链路\n- 页面终端是受控执行入口，所有命令必须在用户绑定的工作目录内运行\n- 页面终端是前端产品形态，真正执行发生在后端运行节点，而不是浏览器本地沙箱\n\n## 技术特点\n- 异步流式处理：GraphRunner 使用生产者-消费者模型，图执行在后台线程，主线程消费队列推 SSE\n- 前置规则拦截：Zero-LLM 快速响应，避免不必要的图执行\n- 审批中断恢复：支持 Interrupt 挂起和审批恢复\n- 运行时观测：Workflow 事件流、日志流、状态快照\n- Session 管理：运行时会话管理和状态追踪\n- 工具注册：统一的工具注册和执行机制\n\n## 前端风格\n- 国风简约\n- 宣纸、卷轴、印章、墨色层次\n- 不要堆砌科技风默认样式\n\n## 质量要求\n- 尽量保留流式体验\n- 流程事件要能持久化并回放\n- 高风险执行必须支持审批\n- 前端需要同时支持\"老板模式\"和\"工位模式\"",
+    "scope": "project"
+  },
+  {
+    "key": "session_summary",
+    "source": "session_state",
+    "content": "【会话关键上下文】\n- 当前城市: 接着回答\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=今天天气真好啊；需求=帮我写一个java的main方法；需求=这个不对吧，我要的是java的",
+    "scope": "session"
+  },
+  {
+    "key": "session_slots",
+    "source": "session_state",
+    "content": "city: 接着回答\nname: xuefeng\nkey_facts: ['需求=今天天气真好啊', '需求=帮我写一个java的main方法', '需求=这个不对吧，我要的是java的', '需求=哎，真难受啊', '需求=今天holter有人使用吗', '需求=感觉很别扭啊，怎么会这样呢，再帮我查询一下明天郑州的天气 适合穿什么衣服', '时间=明天', '需求=哦，我的holter是什么，给我一个查询最近holter的sql', '需求=今天几号了，清明节是什么时间，清明节郑州有什么活动', '时间=今天']\nlast_topic: search",
+    "scope": "session"
+  },
+  {
+    "key": "current_request",
+    "source": "run_context",
+    "content": "当前用户输入：今天几号了，清明节是什么时间，清明节郑州有什么活动",
+    "scope": "request"
+  }
+]

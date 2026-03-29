@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import asyncio
 import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from typing import Dict, List
 
 from dotenv import load_dotenv
@@ -9,22 +9,15 @@ from langchain_tavily import TavilySearch
 
 from config.runtime_settings import SEARCH_TOOL_TIMEOUT_SECONDS
 
-"""
-搜索相关工具（原生异步版）。
-
-【设计说明】
-将 tavily_search_tool 改为 async def，LangGraph ToolNode 原生支持异步工具，
-会在事件循环中 await 调用，不再阻塞图执行线程。
-超时控制改用 asyncio.wait_for，不再依赖 ThreadPoolExecutor。
-"""
+"""搜索相关工具。"""
 
 load_dotenv()
 
 
 @tool
-async def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str]]:
+def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str]]:
     """
-    使用 Tavily API 执行实时网页搜索（异步版）。
+    使用 Tavily API 执行实时网页搜索（同步版）。
 
     参数:
         query (str): 搜索查询字符串
@@ -46,15 +39,13 @@ async def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[st
     )
 
     try:
-        # TavilySearch.invoke 是同步阻塞调用，用 asyncio.to_thread 包裹避免阻塞事件循环
-        result = await asyncio.wait_for(
-            asyncio.to_thread(tavily.invoke, {"query": query}),
-            timeout=timeout_sec,
-        )
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(tavily.invoke, {"query": query})
+            result = future.result(timeout=timeout_sec)
         if isinstance(result, list):
             return result
         return [{"title": "搜索结果", "url": "", "content": str(result)}]
-    except asyncio.TimeoutError:
+    except FuturesTimeoutError:
         return [{
             "title": "搜索超时",
             "url": "",

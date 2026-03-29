@@ -1,6 +1,12 @@
 import re
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
+from constants.supervisor_keywords import (
+    SUPERVISOR_CLAUSE_CONNECTOR_PATTERNS,
+    SUPERVISOR_SEQUENTIAL_HINT_PAIRS,
+    SUPERVISOR_SUMMARY_HINTS,
+)
+
 
 def dedupe_keep_order(values: Sequence[str]) -> List[str]:
     """按首次出现顺序去重，保证规则规划阶段输出稳定。"""
@@ -17,12 +23,7 @@ def has_dependency_hint(text: str) -> bool:
     if not normalized_text:
         return False
 
-    sequential_patterns = (
-        ("先", "再"),
-        ("先", "然后"),
-        ("第一步", "第二步"),
-    )
-    for first_hint, second_hint in sequential_patterns:
+    for first_hint, second_hint in SUPERVISOR_SEQUENTIAL_HINT_PAIRS:
         if first_hint in normalized_text and second_hint in normalized_text:
             return True
     return False
@@ -44,6 +45,14 @@ def is_explicit_request_clause(text: str, *, request_action_hints: Sequence[str]
     )
     if any(re.search(pattern, normalized_text) for pattern in interrogative_patterns):
         return True
+    factoid_patterns = (
+        r"(什么时间|什么时候|何时|哪天)",
+        r"(几号|几月几号|几月|几日|日期)",
+        r"(星期几|周几|礼拜几|几点)",
+        r"(有什么|有啥|哪些|多少)",
+    )
+    if any(re.search(pattern, normalized_text) for pattern in factoid_patterns):
+        return True
     return any(hint in normalized_text for hint in request_action_hints)
 
 
@@ -54,11 +63,8 @@ def split_query_clauses(user_text: str) -> List[str]:
         return []
 
     normalized_text = re.sub(r"[，,；;。！？?!]+", "|", normalized_text)
-    normalized_text = re.sub(
-        r"(并且|而且|同时|然后|再帮我|顺便|另外|以及)",
-        "|",
-        normalized_text,
-    )
+    connector_pattern = "|".join(re.escape(item) for item in SUPERVISOR_CLAUSE_CONNECTOR_PATTERNS)
+    normalized_text = re.sub(rf"({connector_pattern})", "|", normalized_text)
     clauses = [item.strip(" ,，\n\t") for item in normalized_text.split("|")]
     return [item for item in clauses if item]
 
@@ -325,8 +331,7 @@ def build_rule_based_multidomain_tasks(
             "status": pending_status,
             "result": None,
         }
-        summary_hints = ("总结", "分析", "解释", "建议", "报告", "结论", "对比", "方案", "归纳")
-        needs_chat_summary = any(hint in normalized_text for hint in summary_hints)
+        needs_chat_summary = any(hint in normalized_text for hint in SUPERVISOR_SUMMARY_HINTS)
         if not needs_chat_summary:
             return [first_task]
 

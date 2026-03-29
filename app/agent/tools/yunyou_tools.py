@@ -9,12 +9,12 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from contextlib import contextmanager
 
-import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+from common.http import HttpRequestError, common_http_client
 from config.runtime_settings import (
     YUNYOU_DB_POOL_CONFIG,
     YUNYOU_HTTP_CONFIG,
@@ -136,7 +136,6 @@ class YunYouTools:
         # 拼接URL（强制处理末尾/，避免拼接成 http://xxx:8089/holter//list 这类错误）
         endpoint = self._build_endpoint_key(url)
         full_url = f"{self.base_url.rstrip('/')}/{endpoint}"
-        proxies = {"http": None, "https": None} if YUNYOU_HTTP_CONFIG.disable_proxy else None
         # 连接超时使用更短预算，读超时沿用总预算，避免长时间“假死”。
         connect_timeout = max(1, min(5, int(YUNYOU_HTTP_CONFIG.timeout_seconds / 2)))
         read_timeout = max(connect_timeout, int(YUNYOU_HTTP_CONFIG.timeout_seconds))
@@ -159,40 +158,49 @@ class YunYouTools:
         should_retry = True
         for attempt_idx in range(1, attempts + 1):
             self._ensure_not_cancelled(full_url)
-            response = None
             should_retry = True
             try:
-                # 禁用重定向+超时+关闭代理+验证SSL（内网可关）
-                response = requests.post(
-                    full_url,
-                    json=filtered_params,
-                    headers=headers,
-                    proxies=proxies,
-                    allow_redirects=YUNYOU_HTTP_CONFIG.allow_redirects,
-                    timeout=(connect_timeout, read_timeout),
-                    verify=YUNYOU_HTTP_CONFIG.verify_ssl,
+                response = common_http_client.request(
+                    {
+                        "method": "POST",
+                        "url": full_url,
+                        "json_body": filtered_params,
+                        "headers": headers,
+                        "follow_redirects": YUNYOU_HTTP_CONFIG.allow_redirects,
+                        "timeout_seconds": float(read_timeout),
+                        "connect_timeout_seconds": float(connect_timeout),
+                        "verify_ssl": YUNYOU_HTTP_CONFIG.verify_ssl,
+                        "disable_proxy": YUNYOU_HTTP_CONFIG.disable_proxy,
+                        "retry_attempts": 1,
+                        "retry_backoff_ms": 0,
+                    }
                 )
-                response.raise_for_status()
-                data = response.json()
+                data = response.json_body
+                if not isinstance(data, dict):
+                    raise ValueError("云柚服务返回了无法解析的响应。")
                 payload = data.get("data", {})
                 self._set_cached_response(cache_key, payload)
                 self._record_success(endpoint)
                 return payload
-            except requests.exceptions.HTTPError as http_err:
-                status_code = int(getattr(response, "status_code", 0) or 0)
-                err_preview = ((response.text or "")[:YUNYOU_HTTP_CONFIG.error_preview_chars]) if response is not None else ""
-                last_error = ValueError(f"HTTP错误 {status_code}: {http_err}\n响应内容: {err_preview}")
-                # 4xx（除 429）通常是请求参数问题，不做重试。
-                should_retry = not (400 <= status_code < 500 and status_code != 429)
-            except requests.exceptions.ConnectTimeout:
-                last_error = ValueError(f"连接超时：无法访问 {full_url}，请检查服务器是否在线")
-                should_retry = True
-            except requests.exceptions.ReadTimeout:
-                last_error = ValueError(f"读取超时：{full_url} 响应过慢，请稍后重试")
-                should_retry = True
-            except requests.exceptions.ConnectionError:
-                last_error = ValueError(f"连接失败：无法连接到 {full_url}，请检查IP/端口是否正确")
-                should_retry = True
+            except HttpRequestError as http_err:
+                status_code = int(getattr(http_err, "status_code", 0) or 0)
+                err_preview = str(getattr(http_err, "response_text", "") or "")[:YUNYOU_HTTP_CONFIG.error_preview_chars]
+                lower = str(http_err).lower()
+                if status_code:
+                    last_error = ValueError(f"HTTP错误 {status_code}: {http_err}\n响应内容: {err_preview}")
+                    should_retry = not (400 <= status_code < 500 and status_code != 429)
+                elif "connect_timeout" in lower:
+                    last_error = ValueError(f"连接超时：无法访问 {full_url}，请检查服务器是否在线")
+                    should_retry = True
+                elif "read_timeout" in lower:
+                    last_error = ValueError(f"读取超时：{full_url} 响应过慢，请稍后重试")
+                    should_retry = True
+                elif "connection_error" in lower:
+                    last_error = ValueError(f"连接失败：无法连接到 {full_url}，请检查IP/端口是否正确")
+                    should_retry = True
+                else:
+                    last_error = ValueError(f"查询时发生未知错误: {str(http_err)}")
+                    should_retry = True
             except Exception as e:
                 last_error = ValueError(f"查询时发生未知错误: {str(e)}")
                 should_retry = True

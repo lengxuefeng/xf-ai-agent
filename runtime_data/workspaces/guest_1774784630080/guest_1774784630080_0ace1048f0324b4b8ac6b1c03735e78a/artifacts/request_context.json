@@ -1,0 +1,17 @@
+{
+  "session_id": "guest_1774784630080",
+  "run_id": "guest_1774784630080:0ace1048f0324b4b8ac6b1c03735e78a",
+  "user_input": "今天几号了，清明节是什么时间，清明节郑州有什么活动",
+  "history_size": 0,
+  "session_context": {
+    "context_slots": {
+      "name": "xuefeng",
+      "last_topic": "search",
+      "key_facts": [
+        "需求=今天几号了，清明节是什么时间，清明节郑州有什么活动",
+        "时间=今天"
+      ]
+    },
+    "context_summary": "【会话关键上下文】\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=今天几号了，清明节是什么时间，清明节郑州有什么活动；时间=今天"
+  }
+}

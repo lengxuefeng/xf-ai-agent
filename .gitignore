@@ -1,7 +1,10 @@
 # Logs
 logs/*
+*.log
 
 
+# runtime_data
+runtime_data/*
 
 # ENV
 .env

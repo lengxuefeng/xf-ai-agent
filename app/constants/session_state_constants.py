@@ -9,6 +9,7 @@ SESSION_SUFFIX_PARTICLE_REGEX = r"[的了呀啊呢吧吗嘛～~\s,，。！!？?
 
 # 可能导致误识别的通用词，命中后不作为城市写入槽位
 SESSION_CITY_STOPWORDS = (
+    "城市",
     "附近",
     "哪里",
     "什么",

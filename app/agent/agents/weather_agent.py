@@ -9,24 +9,12 @@ from langgraph.graph import END, START, StateGraph, add_messages
 from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
 from agent.tools.weather_tools import location_search
+from constants.weather_agent_keywords import WEATHER_FOLLOWUP_CONFIRM_TOKENS
 from constants.weather_tool_constants import WEATHER_CITY_REQUIRED_MESSAGE, WEATHER_QUERY_KEYWORDS
 from utils.custom_logger import get_logger
 from utils.location_parser import extract_valid_city_candidate
 
 log = get_logger(__name__)
-
-_WEATHER_FOLLOWUP_CONFIRM_TOKENS = {
-    "是",
-    "是的",
-    "好的",
-    "好",
-    "确认",
-    "继续",
-    "然后呢",
-    "嗯",
-    "ok",
-    "yes",
-}
 
 
 class WeatherAgentState(TypedDict):
@@ -149,7 +137,7 @@ class WeatherAgent(BaseAgent):
             normalized = (text or "").strip().lower()
             if not normalized:
                 return False
-            return normalized in _WEATHER_FOLLOWUP_CONFIRM_TOKENS
+            return normalized in WEATHER_FOLLOWUP_CONFIRM_TOKENS
 
         def _query_weather_for_cities(cities: List[str]) -> str:
             """

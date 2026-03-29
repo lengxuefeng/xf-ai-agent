@@ -67,6 +67,11 @@ class GraphState(TypedDict):
         max_waves: 最大调度波次（安全阀）
         planner_source: 任务规划来源（rule_split / llm / fallback）
         planner_elapsed_ms: Parent Planner 耗时
+        reflection_round: 已执行的自动反思轮次
+        max_reflection_rounds: 允许的最大自动反思轮次
+        next_task_sequence: 新增任务编号游标
+        reflection_source: 本轮反思来源（llm / disabled / skipped）
+        reflection_summary: 本轮反思结论摘要
 
         ---- 并发执行 (Dispatcher & Worker) ----
         active_tasks: 当前准备 Send 派发执行的 SubTask 列表
@@ -108,6 +113,11 @@ class GraphState(TypedDict):
     max_waves: Optional[int]
     planner_source: Optional[str]
     planner_elapsed_ms: Optional[int]
+    reflection_round: Optional[int]
+    max_reflection_rounds: Optional[int]
+    next_task_sequence: Optional[int]
+    reflection_source: Optional[str]
+    reflection_summary: Optional[str]
 
     # 并发执行输出 (Map-Reduce)
     active_tasks: Optional[List[SubTask]]

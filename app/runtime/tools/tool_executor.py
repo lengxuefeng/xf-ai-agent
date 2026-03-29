@@ -22,11 +22,14 @@ class ToolExecutor:
         if descriptor is None:
             return {"ok": False, "error": f"未注册工具: {name}"}
         if handler is None:
-            return {
-                "ok": False,
-                "error": f"工具 {name} 暂未挂接执行器",
-                "tool": descriptor.to_dict(),
-            }
+            tool_ref = runtime_tool_registry.get_langchain_tool(name)
+            if tool_ref is None or not hasattr(tool_ref, "invoke"):
+                return {
+                    "ok": False,
+                    "error": f"工具 {name} 暂未挂接执行器",
+                    "tool": descriptor.to_dict(),
+                }
+            handler = lambda **payload: tool_ref.invoke(payload)
         try:
             result = handler(**kwargs)
             return {"ok": True, "tool": descriptor.to_dict(), "result": result}
@@ -35,4 +38,3 @@ class ToolExecutor:
 
 
 tool_executor = ToolExecutor()
-

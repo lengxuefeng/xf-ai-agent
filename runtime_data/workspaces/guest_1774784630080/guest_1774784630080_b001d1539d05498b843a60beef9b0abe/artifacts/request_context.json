@@ -1,0 +1,21 @@
+{
+  "session_id": "guest_1774784630080",
+  "run_id": "guest_1774784630080:b001d1539d05498b843a60beef9b0abe",
+  "user_input": "帮我写一个java的main方法",
+  "history_size": 6,
+  "session_context": {
+    "context_slots": {
+      "city": "哎人生啊",
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=1.输入框太宽了，可以缩小一些 更有立体感一些",
+        "需求=今天几号了，清明节是什么时间，清明节郑州有什么活动",
+        "需求=今天天气真好啊",
+        "时间=今天",
+        "需求=帮我写一个java的main方法"
+      ],
+      "last_topic": "weather"
+    },
+    "context_summary": "【会话关键上下文】\n- 当前城市: 哎人生啊\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=1.输入框太宽了，可以缩小一些 更有立体感一些；需求=今天几号了，清明节是什么时间，清明节郑州有什么活动；需求=今天天气真好啊"
+  }
+}

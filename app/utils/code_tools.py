@@ -3,6 +3,7 @@ from langchain_core.tools import tool
 
 from runtime.exec.runner import exec_runner
 from runtime.tools.tool_executor import tool_executor
+from runtime.tools.tool_registry import runtime_tool_registry
 
 
 def _execute_python_handler(
@@ -54,3 +55,9 @@ def execute_python_code(
 
 
 execute_python_code_tool = tool("execute_python_code")(execute_python_code)
+runtime_tool_registry.register_langchain_tool(
+    execute_python_code_tool,
+    category="exec",
+    source="runtime.exec",
+    requires_approval=True,
+)

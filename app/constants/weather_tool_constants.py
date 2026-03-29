@@ -1,54 +1,7 @@
 # -*- coding: utf-8 -*-
 """天气工具参数治理常量。"""
 
-from typing import Tuple
-
-# 天气意图关键词：用于 weather agent 的前置门控判断
-WEATHER_QUERY_KEYWORDS: Tuple[str, ...] = (
-    "天气",
-    "气温",
-    "温度",
-    "下雨",
-    "降雨",
-    "风力",
-    "空气质量",
-    "湿度",
-    "体感",
-    "雾",
-    "霾",
-    "冷不冷",
-    "热不热",
-)
-
-# 城市识别时应判定为“无效城市”的后缀（多为语气词）
-CITY_INVALID_SUFFIXES: Tuple[str, ...] = (
-    "吗",
-    "呢",
-    "呀",
-    "吧",
-    "嘛",
-    "么",
-)
-
-# 城市识别停用词：避免把行为词/指代词误识别为地名
-CITY_STOPWORDS: Tuple[str, ...] = (
-    "这里",
-    "那里",
-    "这个",
-    "那个",
-    "附近",
-    "周边",
-    "出去",
-    "出去玩",
-    "玩",
-    "玩吗",
-    "玩吧",
-    "活动",
-    "天气",
-    "今天",
-    "明天",
-    "后天",
-)
+from config.keyword_settings import CITY_INVALID_SUFFIXES, CITY_STOPWORDS, WEATHER_QUERY_KEYWORDS
 
 # 城市缺失时的标准提示语（不给模型暴露错误参数）
 WEATHER_CITY_REQUIRED_MESSAGE = (
@@ -61,4 +14,3 @@ WEATHER_CITY_NOT_FOUND_MESSAGE = (
     "未识别到可用的城市名。"
     "请提供明确城市（例如：郑州、北京、上海）后我再为您查询。"
 )
-

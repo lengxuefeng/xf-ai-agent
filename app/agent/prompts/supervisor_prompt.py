@@ -5,6 +5,7 @@
 Tier-0: 规则引擎 (Zero-LLM, 由 rules.yaml 配置，无需提示词)
 Tier-1: IntentRouterPrompt  → 小模型快速分类与路由
 Tier-2: PlannerPrompt       → 大模型 DAG 任务拆解
+       ReflectionPrompt    → 大模型执行后反思与追加步骤
        AggregatorPrompt     → 大模型结果聚合润色
 兜底:   ChatFallbackPrompt  → 通用对话降级
 """
@@ -111,7 +112,38 @@ class AggregatorPrompt:
         "2. 保留所有关键数据和事实，不要遗漏任何重要信息。\n"
         "3. 如果某个子任务失败，请在回复中简要说明原因。\n"
         "4. 不要提及内部的子任务编号（如 t1、t2）或 Agent 名称。\n"
-        "5. 如果包含代码，请用完整的代码块展示。"
+        "5. 默认使用简洁的 Markdown 结构化输出，优先用二级/三级标题、短列表来组织结果。\n"
+        "6. 只有在确实需要展示代码时，才使用完整代码块。"
+    )
+
+
+class ReflectionPrompt:
+    """Tier-2 执行后反思器提示词。"""
+
+    agents_desc = "\n".join([f"- {name}: {info.description}" for name, info in agent_classes.items()])
+
+    SYSTEM = (
+        "你是复杂任务执行后的反思器（Reflection Planner）。\n"
+        "你的职责是检查当前已完成的子任务结果，判断是否还需要追加步骤，或已经足以收敛。\n\n"
+        "【核心原则】\n"
+        "1. 只有在用户目标尚未达成、存在明显缺口、或确实需要下一步动作时，才设置 continue_execution=true。\n"
+        "2. 若现有结果已经足够交给最终汇总器生成答复，必须设置 continue_execution=false。\n"
+        "3. 新增任务必须自包含，禁止使用模糊代词；必须明确 agent；依赖只能引用已完成任务或同轮新增任务。\n"
+        "4. 严禁重复已有任务，严禁无限细分；通常最多追加 1 到 2 个任务。\n"
+        "5. 无法判断时，宁可收敛，不要盲目追加步骤。\n\n"
+        "【可用 Agent】\n"
+        f"{agents_desc}\n"
+        "- CHAT: 总结、解释、写作、归纳、通用问答\n\n"
+        "【输出格式】只返回 JSON：\n"
+        "```json\n"
+        "{{\n"
+        '  "continue_execution": false,\n'
+        '  "summary": "说明是否还需要追加步骤",\n'
+        '  "tasks": [\n'
+        '    {{"id": "r1", "agent": "CHAT", "input": "基于已有执行结果给出最终建议", "depends_on": ["t1"]}}\n'
+        "  ]\n"
+        "}}\n"
+        "```"
     )
 
 
@@ -126,5 +158,6 @@ class ChatFallbackPrompt:
             f"【当前系统时间】\n{time_info}\n\n"
             "请基于以上时间信息和自身训练知识回答用户问题。\n"
             "如果不确定答案，请坦诚告知，不要编造信息。\n"
-            "回答应简洁准确，必要时可使用 Markdown 格式。"
+            "回答应简洁准确，优先使用简洁的 Markdown 结构化输出；"
+            "需要分点时使用标题或列表，只有在展示代码时才使用代码块。"
         )

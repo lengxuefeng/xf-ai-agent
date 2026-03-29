@@ -263,6 +263,26 @@ class AggregatorConfig:
     max_result_chars: int
 
 
+@dataclass(frozen=True)
+class WorkflowReflectionConfig:
+    """多步执行反思配置。"""
+
+    # 是否启用执行后反思与追加任务
+    enabled: bool
+
+    # 是否允许使用 LLM 反思器决定是否追加任务
+    llm_enabled: bool
+
+    # 最大反思轮次，防止无限追加
+    max_rounds: int
+
+    # 反思阶段单次 LLM 超时
+    llm_timeout_sec: float
+
+    # 传给反思器的单任务结果预览最大字符数
+    result_preview_max_chars: int
+
+
 # 图执行器调优参数配置实例
 GRAPH_RUNNER_TUNING = GraphRunnerTuning(
     # 规则扫描最大长度（环境变量：ROUTER_RULE_SCAN_MAX_LEN，默认 60，范围 1-500）
@@ -441,6 +461,29 @@ AGGREGATOR_CONFIG = AggregatorConfig(
 
     # 每个任务结果最大字符数（环境变量：AGGREGATOR_MAX_RESULT_CHARS，默认 2000，范围 200-20000）
     max_result_chars=_as_int("AGGREGATOR_MAX_RESULT_CHARS", 2000, min_value=200, max_value=20000),
+)
+
+# 任务执行后自动反思配置
+WORKFLOW_REFLECTION_CONFIG = WorkflowReflectionConfig(
+    # 是否启用（环境变量：WORKFLOW_REFLECTION_ENABLED，默认 true）
+    enabled=_as_bool("WORKFLOW_REFLECTION_ENABLED", True),
+
+    # 是否启用 LLM 反思器（环境变量：WORKFLOW_REFLECTION_LLM_ENABLED，默认 true）
+    llm_enabled=_as_bool("WORKFLOW_REFLECTION_LLM_ENABLED", True),
+
+    # 最大反思轮次（环境变量：WORKFLOW_REFLECTION_MAX_ROUNDS，默认 2，范围 0-5）
+    max_rounds=_as_int("WORKFLOW_REFLECTION_MAX_ROUNDS", 2, min_value=0, max_value=5),
+
+    # 单次反思超时（环境变量：WORKFLOW_REFLECTION_LLM_TIMEOUT_SEC，默认 10.0，范围 1-60）
+    llm_timeout_sec=_as_float("WORKFLOW_REFLECTION_LLM_TIMEOUT_SEC", 10.0, min_value=1.0, max_value=60.0),
+
+    # 单任务结果预览最大字符数（环境变量：WORKFLOW_REFLECTION_RESULT_PREVIEW_MAX_CHARS，默认 1200，范围 200-10000）
+    result_preview_max_chars=_as_int(
+        "WORKFLOW_REFLECTION_RESULT_PREVIEW_MAX_CHARS",
+        1200,
+        min_value=200,
+        max_value=10000,
+    ),
 )
 
 # Chat 兜底节点流式开关（环境变量：CHAT_NODE_STREAM_ENABLED，默认 true）

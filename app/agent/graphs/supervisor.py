@@ -1,9 +1,9 @@
 import functools
-import re
-import json
-import time
 import queue
+import json
+import re
 import threading
+import time
 from typing import Optional, List, Dict, Any, TypedDict, Type
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -12,7 +12,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END, START
 from langgraph.constants import Send
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from agent.graph_state import AgentRequest
 from agent.graphs.checkpointer import get_checkpointer
@@ -53,10 +53,29 @@ from agent.graphs.supervisor_rule_support import (
 )
 from agent.llm.unified_loader import create_model_from_config
 from agent.registry import agent_classes, MEMBERS
-from agent.prompts.supervisor_prompt import IntentRouterPrompt, ChatFallbackPrompt, PlannerPrompt, AggregatorPrompt
+from agent.prompts.supervisor_prompt import (
+    IntentRouterPrompt,
+    ChatFallbackPrompt,
+    PlannerPrompt,
+    ReflectionPrompt,
+    AggregatorPrompt,
+)
 from constants.agent_registry_keywords import AGENT_KEYWORDS, AgentKeywordGroup
 from constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
-from constants.supervisor_keywords import SUPERVISOR_KEYWORDS, SupervisorKeywordGroup
+from constants.supervisor_keywords import (
+    SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS,
+    SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS,
+    SUPERVISOR_CODE_ACTION_HINTS,
+    SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS,
+    SUPERVISOR_CODE_LEARNING_HINTS,
+    SUPERVISOR_CODE_SNIPPET_PATTERNS,
+    SUPERVISOR_KEYWORDS,
+    SUPERVISOR_SEARCH_ACTION_HINTS,
+    SUPERVISOR_SEARCH_GENERIC_QUERY_HINTS,
+    SUPERVISOR_SQL_EXPLICIT_ANCHORS,
+    SUPERVISOR_WEATHER_ACTION_PATTERNS,
+    SupervisorKeywordGroup,
+)
 from constants.workflow_constants import (
     AGENT_DOMAIN_MAP,
     MULTI_DOMAIN_AGENT_PRIORITY,
@@ -76,6 +95,15 @@ from config.runtime_settings import (
     CHAT_NODE_TOTAL_TIMEOUT_SEC,
     MODEL_TIERING_CONFIG,
     ROUTER_POLICY_CONFIG,
+    WORKFLOW_REFLECTION_CONFIG,
+)
+from schemas.supervisor_schemas import (
+    DomainDecision,
+    IntentDecision,
+    PlannerDecision,
+    PlannerTaskDecision,
+    ReflectionDecision,
+    RequestAnalysisDecision,
 )
 from services.route_metrics_service import route_metrics_service
 from services.agent_stream_bus import agent_stream_bus
@@ -123,45 +151,6 @@ def _extract_interrupt_from_snapshot(snapshot: Any) -> Optional[dict]:
         default_allowed_decisions=list(DEFAULT_ALLOWED_DECISIONS),
     )
 
-# --- Models ---
-class IntentDecision(BaseModel):
-    """意图路由决策模型"""
-    intent: str = "CHAT"  # 目标Agent名称
-    confidence: float = 0.5  # 置信度
-    is_complex: bool = False  # 是否复杂任务
-    direct_answer: str = ""  # 简单问题的直接答案
-
-
-class DomainDecision(BaseModel):
-    """数据域路由决策模型"""
-    data_domain: str = "GENERAL"  # 数据域名称
-    confidence: float = 0.5  # 置信度
-    source: str = "llm"  # 决策来源
-
-
-class PlannerTaskDecision(BaseModel):
-    """规划器输出的单个任务模型。"""
-    id: str = "t1"  # 子任务 ID
-    agent: str = "CHAT"  # 目标执行 Agent
-    input: str = ""  # 子任务输入
-    depends_on: List[str] = Field(default_factory=list)  # 依赖任务 ID 列表
-
-
-class PlannerDecision(BaseModel):
-    """规划器结构化输出模型。"""
-    tasks: List[PlannerTaskDecision] = Field(default_factory=list)  # 子任务列表
-
-
-class RequestAnalysisDecision(BaseModel):
-    """统一请求分析结果，供 Domain/Intent/Planner 共享。"""
-    candidate_agents: List[str] = Field(default_factory=list)  # 命中的 Agent 候选（按优先级）
-    candidate_domains: List[str] = Field(default_factory=list)  # 命中的数据域候选（按优先级）
-    is_multi_intent: bool = False  # 是否命中多意图
-    is_multi_domain: bool = False  # 是否命中多数据域
-    has_dependency_hint: bool = False  # 是否存在先后依赖提示
-    route_strategy: str = RouteStrategy.SINGLE_DOMAIN.value  # 路由策略
-    reason: str = "single_domain"  # 策略命中原因
-
 
 class WorkerState(TypedDict):
     """Worker节点状态"""
@@ -183,25 +172,11 @@ def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
     """统一归类 Agent 执行失败，避免将内部异常直接暴露为正文。"""
     detail = str(exc or "").strip()
     lower = detail.lower()
-    timeout_markers = (
-        "timeout",
-        "timed out",
-        "readtimeout",
-        "first_token_timeout",
-        "total_timeout",
-        "超时",
-    )
-    connection_markers = (
-        "connection",
-        "connecterror",
-        "connectionerror",
-        "apiconnectionerror",
-        "连接失败",
-        "连接断开",
-    )
-    if isinstance(exc, TimeoutError) or any(marker in lower for marker in timeout_markers):
+    if isinstance(exc, TimeoutError) or any(marker in lower for marker in SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS):
         return "处理超时，请稍后重试。", detail
-    if isinstance(exc, ConnectionError) or any(marker in lower for marker in connection_markers):
+    if isinstance(exc, ConnectionError) or any(
+        marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
+    ):
         return "模型服务连接异常，请稍后重试。", detail
     return "底层服务执行异常，请稍后重试。", detail
 
@@ -214,21 +189,7 @@ def _looks_like_sql_request(text: str) -> bool:
 
     # Holter 语境下优先走 yunyou_agent，只有出现“显式本地 SQL 锚点”才判定为 sql_agent。
     if _looks_like_holter_request(t):
-        explicit_sql_anchors = (
-            r"\bselect\b",
-            r"\border\s+by\b",
-            r"\blimit\b",
-            r"\bwhere\b",
-            r"\bgroup\s+by\b",
-            r"\bjoin\b",
-            r"\bsql\b",
-            r"数据库",
-            r"数据表",
-            r"本地库",
-            r"库里",
-            r"\bt_[a-z0-9_]+\b",
-        )
-        return any(re.search(anchor, t) for anchor in explicit_sql_anchors)
+        return any(re.search(anchor, t) for anchor in SUPERVISOR_SQL_EXPLICIT_ANCHORS)
 
     patterns = SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.SQL_REGEX_PATTERNS]
     return any(re.search(p, t) for p in patterns)
@@ -262,8 +223,7 @@ def _looks_like_search_request(text: str) -> bool:
     if any(k in t for k in keywords):
         return True
     # 对“查一下/搜一下”这类泛词做降噪：若同时命中其他明确业务域，不视为 search。
-    generic_query_hints = ("查一下", "搜一下", "查一查", "搜一搜")
-    if any(h in t for h in generic_query_hints):
+    if any(h in t for h in SUPERVISOR_SEARCH_GENERIC_QUERY_HINTS):
         if _looks_like_holter_request(t) or _looks_like_sql_request(t) or _looks_like_weather_request(t):
             return False
         return True
@@ -289,12 +249,7 @@ def _is_weather_actionable_clause(text: str) -> bool:
     if t.endswith(("吗", "么", "呢")):
         return True
 
-    action_patterns = (
-        r"(查|查询|看看|看下|看一下|告诉我|帮我|搜|获取).{0,8}(天气|气温|温度|下雨|降雨|风力|湿度|空气质量|体感|能见度)",
-        r"(天气|气温|温度|下雨|降雨|风力|湿度|空气质量|体感|能见度).{0,8}(如何|怎么样|多少|几度|吗|呢|建议|适合)",
-        r"(适合出门|适合外出|可以出门|会不会下雨|冷不冷|热不热|空气怎么样)",
-    )
-    return any(re.search(pattern, t) for pattern in action_patterns)
+    return any(re.search(pattern, t) for pattern in SUPERVISOR_WEATHER_ACTION_PATTERNS)
 
 
 def _is_search_actionable_clause(text: str) -> bool:
@@ -307,8 +262,7 @@ def _is_search_actionable_clause(text: str) -> bool:
         return False
     if any(mark in t for mark in ("?", "？")):
         return True
-    query_hints = ("查", "查询", "搜", "搜索", "帮我", "给我", "推荐", "看看", "列出", "有哪些", "哪里", "去哪")
-    return any(hint in t for hint in query_hints)
+    return any(hint in t for hint in SUPERVISOR_SEARCH_ACTION_HINTS)
 
 
 def _looks_like_medical_request(text: str) -> bool:
@@ -329,55 +283,21 @@ def _looks_like_code_request(text: str) -> bool:
     if not any(k in t for k in keywords):
         return False
 
-    learning_hints = (
-        "能学吗",
-        "值得学吗",
-        "好学吗",
-        "难学吗",
-        "怎么学",
-        "学习路线",
-        "学习路径",
-        "入门",
-        "前景",
-        "就业",
-        "转行",
-        "零基础",
-    )
-    code_action_hints = (
-        "写",
-        "实现",
-        "生成",
-        "代码",
-        "函数",
-        "脚本",
-        "程序",
-        "接口",
-        "类",
-        "编译",
-        "运行",
-        "执行",
-        "报错",
-        "bug",
-        "异常",
-        "修复",
-        "调试",
-        "优化",
-        "重构",
-        "算法",
-    )
-
-    if any(hint in t for hint in code_action_hints):
+    if any(hint in t for hint in SUPERVISOR_CODE_ACTION_HINTS):
         return True
 
-    if any(hint in t for hint in learning_hints):
+    if any(hint in t for hint in SUPERVISOR_CODE_LEARNING_HINTS):
         return False
 
-    if re.search(r"(class\s+\w+|def\s+\w+|function\s+\w+|if\s*\(|for\s*\(|while\s*\(|print\s*\()", t):
+    if any(re.search(pattern, t) for pattern in SUPERVISOR_CODE_SNIPPET_PATTERNS):
+        return True
+
+    followup_fix_hints = ("要的是", "改成", "换成", "不对", "错了", "main方法", "main method")
+    if any(marker in t for marker in SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS) and any(hint in t for hint in followup_fix_hints):
         return True
 
     # 仅提到语言名但没有执行/排障动作时，视为泛问答而不是代码代理。
-    language_only_markers = ("python", "java", "javascript", "typescript", "go", "rust", "c++", "c#", "php", "ruby")
-    if any(marker in t for marker in language_only_markers):
+    if any(marker in t for marker in SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS):
         return False
 
     return any(k in t for k in keywords if k not in {"python", "java", "编程"})
@@ -393,12 +313,30 @@ def _looks_like_general_chat_request(text: str) -> bool:
     specialized_hits = (
         _looks_like_holter_request(t)
         or _looks_like_sql_request(t)
-        or _looks_like_weather_request(t)
-        or _looks_like_search_request(t)
+        or (_looks_like_weather_request(t) and _is_weather_actionable_clause(t))
+        or (_looks_like_search_request(t) and _is_search_actionable_clause(t))
         or _looks_like_medical_request(t)
         or _looks_like_code_request(t)
     )
     return not specialized_hits
+
+
+def _build_graceful_chat_fallback(user_text: str) -> str:
+    """为短句闲聊/情绪表达提供无模型兜底，避免直接抛错误气泡。"""
+    normalized = (user_text or "").strip()
+    if not normalized:
+        return ""
+
+    concern_tokens = ("你怎么了", "你还好吗", "怎么回事", "在吗", "有人吗")
+    emotion_tokens = ("唉", "哎", "人生", "迷茫", "累", "烦", "难受", "郁闷", "崩溃", "绝望")
+
+    if _looks_like_weather_request(normalized) and (not _is_weather_actionable_clause(normalized)):
+        return "是啊，天气确实会影响心情。你要是想顺手查某个城市的实时气温、降雨或未来预报，直接告诉我城市就行。"
+    if any(token in normalized for token in concern_tokens):
+        return "我在，刚才响应有点慢，不是故意不回你。你想继续聊什么，直接说就行。"
+    if any(token in normalized for token in emotion_tokens):
+        return "我在。听起来你这会儿有点感慨或者有点累，如果你愿意，可以继续说说发生了什么，我陪你理一理。"
+    return ""
 
 # --- Helpers ---
 def _latest_human_message(messages: List[BaseMessage]) -> str:
@@ -980,7 +918,10 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
         decision = DomainDecision(data_domain="YUNYOU_DB", confidence=0.98, source="rule")
     elif _looks_like_sql_request(latest_user_text):
         decision = DomainDecision(data_domain="LOCAL_DB", confidence=0.95, source="rule")
-    elif _looks_like_weather_request(latest_user_text) or _looks_like_search_request(latest_user_text):
+    elif (
+        (_looks_like_weather_request(latest_user_text) and _is_weather_actionable_clause(latest_user_text))
+        or (_looks_like_search_request(latest_user_text) and _is_search_actionable_clause(latest_user_text))
+    ):
         decision = DomainDecision(data_domain="WEB_SEARCH", confidence=0.9, source="rule")
     else:
         # 默认策略：未知场景直接归入 GENERAL，避免每轮都走慢速 LLM 分类。
@@ -1113,6 +1054,8 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
         return _finalize_intent(fallback_agent, max(domain_conf, 0.9), False, f"domain_{domain_source}", "")
 
     # WEB/GENERAL 的短问题兜底规则：优先走单兵，避免误判成复杂 DAG。
+    if _looks_like_weather_request(latest_user_text) and (not _is_weather_actionable_clause(latest_user_text)):
+        return _finalize_intent("CHAT", max(domain_conf, 0.9), False, "rule_weather_smalltalk", "")
     if _looks_like_weather_request(latest_user_text):
         return _finalize_intent("weather_agent", max(domain_conf, 0.9), False, "rule_weather_fastpath", "")
     if data_domain == "GENERAL" and _looks_like_search_request(latest_user_text):
@@ -1198,6 +1141,23 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     )
 
 # ==================== Tier-2: DAG Planner & Dispatcher ====================
+def _build_planner_state_payload(task_list: List[SubTask], *, planner_source: str, elapsed_ms: int) -> dict:
+    """为 DAG 规划节点构造统一初始状态。"""
+    return {
+        "task_list": task_list,
+        "task_results": {},
+        "current_wave": 0,
+        "max_waves": len(task_list) * 2 + 2,
+        "planner_source": planner_source,
+        "planner_elapsed_ms": elapsed_ms,
+        "reflection_round": 0,
+        "max_reflection_rounds": WORKFLOW_REFLECTION_CONFIG.max_rounds,
+        "next_task_sequence": len(task_list) + 1,
+        "reflection_source": "",
+        "reflection_summary": "",
+    }
+
+
 def parent_planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """第三级：父规划器 (Parent_Planner_Node)"""
     started_at = time.perf_counter()
@@ -1217,14 +1177,7 @@ def parent_planner_node(state: GraphState, model: BaseChatModel, config: Runnabl
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Parent Planner [rule_split] 耗时: {elapsed_ms}ms")
         log.info(f"Tier-2 Planner: Generated {len(rule_tasks)} tasks -> {[t['id'] for t in rule_tasks]}")
-        return {
-            "task_list": rule_tasks,
-            "task_results": {},
-            "current_wave": 0,
-            "max_waves": len(rule_tasks) * 2 + 2,
-            "planner_source": "rule_split",
-            "planner_elapsed_ms": elapsed_ms,
-        }
+        return _build_planner_state_payload(rule_tasks, planner_source="rule_split", elapsed_ms=elapsed_ms)
 
     deterministic_tasks = _build_planner_fallback_tasks(
         user_text=latest_user_text,
@@ -1238,28 +1191,22 @@ def parent_planner_node(state: GraphState, model: BaseChatModel, config: Runnabl
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Parent Planner [single_domain_guard] 耗时: {elapsed_ms}ms")
         log.info(f"Tier-2 Planner: Generated {len(deterministic_tasks)} tasks -> {[t['id'] for t in deterministic_tasks]}")
-        return {
-            "task_list": deterministic_tasks,
-            "task_results": {},
-            "current_wave": 0,
-            "max_waves": len(deterministic_tasks) * 2 + 2,
-            "planner_source": "single_domain_guard",
-            "planner_elapsed_ms": elapsed_ms,
-        }
+        return _build_planner_state_payload(
+            deterministic_tasks,
+            planner_source="single_domain_guard",
+            elapsed_ms=elapsed_ms,
+        )
 
     # 默认关闭 LLM Planner：生产场景优先稳定性与可解释性，避免模型规划漂移。
     if not ROUTER_POLICY_CONFIG.planner_llm_fallback_enabled:
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Parent Planner [deterministic_fallback] 耗时: {elapsed_ms}ms")
         log.info(f"Tier-2 Planner: Generated {len(deterministic_tasks)} tasks -> {[t['id'] for t in deterministic_tasks]}")
-        return {
-            "task_list": deterministic_tasks,
-            "task_results": {},
-            "current_wave": 0,
-            "max_waves": len(deterministic_tasks) * 2 + 2,
-            "planner_source": "deterministic_fallback",
-            "planner_elapsed_ms": elapsed_ms,
-        }
+        return _build_planner_state_payload(
+            deterministic_tasks,
+            planner_source="deterministic_fallback",
+            elapsed_ms=elapsed_ms,
+        )
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", PlannerPrompt.get_system_prompt()),
@@ -1280,7 +1227,7 @@ def parent_planner_node(state: GraphState, model: BaseChatModel, config: Runnabl
         tasks_data = list(structured.tasks or [])
 
         task_list: List[SubTask] = []
-        for idx, t in enumerate(tasks_data):
+        for idx, t in enumerate(tasks_data, start=1):
             task_list.append({
                 "id": str(getattr(t, "id", "") or f"t{idx}"),
                 "agent": str(getattr(t, "agent", "") or "CHAT"),
@@ -1309,14 +1256,7 @@ def parent_planner_node(state: GraphState, model: BaseChatModel, config: Runnabl
     elapsed_ms = int((time.perf_counter() - started_at) * 1000)
     log.info(f"⏱️ Parent Planner [{planner_source}] 耗时: {elapsed_ms}ms")
     log.info(f"Tier-2 Planner: Generated {len(task_list)} tasks -> {[t['id'] for t in task_list]}")
-    return {
-        "task_list": task_list,
-        "task_results": {},
-        "current_wave": 0,
-        "max_waves": len(task_list) * 2 + 2,
-        "planner_source": planner_source,
-        "planner_elapsed_ms": elapsed_ms,
-    }
+    return _build_planner_state_payload(task_list, planner_source=planner_source, elapsed_ms=elapsed_ms)
 
 
 def dispatcher_node(state: GraphState) -> dict:
@@ -1594,6 +1534,189 @@ def reducer_node(state: GraphState) -> dict:
     return {"task_list": new_task_list, "task_results": task_res_map}
 
 
+def _sanitize_reflection_tasks(
+    reflection_tasks: List[PlannerTaskDecision],
+    *,
+    existing_tasks: List[SubTask],
+    next_task_sequence: int,
+) -> tuple[List[SubTask], int]:
+    """清洗自动反思生成的新增任务，确保编号、依赖和去重可用。"""
+    existing_ids = {str(task.get("id") or "") for task in existing_tasks if task.get("id")}
+    existing_signatures = {
+        (str(task.get("agent") or "CHAT").strip(), str(task.get("input") or "").strip())
+        for task in existing_tasks
+        if str(task.get("input") or "").strip()
+    }
+    valid_dependency_ids = set(existing_ids)
+    remapped_ids: Dict[str, str] = {}
+    appended_tasks: List[SubTask] = []
+    sequence = max(1, int(next_task_sequence or (len(existing_tasks) + 1)))
+
+    for candidate in list(reflection_tasks or [])[:3]:
+        agent_name = str(getattr(candidate, "agent", "") or "CHAT").strip() or "CHAT"
+        if agent_name not in MEMBERS and agent_name != "CHAT":
+            agent_name = "CHAT"
+        input_text = str(getattr(candidate, "input", "") or "").strip()
+        if not input_text:
+            continue
+        signature = (agent_name, input_text)
+        if signature in existing_signatures:
+            continue
+
+        original_id = str(getattr(candidate, "id", "") or f"r{sequence}")
+        assigned_id = f"t{sequence}"
+        sequence += 1
+        remapped_ids[original_id] = assigned_id
+
+        raw_dependencies = [str(dep) for dep in (getattr(candidate, "depends_on", []) or []) if str(dep).strip()]
+        normalized_dependencies: List[str] = []
+        for dep_id in raw_dependencies:
+            mapped_dep = remapped_ids.get(dep_id, dep_id)
+            if mapped_dep in valid_dependency_ids and mapped_dep not in normalized_dependencies:
+                normalized_dependencies.append(mapped_dep)
+
+        appended_tasks.append(
+            {
+                "id": assigned_id,
+                "agent": agent_name,
+                "input": input_text,
+                "depends_on": normalized_dependencies,
+                "status": TaskStatus.PENDING.value,
+                "result": None,
+            }
+        )
+        existing_signatures.add(signature)
+        valid_dependency_ids.add(assigned_id)
+
+    return appended_tasks, sequence
+
+
+def reflection_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    """执行后反思：判断当前结果是否需要自动追加下一轮任务。"""
+    tasks = list(state.get("task_list") or [])
+    if not tasks:
+        return {}
+
+    status_values = [str(task.get("status") or "") for task in tasks]
+    if any(status in PENDING_TASK_STATUSES for status in status_values):
+        return {
+            "reflection_source": "skipped_pending",
+            "reflection_summary": "仍有未收敛任务，暂不触发自动反思。",
+        }
+
+    if not WORKFLOW_REFLECTION_CONFIG.enabled:
+        return {
+            "reflection_source": "disabled",
+            "reflection_summary": "自动反思已关闭，直接进入结果收敛。",
+        }
+
+    current_round = max(0, int(state.get("reflection_round") or 0))
+    max_rounds = max(0, int(state.get("max_reflection_rounds") or WORKFLOW_REFLECTION_CONFIG.max_rounds))
+    if current_round >= max_rounds:
+        return {
+            "reflection_source": "limit_reached",
+            "reflection_summary": "已达到自动反思轮次上限，停止追加任务。",
+        }
+
+    if (not WORKFLOW_REFLECTION_CONFIG.llm_enabled) or model is None:
+        return {
+            "reflection_source": "llm_disabled",
+            "reflection_summary": "未启用 LLM 反思器，当前任务直接收敛。",
+        }
+
+    task_results = dict(state.get("task_results", {}) or {})
+    if not task_results:
+        return {
+            "reflection_source": "empty_results",
+            "reflection_summary": "暂无可用执行结果，直接收敛。",
+        }
+
+    preview_max_chars = int(WORKFLOW_REFLECTION_CONFIG.result_preview_max_chars)
+    task_lines: List[str] = []
+    for task in tasks:
+        task_id = str(task.get("id") or "")
+        if not task_id:
+            continue
+        result_preview = _normalize_aggregator_result_text(
+            task_id,
+            task_results.get(task_id, task.get("result")),
+            preview_max_chars,
+        )
+        task_lines.append(
+            "\n".join(
+                [
+                    f"任务ID: {task_id}",
+                    f"Agent: {task.get('agent')}",
+                    f"状态: {task.get('status')}",
+                    f"输入: {str(task.get('input') or '')[:200]}",
+                    f"结果: {result_preview}",
+                ]
+            )
+        )
+
+    latest_user_text = _latest_human_message(state.get("messages", []))
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", ReflectionPrompt.SYSTEM),
+            (
+                "human",
+                "用户原始请求：\n{user_request}\n\n"
+                "当前已经执行完成的任务如下：\n{task_summaries}\n\n"
+                "请判断：是否还需要自动追加下一轮任务，还是已经足够收敛。",
+            ),
+        ]
+    )
+
+    try:
+        structured = _invoke_structured_output_with_fallback(
+            prompt=prompt,
+            model=model,
+            schema=ReflectionDecision,
+            inputs={
+                "user_request": latest_user_text,
+                "task_summaries": "\n\n---\n\n".join(task_lines),
+            },
+            config=config,
+            max_tokens=256,
+            log_name="workflow_reflection",
+        )
+    except Exception as exc:
+        log.warning(f"Reflection fallback: {exc}")
+        return {
+            "reflection_source": "llm_error",
+            "reflection_summary": f"自动反思失败，直接收敛。原因: {exc}",
+        }
+
+    next_task_sequence = int(state.get("next_task_sequence") or (len(tasks) + 1))
+    appended_tasks, next_task_sequence = _sanitize_reflection_tasks(
+        list(structured.tasks or []),
+        existing_tasks=tasks,
+        next_task_sequence=next_task_sequence,
+    )
+    reflection_summary = str(structured.summary or "").strip() or "自动反思判断当前阶段已收敛。"
+    if (not structured.continue_execution) or (not appended_tasks):
+        return {
+            "reflection_round": current_round + 1,
+            "reflection_source": "llm_converged",
+            "reflection_summary": reflection_summary,
+            "next_task_sequence": next_task_sequence,
+        }
+
+    updated_tasks = tasks + appended_tasks
+    updated_max_waves = max(
+        int(state.get("max_waves") or 0),
+        int(state.get("current_wave") or 0) + len(appended_tasks) * 2 + 2,
+    )
+    return {
+        "task_list": updated_tasks,
+        "max_waves": updated_max_waves,
+        "reflection_round": current_round + 1,
+        "reflection_source": "llm_appended",
+        "reflection_summary": reflection_summary,
+        "next_task_sequence": next_task_sequence,
+    }
+
+
 # ==================== Aggregator ====================
 def _normalize_aggregator_result_text(task_id: str, value: Any, max_chars: int) -> str:
     """将子任务结果统一转成可展示文本，并控制长度。"""
@@ -1613,6 +1736,26 @@ def _normalize_aggregator_result_text(task_id: str, value: Any, max_chars: int) 
     return text
 
 
+def _humanize_aggregator_error_text(text: str) -> str:
+    """将内部错误文本转成更适合直出给用户的表述。"""
+    normalized = (text or "").strip()
+    if normalized.lower().startswith("error:"):
+        normalized = normalized[6:].strip()
+
+    normalized = re.sub(r"^[a-z_]+\s+执行失败[:：]\s*", "", normalized, flags=re.I)
+    normalized = normalized.replace(
+        "StructuredTool does not support sync invocation.",
+        "联网检索工具调用异常，请稍后重试。",
+    )
+    normalized = normalized.replace("chatprompttemplate is missing variables", "提示词模板变量配置异常")
+    normalized = normalized.strip(" 。\n\t")
+    if not normalized:
+        return "有一项子任务执行失败，请稍后重试。"
+    if "联网检索" in normalized or "搜索" in normalized:
+        return normalized
+    return f"有一项子任务未能完成：{normalized}。"
+
+
 def _build_deterministic_aggregation(
     user_request: str,
     normalized_results: List[tuple[str, str]],
@@ -1625,14 +1768,24 @@ def _build_deterministic_aggregation(
     if len(normalized_results) == 1:
         return normalized_results[0][1]
 
-    lines: List[str] = []
-    if user_request:
-        lines.append(f"已完成你的请求：{user_request}")
-        lines.append("")
-    lines.append(f"共完成 {len(normalized_results)} 个子任务，汇总如下：")
-    for task_id, text in normalized_results:
-        lines.append(f"\n【{task_id}】\n{text}")
-    return "\n".join(lines).strip()
+    success_parts: List[str] = []
+    failure_parts: List[str] = []
+    for _task_id, text in normalized_results:
+        normalized_text = (text or "").strip()
+        if not normalized_text:
+            continue
+        if normalized_text.lower().startswith("error:"):
+            failure_parts.append(_humanize_aggregator_error_text(normalized_text))
+            continue
+        success_parts.append(normalized_text)
+
+    if success_parts and failure_parts:
+        return "\n\n".join(success_parts + failure_parts).strip()
+    if success_parts:
+        return "\n\n".join(success_parts).strip()
+    if failure_parts:
+        return "\n".join(failure_parts).strip()
+    return "暂未获得可直接展示的结果，请稍后重试。"
 
 
 def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
@@ -1906,6 +2059,21 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
                         final_error = retry_exc
 
         if msg is None:
+            graceful_reply = _build_graceful_chat_fallback(_latest_human_message(state.get("messages", [])))
+            if graceful_reply:
+                elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+                log.warning(
+                    f"chat_node 调用失败，已走友好降级回复。detail={final_error}, elapsed={elapsed_ms}ms"
+                )
+                return {
+                    "messages": [
+                        AIMessage(
+                            content=graceful_reply,
+                            name="ChatAgent",
+                            response_metadata={"synthetic": True, "force_emit": True, "fallback": True},
+                        )
+                    ]
+                }
             user_message, error_detail = _classify_agent_failure(final_error or RuntimeError("chat_node.empty_response"))
             log.warning(f"chat_node 调用失败，返回 error 事件。detail={error_detail}")
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
@@ -2052,6 +2220,7 @@ def create_graph(model_config: Optional[dict] = None):
     workflow.add_node("dispatcher_node", dispatcher_node)
     workflow.add_node("worker_node", functools.partial(worker_node, model=model))
     workflow.add_node("reducer_node", reducer_node)
+    workflow.add_node("reflection_node", functools.partial(reflection_node, model=model))
     workflow.add_node("aggregator_node", functools.partial(aggregator_node, model=model))
     
     # 单兵节点 (非 DAG 路径使用): 简单单意图优先走轻量模型，复杂任务仍走 DAG+主模型
@@ -2071,7 +2240,8 @@ def create_graph(model_config: Optional[dict] = None):
     workflow.add_edge("Parent_Planner_Node", "dispatcher_node")
     workflow.add_conditional_edges("dispatcher_node", dispatch_router, ["worker_node", "aggregator_node"])
     workflow.add_edge("worker_node", "reducer_node")
-    workflow.add_edge("reducer_node", "dispatcher_node") # 闭环：拉取下一波任务
+    workflow.add_edge("reducer_node", "reflection_node")
+    workflow.add_edge("reflection_node", "dispatcher_node") # 闭环：反思后拉取下一波任务
     
     # 单兵出口
     workflow.add_edge("chat_node", END)

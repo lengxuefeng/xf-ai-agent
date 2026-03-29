@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from typing import Dict, List
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 
 @dataclass(slots=True)
@@ -12,9 +12,16 @@ class ToolDescriptor:
     description: str
     source: str
     requires_approval: bool = False
+    tool_ref: Optional[Any] = None
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        return {
+            "name": self.name,
+            "category": self.category,
+            "description": self.description,
+            "source": self.source,
+            "requires_approval": self.requires_approval,
+        }
 
 
 class RuntimeToolRegistry:
@@ -55,11 +62,37 @@ class RuntimeToolRegistry:
             ),
         }
 
+    def register_langchain_tool(
+        self,
+        tool: Any,
+        *,
+        category: str,
+        source: str,
+        requires_approval: bool = False,
+        description: str = "",
+    ) -> None:
+        tool_name = str(getattr(tool, "name", "") or "").strip()
+        if not tool_name:
+            return
+        tool_description = str(description or getattr(tool, "description", "") or "").strip()
+        self._tools[tool_name] = ToolDescriptor(
+            name=tool_name,
+            category=category,
+            description=tool_description,
+            source=source,
+            requires_approval=requires_approval,
+            tool_ref=tool,
+        )
+
     def list_tools(self) -> List[dict]:
         return [tool.to_dict() for tool in self._tools.values()]
 
     def get_tool(self, name: str) -> ToolDescriptor | None:
         return self._tools.get(str(name or "").strip())
+
+    def get_langchain_tool(self, name: str) -> Any | None:
+        descriptor = self.get_tool(name)
+        return descriptor.tool_ref if descriptor else None
 
     def stats(self) -> Dict[str, int]:
         categories: Dict[str, int] = {}
@@ -69,4 +102,3 @@ class RuntimeToolRegistry:
 
 
 runtime_tool_registry = RuntimeToolRegistry()
-

@@ -4,7 +4,8 @@
 1. 用户只要求写代码时，直接返回代码正文；
 2. 用户明确要求运行/测试时，才进入审批与执行链路。
 """
-from typing import TypedDict, Annotated, List, Optional
+import re
+from typing import Any, TypedDict, Annotated, List, Optional
 from langchain_core.messages import BaseMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -20,6 +21,7 @@ from constants.approval_constants import (
     CODE_APPROVAL_MESSAGE,
     DEFAULT_ALLOWED_DECISIONS,
 )
+from constants.code_agent_keywords import CODE_EXECUTE_HINTS, CODE_GENERATE_ONLY_HINTS
 from utils.code_tools import execute_python_code
 from utils.custom_logger import get_logger
 from agent.prompts.code_prompt import CodePrompt
@@ -47,6 +49,107 @@ def _message_text(message: BaseMessage | None) -> str:
     return str(content or "").strip()
 
 
+def _normalize_model_content(content: Any) -> str:
+    """把模型 content 统一规整为纯文本，避免 list/dict 直接串到前端。"""
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+                continue
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("content") or ""
+                if isinstance(text, str) and text.strip():
+                    parts.append(text.strip())
+        return "\n".join(parts).strip() if parts else str(content)
+    if isinstance(content, dict):
+        text = content.get("text") or content.get("content") or ""
+        if isinstance(text, str):
+            return text.strip()
+    return str(content or "").strip()
+
+
+def _strip_markdown_fences(code: str) -> str:
+    """剥离模型偶尔返回的 Markdown 围栏，只保留代码正文。"""
+    raw = str(code or "").strip()
+    if not raw:
+        return ""
+
+    fenced_match = re.fullmatch(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", raw, flags=re.S)
+    if fenced_match:
+        return fenced_match.group(1).strip()
+
+    return raw.replace("```", "").strip()
+
+
+def _detect_requested_language(text: str) -> str:
+    """根据用户输入推断目标语言，默认返回 python/text 风格围栏。"""
+    normalized = (text or "").strip().lower()
+    if not normalized:
+        return "python"
+
+    language_aliases = (
+        ("java", ("java", "jdk", "javac")),
+        ("python", ("python", "py", "python3")),
+        ("javascript", ("javascript", "js", "node")),
+        ("typescript", ("typescript", "ts")),
+        ("go", ("golang", "go语言", " go ")),
+        ("rust", ("rust",)),
+        ("cpp", ("c++", "cpp")),
+        ("csharp", ("c#", "csharp", ".net")),
+        ("php", ("php",)),
+        ("ruby", ("ruby",)),
+    )
+    for language, aliases in language_aliases:
+        for alias in aliases:
+            if alias == " go ":
+                if re.search(r"(?<![a-z])go(?![a-z])", normalized):
+                    return language
+                continue
+            if alias in normalized:
+                return language
+    return "python"
+
+
+def _language_display_name(language: str) -> str:
+    mapping = {
+        "java": "Java",
+        "python": "Python",
+        "javascript": "JavaScript",
+        "typescript": "TypeScript",
+        "go": "Go",
+        "rust": "Rust",
+        "cpp": "C++",
+        "csharp": "C#",
+        "php": "PHP",
+        "ruby": "Ruby",
+    }
+    return mapping.get(language, language or "代码")
+
+
+def _format_generated_code_reply(
+    code: str,
+    *,
+    language: str,
+    execution_requested: bool,
+    execution_supported: bool,
+) -> str:
+    """生成对用户更友好的代码回复。"""
+    cleaned_code = _strip_markdown_fences(code)
+    display_name = _language_display_name(language)
+    preface = f"按你的要求，我先给你整理了一个 {display_name} 示例："
+    if execution_requested and not execution_supported:
+        preface = (
+            f"按你的要求，我先给你整理了一个 {display_name} 示例。"
+            f"当前内置自动执行链路主要支持 Python，所以这段 {display_name} 代码我先不直接运行："
+        )
+    elif not execution_requested:
+        preface = f"按你的要求，我先给你整理了一个 {display_name} 示例："
+    return f"{preface}\n\n```{language}\n{cleaned_code}\n```"
+
+
 def _latest_human_text(messages: List[BaseMessage]) -> str:
     """提取最近一条用户消息文本。"""
     for message in reversed(messages or []):
@@ -61,29 +164,9 @@ def _should_execute_request(latest_human_text: str) -> bool:
     if not text:
         return False
 
-    execute_hints = (
-        "执行",
-        "运行",
-        "run",
-        "test",
-        "测试",
-        "验证",
-        "试运行",
-        "帮我跑",
-        "帮我执行",
-        "帮我测试",
-    )
-    generate_only_hints = (
-        "写",
-        "生成",
-        "示例",
-        "模板",
-        "hello world",
-    )
-
-    if any(hint in text for hint in execute_hints):
+    if any(hint in text for hint in CODE_EXECUTE_HINTS):
         return True
-    if any(hint in text for hint in generate_only_hints):
+    if any(hint in text for hint in CODE_GENERATE_ONLY_HINTS):
         return False
     return False
 
@@ -93,6 +176,9 @@ class CodeAgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add_messages]
     generated_code: Optional[str]  # 当前轮生成的代码正文
     should_execute: Optional[bool]  # 是否应该进入执行链路
+    execution_requested: Optional[bool]  # 用户是否明确要求执行
+    execution_supported: Optional[bool]  # 当前语言是否支持自动执行
+    requested_language: Optional[str]  # 用户要求的代码语言
     code_to_execute: Optional[str]  # 待执行的代码
     execution_result: Optional[str]  # 执行结果
 
@@ -137,14 +223,20 @@ class CodeAgent(BaseAgent):
     def _generate_code_node(self, state: CodeAgentState, config: RunnableConfig):
         """生成代码节点"""
         chain = self.prompt | self.llm
-        response = chain.invoke({"messages": state["messages"]})
-        code = response.content.strip().replace("```python", "").replace("```", "")
+        response = chain.invoke({"messages": state["messages"]}, config=config)
         latest_human_text = _latest_human_text(state["messages"])
-        should_execute = _should_execute_request(latest_human_text)
+        requested_language = _detect_requested_language(latest_human_text)
+        code = _strip_markdown_fences(_normalize_model_content(getattr(response, "content", response)))
+        execution_requested = _should_execute_request(latest_human_text)
+        execution_supported = requested_language in {"python"}
+        should_execute = execution_requested and execution_supported
         return {
             "generated_code": code,
             "code_to_execute": code,
             "should_execute": should_execute,
+            "execution_requested": execution_requested,
+            "execution_supported": execution_supported,
+            "requested_language": requested_language,
         }
 
     def _route_after_generation(self, state: CodeAgentState) -> str:
@@ -191,10 +283,16 @@ class CodeAgent(BaseAgent):
         """分析结果节点"""
         if not state.get("should_execute"):
             code = str(state.get("generated_code") or state.get("code_to_execute") or "").strip()
+            requested_language = str(state.get("requested_language") or "python").strip() or "python"
             return {
                 "messages": [
                     AIMessage(
-                        content=f"已按要求生成代码，如需运行，请明确说明要执行或测试这段代码。\n\n```python\n{code}\n```"
+                        content=_format_generated_code_reply(
+                            code,
+                            language=requested_language,
+                            execution_requested=bool(state.get("execution_requested")),
+                            execution_supported=bool(state.get("execution_supported")),
+                        )
                     )
                 ]
             }

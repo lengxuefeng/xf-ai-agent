@@ -1,0 +1,26 @@
+{
+  "session_id": "guest_1774784630080",
+  "run_id": "guest_1774784630080:2e50d0f762924bdb9303117f7b5e533c",
+  "user_input": "在我本地创建一个222.py文件",
+  "history_size": 18,
+  "session_context": {
+    "context_slots": {
+      "city": "接着回答",
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=帮我写一个java的main方法",
+        "需求=这个不对吧，我要的是java的",
+        "需求=哎，真难受啊",
+        "需求=今天holter有人使用吗",
+        "需求=感觉很别扭啊，怎么会这样呢，再帮我查询一下明天郑州的天气 适合穿什么衣服",
+        "时间=明天",
+        "需求=哦，我的holter是什么，给我一个查询最近holter的sql",
+        "需求=今天几号了，清明节是什么时间，清明节郑州有什么活动",
+        "时间=今天",
+        "需求=在我本地创建一个222.py文件"
+      ],
+      "last_topic": "search"
+    },
+    "context_summary": "【会话关键上下文】\n- 当前城市: 接着回答\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=帮我写一个java的main方法；需求=这个不对吧，我要的是java的；需求=哎，真难受啊"
+  }
+}

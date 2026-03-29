@@ -1,0 +1,19 @@
+{
+  "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+  "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:866ca264fedf4579b7235c1109ac641f",
+  "user_input": "给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/1/test目录下创建一个22.txt 并且写入222",
+  "history_size": 2,
+  "session_context": {
+    "context_slots": {
+      "city": "郑州",
+      "name": "xuefeng",
+      "key_facts": [
+        "需求=今天的天气真好啊，给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/...",
+        "时间=今天",
+        "需求=给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/1/test目录下..."
+      ],
+      "last_topic": "weather"
+    },
+    "context_summary": "【会话关键上下文】\n- 当前城市: 郑州\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=今天的天气真好啊，给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/...；时间=今天；需求=给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/1/test目录下..."
+  }
+}

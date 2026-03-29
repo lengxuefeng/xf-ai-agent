@@ -84,6 +84,18 @@ from utils.history_compressor import compress_history_messages
 
 log = get_logger(__name__)
 
+_DISPLAY_CODE_BLOCK_RE = re.compile(r"```[\s\S]*?```")
+_DISPLAY_HEADING_SPLIT_RE = re.compile(r"([：:。；;])\s*(#{1,6})(?=\S)")
+_DISPLAY_LINE_HEADING_RE = re.compile(r"(?m)^(\s{0,3}#{1,6})(?=[^\s#])")
+_DISPLAY_SECTION_HEADING_RE = re.compile(
+    r"(?m)^(#{1,6}\s*[^\n:：-]{2,18}?)(?=(今天是|当前是|以下为|日期[:：]|时间[:：]|说明[:：]|建议[:：]|活动[:：]|结果[:：]))"
+)
+_DISPLAY_HEADING_FIELD_SPLIT_RE = re.compile(
+    r"(?m)^(#{1,6}\s*[^\n-]{2,18})-(?=(日期[:：]|时间[:：]|交节时刻[:：]|法定假期[:：]|地点[:：]|主题[:：]|内容[:：]|举办地[:：]|主办[:：]|承办[:：]|说明[:：]))"
+)
+_DISPLAY_NUMBERED_LIST_RE = re.compile(r"([：:。；;])\s*(\d+\.)")
+_DISPLAY_BULLET_LIST_RE = re.compile(r"([：:。；;])\s*([-*])\s+(?=\S)")
+
 
 class GraphRunner:
     """
@@ -119,6 +131,49 @@ class GraphRunner:
     def _workflow_display_name(agent_name: str) -> str:
         """将内部 Agent 名称转换为更适合前端展示的标签。"""
         return workflow_display_name(agent_name)
+
+    @classmethod
+    def _normalize_display_text_segment(cls, text: str) -> str:
+        """最小修正常见 Markdown 粘连问题，保留结构化标记供前端渲染。"""
+        if not text:
+            return ""
+
+        normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+        normalized = normalized.replace("\u200b", "")
+        if "\\n" in normalized:
+            normalized = normalized.replace("\\n", "\n")
+        normalized = _DISPLAY_HEADING_SPLIT_RE.sub(r"\1\n\n\2 ", normalized)
+        normalized = re.sub(r"([^\n#])\s*(#{1,6}\s)", r"\1\n\n\2", normalized)
+        normalized = _DISPLAY_LINE_HEADING_RE.sub(r"\1 ", normalized)
+        normalized = _DISPLAY_SECTION_HEADING_RE.sub(r"\1\n", normalized)
+        normalized = _DISPLAY_HEADING_FIELD_SPLIT_RE.sub(r"\1\n- ", normalized)
+        normalized = _DISPLAY_NUMBERED_LIST_RE.sub(r"\1\n\2 ", normalized)
+        normalized = _DISPLAY_BULLET_LIST_RE.sub(r"\1\n\2 ", normalized)
+        normalized = re.sub(r"([^\n])\n(?=(?:[-*+]\s|\d+\.\s|>\s|#{1,6}\s|```))", r"\1\n\n", normalized)
+        normalized = re.sub(r"[ \t]+\n", "\n", normalized)
+        normalized = re.sub(r"\n{3,}", "\n\n", normalized)
+        normalized = re.sub(r"[ \t]{2,}", " ", normalized)
+        return normalized.strip()
+
+    @classmethod
+    def _format_user_visible_text(cls, content: Any) -> str:
+        """统一整理用户可见正文，保留代码块，并尽量保留 Markdown 结构。"""
+        raw_text = str(content or "")
+        if not raw_text.strip():
+            return ""
+
+        code_blocks: List[str] = []
+
+        def _stash_code_block(match: re.Match[str]) -> str:
+            code_blocks.append(match.group(0))
+            return f"@@CODE_BLOCK_{len(code_blocks) - 1}@@"
+
+        normalized = _DISPLAY_CODE_BLOCK_RE.sub(_stash_code_block, raw_text)
+        normalized = cls._normalize_display_text_segment(normalized)
+
+        for index, block in enumerate(code_blocks):
+            normalized = normalized.replace(f"@@CODE_BLOCK_{index}@@", block)
+        return normalized.strip()
 
     @classmethod
     def _build_workflow_event(
@@ -1277,6 +1332,7 @@ class GraphRunner:
             "dispatcher_node",
             "worker_node",
             "reducer_node",
+            "reflection_node",
         }
 
         if node_name in _silenced_nodes:
@@ -1331,8 +1387,8 @@ class GraphRunner:
     #  SSE 格式化工具                                                       #
     # ------------------------------------------------------------------ #
 
-    @staticmethod
-    def _fmt_sse(event_type: str, content: str) -> str:
+    @classmethod
+    def _fmt_sse(cls, event_type: str, content: str) -> str:
         """
         将事件类型和内容格式化为标准 SSE 字符串。
 
@@ -1340,8 +1396,12 @@ class GraphRunner:
             event: <event_type>\n
             data: {"type": "<event_type>", "content": "<content>"}\n\n
         """
+        visible_content = str(content or "")
+        if event_type == SseEventType.STREAM.value:
+            visible_content = cls._format_user_visible_text(visible_content)
+
         payload = json.dumps(
-            {SsePayloadField.TYPE.value: event_type, SsePayloadField.CONTENT.value: content},
+            {SsePayloadField.TYPE.value: event_type, SsePayloadField.CONTENT.value: visible_content},
             ensure_ascii=False,
         )
         return f"event: {event_type}\ndata: {payload}\n\n"
@@ -1688,14 +1748,14 @@ class GraphRunner:
                     continue
                 content = msg.content
                 if isinstance(content, str) and content.strip():
-                    return content.strip()
+                    return self._format_user_visible_text(content)
                 if isinstance(content, list):
                     parts = [
                         item.get("text", "") if isinstance(item, dict) else str(item)
                         for item in content
                         if item
                     ]
-                    text = "".join(parts).strip()
+                    text = self._format_user_visible_text("".join(parts))
                     if text:
                         return text
         except Exception as exc:
@@ -2141,6 +2201,38 @@ class GraphRunner:
                     SseEventType.THINKING.value,
                     f"⏱️ 子任务[{label}]执行耗时: {int(elapsed)}ms",
                 )
+            return
+
+        if node_name == "reflection_node" and "reflection_source" in node_val:
+            reflection_source = str(node_val.get("reflection_source") or "unknown")
+            reflection_summary = str(node_val.get("reflection_summary") or "").strip() or reflection_source
+            appended_count = 0
+            if reflection_source == "llm_appended":
+                appended_count = max(0, len(node_val.get("task_list") or []))
+            phase = "tasks_reflected" if reflection_source == "llm_appended" else "reflection_converged"
+            title = "总管自动复盘追加步骤" if reflection_source == "llm_appended" else "总管复盘后决定收敛"
+            yield GraphRunner._fmt_workflow_event(
+                GraphRunner._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase=phase,
+                    title=title,
+                    summary=reflection_summary,
+                    status="completed",
+                    role="supervisor",
+                    agent_name="ChatAgent",
+                    node_name=node_name,
+                    meta={
+                        "reflection_source": reflection_source,
+                        "reflection_round": node_val.get("reflection_round"),
+                        "appended_count": appended_count,
+                    },
+                )
+            )
+            yield GraphRunner._fmt_sse(
+                SseEventType.THINKING.value,
+                f"执行复盘: {reflection_summary}",
+            )
 
     @staticmethod
     def _extract_interrupt_from_node_val(

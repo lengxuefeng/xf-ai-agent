@@ -319,6 +319,10 @@ def history_hint_intent(messages: List[BaseMessage], latest_user_text: str = "")
             return "search_agent"
         if any(token in latest for token in SEARCH_WEATHER_KEYWORDS):
             return "weather_agent"
+        if any(token in latest for token in ("要的是", "改成", "换成", "不对", "错了")) and any(
+            marker in latest for marker in ("java", "python", "javascript", "typescript", "go", "rust", "c++", "c#", "main方法")
+        ):
+            return "code_agent"
 
     if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_HOLTER]):
         return "yunyou_agent"
@@ -328,6 +332,8 @@ def history_hint_intent(messages: List[BaseMessage], latest_user_text: str = "")
         return "weather_agent"
     if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_SEARCH]):
         return "search_agent"
+    if "```" in recent or any(token in recent for token in ("public static void main", "class ", "def ", "code_agent")):
+        return "code_agent"
     return None
 
 

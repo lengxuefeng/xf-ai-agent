@@ -1,0 +1,397 @@
+[
+  {
+    "id": "3a7e3a2938e942b684108d22fbdb2941",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "user_message_received",
+    "title": "老板下达任务",
+    "summary": "今天的天气真好啊，给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/1/test目录下创建一个22.txt 并且写入222",
+    "status": "completed",
+    "role": "boss",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "input_length": 87
+    }
+  },
+  {
+    "id": "fb8693b14a1141609558fc5b10e74451",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "workspace_prepared",
+    "title": "卷宗工位已就绪",
+    "summary": "已为本轮任务创建工作区 1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "workspace": {
+        "root": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40",
+        "artifacts_dir": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts",
+        "scratch_dir": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/scratch",
+        "logs_dir": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/logs",
+        "relative_root": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40"
+      },
+      "artifacts": [
+        {
+          "name": "request_context.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/request_context.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/request_context.json",
+          "category": "request",
+          "media_type": "application/json",
+          "size_bytes": 971,
+          "meta": {}
+        }
+      ]
+    }
+  },
+  {
+    "id": "d3f5cc476aaa4f13810267456045e946",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "hook_checked",
+    "title": "护栏检查: approval_gate",
+    "summary": "审批门禁已就绪，敏感动作将进入人工批示链路。",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "hook": {
+        "name": "approval_gate",
+        "status": "completed",
+        "summary": "审批门禁已就绪，敏感动作将进入人工批示链路。",
+        "meta": {}
+      }
+    }
+  },
+  {
+    "id": "a20217a951404df1bc51b8ffaddff1df",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "hook_checked",
+    "title": "护栏检查: tool_guard",
+    "summary": "工具安全护栏检查通过。",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "hook": {
+        "name": "tool_guard",
+        "status": "completed",
+        "summary": "工具安全护栏检查通过。",
+        "meta": {
+          "high_risk": false
+        }
+      }
+    }
+  },
+  {
+    "id": "dadc9d1fe83c4a87a345151d63d38e93",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "hook_checked",
+    "title": "护栏检查: quality_guard",
+    "summary": "运行质量检查通过。",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "hook": {
+        "name": "quality_guard",
+        "status": "completed",
+        "summary": "运行质量检查通过。",
+        "meta": {
+          "input_length": 87
+        }
+      }
+    }
+  },
+  {
+    "id": "55755b167a6f4927803e26720d3a7907",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "memory_loaded",
+    "title": "中枢调入项目与会话记忆",
+    "summary": "共注入 4 条记忆片段",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "memory_snippets": [
+        {
+          "key": "project_agents_md",
+          "source": "AGENTS.md",
+          "content": "# XF AI Agent Runtime Memory\n\n## 项目定位\n- 这是一个偏业务编排型的多 Agent 系统，不只是简单聊天机器人。\n- 用户希望从前端清晰看到\"老板发令 -> 掌柜调度 -> 司员执行 -> 汇总回禀\"的全过程。\n- 核心特点：强编排 + Harness Runtime 执行底座 + 流式SSE响应\n\n## 架构设计\n- **编排层**: LangGraph 编排的多 Agent 系统，Supervisor 负责任务分发和协调\n- **运行时层**: Harness Runtime 提供文件系统、受控执行、记忆、搜索、上下文工程、Hooks 等能力\n- **接口层**: FastAPI + SSE 流式响应，支持前端实时接收\n- **服务层**: 业务服务层，处理会话、历史记录、审批、模型配置等\n\n## 核心模块\n- `app/agent/`: 多 Agent 编排层\n  - `graphs/supervisor.py`: Supervisor 编排图\n  - `agents/`: 各个专业 Agent（代码、搜索、SQL、天气等）\n  - `graph_runner.py`: 图执行器，负责驱动 Supervisor 并产生 SSE 流\n- `app/runtime/`: Harness Runtime 运行时\n  - `core/`: 运行时核心（run_context, session_manager, workflow_event_bus）\n  - `workspace/`: 文件系统和工作区管理\n  - `exec/`: 命令执行和受控代码运行\n  - `memory/`: 记忆管理和 AGENTS.md 注入\n  - `tools/`: 工具注册和执行（MCP、搜索等）\n  - `hooks/`: Hook 管理器和内置 hooks（审批、质量门禁、工具守卫）\n  - `context/`: 上下文构建和注入\n- `app/services/`: 业务服务层\n  - `chat_service.py`: 聊天服务\n  - `interrupt_service.py`: 中断和审批服务\n  - `chat_history_service.py`: 聊天历史管理\n- `app/api/`: FastAPI 接口层\n\n## 运行时原则\n- 优先保证可解释性、可观测性和审批安全\n- 工具调用、外部查询、代码执行、记忆注入都应尽量结构化\n- 能直接答复的问题由掌柜直办；需要专业能力时再调度司员\n- \"写代码\"和\"执行代码\"必须区分，只有明确执行意图才进入审批与执行链路\n- 页面终端是受控执行入口，所有命令必须在用户绑定的工作目录内运行\n- 页面终端是前端产品形态，真正执行发生在后端运行节点，而不是浏览器本地沙箱\n\n## 技术特点\n- 异步流式处理：GraphRunner 使用生产者-消费者模型，图执行在后台线程，主线程消费队列推 SSE\n- 前置规则拦截：Zero-LLM 快速响应，避免不必要的图执行\n- 审批中断恢复：支持 Interrupt 挂起和审批恢复\n- 运行时观测：Workflow 事件流、日志流、状态快照\n- Session 管理：运行时会话管理和状态追踪\n- 工具注册：统一的工具注册和执行机制\n\n## 前端风格\n- 国风简约\n- 宣纸、卷轴、印章、墨色层次\n- 不要堆砌科技风默认样式\n\n## 质量要求\n- 尽量保留流式体验\n- 流程事件要能持久化并回放\n- 高风险执行必须支持审批\n- 前端需要同时支持\"老板模式\"和\"工位模式\"",
+          "scope": "project"
+        },
+        {
+          "key": "session_summary",
+          "source": "session_state",
+          "content": "【会话关键上下文】\n- 当前城市: 郑州\n- 用户画像: 姓名=xuefeng\n- 近期关键信息: 需求=今天的天气真好啊，给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/...；时间=今天",
+          "scope": "session"
+        },
+        {
+          "key": "session_slots",
+          "source": "session_state",
+          "content": "name: xuefeng\nkey_facts: ['需求=今天的天气真好啊，给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/...', '时间=今天']\ncity: 郑州\nlast_topic: weather",
+          "scope": "session"
+        },
+        {
+          "key": "current_request",
+          "source": "run_context",
+          "content": "当前用户输入：今天的天气真好啊，给我一条从马群到郑州东站的线路，并且在我本地/Users/lengxuefeng/Downloads/1/test目录下创建一个22.txt 并且写入222",
+          "scope": "request"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cb37e98b05394404bdb40ff5dff9e362",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "context_ready",
+    "title": "上下文卷宗整理完成",
+    "summary": "压缩历史 2 条，估算 1216 tokens",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "history_message_count": 2,
+      "compressed_history_count": 2,
+      "memory_count": 4,
+      "estimated_tokens": 1216
+    }
+  },
+  {
+    "id": "f9095ac99749445a93b5a91ceb40bb7d",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "tool_registry_ready",
+    "title": "运行时工具与外部能力已装载",
+    "summary": "已登记 5 项工具能力",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "tool_registry_stats": {
+        "total": 5,
+        "exec": 1,
+        "database": 1,
+        "data_gateway": 1,
+        "mcp": 1,
+        "search": 1
+      },
+      "tool_catalog": [
+        {
+          "name": "execute_python_code",
+          "category": "exec",
+          "description": "执行 Python 代码并返回标准输出",
+          "source": "runtime.exec",
+          "requires_approval": true
+        },
+        {
+          "name": "execute_sql",
+          "category": "database",
+          "description": "执行只读 SQL 查询并返回结构化结果",
+          "source": "agent.tools.sql_tools",
+          "requires_approval": false
+        },
+        {
+          "name": "federated_query_gateway",
+          "category": "data_gateway",
+          "description": "统一访问本地 SQL 与云柚数据域",
+          "source": "agent.gateway.federated_query_gateway",
+          "requires_approval": false
+        },
+        {
+          "name": "user_mcp",
+          "category": "mcp",
+          "description": "用户 MCP 连接配置与访问入口",
+          "source": "services.user_mcp_service",
+          "requires_approval": false
+        },
+        {
+          "name": "web_search_proxy",
+          "category": "search",
+          "description": "统一的外部检索能力入口",
+          "source": "runtime.tools.search_gateway",
+          "requires_approval": false
+        }
+      ],
+      "search_capability": {
+        "enabled": false,
+        "provider": "not_configured",
+        "reason": "当前项目未接入真实 web search provider，保留统一网关接口以便后续扩展。"
+      }
+    }
+  },
+  {
+    "id": "49647db1cc1f404c86ee5f2108a5bd12",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "artifacts_indexed",
+    "title": "运行时卷宗已入册",
+    "summary": "当前已生成 3 份运行材料",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "meta": {
+      "artifacts": [
+        {
+          "name": "context_meta.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/context_meta.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/context_meta.json",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 114,
+          "meta": {}
+        },
+        {
+          "name": "memory_snippets.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/memory_snippets.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/memory_snippets.json",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 4091,
+          "meta": {}
+        },
+        {
+          "name": "request_context.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/request_context.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/request_context.json",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 971,
+          "meta": {}
+        }
+      ]
+    }
+  },
+  {
+    "id": "b386678af4e243498678eef3a85a0f46",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "domain_routed",
+    "title": "总管完成数据域判断",
+    "summary": "路由至 WEB_SEARCH",
+    "status": "completed",
+    "role": "supervisor",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "agent_name": "ChatAgent",
+    "agent_label": "掌柜",
+    "node_name": "Domain_Router_Node",
+    "meta": {
+      "data_domain": "WEB_SEARCH",
+      "confidence": 0.9,
+      "source": "rule",
+      "route_strategy": "single_domain"
+    }
+  },
+  {
+    "id": "de39f14c98ed420ba9b6b66e3736c1e5",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "direct_agent_selected",
+    "title": "总管指派 天象司",
+    "summary": "目标意图 weather_agent",
+    "status": "active",
+    "role": "supervisor",
+    "timestamp": "2026-03-29T05:40:56+00:00",
+    "agent_name": "weather_agent",
+    "agent_label": "天象司",
+    "node_name": "Intent_Router_Node",
+    "meta": {
+      "intent": "weather_agent",
+      "confidence": 0.9,
+      "is_complex": false
+    }
+  },
+  {
+    "id": "e606ede8c19d49f69c99d7f5648883f1",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "worker_completed",
+    "title": "天象司提交结果",
+    "summary": "郑州的实时天气详情：\n- 观测时间：2026-03-29T13:34+08:00\n- 温度：23°C\n- 体感温度：20°C\n- 天气状况：阴（图标代码：104）\n- 图标代码：104\n- 湿度：35%\n- 风向：西南风\n- 风向角度：217°\n- 风力等级：1级\n- 风速：4 m/s\n- 降水量：0.0 mm\n- 气",
+    "status": "completed",
+    "role": "worker",
+    "timestamp": "2026-03-29T05:40:57+00:00",
+    "agent_name": "weather_agent",
+    "agent_label": "天象司",
+    "node_name": "weather_agent",
+    "meta": {
+      "live_streamed": false
+    }
+  },
+  {
+    "id": "8511d4f023c34de789652c0f08b6b9dc",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "hook_finalized",
+    "title": "收尾检查: post_run_finalize",
+    "summary": "已生成最终答复，可继续触发落库与产物归档。",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:57+00:00",
+    "meta": {
+      "hook": {
+        "name": "post_run_finalize",
+        "status": "completed",
+        "summary": "已生成最终答复，可继续触发落库与产物归档。",
+        "meta": {
+          "final_text_length": 410
+        }
+      }
+    }
+  },
+  {
+    "id": "dfad2d9e7d7649e78d3fbe5c8e2f431a",
+    "session_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea",
+    "run_id": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea:2deadadb929f4d78948c973b5fae6c40",
+    "phase": "artifacts_indexed",
+    "title": "本轮卷宗归档完成",
+    "summary": "共归档 4 份运行材料",
+    "status": "completed",
+    "role": "system",
+    "timestamp": "2026-03-29T05:40:57+00:00",
+    "meta": {
+      "artifacts": [
+        {
+          "name": "context_meta.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/context_meta.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/context_meta.json",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 114,
+          "meta": {}
+        },
+        {
+          "name": "final_response.md",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/final_response.md",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/final_response.md",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 752,
+          "meta": {}
+        },
+        {
+          "name": "memory_snippets.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/memory_snippets.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/memory_snippets.json",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 4091,
+          "meta": {}
+        },
+        {
+          "name": "request_context.json",
+          "path": "/Users/lengxuefeng/Documents/xuefeng/ai/gemini-cli/xf-ai-agent/runtime_data/workspaces/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/request_context.json",
+          "relative_path": "1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea/1e5f1db1-e878-4691-bd6e-d11f1c4ed0ea_2deadadb929f4d78948c973b5fae6c40/artifacts/request_context.json",
+          "category": "artifact",
+          "media_type": "text/plain",
+          "size_bytes": 971,
+          "meta": {}
+        }
+      ]
+    }
+  }
+]

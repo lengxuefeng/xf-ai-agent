@@ -522,11 +522,11 @@ class YunyouAgent(BaseAgent):
             f"LIMIT {max(1, int(limit))};"
         )
         return (
-            "⚠️ 当前工具不可用，以下是可参考的 Holter SQL 示例：\n\n"
-            "```sql\n"
-            f"{sql}\n"
+            "⚠️ 当前工具不可用，我先给你一条可参考的 Holter SQL。\n\n"
             "```\n"
-            "\n说明：如果该表名在你的库不存在，请替换为实际 Holter 业务表。"
+            f"{sql}\n"
+            "```\n\n"
+            "说明：如果该表名在你的库不存在，请替换为实际 Holter 业务表。"
         )
 
     def _try_direct_holter_list_query(self, messages: List[BaseMessage]) -> Optional[str]:

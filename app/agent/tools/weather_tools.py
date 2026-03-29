@@ -1,13 +1,12 @@
 import asyncio
 import os
-from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from typing import Dict, List, Optional
 
-import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 
+from common.http import HttpRequestError, common_http_client
 from config.runtime_settings import WEATHER_TOOL_TIMEOUT_SECONDS
 from constants.weather_tool_constants import (
     WEATHER_CITY_NOT_FOUND_MESSAGE,
@@ -41,18 +40,21 @@ class WeatherAPIClient:
     def _make_request(self, url: str, params: Dict) -> Dict:
         """执行 API 请求并处理错误"""
         try:
-            response = requests.get(
-                url,
-                params={**self.base_params, **params},
-                timeout=int(WEATHER_TOOL_TIMEOUT_SECONDS),
+            response = common_http_client.request(
+                {
+                    "method": "GET",
+                    "url": url,
+                    "params": {**self.base_params, **params},
+                    "timeout_seconds": float(WEATHER_TOOL_TIMEOUT_SECONDS),
+                }
             )
-            response.raise_for_status()
-            data = response.json()
-            return data
-        except requests.exceptions.HTTPError as http_err:
-            if response.status_code == 401:
+            if isinstance(response.json_body, dict):
+                return response.json_body
+            raise ValueError("天气服务返回了无法解析的响应。")
+        except HttpRequestError as http_err:
+            if http_err.status_code == 401:
                 raise ValueError("错误：无效的和风天气 API 密钥")
-            elif response.status_code == 404:
+            elif http_err.status_code == 404:
                 raise ValueError(f"错误：找不到资源，参数：{params}")
             else:
                 raise ValueError(f"HTTP 错误: {http_err}")
@@ -74,44 +76,61 @@ class WeatherAPIClient:
 
 
 def format_weather_data(weather_data: Dict, city: str) -> str:
-    """格式化天气数据为字符串"""
-    fields = {
-        "obsTime": "观测时间",
-        "temp": "温度",
-        "feelsLike": "体感温度",
-        "text": "天气状况",
-        "icon": "图标代码",
-        "humidity": "湿度",
-        "windDir": "风向",
-        "wind360": "风向角度",
-        "windScale": "风力等级",
-        "windSpeed": "风速",
-        "precip": "降水量",
-        "pressure": "气压",
-        "vis": "能见度",
-        "cloud": "云量",
-        "dew": "露点温度"
-    }
+    """格式化天气数据为更自然、更适合直接展示给用户的文本。"""
 
-    formatted = f"{city}的实时天气详情：\n"
-    for key, label in fields.items():
-        value = weather_data.get(key, "未知")
-        unit = {
-            "temp": "°C",
-            "feelsLike": "°C",
-            "humidity": "%",
-            "wind360": "°",
-            "windScale": "级",
-            "windSpeed": " m/s",
-            "precip": " mm",
-            "pressure": " hPa",
-            "vis": " km",
-            "cloud": "%",
-            "dew": "°C"
-        }.get(key, "")
-        if key == "text" and weather_data.get("icon"):
-            value = f"{value}（图标代码：{weather_data['icon']}）"
-        formatted += f"- {label}：{value}{unit}\n"
+    def _to_float(value: object) -> Optional[float]:
+        try:
+            return float(value)
+        except Exception:
+            return None
+
+    def _to_int(value: object) -> Optional[int]:
+        try:
+            return int(float(value))
+        except Exception:
+            return None
+
+    temp = weather_data.get("temp", "未知")
+    feels_like = weather_data.get("feelsLike", "未知")
+    weather_text = weather_data.get("text", "天气情况未知")
+    humidity = weather_data.get("humidity", "未知")
+    wind_dir = weather_data.get("windDir", "风向未知")
+    wind_scale = weather_data.get("windScale", "未知")
+    precip = weather_data.get("precip", "未知")
+    vis = weather_data.get("vis", "未知")
+    obs_time = weather_data.get("obsTime", "未知")
+
+    tips: list[str] = []
+    temp_num = _to_float(temp)
+    feels_like_num = _to_float(feels_like)
+    humidity_num = _to_int(humidity)
+    wind_scale_num = _to_int(wind_scale)
+    precip_num = _to_float(precip)
+
+    if precip_num is not None and precip_num > 0:
+        tips.append("外出建议带伞")
+    if any(token in str(weather_text) for token in ("雨", "雪", "雷")) and "外出建议带伞" not in tips:
+        tips.append("外出记得留意降水")
+    if temp_num is not None:
+        if temp_num <= 10:
+            tips.append("体感偏凉，出门建议加外套")
+        elif temp_num >= 30:
+            tips.append("气温偏高，注意补水防晒")
+    if humidity_num is not None and humidity_num >= 80:
+        tips.append("空气比较潮，体感可能会有些闷")
+    if wind_scale_num is not None and wind_scale_num >= 5:
+        tips.append("风有点大，出门注意防风")
+
+    if not tips:
+        tips.append("整体来看比较适合正常出行")
+
+    lines = [
+        f"帮你看了下，{city}的实时天气是{weather_text}，气温 {temp}°C，体感 {feels_like}°C。",
+        f"湿度 {humidity}%，{wind_dir}{wind_scale}级，能见度 {vis} km。",
+        f"小提示：{'；'.join(tips)}。",
+        f"观测时间：{obs_time}。",
+    ]
+    formatted = "\n".join(lines)
     log.info(f"天气工具格式化完成，城市={city}")
     return formatted
 
