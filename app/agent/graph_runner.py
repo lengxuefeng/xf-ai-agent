@@ -204,11 +204,23 @@ class GraphRunner:
     """
 
     def __init__(self, model_config: Optional[Dict[str, Any]] = None) -> None:
-        """初始化执行器，可选注入默认模型配置。"""
+        """
+        初始化执行器，可选注入默认模型配置
+
+        model_config: 默认的模型配置，每次请求的配置会与这个默认配置合并
+        请求级配置的优先级更高
+        """
         self.model_config: Dict[str, Any] = model_config or {}
-        # 按模型配置指纹缓存编译好的 Supervisor 图，避免重复编译带来的初始化开销
+
+        # Supervisor 编译图缓存：按模型配置的 MD5 指纹缓存
+        # 同一配置只编译一次，避免重复编译带来的初始化开销
+        # 编译图比较耗时，缓存可以显著提升响应速度
         self._supervisor_cache: Dict[str, Any] = {}
         self._supervisor_cache_lock = threading.Lock()
+
+        # Supervisor 编译事件：用于通知等待中的线程
+        # SessionPool 可以在后台预热 Supervisor 实例
+        # 编译完成后通过这个事件通知等待中的线程
         self._supervisor_build_events: Dict[str, threading.Event] = {}
 
     # ------------------------------------------------------------------ #
@@ -403,33 +415,47 @@ class GraphRunner:
         emit_response_start: bool = True,
     ) -> AsyncGenerator[str, None]:
         """
-        核心流式执行器（异步生产者-消费者模型）。
+        核心流式执行器，所有用户请求都会经过这个方法
 
-        【设计说明】
-        图的执行（阻塞同步）跑在后台 daemon 线程（生产者），asyncio 事件循环
-        作为消费者通过 asyncio.Queue 异步取数据转为 SSE 下发给前端。
-        全程不阻塞事件循环，支持真正的并发流式推送。
+        【执行流程概览】
+        1. 合并默认配置和请求配置，请求配置优先级更高
+        2. 审批恢复流程（如果 user_input == "[RESUME]"）
+        3. 基础输入校验
+        4. 前置规则拦截（简单问题直接返回）
+        5. 创建运行上下文和工作区
+        6. 构建上下文（历史裁剪、记忆注入等）
+        7. RAG 注入（如果启用）
+        8. 驱动图执行并返回 SSE 流
+
+        【为什么需要异步】
+        - 图执行是阻塞同步的，必须在后台线程运行
+        - 主线程负责消费事件队列并推送 SSE
+        - 这样可以支持真正的并发流式推送，不会阻塞事件循环
 
         Args:
-            user_input:          用户当前输入文本，"[RESUME]" 表示审批恢复。
-            session_id:          会话 ID，同时作为 LangGraph checkpointer 的 thread_id。
-            model_config:        覆盖默认配置的模型参数字典。
-            history_messages:    历史对话列表 [{user_content, model_content}, ...]。
-            session_context:     结构化会话上下文（城市、用户画像等槽位）。
-            emit_response_start: 是否在流开始时发送 response_start 事件。
+            user_input: 用户当前输入文本，"[RESUME]" 表示审批恢复
+            session_id: 会话 ID，同时作为 LangGraph checkpointer 的 thread_id
+            model_config: 覆盖默认配置的模型参数字典
+            history_messages: 历史对话列表 [{user_content, model_content}, ...]
+            session_context: 结构化会话上下文（城市、用户画像等槽位）
+            emit_response_start: 是否在流开始时发送 response_start 事件
 
         Yields:
-            标准 SSE 格式字符串（"event: ...\ndata: ...\n\n"）。
+            标准 SSE 格式字符串（"event: ...\ndata: ...\n\n"）
         """
         history_messages = history_messages or []
         session_context = session_context or {}
-        # 实例默认配置与本次请求配置合并，请求级配置优先级更高
+
+        # 合并默认配置和请求配置，请求级配置优先级更高
         effective_config = {**self.model_config, **(model_config or {})}
         resume_message_id = str(effective_config.get("resume_message_id") or "").strip()
 
         # ── 分支一：审批恢复流程 ──────────────────────────────────────────
+        # 用户通过审批后恢复执行，需要找到原始中断点继续
         if user_input == "[RESUME]":
+            # 获取 Supervisor 编译图
             graph = await self._get_or_create_supervisor_async(effective_config)
+            # 创建恢复上下文（标记 is_resume=True）
             resume_context = runtime_session_manager.create_run_context(
                 session_id=session_id,
                 user_input=user_input,
@@ -439,6 +465,8 @@ class GraphRunner:
                 is_resume=True,
             )
             runtime_session_manager.register_run(resume_context)
+
+            # 处理恢复流程并返回流式结果
             async for chunk in self._handle_resume_stream_async(
                 run_context=resume_context,
                 graph=graph,
@@ -450,11 +478,16 @@ class GraphRunner:
             return
 
         # ── 基础输入校验 ──────────────────────────────────────────────────
+        # 空输入直接返回错误，避免进入图执行
         if not (user_input or "").strip():
             yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.INVALID_RESUME_PARAM)
             return
 
-        # ── 分支二：前置规则拦截（Zero-LLM、Zero-Graph） ────────────────────
+        # ── 分支二：前置规则拦截（Zero-LLM、Zero-Graph） ───────────────────
+        # 简单问题直接返回预设答案，不调用大模型
+        # 这样可以节省费用、提高响应速度、保证一致性
+
+        # 创建运行上下文
         run_context = build_run_context(
             session_id=session_id,
             user_input=user_input,
@@ -463,18 +496,18 @@ class GraphRunner:
             session_context=session_context,
         )
         run_id = run_context.run_id
+
+        # 尝试规则拦截
         rule_result = self._try_rule_intercept(user_input)
         if rule_result is not None:
-            runtime_session_manager.register_run(run_context)
-            runtime_session_manager.attach_meta(
-                run_context,
-                runtime_mode="rule_intercept",
-                tool_registry_stats=runtime_tool_registry.stats(),
-            )
+            # 规则命中，直接返回结果，不进入图执行
             thinking_hint, rule_content = rule_result
             try:
+                # 发送 response_start 事件
                 if emit_response_start:
                     yield self._fmt_sse(SseEventType.RESPONSE_START.value, "")
+
+                # 发送"老板下达任务"事件
                 yield self._fmt_workflow_event(
                     self._build_workflow_event(
                         session_id=session_id,
@@ -487,6 +520,8 @@ class GraphRunner:
                         meta={"input_length": len(user_input or "")},
                     )
                 )
+
+                # 发送"总管快速裁决"事件
                 yield self._fmt_workflow_event(
                     self._build_workflow_event(
                         session_id=session_id,
@@ -499,8 +534,14 @@ class GraphRunner:
                         agent_name="ChatAgent",
                     )
                 )
+
+                # 发送思考提示
                 yield self._fmt_sse(SseEventType.THINKING.value, thinking_hint)
+
+                # 发送规则拦截结果
                 yield self._fmt_sse(SseEventType.STREAM.value, rule_content)
+
+                # 发送"总管回禀老板"事件
                 yield self._fmt_workflow_event(
                     self._build_workflow_event(
                         session_id=session_id,
@@ -513,14 +554,19 @@ class GraphRunner:
                         agent_name="ChatAgent",
                     )
                 )
+
+                # 更新运行状态为完成
                 runtime_session_manager.mark_completed(
                     run_context,
                     phase="final_report_delivered",
                     summary=rule_content[:160],
                     title="总管回禀老板",
                 )
+
+                # 发送 response_end 事件
                 yield self._fmt_sse(SseEventType.RESPONSE_END.value, "")
             finally:
+                # 清理运行上下文
                 runtime_session_manager.cleanup_run(run_context)
             return
 
@@ -732,40 +778,61 @@ class GraphRunner:
     @staticmethod
     def _try_rule_intercept(user_input: str) -> Optional[Tuple[str, str]]:
         """
-        前置规则拦截器（Zero-LLM、Zero-Graph）。
+        前置规则拦截器（Zero-LLM、Zero-Graph）
 
-        当用户输入命中预设规则，且输入长度在覆盖率估算范围内时，
-        直接返回 (thinking_text, response_text)，完全不进入 LangGraph。
+        简单问题（如"你好"、"几点了"）不需要调用大模型，直接返回预设的回复即可
+        这样可以：
+        1. 避免不必要的 LLM 调用，节省费用和响应时间
+        2. 保证简单问题的一致性和准确性
+
+        【拦截条件】
+        1. 输入命中预设规则
+        2. 输入长度在规则能覆盖的范围内
+        3. 不是复杂的长句（避免误拦截）
+
+        【为什么设置长度限制】
+        - 超长文本的匹配开销大，可能影响性能
+        - 超长文本可能包含复杂意图，规则无法准确处理
 
         Returns:
-            命中时返回 (thinking提示文本, 回复正文)；未命中或放行时返回 None。
+            命中时返回 (thinking提示文本, 回复正文)
+            未命中或放行时返回 None
         """
         user_text_lower = user_input.lower().strip()
         max_scan_len = GRAPH_RUNNER_TUNING.rule_scan_max_len
 
-        # 超长输入直接跳过规则扫描，避免误拦截包含复杂业务意图的长句
+        # 超长输入直接跳过规则扫描
+        # 超长文本可能是复杂问题，需要大模型理解
+        # 扫描超长文本的性能开销也较大
         if len(user_text_lower) > max_scan_len:
             return None
 
+        # 按优先级排序规则，高优先级规则先匹配
         sorted_rules = rule_registry.get_rules()
         matched_responses: List[str] = []
         matched_ids: List[str] = []
 
+        # 遍历所有规则，检查是否匹配
         for rule in sorted_rules:
-            # 使用预编译正则，O(1) 快速匹配
+            # 使用预编译正则表达式快速匹配，避免每次都编译
             if any(p.search(user_text_lower) for p in rule._compiled_patterns):
+                # 处理规则动作，获取模板参数
                 context_kwargs = handle_action(rule.action)
                 try:
+                    # 使用参数格式化响应模板
                     final_resp = rule.response_template.format(**context_kwargs)
                     matched_responses.append(final_resp)
                     matched_ids.append(rule.id)
                 except Exception as fmt_err:
+                    # 模板格式化失败，记录错误但不影响其他规则
                     log.error(f"规则拦截器模板 [{rule.id}] 格式化失败: {fmt_err}")
 
+        # 没有匹配的规则，放行到图执行
         if not matched_responses:
             return None
 
-        # 意图覆盖率防爆盾：文本长度远超规则能覆盖范围时，放行至大模型
+        # 意图覆盖率防爆盾：如果文本长度远超规则能覆盖的范围，放行至大模型
+        # 例如：规则"查天气"只能处理短句，长句"帮我想查一下明天北京、上海、深圳的天气"放行
         chars_per_intent = GRAPH_RUNNER_TUNING.chars_per_intent
         estimated_covered_len = len(matched_responses) * chars_per_intent
         if len(user_text_lower) > estimated_covered_len + 5:
@@ -776,6 +843,7 @@ class GraphRunner:
             return None
 
         # 多规则命中时将回复合并
+        # 例如：用户同时问了时间地点，可能命中两个规则
         combined_resp = "\n\n".join(matched_responses)
         ids_str = ", ".join(matched_ids)
         thinking_text = f"⚡ 极速拦截复合意图：命中 [{ids_str}]"
@@ -2052,7 +2120,7 @@ class GraphRunner:
             return error_message
         return None
 
-                
+
     @staticmethod
     def _emit_router_thinking(
         node_name: str,
