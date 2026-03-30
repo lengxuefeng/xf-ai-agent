@@ -8,6 +8,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 from constants.search_keywords import SEARCH_REAL_ESTATE_KEYWORDS, SEARCH_WEATHER_KEYWORDS
 from constants.supervisor_keywords import SUPERVISOR_KEYWORDS, SupervisorKeywordGroup
+from enums.agent_enum import AgentTypeEnum
 
 
 def parse_json_from_text(text: str, *, log=None, preview_limit: int = 800) -> dict:
@@ -23,8 +24,8 @@ def parse_json_from_text(text: str, *, log=None, preview_limit: int = 800) -> di
         if len(text or "") > preview_limit:
             preview_text += "...(truncated)"
         if log is not None:
-            log.error(f"Failed to find JSON object in text. Raw text preview:\n{preview_text}")
-        raise ValueError("No JSON object found in text")
+            log.error(f"[parse_json_from_text]未能在文本中找到JSON对象。原始文本预览:\n{preview_text}")
+        raise ValueError("[parse_json_from_text]在文本中找不到JSON对象")
 
     depth = 0
     for index in range(start, len(text)):
@@ -37,7 +38,7 @@ def parse_json_from_text(text: str, *, log=None, preview_limit: int = 800) -> di
                 json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
                 return json.loads(json_str)
 
-    raise ValueError("Unbalanced braces in JSON")
+    raise ValueError("[parse_json_from_text]JSON中的不平衡大括号")
 
 
 def build_non_streaming_config(config):
@@ -82,10 +83,10 @@ def invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str):
 
 
 def normalize_interrupt_payload(
-    value: Any,
-    *,
-    default_message: str,
-    default_allowed_decisions: list[str],
+        value: Any,
+        *,
+        default_message: str,
+        default_allowed_decisions: list[str],
 ) -> dict:
     """把不同来源的 Interrupt 值整理成统一 payload。"""
     if hasattr(value, "value"):
@@ -109,10 +110,10 @@ def normalize_interrupt_payload(
 
 
 def extract_interrupt_from_snapshot(
-    snapshot: Any,
-    *,
-    default_message: str,
-    default_allowed_decisions: list[str],
+        snapshot: Any,
+        *,
+        default_message: str,
+        default_allowed_decisions: list[str],
 ):
     """从 LangGraph 快照里取出第一条 interrupt，并规整成统一结构。"""
     tasks = getattr(snapshot, "tasks", None) or []
@@ -237,7 +238,9 @@ def is_followup_supplement(text: str, messages: Optional[List[BaseMessage]] = No
         return True
     if len(normalized) <= 80 and re.search(r"\b20\d{2}-\d{2}-\d{2}\b", normalized):
         return True
-    if len(normalized) <= 120 and any(token in normalized for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.FOLLOWUP_ORDER_HINT]):
+    if len(normalized) <= 120 and any(
+            token in normalized for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.FOLLOWUP_ORDER_HINT]
+    ):
         return True
     if history_requests_location(messages) and looks_like_location_fragment(normalized):
         return True
@@ -320,25 +323,27 @@ def history_hint_intent(messages: List[BaseMessage], latest_user_text: str = "")
     latest = (latest_user_text or "").strip().lower()
 
     if latest:
-        if any(token in latest for token in SEARCH_REAL_ESTATE_KEYWORDS) and not any(token in latest for token in SEARCH_WEATHER_KEYWORDS):
-            return "search_agent"
+        if any(token in latest for token in SEARCH_REAL_ESTATE_KEYWORDS) and not any(
+                token in latest for token in SEARCH_WEATHER_KEYWORDS):
+            return AgentTypeEnum.SEARCH.code
         if any(token in latest for token in SEARCH_WEATHER_KEYWORDS):
-            return "weather_agent"
+            return AgentTypeEnum.WEATHER.code
         if any(token in latest for token in ("要的是", "改成", "换成", "不对", "错了")) and any(
-            marker in latest for marker in ("java", "python", "javascript", "typescript", "go", "rust", "c++", "c#", "main方法")
+                marker in latest for marker in
+                ("java", "python", "javascript", "typescript", "go", "rust", "c++", "c#", "main方法")
         ):
-            return "code_agent"
+            return AgentTypeEnum.CODE.code
 
-    if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_HOLTER]):
-        return "yunyou_agent"
+    if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_YUNYOU]):
+        return AgentTypeEnum.YUNYOU.code
     if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_SQL]):
-        return "sql_agent"
+        return AgentTypeEnum.SQL.code
     if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_WEATHER]):
-        return "weather_agent"
+        return AgentTypeEnum.WEATHER.code
     if any(token in recent for token in SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HISTORY_SEARCH]):
-        return "search_agent"
+        return AgentTypeEnum.SEARCH.code
     if "```" in recent or any(token in recent for token in ("public static void main", "class ", "def ", "code_agent")):
-        return "code_agent"
+        return AgentTypeEnum.CODE.code
     return None
 
 

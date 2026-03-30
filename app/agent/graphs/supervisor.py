@@ -52,6 +52,7 @@ from agent.graphs.supervisor_rule_support import (
     split_query_clauses as _support_split_query_clauses,
 )
 from agent.llm.unified_loader import create_model_from_config
+from agent.prompts.domain_prompt import DomainPrompt
 from agent.registry import agent_classes, MEMBERS
 from agent.prompts.supervisor_prompt import (
     IntentRouterPrompt,
@@ -97,6 +98,7 @@ from config.runtime_settings import (
     ROUTER_POLICY_CONFIG,
     WORKFLOW_REFLECTION_CONFIG,
 )
+from enums.agent_enum import AgentTypeEnum
 from schemas.supervisor_schemas import (
     DomainDecision,
     IntentDecision,
@@ -116,17 +118,17 @@ INTERRUPT_RESULT_TYPE = WORKFLOW_INTERRUPT_RESULT_TYPE
 
 
 def _parse_json_from_text(text: str) -> dict:
-    """沿用原有私有函数入口，内部转调独立支持模块。"""
+    """内部转调独立支持模块。"""
     return _support_parse_json_from_text(text, log=log)
 
 
 def _build_non_streaming_config(config: RunnableConfig) -> RunnableConfig:
-    """沿用原有私有函数入口，内部转调独立支持模块。"""
+    """内部转调独立支持模块。"""
     return _support_build_non_streaming_config(config)
 
 
 def _invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str):
-    """沿用原有私有函数入口，内部转调独立支持模块。"""
+    """内部转调独立支持模块。"""
     return _support_invoke_with_timeout(
         callable_fn,
         timeout_sec=timeout_sec,
@@ -135,7 +137,7 @@ def _invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str)
 
 
 def _normalize_interrupt_payload(val: Any) -> dict:
-    """沿用原有私有函数入口，补齐默认审核文案和允许操作。"""
+    """补齐默认审核文案和允许操作。"""
     return _support_normalize_interrupt_payload(
         val,
         default_message=DEFAULT_INTERRUPT_MESSAGE,
@@ -144,7 +146,7 @@ def _normalize_interrupt_payload(val: Any) -> dict:
 
 
 def _extract_interrupt_from_snapshot(snapshot: Any) -> Optional[dict]:
-    """沿用原有私有函数入口，从快照里提取并规整 interrupt。"""
+    """从快照里提取并规整 interrupt。"""
     return _support_extract_interrupt_from_snapshot(
         snapshot,
         default_message=DEFAULT_INTERRUPT_MESSAGE,
@@ -164,12 +166,12 @@ class _ChatNodeStreamFailure(Exception):
     """chat_node 首包/流式阶段失败。"""
 
     def __init__(
-        self,
-        detail: str,
-        *,
-        partial_output_emitted: bool = False,
-        partial_content: str = "",
-        live_streamed: bool = False,
+            self,
+            detail: str,
+            *,
+            partial_output_emitted: bool = False,
+            partial_content: str = "",
+            live_streamed: bool = False,
     ) -> None:
         super().__init__(detail)
         self.partial_output_emitted = partial_output_emitted
@@ -184,7 +186,7 @@ def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
     if isinstance(exc, TimeoutError) or any(marker in lower for marker in SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS):
         return "处理超时，请稍后重试。", detail
     if isinstance(exc, ConnectionError) or any(
-        marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
+            marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
     ):
         return "模型服务连接异常，请稍后重试。", detail
     return "底层服务执行异常，请稍后重试。", detail
@@ -197,17 +199,17 @@ def _build_partial_reply_note(exc: Exception) -> str:
     if isinstance(exc, TimeoutError) or any(marker in lower for marker in SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS):
         return "\n\n> 注：本次回答因响应超时提前结束，如需我继续，请直接回复“继续”。"
     if isinstance(exc, ConnectionError) or any(
-        marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
+            marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
     ):
         return "\n\n> 注：本次回答因连接异常提前结束，如需我继续，请直接回复“继续”。"
     return "\n\n> 注：本次回答未完整结束，如需我继续，请直接回复“继续”。"
 
 
 def _build_partial_chat_message(
-    partial_content: str,
-    exc: Exception,
-    *,
-    live_streamed: bool,
+        partial_content: str,
+        exc: Exception,
+        *,
+        live_streamed: bool,
 ) -> Optional[AIMessage]:
     """把部分输出整理成可继续展示的 AIMessage，避免整轮直接报错。"""
     content = str(partial_content or "").strip()
@@ -339,7 +341,8 @@ def _looks_like_code_request(text: str) -> bool:
         return True
 
     followup_fix_hints = ("要的是", "改成", "换成", "不对", "错了", "main方法", "main method")
-    if any(marker in t for marker in SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS) and any(hint in t for hint in followup_fix_hints):
+    if any(marker in t for marker in SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS) and any(
+            hint in t for hint in followup_fix_hints):
         return True
 
     # 仅提到语言名但没有执行/排障动作时，视为泛问答而不是代码代理。
@@ -357,12 +360,12 @@ def _looks_like_general_chat_request(text: str) -> bool:
 
     # 命中任一专业域关键词，则不视为纯闲聊。
     specialized_hits = (
-        _looks_like_holter_request(t)
-        or _looks_like_sql_request(t)
-        or (_looks_like_weather_request(t) and _is_weather_actionable_clause(t))
-        or (_looks_like_search_request(t) and _is_search_actionable_clause(t))
-        or _looks_like_medical_request(t)
-        or _looks_like_code_request(t)
+            _looks_like_holter_request(t)
+            or _looks_like_sql_request(t)
+            or (_looks_like_weather_request(t) and _is_weather_actionable_clause(t))
+            or (_looks_like_search_request(t) and _is_search_actionable_clause(t))
+            or _looks_like_medical_request(t)
+            or _looks_like_code_request(t)
     )
     return not specialized_hits
 
@@ -384,74 +387,75 @@ def _build_graceful_chat_fallback(user_text: str) -> str:
         return "我在。听起来你这会儿有点感慨或者有点累，如果你愿意，可以继续说说发生了什么，我陪你理一理。"
     return ""
 
+
 # --- Helpers ---
 def _latest_human_message(messages: List[BaseMessage]) -> str:
-    """沿用原有私有函数入口，读取最近一条用户消息文本。"""
+    """读取最近一条用户消息文本。"""
     return _support_latest_human_message(messages)
 
 
 def _content_to_text(content: Any) -> str:
-    """沿用原有私有函数入口，统一规整消息内容文本。"""
+    """统一规整消息内容文本。"""
     return _support_content_to_text(content)
 
 
 def _history_requests_location(messages: Optional[List[BaseMessage]]) -> bool:
-    """沿用原有私有函数入口，判断最近是否追问过城市。"""
+    """判断最近是否追问过城市。"""
     return _support_history_requests_location(messages)
 
 
 def _is_followup_supplement(text: str, messages: Optional[List[BaseMessage]] = None) -> bool:
-    """沿用原有私有函数入口，识别是否为补充说明输入。"""
+    """识别是否为补充说明输入。"""
     return _support_is_followup_supplement(text, messages)
 
 
 def _looks_like_location_fragment(text: str) -> bool:
-    """沿用原有私有函数入口，识别短地点片段。"""
+    """识别短地点片段。"""
     return _support_looks_like_location_fragment(text)
 
 
 def _extract_recent_city_from_history(messages: List[BaseMessage]) -> Optional[str]:
-    """沿用原有私有函数入口，从历史消息推断城市。"""
+    """从历史消息推断城市。"""
     return _support_extract_recent_city_from_history(messages)
 
 
 def _extract_city_from_context_slots(context_slots: Optional[Dict[str, Any]]) -> Optional[str]:
-    """沿用原有私有函数入口，从结构化槽位里读取城市。"""
+    """从结构化槽位里读取城市。"""
     return _support_extract_city_from_context_slots(context_slots)
 
 
 def _input_has_location_anchor(text: str) -> bool:
-    """沿用原有私有函数入口，判断输入是否已带地点锚点。"""
+    """判断输入是否已带地点锚点。"""
     return _support_input_has_location_anchor(text)
 
 
 def _history_hint_intent(messages: List[BaseMessage], latest_user_text: str = "") -> Optional[str]:
-    """沿用原有私有函数入口，根据历史上下文提示意图。"""
+    """根据历史上下文提示意图。"""
     return _support_history_hint_intent(messages, latest_user_text)
 
 
 def _has_recent_weather_fact(messages: List[BaseMessage]) -> bool:
-    """沿用原有私有函数入口，判断是否已有可复用天气事实。"""
+    """判断是否已有可复用天气事实。"""
     return _support_has_recent_weather_fact(messages)
 
 
 def _looks_like_weather_reuse_query(text: str) -> bool:
-    """沿用原有私有函数入口，识别天气建议类追问。"""
+    """识别天气建议类追问。"""
     return _support_looks_like_weather_reuse_query(text)
 
 
 def _wants_weather_refresh(text: str) -> bool:
-    """沿用原有私有函数入口，识别重新查询天气的要求。"""
+    """识别重新查询天气的要求。"""
     return _support_wants_weather_refresh(text)
 
 
 def _can_reuse_weather_context(messages: List[BaseMessage], latest_user_text: str) -> bool:
-    """沿用原有私有函数入口，判断天气上下文是否可以直接复用。"""
+    """判断天气上下文是否可以直接复用。"""
     return _support_can_reuse_weather_context(messages, latest_user_text)
 
 
 def _collect_intent_signals(text: str) -> List[str]:
-    """沿用原有私有函数入口，统一收集当前输入命中的意图候选。"""
+    """统一收集当前输入命中的意图候选。"""
     return _support_collect_intent_signals(
         text,
         looks_like_holter_request=_looks_like_holter_request,
@@ -467,17 +471,17 @@ def _collect_intent_signals(text: str) -> List[str]:
 
 
 def _dedupe_keep_order(values: List[str]) -> List[str]:
-    """沿用原有私有函数入口，按出现顺序去重。"""
+    """按出现顺序去重。"""
     return _support_dedupe_keep_order(values)
 
 
 def _has_dependency_hint(text: str) -> bool:
-    """沿用原有私有函数入口，识别输入里的先后依赖提示。"""
+    """识别输入里的先后依赖提示。"""
     return _support_has_dependency_hint(text)
 
 
 def _is_explicit_request_clause(text: str) -> bool:
-    """沿用原有私有函数入口，判断子句是否为显式执行请求。"""
+    """判断子句是否为显式执行请求。"""
     return _support_is_explicit_request_clause(
         text,
         request_action_hints=SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.REQUEST_ACTION_HINT],
@@ -485,7 +489,7 @@ def _is_explicit_request_clause(text: str) -> bool:
 
 
 def _analyze_request(user_text: str) -> RequestAnalysisDecision:
-    """沿用原有私有函数入口，统一分析候选意图与路由策略。"""
+    """统一分析候选意图与路由策略。"""
     payload = _support_analyze_request_payload(
         user_text,
         split_query_clauses_fn=_split_query_clauses,
@@ -506,12 +510,12 @@ def _analyze_request(user_text: str) -> RequestAnalysisDecision:
 
 
 def _split_query_clauses(user_text: str) -> List[str]:
-    """沿用原有私有函数入口，把复合输入切成子句。"""
+    """把复合输入切成子句。"""
     return _support_split_query_clauses(user_text)
 
 
 def _select_primary_agent_for_clause(clause_text: str, fallback_candidates: List[str]) -> Optional[str]:
-    """沿用原有私有函数入口，为单子句挑选优先 Agent。"""
+    """为单子句挑选优先 Agent。"""
     return _support_select_primary_agent_for_clause(
         clause_text,
         fallback_candidates,
@@ -521,7 +525,7 @@ def _select_primary_agent_for_clause(clause_text: str, fallback_candidates: List
 
 
 def _extract_agent_focus_text(agent_name: str, clause_text: str, full_text: str) -> str:
-    """沿用原有私有函数入口，抽取与当前 Agent 更匹配的片段。"""
+    """抽取与当前 Agent 更匹配的片段。"""
     return _support_extract_agent_focus_text(
         agent_name,
         clause_text,
@@ -532,7 +536,7 @@ def _extract_agent_focus_text(agent_name: str, clause_text: str, full_text: str)
 
 
 def _build_agent_specific_task_input(agent_name: str, clause_text: str, full_text: str) -> str:
-    """沿用原有私有函数入口，构造更自包含的子任务输入。"""
+    """构造更自包含的子任务输入。"""
     return _support_build_agent_specific_task_input(
         agent_name,
         clause_text,
@@ -542,12 +546,12 @@ def _build_agent_specific_task_input(agent_name: str, clause_text: str, full_tex
 
 
 def _build_rule_based_multidomain_tasks(
-    user_text: str,
-    *,
-    candidate_agents: Optional[List[str]] = None,
-    route_strategy: str = RouteStrategy.SINGLE_DOMAIN.value,
+        user_text: str,
+        *,
+        candidate_agents: Optional[List[str]] = None,
+        route_strategy: str = RouteStrategy.SINGLE_DOMAIN.value,
 ) -> Optional[List[SubTask]]:
-    """沿用原有私有函数入口，用规则方式构造多任务执行计划。"""
+    """用规则方式构造多任务执行计划。"""
     return _support_build_rule_based_multidomain_tasks(
         user_text,
         candidate_agents=candidate_agents,
@@ -567,13 +571,13 @@ def _build_rule_based_multidomain_tasks(
 
 
 def _build_planner_fallback_tasks(
-    *,
-    user_text: str,
-    intent_candidates: List[str],
-    route_strategy: str,
-    fallback_intent: str,
+        *,
+        user_text: str,
+        intent_candidates: List[str],
+        route_strategy: str,
+        fallback_intent: str,
 ) -> List[SubTask]:
-    """沿用原有私有函数入口，为 Planner 不可用时生成确定性兜底任务。"""
+    """为 Planner 不可用时生成确定性兜底任务。"""
     return _support_build_planner_fallback_tasks(
         user_text=user_text,
         intent_candidates=intent_candidates,
@@ -590,7 +594,7 @@ def _build_planner_fallback_tasks(
 
 
 def _looks_like_compound_request(text: str) -> bool:
-    """沿用原有私有函数入口，判断当前输入是否更适合走复合任务。"""
+    """判断当前输入是否更适合走复合任务。"""
     return _support_looks_like_compound_request(
         text,
         analyze_request_fn=_analyze_request,
@@ -627,10 +631,10 @@ def _is_agent_history_relevant(agent_name: str, text: str) -> bool:
 
 
 def _build_worker_history_messages_for_agent(
-    *,
-    agent_name: str,
-    history_messages: List[BaseMessage],
-    limit: int,
+        *,
+        agent_name: str,
+        history_messages: List[BaseMessage],
+        limit: int,
 ) -> List[BaseMessage]:
     """
     构建按 Agent 相关性裁剪后的 Worker 历史消息窗口。
@@ -677,14 +681,14 @@ def _build_worker_history_messages_for_agent(
 
 
 def _invoke_structured_output_with_fallback(
-    *,
-    prompt: ChatPromptTemplate,
-    model: BaseChatModel,
-    schema: Type[BaseModel],
-    inputs: Dict[str, Any],
-    config: RunnableConfig,
-    max_tokens: int,
-    log_name: str,
+        *,
+        prompt: ChatPromptTemplate,
+        model: BaseChatModel,
+        schema: Type[BaseModel],
+        inputs: Dict[str, Any],
+        config: RunnableConfig,
+        max_tokens: int,
+        log_name: str,
 ) -> BaseModel:
     """
     优先使用 LangChain 新版 with_structured_output 做强结构化输出。
@@ -709,6 +713,7 @@ def _invoke_structured_output_with_fallback(
 
     last_structured_exc: Optional[Exception] = None
 
+    # 判断当前模型是否支持结构化输出
     if hasattr(llm, "with_structured_output"):
         for kwargs in ({"method": "json_mode"}, {}):
             try:
@@ -728,7 +733,7 @@ def _invoke_structured_output_with_fallback(
                 last_structured_exc = exc
                 continue
 
-    # 回退到传统 JSON 解析
+    # 如果当前模型不支持结构化输出则回退到传统 JSON 解析
     response = _invoke_with_timeout(
         lambda: (prompt | llm).invoke(inputs, config=runtime_config),
         timeout_sec=invoke_timeout_sec,
@@ -739,17 +744,20 @@ def _invoke_structured_output_with_fallback(
         return schema(**data)
     except Exception as exc:
         if last_structured_exc is not None:
-            log.warning(f"{log_name}: 结构化输出失败，JSON 回退仍失败。structured_error={last_structured_exc}, json_error={exc}")
+            log.warning(
+                f"[{log_name}]: 结构化输出失败，JSON 回退仍失败。structured_error={last_structured_exc}, json_error={exc}")
         raise
+
+
 def _run_agent_to_completion(
-    agent_name: str,
-    user_input: str,
-    model: BaseChatModel,
-    config: RunnableConfig,
-    session_id: str = "",
-    history_messages: Optional[List[BaseMessage]] = None,
-    context_slots: Optional[Dict[str, Any]] = None,
-    context_summary: str = "",
+        agent_name: str,
+        user_input: str,
+        model: BaseChatModel,
+        config: RunnableConfig,
+        session_id: str = "",
+        history_messages: Optional[List[BaseMessage]] = None,
+        context_slots: Optional[Dict[str, Any]] = None,
+        context_summary: str = "",
 ) -> Any:
     """共享的 Agent 执行逻辑，供 worker_node 和 single_agent_node 复用。"""
     started_at = time.perf_counter()
@@ -860,7 +868,7 @@ def _run_agent_to_completion(
     if request_id and request_cancellation_service.is_cancelled(request_id):
         log.info(f"Agent[{agent_name}] 结束前检测到取消信号，返回取消结果。request_id={request_id}")
         return WORKER_CANCELLED_RESULT
-        
+
     # 如果没有最终 response，检查是否因为中断挂起
     if agent_error is None:
         root_thread_id = session_id or config.get("configurable", {}).get("thread_id", "")
@@ -880,12 +888,12 @@ def _run_agent_to_completion(
 
 
 def _finalize_domain_decision(
-    *,
-    decision: DomainDecision,
-    analysis: RequestAnalysisDecision,
-    session_id: str,
-    latest_user_text: str,
-    started_at: float,
+        *,
+        decision: DomainDecision,
+        analysis: RequestAnalysisDecision,
+        session_id: str,
+        latest_user_text: str,
+        started_at: float,
 ) -> dict:
     route_metrics_service.record_domain_decision(
         session_id=session_id,
@@ -914,15 +922,15 @@ def _finalize_domain_decision(
 
 
 def _finalize_intent_decision(
-    *,
-    intent: str,
-    confidence: float,
-    is_complex: bool,
-    source: str,
-    session_id: str,
-    latest_user_text: str,
-    started_at: float,
-    direct_answer: str = "",
+        *,
+        intent: str,
+        confidence: float,
+        is_complex: bool,
+        source: str,
+        session_id: str,
+        latest_user_text: str,
+        started_at: float,
+        direct_answer: str = "",
 ) -> dict:
     log.info(f"Tier-1 Router: intent=[{intent}], conf=[{confidence}], complex=[{is_complex}]")
     route_metrics_service.record_intent_decision(
@@ -947,7 +955,7 @@ def _task_sort_key(item: tuple[str, Any]) -> tuple[int, str]:
     """按任务编号排序（t1/t2...），保证输出顺序稳定。"""
     task_id = str(item[0])
     match = re.search(r"\d+", task_id)
-    seq = int(match.group(0)) if match else 10**9
+    seq = int(match.group(0)) if match else 10 ** 9
     return seq, task_id
 
 
@@ -969,12 +977,12 @@ def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[
 
 
 def _retry_chat_compact_invoke(
-    *,
-    model: BaseChatModel,
-    runtime_config: RunnableConfig,
-    prompt: str,
-    recent_messages: List[Any],
-    total_timeout_sec: float,
+        *,
+        model: BaseChatModel,
+        runtime_config: RunnableConfig,
+        prompt: str,
+        recent_messages: List[Any],
+        total_timeout_sec: float,
 ) -> str:
     retry_timeout_sec = min(max(total_timeout_sec * 0.5, 10.0), 30.0)
     response = _invoke_with_timeout(
@@ -986,12 +994,12 @@ def _retry_chat_compact_invoke(
 
 
 def _chat_stream_producer(
-    *,
-    model: BaseChatModel,
-    request_messages: List[Any],
-    runtime_config: RunnableConfig,
-    stop_signal: threading.Event,
-    event_queue: queue.Queue,
+        *,
+        model: BaseChatModel,
+        request_messages: List[Any],
+        runtime_config: RunnableConfig,
+        stop_signal: threading.Event,
+        event_queue: queue.Queue,
 ) -> None:
     try:
         for chunk in model.stream(request_messages, config=runtime_config):
@@ -1006,13 +1014,13 @@ def _chat_stream_producer(
 
 
 def _stream_chat_with_timeout(
-    *,
-    model: BaseChatModel,
-    request_messages: List[Any],
-    runtime_config: RunnableConfig,
-    run_id: str,
-    first_token_timeout_sec: float,
-    total_timeout_sec: float,
+        *,
+        model: BaseChatModel,
+        request_messages: List[Any],
+        runtime_config: RunnableConfig,
+        run_id: str,
+        first_token_timeout_sec: float,
+        total_timeout_sec: float,
 ) -> tuple[str, bool]:
     """用队列桥接同步节点与流式模型，支持首 token/总时长双超时。"""
     live_streamed = False
@@ -1112,13 +1120,13 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     started_at = time.perf_counter()
 
     # follow-up 补充句优先继承上轮域
-    if _is_followup_supplement(latest_user_text, classify_messages):
+    if _support_is_followup_supplement(latest_user_text, classify_messages):
         hinted_intent = _history_hint_intent(classify_messages, latest_user_text)
-        if hinted_intent == "yunyou_agent":
+        if hinted_intent == AgentTypeEnum.YUNYOU.code:
             decision = DomainDecision(data_domain="YUNYOU_DB", confidence=0.94, source="history")
-        elif hinted_intent == "sql_agent":
+        elif hinted_intent == AgentTypeEnum.SQL.code:
             decision = DomainDecision(data_domain="LOCAL_DB", confidence=0.93, source="history")
-        elif hinted_intent in {"weather_agent", "search_agent"}:
+        elif hinted_intent in {AgentTypeEnum.WEATHER.code, AgentTypeEnum.SEARCH.code}:
             decision = DomainDecision(data_domain="WEB_SEARCH", confidence=0.92, source="history")
         else:
             decision = None
@@ -1141,10 +1149,10 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
                 started_at=started_at,
             )
 
-    # 根因修复：多意图请求在 Domain 层即标记为“需要拆分”，防止被单域强路由吞掉。
+    # 多意图请求在 Domain 层即标记为“需要拆分”，防止被单域强路由吞掉。
     if (
-        request_analysis.route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value
-        and len(request_analysis.candidate_agents) >= 2
+            request_analysis.route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value
+            and len(request_analysis.candidate_agents) >= 2
     ):
         primary_domain = (request_analysis.candidate_domains or ["GENERAL"])[0]
         decision = DomainDecision(data_domain=primary_domain, confidence=0.97, source="rule_multi_domain")
@@ -1162,8 +1170,8 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     elif _looks_like_sql_request(latest_user_text):
         decision = DomainDecision(data_domain="LOCAL_DB", confidence=0.95, source="rule")
     elif (
-        (_looks_like_weather_request(latest_user_text) and _is_weather_actionable_clause(latest_user_text))
-        or (_looks_like_search_request(latest_user_text) and _is_search_actionable_clause(latest_user_text))
+            (_looks_like_weather_request(latest_user_text) and _is_weather_actionable_clause(latest_user_text))
+            or (_looks_like_search_request(latest_user_text) and _is_search_actionable_clause(latest_user_text))
     ):
         decision = DomainDecision(data_domain="WEB_SEARCH", confidence=0.9, source="rule")
     else:
@@ -1173,13 +1181,7 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
             decision = DomainDecision(data_domain="GENERAL", confidence=0.88, source="rule_default_general")
         else:
             prompt = ChatPromptTemplate.from_messages([
-                (
-                    "system",
-                    "你是数据域分类器。"
-                    "只返回一个 JSON 对象，不要 Markdown、不要解释。"
-                    "字段必须包含 data_domain 与 confidence。"
-                    "data_domain 只能是 YUNYOU_DB、LOCAL_DB、WEB_SEARCH、GENERAL。",
-                ),
+                ("system", DomainPrompt.SYSTEM),
                 MessagesPlaceholder(variable_name="messages"),
             ])
             try:
@@ -1431,9 +1433,9 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
 
     # GENERAL 快速通道：纯闲聊默认直达 CHAT，避免慢速 LLM 分类。
     if (
-        data_domain == "GENERAL"
-        and ROUTER_POLICY_CONFIG.general_chat_fastpath_enabled
-        and _looks_like_general_chat_request(latest_user_text)
+            data_domain == "GENERAL"
+            and ROUTER_POLICY_CONFIG.general_chat_fastpath_enabled
+            and _looks_like_general_chat_request(latest_user_text)
     ):
         direct_complex = _looks_like_compound_request(latest_user_text)
         return _finalize_intent_decision(
@@ -1511,6 +1513,7 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
         started_at=started_at,
     )
 
+
 # ==================== Tier-2: DAG Planner & Dispatcher ====================
 def _build_planner_state_payload(task_list: List[SubTask], *, planner_source: str, elapsed_ms: int) -> dict:
     """为 DAG 规划节点构造统一初始状态。"""
@@ -1561,7 +1564,8 @@ def parent_planner_node(state: GraphState, model: BaseChatModel, config: Runnabl
     if route_strategy == RouteStrategy.SINGLE_DOMAIN.value and deterministic_tasks:
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Parent Planner [single_domain_guard] 耗时: {elapsed_ms}ms")
-        log.info(f"Tier-2 Planner: Generated {len(deterministic_tasks)} tasks -> {[t['id'] for t in deterministic_tasks]}")
+        log.info(
+            f"Tier-2 Planner: Generated {len(deterministic_tasks)} tasks -> {[t['id'] for t in deterministic_tasks]}")
         return _build_planner_state_payload(
             deterministic_tasks,
             planner_source="single_domain_guard",
@@ -1572,7 +1576,8 @@ def parent_planner_node(state: GraphState, model: BaseChatModel, config: Runnabl
     if not ROUTER_POLICY_CONFIG.planner_llm_fallback_enabled:
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Parent Planner [deterministic_fallback] 耗时: {elapsed_ms}ms")
-        log.info(f"Tier-2 Planner: Generated {len(deterministic_tasks)} tasks -> {[t['id'] for t in deterministic_tasks]}")
+        log.info(
+            f"Tier-2 Planner: Generated {len(deterministic_tasks)} tasks -> {[t['id'] for t in deterministic_tasks]}")
         return _build_planner_state_payload(
             deterministic_tasks,
             planner_source="deterministic_fallback",
@@ -1678,6 +1683,7 @@ def dispatcher_node(state: GraphState) -> dict:
         "worker_results": [],  # 重置本轮 worker 结果缓冲
     }
 
+
 def dispatch_router(state: GraphState):
     """Conditional Edge：根据 active_tasks 发起扇出，若全部完成则聚合。"""
     active = state.get("active_tasks", [])
@@ -1707,7 +1713,7 @@ def dispatch_router(state: GraphState):
             )
         # Fan-out 到 worker_node 进行并行执行
         return fanout_payloads
-        
+
     # 如果没要执行的任务，查验是等待别人完成，还是全剧终，还是死锁
     tasks = state.get("task_list", [])
     status_values = [str(t.get("status") or "") for t in tasks]
@@ -1715,26 +1721,26 @@ def dispatch_router(state: GraphState):
         # 异常：死锁或者波次超限
         max_waves = state.get("max_waves", 10)
         current = state.get("current_wave", 0)
-        
+
         # 波次超限：直接退出
         if current >= max_waves:
             log.warning("Dispatcher: DAG execution reached max waves, force quitting.")
             return "aggregator_node"
-            
+
         # 死锁检测：图里有 pending，且没有 dispatched 在跑（全军覆没卡死在等待依赖上）
         _has_dispatched = any(status == TaskStatus.DISPATCHED.value for status in status_values)
         _has_pending = any(status == TaskStatus.PENDING.value for status in status_values)
         _has_approval = any(status == TaskStatus.PENDING_APPROVAL.value for status in status_values)
-        
+
         if _has_pending and not _has_dispatched and not _has_approval:
             log.warning("Dispatcher: 💥 Dependency deadlock detected (pending 任务无法满足依赖)，强制进入聚合收敛。")
             return "aggregator_node"
-            
+
         # 否则如果是还在等待 dispatched 或审批任务完成，直接由于没有 active 返回，这里 LangGraph 会暂停 (因为没有出边可走)
         if _has_dispatched or _has_approval:
             log.info("Dispatcher: 当前仅剩 dispatched/pending_approval 任务，进入聚合节点做无正文收敛。")
             return "aggregator_node"
-            
+
     return "aggregator_node"
 
 
@@ -1882,7 +1888,7 @@ def reducer_node(state: GraphState) -> dict:
         # 寻找匹配的执行结果
         matched = [r for r in new_results if r["task_id"] == task["id"]]
         if matched:
-            worker_res = matched[0] # 取出其中一个
+            worker_res = matched[0]  # 取出其中一个
             if new_task.get("status") not in {
                 TaskStatus.DONE.value,
                 TaskStatus.ERROR.value,
@@ -1923,10 +1929,10 @@ def _stringify_task_result(value: Any) -> str:
 
 
 def _should_skip_reflection_after_parallel_success(
-    tasks: List[SubTask],
-    task_results: Dict[str, Any],
-    *,
-    planner_source: str,
+        tasks: List[SubTask],
+        task_results: Dict[str, Any],
+        *,
+        planner_source: str,
 ) -> bool:
     """并行结果已充分时，直接进入聚合，避免额外反思超时。"""
     if len(tasks) < 2:
@@ -1954,10 +1960,10 @@ def _should_skip_reflection_after_parallel_success(
 
 
 def _sanitize_reflection_tasks(
-    reflection_tasks: List[PlannerTaskDecision],
-    *,
-    existing_tasks: List[SubTask],
-    next_task_sequence: int,
+        reflection_tasks: List[PlannerTaskDecision],
+        *,
+        existing_tasks: List[SubTask],
+        next_task_sequence: int,
 ) -> tuple[List[SubTask], int]:
     """清洗自动反思生成的新增任务，确保编号、依赖和去重可用。"""
     existing_ids = {str(task.get("id") or "") for task in existing_tasks if task.get("id")}
@@ -2040,9 +2046,9 @@ def reflection_node(state: GraphState, model: BaseChatModel, config: RunnableCon
     task_results = dict(state.get("task_results", {}) or {})
     planner_source = str(state.get("planner_source") or "").strip()
     if _should_skip_reflection_after_parallel_success(
-        tasks,
-        task_results,
-        planner_source=planner_source,
+            tasks,
+            task_results,
+            planner_source=planner_source,
     ):
         return {
             "reflection_source": "parallel_converged",
@@ -2202,7 +2208,7 @@ def _clean_aggregated_task_text(task: Optional[SubTask], text: str) -> str:
         lower_text = normalized.lower()
         agent_name = str((task or {}).get("agent") or "").strip()
         if agent_name in {"sql_agent", "yunyou_agent"} or any(
-            marker in lower_text for marker in ("sql", "select ", " from ", "holter")
+                marker in lower_text for marker in ("sql", "select ", " from ", "holter")
         ):
             return "该查询子任务返回了损坏的结构化片段，暂时无法整理成可直接展示的结果。"
 
@@ -2235,9 +2241,9 @@ def _build_aggregated_task_title(task_id: str, task: Optional[SubTask]) -> str:
 
 
 def _build_deterministic_aggregation(
-    user_request: str,
-    normalized_results: List[tuple[str, str]],
-    tasks_by_id: Optional[Dict[str, SubTask]] = None,
+        user_request: str,
+        normalized_results: List[tuple[str, str]],
+        tasks_by_id: Optional[Dict[str, SubTask]] = None,
 ) -> str:
     """构造稳定、快速、不依赖额外大模型调用的最终聚合结果。"""
     if not normalized_results:
@@ -2419,10 +2425,10 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
                     final_error = None
                     partial_output_emitted = False
                 can_retry = (
-                    (not partial_output_emitted)
-                    and msg is None
-                    and total_timeout_sec >= 1.0
-                    and (not request_cancellation_service.is_cancelled(run_id))
+                        (not partial_output_emitted)
+                        and msg is None
+                        and total_timeout_sec >= 1.0
+                        and (not request_cancellation_service.is_cancelled(run_id))
                 )
                 if can_retry:
                     try:
@@ -2495,7 +2501,8 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
                         )
                     ]
                 }
-            user_message, error_detail = _classify_agent_failure(final_error or RuntimeError("chat_node.empty_response"))
+            user_message, error_detail = _classify_agent_failure(
+                final_error or RuntimeError("chat_node.empty_response"))
             log.warning(f"chat_node 调用失败，返回 error 事件。detail={error_detail}")
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
             log.info(f"⏱️ chat_node 模型耗时: {elapsed_ms}ms")
@@ -2636,14 +2643,14 @@ def create_graph(model_config: Optional[dict] = None):
     workflow.add_node("Domain_Router_Node", functools.partial(domain_router_node, model=router_model))
     workflow.add_node("Intent_Router_Node", functools.partial(intent_router_node, model=router_model))
     workflow.add_node("Parent_Planner_Node", functools.partial(parent_planner_node, model=model))
-    
+
     # 动态 DAG 发牌与执行网络
     workflow.add_node("dispatcher_node", dispatcher_node)
     workflow.add_node("worker_node", functools.partial(worker_node, model=model))
     workflow.add_node("reducer_node", reducer_node)
     workflow.add_node("reflection_node", functools.partial(reflection_node, model=model))
     workflow.add_node("aggregator_node", functools.partial(aggregator_node, model=model))
-    
+
     # 单兵节点 (非 DAG 路径使用): 简单单意图优先走轻量模型，复杂任务仍走 DAG+主模型
     workflow.add_node("chat_node", functools.partial(chat_node, model=chat_model))
     for name in MEMBERS:
@@ -2652,23 +2659,23 @@ def create_graph(model_config: Optional[dict] = None):
     # ================= 编织拓扑关系 =================
     workflow.add_edge(START, "Domain_Router_Node")
     workflow.add_edge("Domain_Router_Node", "Intent_Router_Node")
-    
+
     router_options = {name: name for name in MEMBERS}
     router_options.update({"chat_node": "chat_node", "Parent_Planner_Node": "Parent_Planner_Node"})
     workflow.add_conditional_edges("Intent_Router_Node", _route_after_intent, router_options)
-    
+
     # DAG 循环执行部分
     workflow.add_edge("Parent_Planner_Node", "dispatcher_node")
     workflow.add_conditional_edges("dispatcher_node", dispatch_router, ["worker_node", "aggregator_node"])
     workflow.add_edge("worker_node", "reducer_node")
     workflow.add_edge("reducer_node", "reflection_node")
-    workflow.add_edge("reflection_node", "dispatcher_node") # 闭环：反思后拉取下一波任务
-    
+    workflow.add_edge("reflection_node", "dispatcher_node")  # 闭环：反思后拉取下一波任务
+
     # 单兵出口
     workflow.add_edge("chat_node", END)
     for name in MEMBERS:
         workflow.add_edge(name, END)
-        
+
     workflow.add_edge("aggregator_node", END)
 
     return workflow.compile(checkpointer=get_checkpointer("supervisor"))

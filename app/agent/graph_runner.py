@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
+from services.session_pool import session_pool
+
 """
 图执行器模块（GraphRunner）。
 
@@ -15,7 +19,6 @@
 - Supervisor 编译图按 model_config 指纹缓存，同一配置只编译一次。
 - 前置规则拦截仅在输入较短时触发，避免扫描超长文本的性能损耗。
 """
-from __future__ import annotations
 
 import asyncio
 import hashlib
@@ -36,6 +39,7 @@ from langchain_core.messages import (
 )
 from langgraph.types import Command
 
+from agent.graph_runner_core import rule_handle
 from agent.graph_state import AgentRequest
 from agent.graphs.supervisor import create_graph as create_supervisor_graph
 from agent.llm.unified_loader import create_model_from_config
@@ -115,15 +119,15 @@ class _CodeBlockStash:
 
 class _GraphStreamAsyncBridge:
     def __init__(
-        self,
-        *,
-        runner: "GraphRunner",
-        loop: asyncio.AbstractEventLoop,
-        event_queue: asyncio.Queue,
-        run_context,
-        graph: Any,
-        graph_inputs: Dict[str, Any],
-        graph_config: Dict[str, Any],
+            self,
+            *,
+            runner: "GraphRunner",
+            loop: asyncio.AbstractEventLoop,
+            event_queue: asyncio.Queue,
+            run_context,
+            graph: Any,
+            graph_inputs: Dict[str, Any],
+            graph_config: Dict[str, Any],
     ) -> None:
         self.runner = runner
         self.loop = loop
@@ -164,9 +168,9 @@ class _GraphStreamAsyncBridge:
         with runtime_session_manager.bind_run(self.run_context):
             try:
                 for ev_type, ev in self.graph.stream(
-                    self.graph_inputs,
-                    config=self.graph_config,
-                    stream_mode=list(GRAPH_STREAM_MODES),
+                        self.graph_inputs,
+                        config=self.graph_config,
+                        stream_mode=list(GRAPH_STREAM_MODES),
                 ):
                     if request_cancellation_service.is_cancelled(self.run_id):
                         log.info(f"Graph Worker 收到取消信号，停止事件采集。run_id={self.run_id}")
@@ -279,19 +283,19 @@ class GraphRunner:
 
     @classmethod
     def _build_workflow_event(
-        cls,
-        *,
-        session_id: str,
-        run_id: str,
-        phase: str,
-        title: str,
-        summary: str = "",
-        status: str = "info",
-        role: str = "system",
-        agent_name: str = "",
-        task_id: str = "",
-        node_name: str = "",
-        meta: Optional[Dict[str, Any]] = None,
+            cls,
+            *,
+            session_id: str,
+            run_id: str,
+            phase: str,
+            title: str,
+            summary: str = "",
+            status: str = "info",
+            role: str = "system",
+            agent_name: str = "",
+            task_id: str = "",
+            node_name: str = "",
+            meta: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """构造统一结构化流程事件。"""
         return runtime_build_workflow_event(
@@ -323,9 +327,9 @@ class GraphRunner:
         return hashlib.md5(stable_json.encode("utf-8")).hexdigest()
 
     def _get_or_create_supervisor(
-        self,
-        model_config: Dict[str, Any],
-        borrow_timeout: Optional[float] = None,
+            self,
+            model_config: Dict[str, Any],
+            borrow_timeout: Optional[float] = None,
     ) -> Any:
         """
         获取（或创建）Supervisor 编译图实例。
@@ -357,11 +361,8 @@ class GraphRunner:
                     return cached
             # 构建线程若异常退出，当前线程兜底重试一次。
             return self._get_or_create_supervisor(model_config, borrow_timeout=borrow_timeout)
-
         try:
             # 先尝试从预热池借取，命中则直接写入本地缓存
-            from services.session_pool import session_pool
-
             pooled = session_pool.borrow(model_config, timeout=borrow_timeout)
             if pooled is not None:
                 log.info(f"从 SessionPool 借取预热实例，config_key={cache_key[:8]}...")
@@ -406,13 +407,13 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     async def stream_run(
-        self,
-        user_input: str,
-        session_id: str,
-        model_config: Optional[Dict[str, Any]] = None,
-        history_messages: Optional[List[Dict[str, Any]]] = None,
-        session_context: Optional[Dict[str, Any]] = None,
-        emit_response_start: bool = True,
+            self,
+            user_input: str,
+            session_id: str,
+            model_config: Optional[Dict[str, Any]] = None,
+            history_messages: Optional[List[Dict[str, Any]]] = None,
+            session_context: Optional[Dict[str, Any]] = None,
+            emit_response_start: bool = True,
     ) -> AsyncGenerator[str, None]:
         """
         核心流式执行器，所有用户请求都会经过这个方法
@@ -450,7 +451,7 @@ class GraphRunner:
         effective_config = {**self.model_config, **(model_config or {})}
         resume_message_id = str(effective_config.get("resume_message_id") or "").strip()
 
-        # ── 分支一：审批恢复流程 ──────────────────────────────────────────
+        # ── 分支一：审批恢复流程
         # 用户通过审批后恢复执行，需要找到原始中断点继续
         if user_input == "[RESUME]":
             # 获取 Supervisor 编译图
@@ -468,11 +469,11 @@ class GraphRunner:
 
             # 处理恢复流程并返回流式结果
             async for chunk in self._handle_resume_stream_async(
-                run_context=resume_context,
-                graph=graph,
-                effective_config=effective_config,
-                emit_response_start=emit_response_start,
-                resume_message_id=resume_message_id,
+                    run_context=resume_context,
+                    graph=graph,
+                    effective_config=effective_config,
+                    emit_response_start=emit_response_start,
+                    resume_message_id=resume_message_id,
             ):
                 yield chunk
             return
@@ -501,74 +502,8 @@ class GraphRunner:
         rule_result = self._try_rule_intercept(user_input)
         if rule_result is not None:
             # 规则命中，直接返回结果，不进入图执行
-            thinking_hint, rule_content = rule_result
-            try:
-                # 发送 response_start 事件
-                if emit_response_start:
-                    yield self._fmt_sse(SseEventType.RESPONSE_START.value, "")
-
-                # 发送"老板下达任务"事件
-                yield self._fmt_workflow_event(
-                    self._build_workflow_event(
-                        session_id=session_id,
-                        run_id=run_id,
-                        phase="user_message_received",
-                        title="老板下达任务",
-                        summary=user_input,
-                        status="completed",
-                        role="boss",
-                        meta={"input_length": len(user_input or "")},
-                    )
-                )
-
-                # 发送"总管快速裁决"事件
-                yield self._fmt_workflow_event(
-                    self._build_workflow_event(
-                        session_id=session_id,
-                        run_id=run_id,
-                        phase="rule_intercepted",
-                        title="总管快速裁决",
-                        summary=thinking_hint,
-                        status="completed",
-                        role="supervisor",
-                        agent_name="ChatAgent",
-                    )
-                )
-
-                # 发送思考提示
-                yield self._fmt_sse(SseEventType.THINKING.value, thinking_hint)
-
-                # 发送规则拦截结果
-                yield self._fmt_sse(SseEventType.STREAM.value, rule_content)
-
-                # 发送"总管回禀老板"事件
-                yield self._fmt_workflow_event(
-                    self._build_workflow_event(
-                        session_id=session_id,
-                        run_id=run_id,
-                        phase="final_report_delivered",
-                        title="总管回禀老板",
-                        summary=rule_content[:160],
-                        status="completed",
-                        role="supervisor",
-                        agent_name="ChatAgent",
-                    )
-                )
-
-                # 更新运行状态为完成
-                runtime_session_manager.mark_completed(
-                    run_context,
-                    phase="final_report_delivered",
-                    summary=rule_content[:160],
-                    title="总管回禀老板",
-                )
-
-                # 发送 response_end 事件
-                yield self._fmt_sse(SseEventType.RESPONSE_END.value, "")
-            finally:
-                # 清理运行上下文
-                runtime_session_manager.cleanup_run(run_context)
-            return
+            rule_handle(user_input=user_input, session_id=session_id, rule_result=rule_result,
+                        emit_response_start=emit_response_start, run_context=run_context, run_id=run_id)
 
         # response_start 必须在任何内容之前发出，让前端进入流式接收模式
         if emit_response_start:
@@ -763,11 +698,11 @@ class GraphRunner:
 
         # ── 启动后台图执行并消费事件队列（异步） ──────────────────────────
         async for chunk in self._run_graph_stream_async(
-            graph=graph,
-            graph_inputs=graph_inputs,
-            graph_config=graph_config,
-            run_context=run_context,
-            effective_config=effective_config,
+                graph=graph,
+                graph_inputs=graph_inputs,
+                graph_config=graph_config,
+                run_context=run_context,
+                effective_config=effective_config,
         ):
             yield chunk
 
@@ -856,9 +791,9 @@ class GraphRunner:
 
     @staticmethod
     def _build_input_messages(
-        history: List[Dict[str, Any]],
-        user_input: str,
-        session_context: Optional[Dict[str, Any]] = None,
+            history: List[Dict[str, Any]],
+            user_input: str,
+            session_context: Optional[Dict[str, Any]] = None,
     ) -> List[BaseMessage]:
         """
         将历史消息字典列表转换为 LangChain BaseMessage 列表。
@@ -944,10 +879,10 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     def _inject_rag_context(
-        self,
-        messages: List[BaseMessage],
-        user_input: str,
-        model_config: Dict[str, Any],
+            self,
+            messages: List[BaseMessage],
+            user_input: str,
+            model_config: Dict[str, Any],
     ) -> str:
         """
         检索 RAG 知识库并将结果注入消息列表。
@@ -980,9 +915,9 @@ class GraphRunner:
         return f"RAG 命中 {len(rag_sources)} 个来源"
 
     def _retrieve_rag_context(
-        self,
-        user_input: str,
-        model_config: Dict[str, Any],
+            self,
+            user_input: str,
+            model_config: Dict[str, Any],
     ) -> Tuple[str, List[str]]:
         """
         实际执行 RAG 向量检索，返回拼接后的上下文文本和来源列表。
@@ -1007,12 +942,12 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     async def _run_graph_stream_async(
-        self,
-        graph: Any,
-        graph_inputs: Dict[str, Any],
-        graph_config: Dict[str, Any],
-        run_context,
-        effective_config: Dict[str, Any],
+            self,
+            graph: Any,
+            graph_inputs: Dict[str, Any],
+            graph_config: Dict[str, Any],
+            run_context,
+            effective_config: Dict[str, Any],
     ) -> AsyncGenerator[str, None]:
         """
         启动后台图执行线程，通过 asyncio.Queue 异步消费事件，将所有事件转为 SSE 推送。
@@ -1066,14 +1001,14 @@ class GraphRunner:
 
         try:
             async for chunk in self._consume_event_queue_async(
-                event_queue=event_queue,
-                worker_thread=worker_thread,
-                run_context=run_context,
-                effective_config=effective_config,
-                graph=graph,
-                live_streamed_agents=live_streamed_agents,
-                router_prefix_buffer=router_prefix_buffer,
-                router_prefix_done=router_prefix_done,
+                    event_queue=event_queue,
+                    worker_thread=worker_thread,
+                    run_context=run_context,
+                    effective_config=effective_config,
+                    graph=graph,
+                    live_streamed_agents=live_streamed_agents,
+                    router_prefix_buffer=router_prefix_buffer,
+                    router_prefix_done=router_prefix_done,
             ):
                 yield chunk
         except GeneratorExit:
@@ -1098,15 +1033,15 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     async def _consume_event_queue_async(
-        self,
-        event_queue: asyncio.Queue,
-        worker_thread: threading.Thread,
-        run_context,
-        effective_config: Dict[str, Any],
-        graph: Any,
-        live_streamed_agents: Set[str],
-        router_prefix_buffer: str,
-        router_prefix_done: bool,
+            self,
+            event_queue: asyncio.Queue,
+            worker_thread: threading.Thread,
+            run_context,
+            effective_config: Dict[str, Any],
+            graph: Any,
+            live_streamed_agents: Set[str],
+            router_prefix_buffer: str,
+            router_prefix_done: bool,
     ) -> AsyncGenerator[str, None]:
         """
         从 asyncio.Queue 中异步消费所有事件并转换为 SSE 字符串。
@@ -1178,9 +1113,9 @@ class GraphRunner:
                         break
                     # 在等待首包期间定期发送心跳，避免前端误判为服务无响应
                     waiting_first_output = (
-                        not stream_content_emitted
-                        and not interrupt_emitted
-                        and not error_emitted
+                            not stream_content_emitted
+                            and not interrupt_emitted
+                            and not error_emitted
                     )
                     if waiting_first_output and (now - last_heartbeat_ts >= idle_heartbeat_sec):
                         yield self._fmt_sse(
@@ -1222,10 +1157,10 @@ class GraphRunner:
 
             elif item_type == GraphQueueItemType.LIVE_STREAM.value:
                 for sse_chunk in self._handle_live_stream_event(
-                    payload=item_data,
-                    live_streamed_agents=live_streamed_agents,
-                    session_id=session_id,
-                    run_id=run_id,
+                        payload=item_data,
+                        live_streamed_agents=live_streamed_agents,
+                        session_id=session_id,
+                        run_id=run_id,
                 ):
                     if not sse_chunk:
                         continue
@@ -1250,13 +1185,13 @@ class GraphRunner:
 
                 elif ev_type == "updates":
                     for sse_chunk in self._handle_updates_event(
-                        ev,
-                        session_id=session_id,
-                        effective_config=effective_config,
-                        live_streamed_agents=live_streamed_agents,
-                        interrupt_emitted=interrupt_emitted,
-                        active_agent_candidates=active_agent_candidates,
-                        run_id=run_id,
+                            ev,
+                            session_id=session_id,
+                            effective_config=effective_config,
+                            live_streamed_agents=live_streamed_agents,
+                            interrupt_emitted=interrupt_emitted,
+                            active_agent_candidates=active_agent_candidates,
+                            run_id=run_id,
                     ):
                         progress_emitted = True
                         if sse_chunk.startswith(f"event: {SseEventType.INTERRUPT.value}"):
@@ -1281,15 +1216,15 @@ class GraphRunner:
 
         # 可选：流结束后定向扫描子图中断（默认关闭）
         if (
-            not interrupt_emitted
-            and GRAPH_RUNNER_TUNING.post_run_interrupt_scan_enabled
-            and active_agent_candidates
+                not interrupt_emitted
+                and GRAPH_RUNNER_TUNING.post_run_interrupt_scan_enabled
+                and active_agent_candidates
         ):
             for chunk in self._try_post_run_interrupt_scan(
-                session_id=session_id,
-                effective_config=effective_config,
-                candidate_names=list(active_agent_candidates),
-                run_id=run_id,
+                    session_id=session_id,
+                    effective_config=effective_config,
+                    candidate_names=list(active_agent_candidates),
+                    run_id=run_id,
             ):
                 yield chunk
 
@@ -1378,11 +1313,11 @@ class GraphRunner:
 
     @classmethod
     def _handle_live_stream_event(
-        cls,
-        payload: Any,
-        live_streamed_agents: Set[str],
-        session_id: str,
-        run_id: str,
+            cls,
+            payload: Any,
+            live_streamed_agents: Set[str],
+            session_id: str,
+            run_id: str,
     ) -> List[str]:
         """
         处理子 Agent 实时正文流事件。
@@ -1430,12 +1365,12 @@ class GraphRunner:
         return workflow_chunks
 
     def _handle_message_chunk(
-        self,
-        event: Tuple[Any, Any],
-        router_prefix_buffer: str,
-        router_prefix_done: bool,
-        session_id: str = "",
-        run_id: str = "",
+            self,
+            event: Tuple[Any, Any],
+            router_prefix_buffer: str,
+            router_prefix_done: bool,
+            session_id: str = "",
+            run_id: str = "",
     ) -> Tuple[List[str], str, bool]:
         """
         处理 messages 模式下的流式 token chunk。
@@ -1610,9 +1545,9 @@ class GraphRunner:
 
     @staticmethod
     def _strip_router_json_prefix_cross_chunk(
-        content: str,
-        buffer: str,
-        done: bool,
+            content: str,
+            buffer: str,
+            done: bool,
     ) -> Tuple[str, str, bool]:
         """
         跨 chunk 路由 JSON 前缀过滤。
@@ -1669,9 +1604,9 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     def _format_interrupt_payload(
-        self,
-        session_id: str,
-        payload: Any,
+            self,
+            session_id: str,
+            payload: Any,
     ) -> Dict[str, Any]:
         """
         将原始 interrupt payload 规范化为前端期望的统一格式。
@@ -1690,10 +1625,10 @@ class GraphRunner:
         return result
 
     def _register_interrupts(
-        self,
-        session_id: str,
-        interrupt_event: Dict[str, Any],
-        effective_config: Dict[str, Any],
+            self,
+            session_id: str,
+            interrupt_event: Dict[str, Any],
+            effective_config: Dict[str, Any],
     ) -> None:
         """
         将 interrupt 事件写入 interrupt_service，供前端审批后 resume 使用。
@@ -1739,10 +1674,10 @@ class GraphRunner:
             log.warning(f"注册 interrupt 失败，已降级跳过: {exc}")
 
     def _scan_subgraph_interrupts(
-        self,
-        session_id: str,
-        effective_config: Dict[str, Any],
-        candidate_agent_names: Optional[List[str]] = None,
+            self,
+            session_id: str,
+            effective_config: Dict[str, Any],
+            candidate_agent_names: Optional[List[str]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         扫描指定（或全量）子 Agent 的 checkpointer 快照，提取最新的 Interrupt 载荷。
@@ -1822,13 +1757,13 @@ class GraphRunner:
 
     @staticmethod
     def _safe_get_agent_state(
-        agent: Any,
-        agent_name: str,
-        context: str,
-        *,
-        thread_id: str = "",
-        checkpoint_id: Any = None,
-        checkpoint_ns: Any = None,
+            agent: Any,
+            agent_name: str,
+            context: str,
+            *,
+            thread_id: str = "",
+            checkpoint_id: Any = None,
+            checkpoint_ns: Any = None,
     ) -> Optional[Any]:
         """安全地获取 Agent 图快照，失败时返回 None 而不抛出异常。"""
         try:
@@ -1853,9 +1788,9 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     def _extract_final_answer_from_state(
-        self,
-        graph: Any,
-        session_id: str,
+            self,
+            graph: Any,
+            session_id: str,
     ) -> str:
         """
         从 Supervisor 图最终状态中回捞最后一条 AI 消息作为兜底答案。
@@ -1891,14 +1826,14 @@ class GraphRunner:
         return ""
 
     def _handle_updates_event(
-        self,
-        event: Dict[str, Any],
-        session_id: str,
-        effective_config: Dict[str, Any],
-        live_streamed_agents: Set[str],
-        interrupt_emitted: bool,
-        active_agent_candidates: Set[str],
-        run_id: str = "",
+            self,
+            event: Dict[str, Any],
+            session_id: str,
+            effective_config: Dict[str, Any],
+            live_streamed_agents: Set[str],
+            interrupt_emitted: bool,
+            active_agent_candidates: Set[str],
+            run_id: str = "",
     ) -> Generator[str, None, None]:
         """
         处理 updates 模式下的图状态更新事件。
@@ -2091,9 +2026,9 @@ class GraphRunner:
                         yield self._fmt_sse(SseEventType.STREAM.value, visible_text)
 
     def _process_supervisor_event(
-        self,
-        event: Dict[str, Any],
-        live_streamed_agents: Optional[Set[str]] = None,
+            self,
+            event: Dict[str, Any],
+            live_streamed_agents: Optional[Set[str]] = None,
     ) -> Generator[str, None, None]:
         """
         兼容旧接口：转发到新的 updates 事件处理器。
@@ -2120,13 +2055,12 @@ class GraphRunner:
             return error_message
         return None
 
-
     @staticmethod
     def _emit_router_thinking(
-        node_name: str,
-        node_val: Any,
-        session_id: str,
-        run_id: str,
+            node_name: str,
+            node_val: Any,
+            session_id: str,
+            run_id: str,
     ) -> Generator[str, None, None]:
         """
         为各路由/规划节点生成可读的 thinking 日志事件。
@@ -2367,9 +2301,9 @@ class GraphRunner:
 
     @staticmethod
     def _extract_interrupt_from_node_val(
-        node_name: str,
-        node_val: Any,
-        agent_classes_map: Dict[str, Any],
+            node_name: str,
+            node_val: Any,
+            agent_classes_map: Dict[str, Any],
     ) -> Optional[Tuple[str, Any]]:
         """
         从节点更新值中提取 in-band interrupt payload。
@@ -2393,11 +2327,11 @@ class GraphRunner:
     # ------------------------------------------------------------------ #
 
     def _try_post_run_interrupt_scan(
-        self,
-        session_id: str,
-        effective_config: Dict[str, Any],
-        candidate_names: List[str],
-        run_id: str = "",
+            self,
+            session_id: str,
+            effective_config: Dict[str, Any],
+            candidate_names: List[str],
+            run_id: str = "",
     ) -> Generator[str, None, None]:
         """流结束后定向扫描子图快照是否存在未处理的 Interrupt（默认关闭）。"""
         try:
@@ -2432,19 +2366,17 @@ class GraphRunner:
                 json.dumps(interrupt_event, ensure_ascii=False),
             )
 
-
-
     # ------------------------------------------------------------------ #
     #  审批恢复流程                                                          #
     # ------------------------------------------------------------------ #
 
     async def _handle_resume_stream_async(
-        self,
-        run_context,
-        graph: Any,
-        effective_config: Dict[str, Any],
-        emit_response_start: bool,
-        resume_message_id: str = "",
+            self,
+            run_context,
+            graph: Any,
+            effective_config: Dict[str, Any],
+            emit_response_start: bool,
+            resume_message_id: str = "",
     ) -> AsyncGenerator[str, None]:
         """统一处理 [RESUME] 审批恢复流程的 SSE 推送（异步版本）。"""
         session_id = run_context.session_id
@@ -2480,11 +2412,11 @@ class GraphRunner:
             )
             yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.RESUME_DETECTED)
             for chunk in self._handle_resume(
-                session_id=session_id,
-                resume_meta=resume_meta,
-                supervisor_graph=graph,
-                effective_config=effective_config,
-                run_id=run_context.run_id,
+                    session_id=session_id,
+                    resume_meta=resume_meta,
+                    supervisor_graph=graph,
+                    effective_config=effective_config,
+                    run_id=run_context.run_id,
             ):
                 runtime_session_manager.record_workflow_event_chunk(run_context, chunk)
                 yield chunk
@@ -2529,14 +2461,13 @@ class GraphRunner:
             "command": Command(resume=decision),
         }
 
-
     def _handle_resume(
-        self,
-        session_id: str,
-        resume_meta: Dict[str, Any],
-        supervisor_graph: Any,
-        effective_config: Dict[str, Any],
-        run_id: str = "",
+            self,
+            session_id: str,
+            resume_meta: Dict[str, Any],
+            supervisor_graph: Any,
+            effective_config: Dict[str, Any],
+            run_id: str = "",
     ) -> Generator[str, None, None]:
         """
         恢复被 Interrupt 挂起的子 Agent 执行。
@@ -2588,7 +2519,8 @@ class GraphRunner:
 
         if not target_agent:
             # 兜底：审批 SQL 执行时直接执行已审批 SQL
-            if decision == ApprovalDecision.APPROVE.value and resume_meta.get("action_name") == SQL_APPROVAL_ACTION_NAME:
+            if decision == ApprovalDecision.APPROVE.value and resume_meta.get(
+                    "action_name") == SQL_APPROVAL_ACTION_NAME:
                 approved_sql = (resume_meta.get("action_args") or {}).get("sql")
                 if approved_sql:
                     try:
@@ -2680,16 +2612,15 @@ class GraphRunner:
                 )
             )
 
-
     def _handle_resume_exception(
-        self,
-        session_id: str,
-        resume_meta: Dict[str, Any],
-        resume_exc: Exception,
-        target_agent: Any,
-        effective_config: Dict[str, Any],
-        message_id: Optional[str],
-        decision: Optional[str],
+            self,
+            session_id: str,
+            resume_meta: Dict[str, Any],
+            resume_exc: Exception,
+            target_agent: Any,
+            effective_config: Dict[str, Any],
+            message_id: Optional[str],
+            decision: Optional[str],
     ) -> Generator[str, None, None]:
         """处理恢复执行时抛出的异常，区分 Interrupt 挂起和真实错误。"""
         err_msg = str(resume_exc)
@@ -2711,9 +2642,9 @@ class GraphRunner:
         log.exception(f"Resume non-interrupt failure: {err_msg}")
         # 兜底：部分模型在 resume 场景报错时，直接执行已审批 SQL
         if (
-            "1214" in err_msg
-            and resume_meta.get("action_name") == SQL_APPROVAL_ACTION_NAME
-            and decision == ApprovalDecision.APPROVE.value
+                "1214" in err_msg
+                and resume_meta.get("action_name") == SQL_APPROVAL_ACTION_NAME
+                and decision == ApprovalDecision.APPROVE.value
         ):
             approved_sql = (resume_meta.get("action_args") or {}).get("sql")
             if approved_sql:
@@ -2731,12 +2662,12 @@ class GraphRunner:
         yield self._fmt_sse(SseEventType.ERROR.value, f"任务恢复失败: {err_msg}")
 
     def _handle_resume_empty_result(
-        self,
-        session_id: str,
-        decision: Optional[str],
-        message_id: Optional[str],
-        target_agent: Any,
-        effective_config: Dict[str, Any],
+            self,
+            session_id: str,
+            decision: Optional[str],
+            message_id: Optional[str],
+            target_agent: Any,
+            effective_config: Dict[str, Any],
     ) -> Generator[str, None, None]:
         """处理恢复执行后无 AI 消息输出的情况。"""
         if decision == ApprovalDecision.REJECT.value:
@@ -2758,10 +2689,10 @@ class GraphRunner:
             yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_RESUME_EMPTY_RESULT)
 
     def _backfill_supervisor_state(
-        self,
-        supervisor_graph: Any,
-        session_id: str,
-        final_msgs: List[AIMessage],
+            self,
+            supervisor_graph: Any,
+            session_id: str,
+            final_msgs: List[AIMessage],
     ) -> None:
         """将子 Agent 恢复结果回填到 Supervisor 状态，保证会话连续性。"""
         if not final_msgs:
