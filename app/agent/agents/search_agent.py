@@ -1,9 +1,8 @@
-from typing import Annotated, TypedDict, List
+from typing import Annotated, List, TypedDict
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
-from langgraph.graph import StateGraph, START, END, add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.graph import add_messages
 
 from agent.base import BaseAgent
 from agent.graph_state import AgentRequest
@@ -57,84 +56,86 @@ class SearchAgent(BaseAgent):
         )
         self.graph = self._build_graph()
 
-    def _build_graph(self) -> Runnable:
-        """使用通用 ReAct 工厂构建搜索子图，消除重复拓扑样板。"""
-        workflow = StateGraph(SearchAgentState)
+    @staticmethod
+    def _latest_human_text(messages: List[BaseMessage]) -> str:
+        for msg in reversed(messages):
+            if isinstance(msg, HumanMessage):
+                content = msg.content
+                if isinstance(content, str):
+                    return content.strip()
+                return str(content or "").strip()
+        return ""
 
-        def _latest_human_text(messages: List[BaseMessage]) -> str:
-            for msg in reversed(messages):
-                if isinstance(msg, HumanMessage):
-                    content = msg.content
-                    if isinstance(content, str):
-                        return content.strip()
-                    return str(content or "").strip()
-            return ""
-
-        def _is_offtopic_weather_reply(user_text: str, answer_text: str) -> bool:
-            if not user_text or not answer_text:
-                return False
-            lower_user = user_text.lower()
-            lower_answer = answer_text.lower()
-            user_has_weather = any(k in lower_user for k in SEARCH_WEATHER_KEYWORDS)
-            user_has_estate = any(k in lower_user for k in SEARCH_REAL_ESTATE_KEYWORDS)
-            answer_weather_hits = sum(1 for k in SEARCH_WEATHER_KEYWORDS if k in lower_answer)
-            return (not user_has_weather) and user_has_estate and answer_weather_hits >= 2
-
-        def _has_recent_tool_failure(messages: List[BaseMessage]) -> bool:
-            """检测最近工具返回是否为超时/失败，命中后应快速收尾避免循环卡住。"""
-            recent = messages[-4:]
-            for msg in recent:
-                if not isinstance(msg, ToolMessage):
-                    continue
-                text = msg.content if isinstance(msg.content, str) else str(msg.content or "")
-                lower = text.lower()
-                if any(k in lower for k in ("搜索超时", "搜索失败", "联网检索异常", "timed out", "timeout", "error")):
-                    return True
+    @staticmethod
+    def _is_offtopic_weather_reply(user_text: str, answer_text: str) -> bool:
+        if not user_text or not answer_text:
             return False
+        lower_user = user_text.lower()
+        lower_answer = answer_text.lower()
+        user_has_weather = any(k in lower_user for k in SEARCH_WEATHER_KEYWORDS)
+        user_has_estate = any(k in lower_user for k in SEARCH_REAL_ESTATE_KEYWORDS)
+        answer_weather_hits = sum(1 for k in SEARCH_WEATHER_KEYWORDS if k in lower_answer)
+        return (not user_has_weather) and user_has_estate and answer_weather_hits >= 2
 
-        def model_node(state: SearchAgentState):
-            loop_count = int(state.get("tool_loop_count", 0) or 0)
-            if loop_count >= AGENT_LOOP_CONFIG.search_max_tool_loops:
-                return {
-                    "tool_loop_count": loop_count,
-                    "messages": [AIMessage(content=SEARCH_TOOL_LOOP_EXCEEDED_MESSAGE)],
-                }
-            if _has_recent_tool_failure(state.get("messages", [])):
-                return {
-                    "tool_loop_count": loop_count + 1,
-                    "messages": [AIMessage(content=SEARCH_TOOL_FAILURE_MESSAGE)],
-                }
-            chain = self.prompt | self.model_with_tools
-            ai_msg = chain.invoke(state)
-            if isinstance(ai_msg, AIMessage) and not getattr(ai_msg, "tool_calls", None):
-                user_text = _latest_human_text(state.get("messages", []))
-                answer_text = ai_msg.content if isinstance(ai_msg.content, str) else str(ai_msg.content or "")
-                if _is_offtopic_weather_reply(user_text, answer_text):
-                    log.warning("SearchAgent 检测到主题跑偏（房产问题误答天气），执行一次纠偏重试。")
-                    retry_messages = list(state.get("messages", []))
-                    retry_messages.append(
-                        HumanMessage(
-                            content=(
-                                f"纠偏要求：仅围绕当前问题回答，禁止天气播报。"
-                                f"当前问题是：{user_text}"
-                            )
+    @staticmethod
+    def _has_recent_tool_failure(messages: List[BaseMessage]) -> bool:
+        """检测最近工具返回是否为超时/失败，命中后应快速收尾避免循环卡住。"""
+        recent = messages[-4:]
+        for msg in recent:
+            if not isinstance(msg, ToolMessage):
+                continue
+            text = msg.content if isinstance(msg.content, str) else str(msg.content or "")
+            lower = text.lower()
+            if any(k in lower for k in ("搜索超时", "搜索失败", "联网检索异常", "timed out", "timeout", "error")):
+                return True
+        return False
+
+    def _model_node(self, state: SearchAgentState):
+        loop_count = int(state.get("tool_loop_count", 0) or 0)
+        if loop_count >= AGENT_LOOP_CONFIG.search_max_tool_loops:
+            return {
+                "tool_loop_count": loop_count,
+                "messages": [AIMessage(content=SEARCH_TOOL_LOOP_EXCEEDED_MESSAGE)],
+            }
+        if self._has_recent_tool_failure(state.get("messages", [])):
+            return {
+                "tool_loop_count": loop_count + 1,
+                "messages": [AIMessage(content=SEARCH_TOOL_FAILURE_MESSAGE)],
+            }
+        chain = self.prompt | self.model_with_tools
+        ai_msg = chain.invoke(state)
+        if isinstance(ai_msg, AIMessage) and not getattr(ai_msg, "tool_calls", None):
+            user_text = self._latest_human_text(state.get("messages", []))
+            answer_text = ai_msg.content if isinstance(ai_msg.content, str) else str(ai_msg.content or "")
+            if self._is_offtopic_weather_reply(user_text, answer_text):
+                log.warning("SearchAgent 检测到主题跑偏（房产问题误答天气），执行一次纠偏重试。")
+                retry_messages = list(state.get("messages", []))
+                retry_messages.append(
+                    HumanMessage(
+                        content=(
+                            f"纠偏要求：仅围绕当前问题回答，禁止天气播报。"
+                            f"当前问题是：{user_text}"
                         )
                     )
-                    retry_chain = self.guard_prompt | self.model_with_tools
-                    retry_msg = retry_chain.invoke({"messages": retry_messages})
-                    if isinstance(retry_msg, AIMessage):
-                        retry_text = retry_msg.content if isinstance(retry_msg.content, str) else str(retry_msg.content or "")
-                        if not getattr(retry_msg, "tool_calls", None) and _is_offtopic_weather_reply(user_text, retry_text):
-                            ai_msg = AIMessage(content=SEARCH_TOPIC_DRIFT_BLOCK_MESSAGE)
-                        else:
-                            ai_msg = retry_msg
-                    else:
+                )
+                retry_chain = self.guard_prompt | self.model_with_tools
+                retry_msg = retry_chain.invoke({"messages": retry_messages})
+                if isinstance(retry_msg, AIMessage):
+                    retry_text = retry_msg.content if isinstance(retry_msg.content, str) else str(retry_msg.content or "")
+                    if not getattr(retry_msg, "tool_calls", None) and self._is_offtopic_weather_reply(user_text, retry_text):
                         ai_msg = AIMessage(content=SEARCH_TOPIC_DRIFT_BLOCK_MESSAGE)
-            return {"tool_loop_count": loop_count + 1, "messages": [ai_msg]}
+                    else:
+                        ai_msg = retry_msg
+                else:
+                    ai_msg = AIMessage(content=SEARCH_TOPIC_DRIFT_BLOCK_MESSAGE)
+        return {"tool_loop_count": loop_count + 1, "messages": [ai_msg]}
+
+    def _build_graph(self) -> Runnable:
+        """使用通用 ReAct 工厂构建搜索子图，消除重复拓扑样板。"""
 
         return self._build_react_graph(
             state_schema=SearchAgentState,
-            model_node_fn=model_node,
+            model_node_fn=self._model_node,
             tools=self.tools,
             max_tool_loops=AGENT_LOOP_CONFIG.search_max_tool_loops,
             loop_exceeded_message=SEARCH_TOOL_LOOP_EXCEEDED_MESSAGE,

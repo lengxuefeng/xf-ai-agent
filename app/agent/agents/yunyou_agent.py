@@ -328,6 +328,13 @@ class YunyouAgent(BaseAgent):
             return text[: max_len - 1] + "…"
         return text
 
+    @staticmethod
+    def _holter_row_sort_key(row: Dict[str, Any]) -> int:
+        try:
+            return int(row.get("id"))
+        except Exception:
+            return -1
+
     @classmethod
     def _format_holter_rows(
         cls,
@@ -359,13 +366,7 @@ class YunyouAgent(BaseAgent):
             return "\n".join(base)
 
         if any("id" in r for r in records):
-            def sort_key(row: Dict[str, Any]) -> int:
-                try:
-                    return int(row.get("id"))
-                except Exception:
-                    return -1
-
-            records = sorted(records, key=sort_key, reverse=desc)
+            records = sorted(records, key=cls._holter_row_sort_key, reverse=desc)
         rows = records[:limit]
 
         columns = YUNYOU_HOLTER_TABLE_COLUMNS
@@ -613,6 +614,82 @@ class YunyouAgent(BaseAgent):
         rules = YunyouPrompt.EXECUTION_RULES.format(current_time, current_weekday)
         return (base_prompt or YunyouPrompt.DEFAULT_SYSTEM_ROLE) + rules
 
+    def _model_node(self, state: YunyouState):
+        """
+        模型处理节点。接收并响应最新对话。
+        """
+        loop_count = int(state.get("tool_loop_count", 0) or 0)
+        if loop_count >= AGENT_LOOP_CONFIG.yunyou_max_tool_loops:
+            return {
+                "tool_loop_count": loop_count,
+                "messages": [AIMessage(content=self.TOOL_LOOP_EXCEEDED_MESSAGE)],
+            }
+        recent_messages = state["messages"][-12:]
+        fast_path_response = self._try_direct_holter_list_query(recent_messages)
+        if fast_path_response:
+            return {"tool_loop_count": loop_count + 1, "messages": [AIMessage(content=fast_path_response)]}
+        if self._has_recent_tool_failure(recent_messages):
+            return {
+                "tool_loop_count": loop_count + 1,
+                "messages": [AIMessage(content=self._build_tool_failure_reply())],
+            }
+        chain = self.prompt | self.model_with_tools
+        try:
+            response = chain.invoke({"messages": recent_messages})
+            return {"tool_loop_count": loop_count + 1, "messages": [response]}
+        except Exception as exc:
+            log.exception(f"yunyou model_node 调用失败，执行降级回复: {exc}")
+            fallback_response = self._try_direct_holter_list_query(recent_messages)
+            if fallback_response:
+                return {"tool_loop_count": loop_count + 1, "messages": [AIMessage(content=fallback_response)]}
+            return {
+                "tool_loop_count": loop_count + 1,
+                "messages": [AIMessage(content=self._build_tool_failure_reply())],
+            }
+
+    def _human_review_node(self, state: YunyouState):
+        """
+        人工审批节点。检查生成的消息是否需要调用受保护的敏感工具。
+        如果需要调用，使用 LangGraph 原生 interrupt() 挂起等待外部审批。
+        """
+        last_message = state["messages"][-1]
+        if not isinstance(last_message, AIMessage) or not last_message.tool_calls:
+            return Command(goto=END)
+
+        sensitive_calls = [tc for tc in last_message.tool_calls if tc["name"] in self.SENSITIVE_TOOLS]
+        if not sensitive_calls:
+            return Command(goto="tools")
+
+        decision_payload = {
+            "message": YUNYOU_REVIEW_INTERRUPT_MESSAGE,
+            "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
+            "action_requests": [{
+                "type": "tool_approval", "name": call["name"], "args": call["args"],
+                "description": YUNYOU_REVIEW_DESCRIPTION, "id": call["id"],
+            } for call in sensitive_calls],
+        }
+        decision = interrupt(decision_payload)
+        action = decision.get("action") if isinstance(decision, dict) else decision
+
+        if action == ApprovalDecision.REJECT.value:
+            rejection_messages = [
+                ToolMessage(
+                    tool_call_id=call["id"], name=call["name"],
+                    content="Error: 管理员已拒绝执行该敏感操作。请婉拒用户的请求。"
+                ) for call in last_message.tool_calls
+            ]
+            return Command(goto="agent", update={"messages": rejection_messages})
+
+        return Command(goto="tools")
+
+    @staticmethod
+    def _should_continue(state: YunyouState):
+        """决定下一个节点是人机审核还是结束图执行。"""
+        last_message = state["messages"][-1]
+        if not isinstance(last_message, AIMessage) or not last_message.tool_calls:
+            return END
+        return "human_review"
+
     def _build_graph(self) -> Runnable:
         """
         构建并返回云柚业务的状态图 (StateGraph)。
@@ -636,97 +713,16 @@ class YunyouAgent(BaseAgent):
             MessagesPlaceholder(variable_name="messages"),
         ])
 
-        def model_node(state: YunyouState):
-            """
-            模型处理节点。接收并响应最新对话。
-            """
-            loop_count = int(state.get("tool_loop_count", 0) or 0)
-            if loop_count >= AGENT_LOOP_CONFIG.yunyou_max_tool_loops:
-                return {
-                    "tool_loop_count": loop_count,
-                    "messages": [AIMessage(content=self.TOOL_LOOP_EXCEEDED_MESSAGE)],
-                }
-            # 保留最近多轮消息，避免用户补充参数时丢失上文导致重复追问。
-            recent_messages = state["messages"][-12:]
-            fast_path_response = self._try_direct_holter_list_query(recent_messages)
-            if fast_path_response:
-                # 命中确定性查询路径：直接返回格式化结果，避免反复追问。
-                return {"tool_loop_count": loop_count + 1, "messages": [AIMessage(content=fast_path_response)]}
-            if self._has_recent_tool_failure(recent_messages):
-                # 工具已经明确失败，直接收敛输出，避免继续循环调用工具。
-                return {
-                    "tool_loop_count": loop_count + 1,
-                    "messages": [AIMessage(content=self._build_tool_failure_reply())],
-                }
-            chain = self.prompt | self.model_with_tools
-            try:
-                response = chain.invoke({"messages": recent_messages})
-                return {"tool_loop_count": loop_count + 1, "messages": [response]}
-            except Exception as exc:
-                # 兜底：模型/工具执行异常时，不让错误冒泡到上层主流程。
-                log.exception(f"yunyou model_node 调用失败，执行降级回复: {exc}")
-                fallback_response = self._try_direct_holter_list_query(recent_messages)
-                if fallback_response:
-                    return {"tool_loop_count": loop_count + 1, "messages": [AIMessage(content=fallback_response)]}
-                return {
-                    "tool_loop_count": loop_count + 1,
-                    "messages": [AIMessage(content=self._build_tool_failure_reply())],
-                }
-
-        def human_review_node(state: YunyouState):
-            """
-            人工审批节点。检查生成的消息是否需要调用受保护的敏感工具。
-            如果需要调用，使用 LangGraph 原生 interrupt() 挂起等待外部审批。
-            """
-            last_message = state["messages"][-1]
-            if not isinstance(last_message, AIMessage) or not last_message.tool_calls:
-                return Command(goto=END)
-
-            sensitive_calls = [tc for tc in last_message.tool_calls if tc["name"] in self.SENSITIVE_TOOLS]
-            if not sensitive_calls:
-                # 非敏感调用，直接去工具节点
-                return Command(goto="tools")
-
-            # 首次进入，需要人工审批，返回中断载荷
-            decision_payload = {
-                "message": YUNYOU_REVIEW_INTERRUPT_MESSAGE,
-                "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
-                "action_requests": [{
-                    "type": "tool_approval", "name": call["name"], "args": call["args"],
-                    "description": YUNYOU_REVIEW_DESCRIPTION, "id": call["id"],
-                } for call in sensitive_calls],
-            }
-            decision = interrupt(decision_payload)
-            action = decision.get("action") if isinstance(decision, dict) else decision
-
-            if action == ApprovalDecision.REJECT.value:
-                rejection_messages = [
-                    ToolMessage(
-                        tool_call_id=call["id"], name=call["name"],
-                        content="Error: 管理员已拒绝执行该敏感操作。请婉拒用户的请求。"
-                    ) for call in last_message.tool_calls
-                ]
-                return Command(goto="agent", update={"messages": rejection_messages})
-
-            return Command(goto="tools")
-
-        def should_continue(state: YunyouState):
-            """决定下一个节点是人机审核还是结束图执行。"""
-            last_message = state["messages"][-1]
-            if not isinstance(last_message, AIMessage) or not last_message.tool_calls:
-                return END
-            return "human_review"
-
         workflow = StateGraph(YunyouState)
-        workflow.add_node("agent", model_node)
-        workflow.add_node("human_review", human_review_node)
+        workflow.add_node("agent", self._model_node)
+        workflow.add_node("human_review", self._human_review_node)
         # 关键配置：工具异常转成 ToolMessage，而不是直接抛异常中断整个子图。
         workflow.add_node("tools", ToolNode(all_tools, handle_tool_errors=True))
 
         workflow.add_edge(START, "agent")
         # 修改原来的单向边界为条件判断，如果在分析阶段大模型决定不调用任何工具直接作答，直接 END
         # 如果调用了工具，则首先去人工审核节点
-        workflow.add_conditional_edges("agent", should_continue, ["human_review", END])
+        workflow.add_conditional_edges("agent", self._should_continue, ["human_review", END])
         # Tools 运行结束后，返回 agent 继续让大模型总结结果。避免图强制切断导致无响应。
         workflow.add_edge("tools", "agent")
         return workflow.compile(checkpointer=self.checkpointer)

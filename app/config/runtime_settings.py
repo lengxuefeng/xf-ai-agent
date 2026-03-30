@@ -489,18 +489,34 @@ WORKFLOW_REFLECTION_CONFIG = WorkflowReflectionConfig(
 # Chat 兜底节点流式开关（环境变量：CHAT_NODE_STREAM_ENABLED，默认 true）
 CHAT_NODE_STREAM_ENABLED = _as_bool("CHAT_NODE_STREAM_ENABLED", True)
 
-# Chat 兜底节点首 token 超时（环境变量：CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC，默认 8.0，范围 1-120）
+# LLM 传输层请求超时（环境变量：LLM_REQUEST_TIMEOUT_SEC，默认 100.0，范围 3-300）
+LLM_REQUEST_TIMEOUT_SEC = _as_float(
+    "LLM_REQUEST_TIMEOUT_SEC",
+    100.0,
+    min_value=3.0,
+    max_value=300.0,
+)
+
+# LLM 传输层最大重试次数（环境变量：LLM_MAX_RETRIES，默认 1，范围 0-5）
+LLM_MAX_RETRIES = _as_int(
+    "LLM_MAX_RETRIES",
+    1,
+    min_value=0,
+    max_value=5,
+)
+
+# Chat 兜底节点首 token 超时（环境变量：CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC，默认 20.0，范围 1-120）
 CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC = _as_float(
     "CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC",
-    8.0,
+    20.0,
     min_value=1.0,
     max_value=120.0,
 )
 
-# Chat 兜底节点总超时（环境变量：CHAT_NODE_TOTAL_TIMEOUT_SEC，默认 25.0，范围 2-300）
+# Chat 兜底节点总超时（环境变量：CHAT_NODE_TOTAL_TIMEOUT_SEC，默认 90.0，范围 2-300）
 CHAT_NODE_TOTAL_TIMEOUT_SEC = _as_float(
     "CHAT_NODE_TOTAL_TIMEOUT_SEC",
-    25.0,
+    90.0,
     min_value=2.0,
     max_value=300.0,
 )

@@ -171,6 +171,30 @@ class RequestCancellationService:
         if entry.async_event:
             await entry.async_event.wait()
 
+    async def _poll_disconnect(
+        self,
+        request_id: str,
+        request,
+        stop_event: asyncio.Event,
+        poll_interval: float,
+    ) -> None:
+        try:
+            while not stop_event.is_set():
+                try:
+                    disconnected = await asyncio.wait_for(
+                        request.is_disconnected(),
+                        timeout=poll_interval,
+                    )
+                except (asyncio.TimeoutError, Exception):
+                    disconnected = False
+                if disconnected:
+                    log.info(f"检测到客户端断连，触发取消。request_id={request_id[:16]}")
+                    self.cancel_request(request_id)
+                    break
+                await asyncio.sleep(poll_interval)
+        except asyncio.CancelledError:
+            pass
+
     @asynccontextmanager
     async def cancel_on_disconnect(
         self,
@@ -179,26 +203,14 @@ class RequestCancellationService:
         poll_interval: float = 0.5,
     ) -> AsyncIterator[None]:
         stop_event = asyncio.Event()
-
-        async def _poll_disconnect() -> None:
-            try:
-                while not stop_event.is_set():
-                    try:
-                        disconnected = await asyncio.wait_for(
-                            request.is_disconnected(),
-                            timeout=poll_interval,
-                        )
-                    except (asyncio.TimeoutError, Exception):
-                        disconnected = False
-                    if disconnected:
-                        log.info(f"检测到客户端断连，触发取消。request_id={request_id[:16]}")
-                        self.cancel_request(request_id)
-                        break
-                    await asyncio.sleep(poll_interval)
-            except asyncio.CancelledError:
-                pass
-
-        poll_task = asyncio.create_task(_poll_disconnect())
+        poll_task = asyncio.create_task(
+            self._poll_disconnect(
+                request_id=request_id,
+                request=request,
+                stop_event=stop_event,
+                poll_interval=poll_interval,
+            )
+        )
         try:
             yield
         finally:
@@ -254,4 +266,3 @@ class RequestCancellationService:
 
 
 runtime_cancel_manager = RequestCancellationService()
-

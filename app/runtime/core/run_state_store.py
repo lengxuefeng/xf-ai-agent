@@ -26,10 +26,42 @@ _WORKFLOW_STATUS_TO_RUN_STATUS = {
 class RunStateStore:
     """运行态快照存储。"""
 
-    def __init__(self) -> None:
+    def __init__(self, max_runs: int = 256) -> None:
         self._lock = threading.RLock()
+        self._max_runs = max(1, int(max_runs or 256))
         self._runs: Dict[str, RunStateSnapshot] = {}
         self._latest_by_session: Dict[str, str] = {}
+
+    def _remove_locked(self, run_id: str) -> None:
+        snapshot = self._runs.pop(run_id, None)
+        if snapshot and snapshot.session_id:
+            current_run_id = self._latest_by_session.get(snapshot.session_id)
+            if current_run_id == run_id:
+                self._latest_by_session.pop(snapshot.session_id, None)
+
+    def _prune_locked(self) -> None:
+        if len(self._runs) <= self._max_runs:
+            return
+
+        terminal_statuses = {
+            RunStatus.COMPLETED.value,
+            RunStatus.FAILED.value,
+            RunStatus.CANCELLED.value,
+            RunStatus.INTERRUPTED.value,
+            RunStatus.WAITING_APPROVAL.value,
+        }
+
+        for run_id, snapshot in list(self._runs.items()):
+            if len(self._runs) <= self._max_runs:
+                break
+            if snapshot.status in terminal_statuses:
+                self._remove_locked(run_id)
+
+        while len(self._runs) > self._max_runs:
+            oldest_run_id = next(iter(self._runs), None)
+            if not oldest_run_id:
+                break
+            self._remove_locked(oldest_run_id)
 
     def register_run(self, run_context: RunContext) -> RunStateSnapshot:
         snapshot = RunStateSnapshot(
@@ -45,6 +77,7 @@ class RunStateStore:
             self._runs[run_context.run_id] = snapshot
             if run_context.session_id:
                 self._latest_by_session[run_context.session_id] = run_context.run_id
+            self._prune_locked()
             return copy.deepcopy(snapshot)
 
     def record_workflow_event(self, run_id: str, payload: Dict[str, Any]) -> Optional[RunStateSnapshot]:
@@ -135,11 +168,7 @@ class RunStateStore:
 
     def remove(self, run_id: str) -> None:
         with self._lock:
-            snapshot = self._runs.pop(run_id, None)
-            if snapshot and snapshot.session_id:
-                current_run_id = self._latest_by_session.get(snapshot.session_id)
-                if current_run_id == run_id:
-                    self._latest_by_session.pop(snapshot.session_id, None)
+            self._remove_locked(run_id)
 
 
 run_state_store = RunStateStore()

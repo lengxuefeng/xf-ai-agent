@@ -8,10 +8,29 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import SecretStr
 
 from agent.llm.model_config import ModelConfig
+from config.runtime_settings import (
+    CHAT_NODE_TOTAL_TIMEOUT_SEC,
+    LLM_MAX_RETRIES,
+    LLM_REQUEST_TIMEOUT_SEC,
+    ROUTER_POLICY_CONFIG,
+    WORKFLOW_REFLECTION_CONFIG,
+)
 from utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 load_dotenv(verbose=True)
+
+
+def _default_transport_timeout_sec() -> float:
+    """
+    传输层超时需要略大于上层业务超时，避免由底层 HTTP 提前把调用打断。
+    """
+    return max(
+        float(LLM_REQUEST_TIMEOUT_SEC),
+        float(CHAT_NODE_TOTAL_TIMEOUT_SEC) + 10.0,
+        float(ROUTER_POLICY_CONFIG.router_llm_timeout_sec) + 5.0,
+        float(WORKFLOW_REFLECTION_CONFIG.llm_timeout_sec) + 5.0,
+    )
 
 
 def _common_generation_kwargs(config: ModelConfig) -> Dict[str, Any]:
@@ -38,10 +57,10 @@ def _common_transport_kwargs(config: ModelConfig) -> Dict[str, Any]:
     """
     extra = config.extra_params or {}
     timeout_sec = float(
-        extra.get("timeout_sec", os.getenv("LLM_REQUEST_TIMEOUT_SEC", 25))
+        extra.get("timeout_sec", os.getenv("LLM_REQUEST_TIMEOUT_SEC", _default_transport_timeout_sec()))
     )
     max_retries = int(
-        extra.get("max_retries", os.getenv("LLM_MAX_RETRIES", 1))
+        extra.get("max_retries", os.getenv("LLM_MAX_RETRIES", LLM_MAX_RETRIES))
     )
     timeout_sec = max(3.0, min(timeout_sec, 180.0))
     max_retries = max(0, min(max_retries, 5))

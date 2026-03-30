@@ -41,6 +41,10 @@ from utils.custom_logger import get_logger, LogTarget
 log = get_logger(__name__)
 
 
+async def _single_error_stream(detail: str):
+    yield format_error_event(detail)
+
+
 class ChatService:
     """聊天服务层：处理流式聊天请求、历史记录和配置管理"""
 
@@ -89,10 +93,8 @@ class ChatService:
             model_config = self._resolve_model_config(req, dynamic_model_config)
         except Exception as exc:
             log.exception(f"流式聊天准备阶段异常: {exc}", target=LogTarget.ALL)
-            async def _error_gen():
-                yield format_error_event(str(exc))
             return StreamingResponse(
-                _error_gen(),
+                _single_error_stream(str(exc)),
                 media_type="text/event-stream",
                 headers=self._get_stream_headers(),
             )
@@ -331,6 +333,8 @@ class ChatService:
                         session_id=session_id,
                         final_response=ai_response,
                     ),
+                    runtime_context,
+                    route_metrics_service.get_last_route(session_id),
                 )
 
     def _init_session_and_load_history(
@@ -383,6 +387,8 @@ class ChatService:
             error_occurred: bool,
             error_message: str,
             extra_data: Optional[Dict[str, Any]] = None,
+            runtime_context: Optional[Dict[str, Any]] = None,
+            route_snapshot: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         阻塞式落库。设计为可在 asyncio.to_thread 中调用的纯同步方法。
@@ -401,7 +407,7 @@ class ChatService:
                     tokens=ChatUtils.estimate_tokens(user_input + ai_response),
                     extra_data=extra_data,
                 )
-                chat_history_service.create_chat_message(db, user_id, chat_data)
+                chat_history_service.create_chat_message(db, user_id, chat_data, ensure_session=False)
 
             session_state_service.update_after_turn(
                 db=db,
@@ -409,6 +415,8 @@ class ChatService:
                 session_id=session_id,
                 user_input=user_input,
                 ai_response=final_content,
+                runtime_context=runtime_context,
+                route_snapshot=route_snapshot,
             )
 
     async def stream_chat_anonymous_async(
@@ -570,15 +578,18 @@ class ChatService:
                                 final_response=final_content,
                             ),
                         )
-                        chat_history_service.create_chat_message(db, user_id, chat_data)
+                        chat_history_service.create_chat_message(db, user_id, chat_data, ensure_session=False)
 
                     # 无论是否产出正文，都回写会话状态（轮次、路由快照、槽位补全）
+                    route_snapshot = route_metrics_service.get_last_route(session_id)
                     session_state_service.update_after_turn(
                         db=db,
                         user_id=user_id,
                         session_id=session_id,
                         user_input=user_input,
                         ai_response=final_content,
+                        runtime_context=runtime_context,
+                        route_snapshot=route_snapshot,
                     )
 
     def stream_chat_anonymous(

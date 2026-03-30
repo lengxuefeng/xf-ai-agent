@@ -21,6 +21,19 @@ log = get_logger(__name__)
 chat_router = APIRouter()
 
 
+async def _disconnect_aware_stream(original_body, request: Request, session_id: str):
+    try:
+        async with request_cancellation_service.cancel_on_disconnect(session_id, request):
+            async for chunk in original_body:
+                if await request.is_disconnected():
+                    log.info(f"客户端断连，停止 SSE 推送。session_id={session_id[:16]}")
+                    request_cancellation_service.cancel_request(session_id)
+                    break
+                yield chunk
+    finally:
+        request_cancellation_service.cleanup_request(session_id)
+
+
 def _attach_disconnect_cancellation(
     response: StreamingResponse,
     request: Request,
@@ -36,20 +49,7 @@ def _attach_disconnect_cancellation(
     """
     original_body = response.body_iterator
     request_cancellation_service.register_request(session_id)
-
-    async def _disconnect_aware_generator():
-        try:
-            async with request_cancellation_service.cancel_on_disconnect(session_id, request):
-                async for chunk in original_body:
-                    if await request.is_disconnected():
-                        log.info(f"客户端断连，停止 SSE 推送。session_id={session_id[:16]}")
-                        request_cancellation_service.cancel_request(session_id)
-                        break
-                    yield chunk
-        finally:
-            request_cancellation_service.cleanup_request(session_id)
-
-    response.body_iterator = _disconnect_aware_generator()
+    response.body_iterator = _disconnect_aware_stream(original_body, request, session_id)
     return response
 
 

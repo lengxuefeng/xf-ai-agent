@@ -163,9 +163,18 @@ class WorkerState(TypedDict):
 class _ChatNodeStreamFailure(Exception):
     """chat_node 首包/流式阶段失败。"""
 
-    def __init__(self, detail: str, *, partial_output_emitted: bool = False) -> None:
+    def __init__(
+        self,
+        detail: str,
+        *,
+        partial_output_emitted: bool = False,
+        partial_content: str = "",
+        live_streamed: bool = False,
+    ) -> None:
         super().__init__(detail)
         self.partial_output_emitted = partial_output_emitted
+        self.partial_content = str(partial_content or "")
+        self.live_streamed = bool(live_streamed)
 
 
 def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
@@ -179,6 +188,43 @@ def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
     ):
         return "模型服务连接异常，请稍后重试。", detail
     return "底层服务执行异常，请稍后重试。", detail
+
+
+def _build_partial_reply_note(exc: Exception) -> str:
+    """为已流出部分内容的失败场景补一条简短尾注。"""
+    detail = str(exc or "").strip()
+    lower = detail.lower()
+    if isinstance(exc, TimeoutError) or any(marker in lower for marker in SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS):
+        return "\n\n> 注：本次回答因响应超时提前结束，如需我继续，请直接回复“继续”。"
+    if isinstance(exc, ConnectionError) or any(
+        marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
+    ):
+        return "\n\n> 注：本次回答因连接异常提前结束，如需我继续，请直接回复“继续”。"
+    return "\n\n> 注：本次回答未完整结束，如需我继续，请直接回复“继续”。"
+
+
+def _build_partial_chat_message(
+    partial_content: str,
+    exc: Exception,
+    *,
+    live_streamed: bool,
+) -> Optional[AIMessage]:
+    """把部分输出整理成可继续展示的 AIMessage，避免整轮直接报错。"""
+    content = str(partial_content or "").strip()
+    if not content:
+        return None
+    note = _build_partial_reply_note(exc)
+    if note and note not in content:
+        content = f"{content.rstrip()}{note}"
+    return AIMessage(
+        content=content,
+        name="ChatAgent",
+        response_metadata={
+            "synthetic": True,
+            "live_streamed": bool(live_streamed),
+            "partial_failure": True,
+        },
+    )
 
 
 def _looks_like_sql_request(text: str) -> bool:
@@ -553,6 +599,33 @@ def _looks_like_compound_request(text: str) -> bool:
         complex_connector_hints=SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.COMPLEX_CONNECTOR_HINT],
     )
 
+
+def _worker_history_message_text(msg: BaseMessage) -> str:
+    try:
+        return _content_to_text(msg.content).strip().lower()
+    except Exception:
+        content_val = getattr(msg, "content", "")
+        return str(content_val or "").strip().lower()
+
+
+def _is_agent_history_relevant(agent_name: str, text: str) -> bool:
+    if not text:
+        return False
+    if agent_name == "yunyou_agent":
+        return _looks_like_holter_request(text)
+    if agent_name == "sql_agent":
+        return _looks_like_sql_request(text)
+    if agent_name == "weather_agent":
+        return _is_weather_actionable_clause(text) or _looks_like_weather_reuse_query(text)
+    if agent_name == "search_agent":
+        return _is_search_actionable_clause(text)
+    if agent_name == "medical_agent":
+        return _looks_like_medical_request(text)
+    if agent_name == "code_agent":
+        return _looks_like_code_request(text)
+    return True
+
+
 def _build_worker_history_messages_for_agent(
     *,
     agent_name: str,
@@ -574,40 +647,16 @@ def _build_worker_history_messages_for_agent(
     if not human_messages:
         return []
 
-    def _message_text(msg: BaseMessage) -> str:
-        try:
-            return _content_to_text(msg.content).strip().lower()
-        except Exception:
-            content_val = getattr(msg, "content", "")
-            return str(content_val or "").strip().lower()
-
-    def _is_relevant(text: str) -> bool:
-        if not text:
-            return False
-        if agent_name == "yunyou_agent":
-            return _looks_like_holter_request(text)
-        if agent_name == "sql_agent":
-            return _looks_like_sql_request(text)
-        if agent_name == "weather_agent":
-            return _is_weather_actionable_clause(text) or _looks_like_weather_reuse_query(text)
-        if agent_name == "search_agent":
-            return _is_search_actionable_clause(text)
-        if agent_name == "medical_agent":
-            return _looks_like_medical_request(text)
-        if agent_name == "code_agent":
-            return _looks_like_code_request(text)
-        return True  # CHAT 或未知 Agent 保留通用历史
-
     selected: List[BaseMessage] = []
     latest_msg = human_messages[-1]
-    latest_text = _message_text(latest_msg)
-    if agent_name in {"CHAT", "chat_node", ""} or _is_relevant(latest_text):
+    latest_text = _worker_history_message_text(latest_msg)
+    if agent_name in {"CHAT", "chat_node", ""} or _is_agent_history_relevant(agent_name, latest_text):
         selected.append(latest_msg)
 
     for msg in reversed(human_messages[:-1]):
         if len(selected) >= safe_limit:
             break
-        if _is_relevant(_message_text(msg)):
+        if _is_agent_history_relevant(agent_name, _worker_history_message_text(msg)):
             selected.append(msg)
 
     # 若一个相关历史都没命中，至少保留最新输入，避免子图收到空历史窗口。
@@ -830,6 +879,218 @@ def _run_agent_to_completion(
     raise RuntimeError(f"{agent_name} 执行失败: {agent_error}")
 
 
+def _finalize_domain_decision(
+    *,
+    decision: DomainDecision,
+    analysis: RequestAnalysisDecision,
+    session_id: str,
+    latest_user_text: str,
+    started_at: float,
+) -> dict:
+    route_metrics_service.record_domain_decision(
+        session_id=session_id,
+        user_text=latest_user_text,
+        domain=decision.data_domain,
+        confidence=decision.confidence,
+        source=decision.source,
+    )
+    elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+    domain_candidates = analysis.candidate_domains or [decision.data_domain]
+    intent_candidates = analysis.candidate_agents or []
+    log.info(
+        f"⏱️ Domain Router [{decision.source}] -> {decision.data_domain} "
+        f"(conf={decision.confidence:.2f})，耗时: {elapsed_ms}ms"
+    )
+    return {
+        "data_domain": decision.data_domain,
+        "domain_confidence": decision.confidence,
+        "domain_route_source": decision.source,
+        "domain_candidates": domain_candidates,
+        "intent_candidates": intent_candidates,
+        "route_strategy": analysis.route_strategy,
+        "route_reason": analysis.reason,
+        "domain_elapsed_ms": elapsed_ms,
+    }
+
+
+def _finalize_intent_decision(
+    *,
+    intent: str,
+    confidence: float,
+    is_complex: bool,
+    source: str,
+    session_id: str,
+    latest_user_text: str,
+    started_at: float,
+    direct_answer: str = "",
+) -> dict:
+    log.info(f"Tier-1 Router: intent=[{intent}], conf=[{confidence}], complex=[{is_complex}]")
+    route_metrics_service.record_intent_decision(
+        session_id=session_id,
+        user_text=latest_user_text,
+        intent=intent,
+        confidence=confidence,
+        source=source,
+    )
+    elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+    log.info(f"⏱️ Intent Router [{source}] -> {intent}，耗时: {elapsed_ms}ms")
+    return {
+        "intent": intent,
+        "intent_confidence": confidence,
+        "is_complex": is_complex,
+        "direct_answer": direct_answer,
+        "intent_elapsed_ms": elapsed_ms,
+    }
+
+
+def _task_sort_key(item: tuple[str, Any]) -> tuple[int, str]:
+    """按任务编号排序（t1/t2...），保证输出顺序稳定。"""
+    task_id = str(item[0])
+    match = re.search(r"\d+", task_id)
+    seq = int(match.group(0)) if match else 10**9
+    return seq, task_id
+
+
+def _publish_chat_live_chunk(run_id: str, text: str) -> bool:
+    if not (AGENT_LIVE_STREAM_ENABLED and run_id and text.strip()):
+        return False
+    agent_stream_bus.publish(
+        run_id=run_id,
+        agent_name="ChatAgent",
+        content=text,
+    )
+    return True
+
+
+def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[Any]:
+    compact_window = max(1, min(4, AGENT_LOOP_CONFIG.context_history_messages))
+    compact_history = recent_messages[-compact_window:]
+    return [("system", prompt), ("system", get_agent_date_context())] + compact_history
+
+
+def _retry_chat_compact_invoke(
+    *,
+    model: BaseChatModel,
+    runtime_config: RunnableConfig,
+    prompt: str,
+    recent_messages: List[Any],
+    total_timeout_sec: float,
+) -> str:
+    retry_timeout_sec = min(max(total_timeout_sec * 0.5, 10.0), 30.0)
+    response = _invoke_with_timeout(
+        lambda: model.invoke(_build_chat_retry_messages(prompt, recent_messages), config=runtime_config),
+        timeout_sec=retry_timeout_sec,
+        timeout_label="chat_node.retry_invoke",
+    )
+    return _content_to_text(getattr(response, "content", "")).strip()
+
+
+def _chat_stream_producer(
+    *,
+    model: BaseChatModel,
+    request_messages: List[Any],
+    runtime_config: RunnableConfig,
+    stop_signal: threading.Event,
+    event_queue: queue.Queue,
+) -> None:
+    try:
+        for chunk in model.stream(request_messages, config=runtime_config):
+            if stop_signal.is_set():
+                break
+            piece = _content_to_text(getattr(chunk, "content", chunk))
+            if piece:
+                event_queue.put(("chunk", piece))
+        event_queue.put(("done", None))
+    except Exception as exc:
+        event_queue.put(("error", exc))
+
+
+def _stream_chat_with_timeout(
+    *,
+    model: BaseChatModel,
+    request_messages: List[Any],
+    runtime_config: RunnableConfig,
+    run_id: str,
+    first_token_timeout_sec: float,
+    total_timeout_sec: float,
+) -> tuple[str, bool]:
+    """用队列桥接同步节点与流式模型，支持首 token/总时长双超时。"""
+    live_streamed = False
+    assembled_parts: list[str] = []
+    event_queue: queue.Queue = queue.Queue()
+    stop_signal = threading.Event()
+    producer_thread = threading.Thread(
+        target=_chat_stream_producer,
+        kwargs={
+            "model": model,
+            "request_messages": request_messages,
+            "runtime_config": runtime_config,
+            "stop_signal": stop_signal,
+            "event_queue": event_queue,
+        },
+        daemon=True,
+    )
+    producer_thread.start()
+
+    started = time.perf_counter()
+    first_deadline = started + max(0.1, first_token_timeout_sec)
+    total_deadline = started + max(0.2, total_timeout_sec)
+    first_chunk_seen = False
+
+    try:
+        while True:
+            now = time.perf_counter()
+            if now >= total_deadline:
+                stop_signal.set()
+                raise _ChatNodeStreamFailure(
+                    f"chat_node.total_timeout: {total_timeout_sec:.1f}s",
+                    partial_output_emitted=bool(assembled_parts),
+                    partial_content="".join(assembled_parts).strip(),
+                    live_streamed=live_streamed,
+                )
+
+            wait_timeout = min(0.2, max(0.01, total_deadline - now))
+            if not first_chunk_seen:
+                wait_timeout = min(wait_timeout, max(0.01, first_deadline - now))
+
+            try:
+                event_type, payload = event_queue.get(timeout=wait_timeout)
+            except queue.Empty:
+                if (not first_chunk_seen) and (time.perf_counter() >= first_deadline):
+                    stop_signal.set()
+                    raise _ChatNodeStreamFailure(
+                        f"chat_node.first_token_timeout: {first_token_timeout_sec:.1f}s",
+                        partial_output_emitted=bool(assembled_parts),
+                        partial_content="".join(assembled_parts).strip(),
+                        live_streamed=live_streamed,
+                    )
+                continue
+
+            if event_type == "chunk":
+                first_chunk_seen = True
+                chunk_text = str(payload)
+                assembled_parts.append(chunk_text)
+                if _publish_chat_live_chunk(run_id, chunk_text):
+                    live_streamed = True
+                continue
+
+            if event_type == "error":
+                raise _ChatNodeStreamFailure(
+                    str(payload),
+                    partial_output_emitted=bool(assembled_parts),
+                    partial_content="".join(assembled_parts).strip(),
+                    live_streamed=live_streamed,
+                )
+
+            if event_type == "done":
+                break
+    finally:
+        stop_signal.set()
+        producer_thread.join(timeout=0.2)
+
+    return "".join(assembled_parts).strip(), live_streamed
+
+
 # ==================== Tier-0.5: 数据域路由器 (Domain Router) ====================
 def domain_router_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """
@@ -849,36 +1110,6 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     latest_user_text = _latest_human_message(classify_messages)
     request_analysis = _analyze_request(latest_user_text)
     started_at = time.perf_counter()
-
-    def _finalize_domain(
-        decision: DomainDecision,
-        analysis: Optional[RequestAnalysisDecision] = None,
-    ) -> dict:
-        route_metrics_service.record_domain_decision(
-            session_id=session_id,
-            user_text=latest_user_text,
-            domain=decision.data_domain,
-            confidence=decision.confidence,
-            source=decision.source,
-        )
-        elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-        effective_analysis = analysis or request_analysis
-        domain_candidates = effective_analysis.candidate_domains or [decision.data_domain]
-        intent_candidates = effective_analysis.candidate_agents or []
-        log.info(
-            f"⏱️ Domain Router [{decision.source}] -> {decision.data_domain} "
-            f"(conf={decision.confidence:.2f})，耗时: {elapsed_ms}ms"
-        )
-        return {
-            "data_domain": decision.data_domain,
-            "domain_confidence": decision.confidence,
-            "domain_route_source": decision.source,
-            "domain_candidates": domain_candidates,
-            "intent_candidates": intent_candidates,
-            "route_strategy": effective_analysis.route_strategy,
-            "route_reason": effective_analysis.reason,
-            "domain_elapsed_ms": elapsed_ms,
-        }
 
     # follow-up 补充句优先继承上轮域
     if _is_followup_supplement(latest_user_text, classify_messages):
@@ -902,7 +1133,13 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
                 route_strategy=RouteStrategy.SINGLE_DOMAIN.value,
                 reason="followup_history",
             )
-            return _finalize_domain(decision, followup_analysis)
+            return _finalize_domain_decision(
+                decision=decision,
+                analysis=followup_analysis,
+                session_id=session_id,
+                latest_user_text=latest_user_text,
+                started_at=started_at,
+            )
 
     # 根因修复：多意图请求在 Domain 层即标记为“需要拆分”，防止被单域强路由吞掉。
     if (
@@ -911,7 +1148,13 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     ):
         primary_domain = (request_analysis.candidate_domains or ["GENERAL"])[0]
         decision = DomainDecision(data_domain=primary_domain, confidence=0.97, source="rule_multi_domain")
-        return _finalize_domain(decision, request_analysis)
+        return _finalize_domain_decision(
+            decision=decision,
+            analysis=request_analysis,
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 规则优先
     if _looks_like_holter_request(latest_user_text):
@@ -969,7 +1212,13 @@ def domain_router_node(state: GraphState, model: BaseChatModel, config: Runnable
         else RouteStrategy.SINGLE_DOMAIN.value,
         reason=request_analysis.reason,
     )
-    return _finalize_domain(decision, single_domain_analysis)
+    return _finalize_domain_decision(
+        decision=decision,
+        analysis=single_domain_analysis,
+        session_id=session_id,
+        latest_user_text=latest_user_text,
+        started_at=started_at,
+    )
 
 
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
@@ -990,94 +1239,195 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     latest_user_text = _latest_human_message(trimmed_messages)
     started_at = time.perf_counter()
 
-    def _finalize_intent(
-        intent: str,
-        confidence: float,
-        is_complex: bool,
-        source: str,
-        direct_answer: str = "",
-    ) -> dict:
-        log.info(f"Tier-1 Router: intent=[{intent}], conf=[{confidence}], complex=[{is_complex}]")
-        route_metrics_service.record_intent_decision(
-            session_id=session_id,
-            user_text=latest_user_text,
-            intent=intent,
-            confidence=confidence,
-            source=source,
-        )
-        elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-        log.info(f"⏱️ Intent Router [{source}] -> {intent}，耗时: {elapsed_ms}ms")
-        return {
-            "intent": intent,
-            "intent_confidence": confidence,
-            "is_complex": is_complex,
-            "direct_answer": direct_answer,
-            "intent_elapsed_ms": elapsed_ms,
-        }
-
     # 根因修复：多意图输入在 Intent 层直接标记复杂任务，强制走 Parent Planner。
     if route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value and len(intent_candidates) >= 2:
         log.info(
             "Intent multi-domain split: 命中多意图候选，转入 Parent Planner "
             f"(candidates={intent_candidates}, reason={route_reason})"
         )
-        return _finalize_intent("CHAT", max(domain_conf, 0.96), True, "analysis_multi_domain", "")
+        return _finalize_intent_decision(
+            intent="CHAT",
+            confidence=max(domain_conf, 0.96),
+            is_complex=True,
+            source="analysis_multi_domain",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 单域但有先后依赖，也强制走规划节点，避免“先查再总结”被误判为单兵。
     if route_strategy == RouteStrategy.COMPLEX_SINGLE_DOMAIN.value and len(intent_candidates) == 1:
         planned_intent = intent_candidates[0]
-        return _finalize_intent(planned_intent, max(domain_conf, 0.93), True, "analysis_complex_single", "")
+        return _finalize_intent_decision(
+            intent=planned_intent,
+            confidence=max(domain_conf, 0.93),
+            is_complex=True,
+            source="analysis_complex_single",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 天气追问优化：若上轮已给出天气事实，优先复用上下文做建议，不再重复调 weather_agent。
     if _can_reuse_weather_context(trimmed_messages, latest_user_text):
         log.info("Intent weather reuse: 复用最近天气上下文，直接路由 CHAT")
-        return _finalize_intent("CHAT", 0.94, False, "history_weather_reuse", "")
+        return _finalize_intent_decision(
+            intent="CHAT",
+            confidence=0.94,
+            is_complex=False,
+            source="history_weather_reuse",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 先处理“补充参数”场景：继承上轮领域，避免补充句被 SQL fast-path 截走。
     if _is_followup_supplement(latest_user_text, trimmed_messages):
         hinted_intent = _history_hint_intent(trimmed_messages, latest_user_text)
         if hinted_intent:
             log.info(f"Intent follow-up carry-over: route to [{hinted_intent}]")
-            return _finalize_intent(hinted_intent, 0.93, False, "followup_history", "")
+            return _finalize_intent_decision(
+                intent=hinted_intent,
+                confidence=0.93,
+                is_complex=False,
+                source="followup_history",
+                direct_answer="",
+                session_id=session_id,
+                latest_user_text=latest_user_text,
+                started_at=started_at,
+            )
 
     # 先按数据域强约束路由，避免跨域误查
     if data_domain == "YUNYOU_DB":
-        return _finalize_intent("yunyou_agent", max(domain_conf, 0.95), False, f"domain_{domain_source}", "")
+        return _finalize_intent_decision(
+            intent="yunyou_agent",
+            confidence=max(domain_conf, 0.95),
+            is_complex=False,
+            source=f"domain_{domain_source}",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
     if data_domain == "LOCAL_DB" and _looks_like_sql_request(latest_user_text):
-        return _finalize_intent("sql_agent", max(domain_conf, 0.94), False, f"domain_{domain_source}", "")
+        return _finalize_intent_decision(
+            intent="sql_agent",
+            confidence=max(domain_conf, 0.94),
+            is_complex=False,
+            source=f"domain_{domain_source}",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
     if data_domain == "WEB_SEARCH":
         hinted_intent = _history_hint_intent(trimmed_messages, latest_user_text)
         if _looks_like_location_fragment(latest_user_text) and hinted_intent in {"weather_agent", "search_agent"}:
             fallback_agent = hinted_intent
         else:
             fallback_agent = "weather_agent" if _looks_like_weather_request(latest_user_text) else "search_agent"
-        return _finalize_intent(fallback_agent, max(domain_conf, 0.9), False, f"domain_{domain_source}", "")
+        return _finalize_intent_decision(
+            intent=fallback_agent,
+            confidence=max(domain_conf, 0.9),
+            is_complex=False,
+            source=f"domain_{domain_source}",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # WEB/GENERAL 的短问题兜底规则：优先走单兵，避免误判成复杂 DAG。
     if _looks_like_weather_request(latest_user_text) and (not _is_weather_actionable_clause(latest_user_text)):
-        return _finalize_intent("CHAT", max(domain_conf, 0.9), False, "rule_weather_smalltalk", "")
+        return _finalize_intent_decision(
+            intent="CHAT",
+            confidence=max(domain_conf, 0.9),
+            is_complex=False,
+            source="rule_weather_smalltalk",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
     if _looks_like_weather_request(latest_user_text):
-        return _finalize_intent("weather_agent", max(domain_conf, 0.9), False, "rule_weather_fastpath", "")
+        return _finalize_intent_decision(
+            intent="weather_agent",
+            confidence=max(domain_conf, 0.9),
+            is_complex=False,
+            source="rule_weather_fastpath",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
     if data_domain == "GENERAL" and _looks_like_search_request(latest_user_text):
-        return _finalize_intent("search_agent", max(domain_conf, 0.88), False, "rule_search_fastpath", "")
+        return _finalize_intent_decision(
+            intent="search_agent",
+            confidence=max(domain_conf, 0.88),
+            is_complex=False,
+            source="rule_search_fastpath",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 规则快路由：医疗/代码问题优先落到垂直 Agent（若已注册）。
     if _looks_like_medical_request(latest_user_text) and "medical_agent" in MEMBERS:
-        return _finalize_intent("medical_agent", max(domain_conf, 0.9), False, "rule_medical_fastpath", "")
+        return _finalize_intent_decision(
+            intent="medical_agent",
+            confidence=max(domain_conf, 0.9),
+            is_complex=False,
+            source="rule_medical_fastpath",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
     if _looks_like_code_request(latest_user_text) and "code_agent" in MEMBERS:
-        return _finalize_intent("code_agent", max(domain_conf, 0.9), False, "rule_code_fastpath", "")
+        return _finalize_intent_decision(
+            intent="code_agent",
+            confidence=max(domain_conf, 0.9),
+            is_complex=False,
+            source="rule_code_fastpath",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 业务域优先路由：Holter/云柚相关查询，优先进入 yunyou_agent。
     # 注意：必须放在 SQL fast-path 之前，否则会被“order by/limit/数据库”误路由到 sql_agent。
     if _looks_like_holter_request(latest_user_text):
         log.info("Intent fast-path: 命中 Holter/云柚业务域，直接路由 yunyou_agent")
-        return _finalize_intent("yunyou_agent", 0.96, False, "rule_holter", "")
+        return _finalize_intent_decision(
+            intent="yunyou_agent",
+            confidence=0.96,
+            is_complex=False,
+            source="rule_holter",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # SQL 快速路由：用户明确表达了 SQL/排序/TopN 查询诉求时，优先进入 sql_agent。
     # 业务上“按 id 倒序/前 N 条/order by/limit”这类语句通常是直接查库意图。
     if _looks_like_sql_request(latest_user_text):
         log.info("Intent fast-path: 命中 SQL 语义特征，直接路由 sql_agent")
-        return _finalize_intent("sql_agent", 0.95, False, "rule_sql", "")
+        return _finalize_intent_decision(
+            intent="sql_agent",
+            confidence=0.95,
+            is_complex=False,
+            source="rule_sql",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # GENERAL 快速通道：纯闲聊默认直达 CHAT，避免慢速 LLM 分类。
     if (
@@ -1086,12 +1436,30 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
         and _looks_like_general_chat_request(latest_user_text)
     ):
         direct_complex = _looks_like_compound_request(latest_user_text)
-        return _finalize_intent("CHAT", 0.92, direct_complex, "rule_general_chat_fastpath", "")
+        return _finalize_intent_decision(
+            intent="CHAT",
+            confidence=0.92,
+            is_complex=direct_complex,
+            source="rule_general_chat_fastpath",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     # 默认不走 LLM 意图分类，直接按规则兜底。
     if not ROUTER_POLICY_CONFIG.intent_llm_fallback_enabled:
         direct_complex = _looks_like_compound_request(latest_user_text)
-        return _finalize_intent("CHAT", 0.85, direct_complex, "rule_default_chat", "")
+        return _finalize_intent_decision(
+            intent="CHAT",
+            confidence=0.85,
+            is_complex=direct_complex,
+            source="rule_default_chat",
+            direct_answer="",
+            session_id=session_id,
+            latest_user_text=latest_user_text,
+            started_at=started_at,
+        )
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", IntentRouterPrompt.get_system_prompt()),
@@ -1131,13 +1499,16 @@ def intent_router_node(state: GraphState, model: BaseChatModel, config: Runnable
     if decision.intent == "CHAT" and decision.is_complex and not _looks_like_compound_request(latest_user_text):
         log.info("Intent anti-overplanning: simple CHAT question downgraded to non-complex")
         decision.is_complex = False
-        
-    return _finalize_intent(
-        decision.intent,
-        decision.confidence,
-        decision.is_complex,
-        decision_source,
-        decision.direct_answer,
+
+    return _finalize_intent_decision(
+        intent=decision.intent,
+        confidence=decision.confidence,
+        is_complex=decision.is_complex,
+        source=decision_source,
+        direct_answer=decision.direct_answer,
+        session_id=session_id,
+        latest_user_text=latest_user_text,
+        started_at=started_at,
     )
 
 # ==================== Tier-2: DAG Planner & Dispatcher ====================
@@ -1293,6 +1664,7 @@ def dispatcher_node(state: GraphState) -> dict:
             # 检查所有依赖是否已完成
             deps_met = all(dep_id in done_ids for dep_id in deps)
             if deps_met:
+                new_task["wave"] = current_wave + 1
                 new_task["status"] = TaskStatus.DISPATCHED.value
                 active_tasks.append(new_task)
         new_task_list.append(new_task)
@@ -1389,6 +1761,7 @@ def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel
                     error=None,
                     agent=task.get("agent"),
                     elapsed_ms=elapsed_ms,
+                    wave=task.get("wave"),
                 )
             ]
         }
@@ -1414,6 +1787,7 @@ def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel
                         error=None,
                         agent=task.get("agent"),
                         elapsed_ms=elapsed_ms,
+                        wave=task.get("wave"),
                     )
                 ]
             }
@@ -1431,6 +1805,7 @@ def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel
                         error=None,
                         agent=task.get("agent"),
                         elapsed_ms=elapsed_ms,
+                        wave=task.get("wave"),
                     )
                 ],
                 "interrupt_payload": payload
@@ -1449,6 +1824,7 @@ def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel
                         error=None,
                         agent=task.get("agent"),
                         elapsed_ms=elapsed_ms,
+                        wave=task.get("wave"),
                     )
                 ],
                 "interrupt_payload": {
@@ -1469,6 +1845,7 @@ def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel
                     error=str(exc),
                     agent=task.get("agent"),
                     elapsed_ms=elapsed_ms,
+                    wave=task.get("wave"),
                 )
             ]
         }
@@ -1483,6 +1860,7 @@ def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel
                 error=None,
                 agent=task.get("agent"),
                 elapsed_ms=elapsed_ms,
+                wave=task.get("wave"),
             )
         ]
     }
@@ -1532,6 +1910,47 @@ def reducer_node(state: GraphState) -> dict:
         new_task_list.append(new_task)
 
     return {"task_list": new_task_list, "task_results": task_res_map}
+
+
+def _stringify_task_result(value: Any) -> str:
+    """把任务结果统一转成可判断的字符串。"""
+    if isinstance(value, str):
+        return value.strip()
+    try:
+        return json.dumps(value, ensure_ascii=False, indent=2).strip()
+    except Exception:
+        return str(value).strip()
+
+
+def _should_skip_reflection_after_parallel_success(
+    tasks: List[SubTask],
+    task_results: Dict[str, Any],
+    *,
+    planner_source: str,
+) -> bool:
+    """并行结果已充分时，直接进入聚合，避免额外反思超时。"""
+    if len(tasks) < 2:
+        return False
+
+    if planner_source not in {
+        "rule_split",
+        "deterministic_fallback",
+        "single_domain_guard",
+        "fallback_deterministic",
+    }:
+        return False
+
+    for task in tasks:
+        if str(task.get("status") or "") != TaskStatus.DONE.value:
+            return False
+        task_id = str(task.get("id") or "")
+        result_text = _stringify_task_result(task_results.get(task_id, task.get("result")))
+        if (not result_text) or result_text in {WORKER_CANCELLED_RESULT, WORKER_PENDING_APPROVAL_RESULT}:
+            return False
+        if result_text.lower().startswith("error:"):
+            return False
+
+    return True
 
 
 def _sanitize_reflection_tasks(
@@ -1618,13 +2037,24 @@ def reflection_node(state: GraphState, model: BaseChatModel, config: RunnableCon
             "reflection_summary": "已达到自动反思轮次上限，停止追加任务。",
         }
 
+    task_results = dict(state.get("task_results", {}) or {})
+    planner_source = str(state.get("planner_source") or "").strip()
+    if _should_skip_reflection_after_parallel_success(
+        tasks,
+        task_results,
+        planner_source=planner_source,
+    ):
+        return {
+            "reflection_source": "parallel_converged",
+            "reflection_summary": "并行子任务已全部完成且结果充分，直接进入最终汇总。",
+        }
+
     if (not WORKFLOW_REFLECTION_CONFIG.llm_enabled) or model is None:
         return {
             "reflection_source": "llm_disabled",
             "reflection_summary": "未启用 LLM 反思器，当前任务直接收敛。",
         }
 
-    task_results = dict(state.get("task_results", {}) or {})
     if not task_results:
         return {
             "reflection_source": "empty_results",
@@ -1756,9 +2186,58 @@ def _humanize_aggregator_error_text(text: str) -> str:
     return f"有一项子任务未能完成：{normalized}。"
 
 
+def _clean_aggregated_task_text(task: Optional[SubTask], text: str) -> str:
+    """清洗子任务结果中的内部噪音，保留用户可读内容。"""
+    normalized = str(text or "").replace("\r\n", "\n").strip()
+    if not normalized:
+        return "（该子任务未返回可展示内容）"
+
+    if normalized.lower().startswith("error:"):
+        return _humanize_aggregator_error_text(normalized)
+
+    normalized = re.sub(r"(?im)^\s*\[object Object\],?\s*$", "", normalized)
+    normalized = re.sub(r"\n{3,}", "\n\n", normalized).strip(" \n,")
+
+    if "[object Object]" in normalized:
+        lower_text = normalized.lower()
+        agent_name = str((task or {}).get("agent") or "").strip()
+        if agent_name in {"sql_agent", "yunyou_agent"} or any(
+            marker in lower_text for marker in ("sql", "select ", " from ", "holter")
+        ):
+            return "该查询子任务返回了损坏的结构化片段，暂时无法整理成可直接展示的结果。"
+
+    return normalized or "（该子任务未返回可展示内容）"
+
+
+def _build_aggregated_task_title(task_id: str, task: Optional[SubTask]) -> str:
+    """为聚合后的子任务结果生成更友好的小节标题。"""
+    agent_name = str((task or {}).get("agent") or "").strip()
+    agent_label = {
+        "search_agent": "联网检索",
+        "weather_agent": "天气信息",
+        "yunyou_agent": "业务数据",
+        "sql_agent": "数据库查询",
+        "medical_agent": "医疗建议",
+        "code_agent": "代码处理",
+        "CHAT": "综合答复",
+    }.get(agent_name, agent_name or f"任务 {task_id}")
+
+    raw_focus = str((task or {}).get("input") or "").strip()
+    focus = re.split(r"[。！？!?；;\n]", raw_focus)[0].strip()
+    focus = re.sub(r"^(请|帮我|帮忙|查询|检索|回答|说明|判断|告诉我)\s*", "", focus)
+    focus = focus.strip("，,。；;：: ")
+    if len(focus) > 24:
+        focus = focus[:24].rstrip("，,。；;：: ") + "..."
+
+    if focus and focus != agent_label:
+        return f"{agent_label} · {focus}"
+    return agent_label
+
+
 def _build_deterministic_aggregation(
     user_request: str,
     normalized_results: List[tuple[str, str]],
+    tasks_by_id: Optional[Dict[str, SubTask]] = None,
 ) -> str:
     """构造稳定、快速、不依赖额外大模型调用的最终聚合结果。"""
     if not normalized_results:
@@ -1766,23 +2245,33 @@ def _build_deterministic_aggregation(
 
     # 单任务场景直接返回正文，避免重复包裹影响阅读。
     if len(normalized_results) == 1:
-        return normalized_results[0][1]
+        task_id, text = normalized_results[0]
+        task = (tasks_by_id or {}).get(task_id)
+        return _clean_aggregated_task_text(task, text)
 
     success_parts: List[str] = []
     failure_parts: List[str] = []
-    for _task_id, text in normalized_results:
-        normalized_text = (text or "").strip()
+    for index, (task_id, text) in enumerate(normalized_results, start=1):
+        task = (tasks_by_id or {}).get(task_id)
+        normalized_text = _clean_aggregated_task_text(task, text)
         if not normalized_text:
             continue
-        if normalized_text.lower().startswith("error:"):
-            failure_parts.append(_humanize_aggregator_error_text(normalized_text))
+        if normalized_text.startswith("有一项子任务未能完成") or normalized_text.startswith("联网检索工具调用异常"):
+            failure_parts.append(normalized_text)
             continue
-        success_parts.append(normalized_text)
+        section_title = _build_aggregated_task_title(task_id, task)
+        success_parts.append(f"### {index}. {section_title}\n{normalized_text}")
 
-    if success_parts and failure_parts:
-        return "\n\n".join(success_parts + failure_parts).strip()
     if success_parts:
-        return "\n\n".join(success_parts).strip()
+        merged_parts = [
+            f"## 已并行完成 {len(normalized_results)} 个子任务",
+            "> 系统已按可并行部分同时执行，并整理为以下合并结果。",
+            *success_parts,
+        ]
+        if failure_parts:
+            merged_parts.append("### 需要注意")
+            merged_parts.extend(f"- {item}" for item in failure_parts)
+        return "\n\n".join(merged_parts).strip()
     if failure_parts:
         return "\n".join(failure_parts).strip()
     return "暂未获得可直接展示的结果，请稍后重试。"
@@ -1808,13 +2297,6 @@ def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableCon
         log.info(f"⏱️ Aggregator 空结果耗时: {elapsed_ms}ms")
         return {"messages": [msg], "direct_answer": "没有任何子任务结果可以聚合。"}
 
-    def _task_sort_key(item: tuple[str, Any]) -> tuple[int, str]:
-        """按任务编号排序（t1/t2...），保证输出顺序稳定。"""
-        task_id = str(item[0])
-        match = re.search(r"\d+", task_id)
-        seq = int(match.group(0)) if match else 10**9
-        return seq, task_id
-
     max_chars = AGGREGATOR_CONFIG.max_result_chars
     normalized_results: List[tuple[str, str]] = []
     for task_id, value in sorted(results.items(), key=_task_sort_key):
@@ -1823,7 +2305,16 @@ def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableCon
         )
 
     user_request = _latest_human_message(state.get("messages", []))
-    deterministic_answer = _build_deterministic_aggregation(user_request, normalized_results)
+    tasks_by_id = {
+        str(task.get("id") or ""): task
+        for task in tasks
+        if isinstance(task, dict) and task.get("id")
+    }
+    deterministic_answer = _build_deterministic_aggregation(
+        user_request,
+        normalized_results,
+        tasks_by_id=tasks_by_id,
+    )
 
     # 默认走确定性聚合，避免“任务都完成了但又卡在二次 LLM 聚合”的慢阻塞链路。
     if not AGGREGATOR_CONFIG.use_llm_aggregation:
@@ -1887,118 +2378,22 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
             or ""
         ).strip()
 
-        first_token_timeout_sec = float(CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC)
         total_timeout_sec = float(CHAT_NODE_TOTAL_TIMEOUT_SEC)
-
-        def _publish_live_chunk(text: str) -> bool:
-            if not (AGENT_LIVE_STREAM_ENABLED and run_id and text.strip()):
-                return False
-            agent_stream_bus.publish(
-                run_id=run_id,
-                agent_name="ChatAgent",
-                content=text,
-            )
-            return True
-
-        def _build_retry_messages() -> list[Any]:
-            compact_window = max(1, min(4, AGENT_LOOP_CONFIG.context_history_messages))
-            compact_history = recent_messages[-compact_window:]
-            return [("system", prompt), ("system", get_agent_date_context())] + compact_history
-
-        def _retry_compact_invoke() -> str:
-            retry_timeout_sec = min(max(total_timeout_sec * 0.4, 1.0), 8.0)
-            response = _invoke_with_timeout(
-                lambda: model.invoke(_build_retry_messages(), config=runtime_config),
-                timeout_sec=retry_timeout_sec,
-                timeout_label="chat_node.retry_invoke",
-            )
-            return _content_to_text(getattr(response, "content", "")).strip()
-
-        def _stream_with_timeout() -> tuple[str, bool]:
-            """
-            用队列桥接同步节点与流式模型，支持首 token/总时长双超时。
-
-            Returns:
-                (content, live_streamed)
-            """
-            live_streamed = False
-            assembled_parts: list[str] = []
-            event_queue: queue.Queue = queue.Queue()
-            stop_signal = threading.Event()
-
-            def _producer():
-                try:
-                    for chunk in model.stream(request_messages, config=runtime_config):
-                        if stop_signal.is_set():
-                            break
-                        piece = _content_to_text(getattr(chunk, "content", chunk))
-                        if piece:
-                            event_queue.put(("chunk", piece))
-                    event_queue.put(("done", None))
-                except Exception as exc:
-                    event_queue.put(("error", exc))
-
-            producer_thread = threading.Thread(target=_producer, daemon=True)
-            producer_thread.start()
-
-            started = time.perf_counter()
-            first_deadline = started + max(0.1, first_token_timeout_sec)
-            total_deadline = started + max(0.2, total_timeout_sec)
-            first_chunk_seen = False
-
-            try:
-                while True:
-                    now = time.perf_counter()
-                    if now >= total_deadline:
-                        stop_signal.set()
-                        raise _ChatNodeStreamFailure(
-                            f"chat_node.total_timeout: {total_timeout_sec:.1f}s",
-                            partial_output_emitted=bool(assembled_parts),
-                        )
-
-                    wait_timeout = min(0.2, max(0.01, total_deadline - now))
-                    if not first_chunk_seen:
-                        wait_timeout = min(wait_timeout, max(0.01, first_deadline - now))
-
-                    try:
-                        event_type, payload = event_queue.get(timeout=wait_timeout)
-                    except queue.Empty:
-                        if (not first_chunk_seen) and (time.perf_counter() >= first_deadline):
-                            stop_signal.set()
-                            raise _ChatNodeStreamFailure(
-                                f"chat_node.first_token_timeout: {first_token_timeout_sec:.1f}s",
-                                partial_output_emitted=bool(assembled_parts),
-                            )
-                        continue
-
-                    if event_type == "chunk":
-                        first_chunk_seen = True
-                        chunk_text = str(payload)
-                        assembled_parts.append(chunk_text)
-                        if _publish_live_chunk(chunk_text):
-                            live_streamed = True
-                        continue
-
-                    if event_type == "error":
-                        raise _ChatNodeStreamFailure(
-                            str(payload),
-                            partial_output_emitted=bool(assembled_parts),
-                        )
-
-                    if event_type == "done":
-                        break
-            finally:
-                stop_signal.set()
-                producer_thread.join(timeout=0.2)
-
-            return "".join(assembled_parts).strip(), live_streamed
+        first_token_timeout_sec = min(float(CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC), max(1.0, total_timeout_sec - 1.0))
 
         msg: Optional[AIMessage] = None
         final_error: Optional[Exception] = None
 
         if CHAT_NODE_STREAM_ENABLED:
             try:
-                streamed_content, live_streamed = _stream_with_timeout()
+                streamed_content, live_streamed = _stream_chat_with_timeout(
+                    model=model,
+                    request_messages=request_messages,
+                    runtime_config=runtime_config,
+                    run_id=run_id,
+                    first_token_timeout_sec=first_token_timeout_sec,
+                    total_timeout_sec=total_timeout_sec,
+                )
                 if streamed_content:
                     msg = AIMessage(
                         content=streamed_content,
@@ -2010,14 +2405,34 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
             except Exception as exc:
                 final_error = exc
                 partial_output_emitted = bool(getattr(exc, "partial_output_emitted", False))
+                partial_content = str(getattr(exc, "partial_content", "") or "").strip()
+                partial_live_streamed = bool(getattr(exc, "live_streamed", False))
+                if partial_content:
+                    partial_note = _build_partial_reply_note(exc)
+                    if partial_note and partial_live_streamed:
+                        _publish_chat_live_chunk(run_id, partial_note)
+                    msg = _build_partial_chat_message(
+                        partial_content,
+                        exc,
+                        live_streamed=partial_live_streamed,
+                    )
+                    final_error = None
+                    partial_output_emitted = False
                 can_retry = (
                     (not partial_output_emitted)
+                    and msg is None
                     and total_timeout_sec >= 1.0
                     and (not request_cancellation_service.is_cancelled(run_id))
                 )
                 if can_retry:
                     try:
-                        retry_content = _retry_compact_invoke()
+                        retry_content = _retry_chat_compact_invoke(
+                            model=model,
+                            runtime_config=runtime_config,
+                            prompt=prompt,
+                            recent_messages=recent_messages,
+                            total_timeout_sec=total_timeout_sec,
+                        )
                         if retry_content:
                             msg = AIMessage(
                                 content=retry_content,
@@ -2047,7 +2462,13 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
                 final_error = exc
                 if total_timeout_sec >= 1.0 and not request_cancellation_service.is_cancelled(run_id):
                     try:
-                        retry_content = _retry_compact_invoke()
+                        retry_content = _retry_chat_compact_invoke(
+                            model=model,
+                            runtime_config=runtime_config,
+                            prompt=prompt,
+                            recent_messages=recent_messages,
+                            total_timeout_sec=total_timeout_sec,
+                        )
                         if retry_content:
                             msg = AIMessage(
                                 content=retry_content,

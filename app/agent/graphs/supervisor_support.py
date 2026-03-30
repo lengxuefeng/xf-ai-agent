@@ -2,7 +2,7 @@ import json
 import queue
 import re
 import threading
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
@@ -47,6 +47,13 @@ def build_non_streaming_config(config):
     return runtime_config
 
 
+def _invoke_with_timeout_runner(callable_fn: Callable[..., Any], result_queue: queue.Queue) -> None:
+    try:
+        result_queue.put(("ok", callable_fn()))
+    except Exception as exc:
+        result_queue.put(("error", exc))
+
+
 def invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str):
     """
     为同步模型调用增加超时保护。
@@ -55,14 +62,12 @@ def invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str):
     """
     safe_timeout = max(1.0, float(timeout_sec or 1.0))
     result_queue: queue.Queue = queue.Queue(maxsize=1)
-
-    def _runner():
-        try:
-            result_queue.put(("ok", callable_fn()))
-        except Exception as exc:
-            result_queue.put(("error", exc))
-
-    worker = threading.Thread(target=_runner, daemon=True, name=f"invoke-timeout-{timeout_label}")
+    worker = threading.Thread(
+        target=_invoke_with_timeout_runner,
+        args=(callable_fn, result_queue),
+        daemon=True,
+        name=f"invoke-timeout-{timeout_label}",
+    )
     worker.start()
     try:
         status, payload = result_queue.get(timeout=safe_timeout)

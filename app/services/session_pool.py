@@ -68,6 +68,8 @@ class SessionPool:
         self._pools: Dict[str, list[_PoolEntry]] = defaultdict(list)
         # 每个 config_key 对应的原始 model_config，用于后台 refill
         self._configs: Dict[str, Dict[str, Any]] = {}
+        # 正在后台预热的配置，避免重复触发并发 refill
+        self._inflight_refills: set[str] = set()
         # 后台 refill 线程
         self._refill_thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
@@ -127,7 +129,8 @@ class SessionPool:
         """
         if not SESSION_POOL_CONFIG.enabled:
             return
-        self._register_config(model_config)
+        config_key = self._register_config(model_config)
+        self._trigger_refill_async(model_config, config_key=config_key)
 
     def borrow(
         self,
@@ -195,13 +198,41 @@ class SessionPool:
         stable_json = json.dumps(model_config or {}, sort_keys=True, ensure_ascii=False)
         return hashlib.md5(stable_json.encode("utf-8")).hexdigest()
 
-    def _register_config(self, model_config: Dict[str, Any]) -> None:
+    def _register_config(self, model_config: Dict[str, Any]) -> str:
         """内部：注册配置（不加锁，调用方负责）。"""
         key = self._build_config_key(model_config)
         with self._lock:
             if key not in self._configs:
                 self._configs[key] = dict(model_config)
                 log.debug(f"SessionPool 注册新配置，config_key={key[:8]}")
+        return key
+
+    def _trigger_refill_async(self, model_config: Dict[str, Any], *, config_key: Optional[str] = None) -> None:
+        """为新配置立即触发一次后台预热，减少首轮冷启动抖动。"""
+        if not SESSION_POOL_CONFIG.enabled or self._stop_event.is_set():
+            return
+
+        key = config_key or self._build_config_key(model_config)
+        with self._lock:
+            if key in self._inflight_refills:
+                return
+            self._inflight_refills.add(key)
+
+        threading.Thread(
+            target=self._run_prefill_task,
+            args=(dict(model_config), key),
+            daemon=True,
+            name=f"session-pool-prefill-{key[:8]}",
+        ).start()
+
+    def _run_prefill_task(self, model_config: Dict[str, Any], config_key: str) -> None:
+        try:
+            self._refill_once(model_config)
+        except Exception as exc:
+            log.warning(f"SessionPool 异步预热异常，config_key={config_key[:8]}: {exc}")
+        finally:
+            with self._lock:
+                self._inflight_refills.discard(config_key)
 
     def _try_pop(self, config_key: str) -> Optional[_PoolEntry]:
         """尝试从对应队列中取出一个未过期实例，线程安全。"""

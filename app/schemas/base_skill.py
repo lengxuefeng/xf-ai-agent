@@ -145,27 +145,25 @@ class ConfigurableSkillMiddleware(AgentMiddleware):
             )
         return "\n".join(skills_list)
 
+    def _load_skill(self, skill_name: str) -> str:
+        """将技能的完整内容加载到代理（Agent）的上下文中。"""
+        for skill in self.skills:
+            if skill["name"] == skill_name:
+                log.info(f"TOOL_USE: Agent 正在加载技能 '{skill_name}'")
+                return f"已加载技能: {skill_name}\n\n{skill['content']}"
+
+        available = ", ".join(skill["name"] for skill in self.skills)
+        return f"未找到技能 '{skill_name}'。当前可用技能: {available}"
+
     def _create_load_skill_tool(self):
-        """创建一个闭包函数作为 Tool，使其能访问 self.skills"""
-        current_skills = self.skills
-
-        @tool
-        def load_skill(skill_name: str) -> str:
-            """将技能的完整内容加载到代理（Agent）的上下文中。
-            当你需要处理特定类型请求的详细信息时使用此工具。
-
-            Args:
-                skill_name: 要加载的技能名称
-            """
-            for skill in current_skills:
-                if skill["name"] == skill_name:
-                    log.info(f"TOOL_USE: Agent 正在加载技能 '{skill_name}'")
-                    return f"已加载技能: {skill_name}\n\n{skill['content']}"
-
-            available = ", ".join(s["name"] for s in current_skills)
-            return f"未找到技能 '{skill_name}'。当前可用技能: {available}"
-
-        return load_skill
+        """创建技能加载 Tool。"""
+        return tool(
+            "load_skill",
+            description=(
+                "将技能的完整内容加载到代理（Agent）的上下文中。"
+                "当你需要处理特定类型请求的详细信息时使用此工具。"
+            ),
+        )(self._load_skill)
 
     def get_tools(self) -> List[Callable]:
         """提供给外部 Agent 使用的工具列表。"""

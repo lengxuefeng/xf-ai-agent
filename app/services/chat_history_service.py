@@ -144,10 +144,18 @@ class ChatHistoryService:
         # get_by_session_id(order_desc=True) 返回倒序，这里翻转为正序
         return list(reversed(rows))
 
-    def create_chat_message(self, db: Session, user_id: int, req: ChatMessageCreate):
+    def create_chat_message(
+        self,
+        db: Session,
+        user_id: int,
+        req: ChatMessageCreate,
+        *,
+        ensure_session: bool = True,
+    ):
         """创建一轮消息记录，并兼容旧字段 model -> model_name 的映射。"""
         # 确保会话存在
-        self.get_or_create_session(db, user_id, req.session_id, req.user_content[:20])
+        if ensure_session:
+            self.get_or_create_session(db, user_id, req.session_id, req.user_content[:20])
         data = req.model_dump()
         data['user_id'] = user_id
         # 兼容处理：Schema 里的 model 转为 DB 里的 model_name

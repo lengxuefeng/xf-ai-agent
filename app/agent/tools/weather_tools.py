@@ -75,20 +75,22 @@ class WeatherAPIClient:
         raise ValueError(f"未找到城市：{city_name}")
 
 
+def _coerce_float(value: object) -> Optional[float]:
+    try:
+        return float(value)
+    except Exception:
+        return None
+
+
+def _coerce_int(value: object) -> Optional[int]:
+    try:
+        return int(float(value))
+    except Exception:
+        return None
+
+
 def format_weather_data(weather_data: Dict, city: str) -> str:
     """格式化天气数据为更自然、更适合直接展示给用户的文本。"""
-
-    def _to_float(value: object) -> Optional[float]:
-        try:
-            return float(value)
-        except Exception:
-            return None
-
-    def _to_int(value: object) -> Optional[int]:
-        try:
-            return int(float(value))
-        except Exception:
-            return None
 
     temp = weather_data.get("temp", "未知")
     feels_like = weather_data.get("feelsLike", "未知")
@@ -101,11 +103,11 @@ def format_weather_data(weather_data: Dict, city: str) -> str:
     obs_time = weather_data.get("obsTime", "未知")
 
     tips: list[str] = []
-    temp_num = _to_float(temp)
-    feels_like_num = _to_float(feels_like)
-    humidity_num = _to_int(humidity)
-    wind_scale_num = _to_int(wind_scale)
-    precip_num = _to_float(precip)
+    temp_num = _coerce_float(temp)
+    feels_like_num = _coerce_float(feels_like)
+    humidity_num = _coerce_int(humidity)
+    wind_scale_num = _coerce_int(wind_scale)
+    precip_num = _coerce_float(precip)
 
     if precip_num is not None and precip_num > 0:
         tips.append("外出建议带伞")

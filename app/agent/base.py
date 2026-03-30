@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+import functools
 import re
 from typing import Generator, Any, Dict, Optional
 from langchain_core.messages import AIMessageChunk, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import Runnable, RunnableConfig
-from langgraph.graph import START, StateGraph
+from langgraph.graph import END, START, StateGraph
 from agent.graph_state import AgentRequest
 from agent.graphs.checkpointer import get_checkpointer
 from constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
@@ -23,6 +24,53 @@ log = get_logger(__name__)
 2. 绑定和管理由于多轮对话产生的 Checkpointer 状态持久化。
 3. 统一规范流式输出与图执行的生命周期隔离机制。
 """
+
+
+def _unwrap_interrupt_candidate(obj: Any) -> Optional[dict]:
+    if obj is None:
+        return None
+
+    if isinstance(obj, dict):
+        if "action_requests" in obj or "allowed_decisions" in obj or "message" in obj:
+            return obj
+        return None
+
+    if isinstance(obj, (list, tuple)):
+        for item in obj:
+            payload = _unwrap_interrupt_candidate(item)
+            if payload:
+                return payload
+        return None
+
+    if hasattr(obj, "value"):
+        return _unwrap_interrupt_candidate(getattr(obj, "value"))
+
+    return None
+
+
+def _guarded_model_node(
+    state,
+    *,
+    model_node_fn,
+    max_tool_loops: int,
+    loop_exceeded_message: str,
+):
+    """在业务 model_node 外包一层循环上限保护。"""
+    loop_count = int(state.get("tool_loop_count", 0) or 0)
+    if loop_count >= max_tool_loops:
+        from langchain_core.messages import AIMessage
+        return {
+            "tool_loop_count": loop_count,
+            "messages": [AIMessage(content=loop_exceeded_message)],
+        }
+    return model_node_fn(state)
+
+
+def _route_after_agent(state, *, max_tool_loops: int, tools_condition_fn):
+    """条件边：循环超限直接 END，否则走 tools_condition 判断。"""
+    if int(state.get("tool_loop_count", 0) or 0) > max_tool_loops:
+        return END
+    return tools_condition_fn(state)
 
 
 class BaseAgent(ABC):
@@ -140,30 +188,8 @@ class BaseAgent(ABC):
         if getattr(exc, "args", None):
             candidates.extend(list(exc.args))
 
-        def _unwrap(obj: Any) -> Optional[dict]:
-            if obj is None:
-                return None
-
-            if isinstance(obj, dict):
-                if "action_requests" in obj or "allowed_decisions" in obj or "message" in obj:
-                    return obj
-                return None
-
-            if isinstance(obj, (list, tuple)):
-                for item in obj:
-                    payload = _unwrap(item)
-                    if payload:
-                        return payload
-                return None
-
-            # LangGraph Interrupt 对象通常有 value 字段
-            if hasattr(obj, "value"):
-                return _unwrap(getattr(obj, "value"))
-
-            return None
-
         for c in candidates:
-            payload = _unwrap(c)
+            payload = _unwrap_interrupt_candidate(c)
             if payload:
                 return payload
         return None
@@ -214,30 +240,27 @@ class BaseAgent(ABC):
 
         workflow = StateGraph(state_schema)
 
-        def _guarded_model_node(state):
-            """在业务 model_node 外包一层循环上限保护。"""
-            loop_count = int(state.get("tool_loop_count", 0) or 0)
-            if loop_count >= max_tool_loops:
-                from langchain_core.messages import AIMessage
-                return {
-                    "tool_loop_count": loop_count,
-                    "messages": [AIMessage(content=loop_exceeded_message)],
-                }
-            return model_node_fn(state)
-
-        def _route_after_agent(state):
-            """条件边：循环超限直接 END，否则走 tools_condition 判断。"""
-            if int(state.get("tool_loop_count", 0) or 0) > max_tool_loops:
-                from langgraph.graph import END
-                return END
-            return tools_condition(state)
-
         tool_node = ToolNode(tools)
 
-        workflow.add_node("agent", _guarded_model_node)
+        workflow.add_node(
+            "agent",
+            functools.partial(
+                _guarded_model_node,
+                model_node_fn=model_node_fn,
+                max_tool_loops=max_tool_loops,
+                loop_exceeded_message=loop_exceeded_message,
+            ),
+        )
         workflow.add_node("tools", tool_node)
         workflow.add_edge(START, "agent")
-        workflow.add_conditional_edges("agent", _route_after_agent)
+        workflow.add_conditional_edges(
+            "agent",
+            functools.partial(
+                _route_after_agent,
+                max_tool_loops=max_tool_loops,
+                tools_condition_fn=tools_condition,
+            ),
+        )
         workflow.add_edge("tools", "agent")
 
         return workflow.compile(checkpointer=self.checkpointer)

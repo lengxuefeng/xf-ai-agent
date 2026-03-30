@@ -1,5 +1,5 @@
 from typing import Annotated, TypedDict, List
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, START, END, add_messages
@@ -39,18 +39,15 @@ class MedicalAgent(BaseAgent):
         )
         self.graph = self._build_graph()
 
+    def _model_node(self, state: MedicalAgentState):
+        chain = self.prompt | self.llm
+        response = chain.invoke(state)
+        response.content += MedicalPrompt.DISCLAIMER
+        return {"messages": [response]}
+
     def _build_graph(self) -> Runnable:
         workflow = StateGraph(MedicalAgentState)
-
-        def model_node(state: MedicalAgentState):
-            chain = self.prompt | self.llm
-            response = chain.invoke(state)
-            
-            # 附加免责声明
-            response.content += MedicalPrompt.DISCLAIMER
-            return {"messages": [response]}
-
-        workflow.add_node("agent", model_node)
+        workflow.add_node("agent", self._model_node)
         workflow.add_edge(START, "agent")
         workflow.add_edge("agent", END)
 

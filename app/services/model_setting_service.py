@@ -15,6 +15,11 @@ from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 class ModelSettingService:
     """系统模型服务业务逻辑层"""
 
+    @staticmethod
+    def _contains_any(text: str, keywords) -> bool:
+        """判断文本是否命中任意关键词。"""
+        return any(keyword in text for keyword in keywords)
+
     def get_model_services(self, db: Session, user_id: int = None):
         """获取系统预定义的模型服务配置"""
         # 现在返回所有启用的系统模型服务，不再按用户过滤
@@ -94,29 +99,25 @@ class ModelSettingService:
         
         if not isinstance(models, list):
             return categories
-
-        def _contains_any(text: str, keywords) -> bool:
-            """判断文本是否命中任意关键词。"""
-            return any(k in text for k in keywords)
         
         for model in models:
             model_lower = model.lower().strip()
             
             # 嵌入模型关键词 - 优先级最高
             if (
-                _contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.EMBEDDING])
+                self._contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.EMBEDDING])
                 or all(k in model_lower for k in DISTILBERT_EMBED_MARKERS)
                 or model_lower in EMBEDDING_EXACT_NAMES
             ):
                 categories['embedding'].append(model)
             # 视觉模型关键词 - 第二优先级  
             elif (
-                _contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.VISION])
+                self._contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.VISION])
                 or all(k in model_lower for k in CLAUDE_VISION_MARKERS)
             ):
                 categories['vision'].append(model)
             # 对话模型关键词 - 第三优先级
-            elif _contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.CHAT]):
+            elif self._contains_any(model_lower, MODEL_CATEGORY_KEYWORDS[ModelCategory.CHAT]):
                 categories['chat'].append(model)
             else:
                 categories['other'].append(model)

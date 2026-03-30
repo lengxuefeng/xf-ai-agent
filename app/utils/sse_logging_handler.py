@@ -61,16 +61,14 @@ class SSELoggingHandler(logging.Handler):
         self.output_queue = output_queue
         self.default_show_in_thinking = default_show_in_thinking
         self.filters = []
+        self.addFilter(self._capture_filter)
 
-        # 添加过滤器，只捕获特定模式的日志
-        def log_filter(record: logging.LogRecord) -> bool:
-            # 检查日志名称是否匹配
-            for pattern in self.CAPTURE_PATTERNS:
-                if pattern in record.name.lower():
-                    return True
-            return False
-
-        self.addFilter(log_filter)
+    def _capture_filter(self, record: logging.LogRecord) -> bool:
+        """只捕获约定模块范围内的日志。"""
+        for pattern in self.CAPTURE_PATTERNS:
+            if pattern in record.name.lower():
+                return True
+        return False
 
     def emit(self, record: logging.LogRecord) -> None:
         """

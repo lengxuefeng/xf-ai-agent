@@ -17,6 +17,22 @@ from utils.custom_logger import get_logger
 log = get_logger(__name__)
 
 
+class _ModelTokenCounter:
+    """对模型 token 计数能力做安全包装，失败时回退本地估算。"""
+
+    def __init__(self, get_tokens) -> None:
+        self._get_tokens = get_tokens
+
+    def __call__(self, messages: List[BaseMessage]) -> int:
+        try:
+            value = self._get_tokens(messages)
+            if isinstance(value, (int, float)) and value > 0:
+                return int(value)
+        except Exception:
+            pass
+        return _estimate_tokens_from_messages(messages)
+
+
 def _message_text(msg: BaseMessage) -> str:
     """将消息内容规范化为字符串"""
     # 获取消息内容
@@ -102,17 +118,7 @@ def _build_token_counter(model: Optional[Any]) -> Any:
             return "approximate"
     except Exception:
         return "approximate"
-
-    def _counter(msgs: List[BaseMessage]) -> int:
-        try:
-            value = get_tokens(msgs)
-            if isinstance(value, (int, float)) and value > 0:
-                return int(value)
-        except Exception:
-            pass
-        return _estimate_tokens_from_messages(msgs)
-
-    return _counter
+    return _ModelTokenCounter(get_tokens)
 
 
 def compress_history_messages(

@@ -110,20 +110,28 @@ class SessionStateService:
         session_id: str,
         user_input: str,
         ai_response: str = "",
+        runtime_context: Optional[Dict[str, Any]] = None,
+        route_snapshot: Optional[Dict[str, Any]] = None,
     ):
         """在一轮对话结束后回写会话状态（轮次 + 路由快照 + 槽位）。"""
         # 读取会话状态（不存在则创建）
         state = self.get_or_create_state(db, user_id, session_id)
-        # 读取旧槽位
-        existed_slots = self._normalize_slots(state.slots)
-        # 从用户输入再提取一遍，兜底补齐漏提取场景
-        extracted_slots = self._extract_slots_from_text(user_input)
-        # 合并最新槽位
-        merged_slots = self._merge_slots(existed_slots, extracted_slots)
-        # 构造摘要
-        summary_text = self._build_summary_text(merged_slots)
+        context_slots = (runtime_context or {}).get("context_slots")
+        context_summary = (runtime_context or {}).get("context_summary")
+        if isinstance(context_slots, dict):
+            merged_slots = self._normalize_slots(context_slots)
+            summary_text = str(context_summary or "").strip() or self._build_summary_text(merged_slots)
+        else:
+            # 读取旧槽位
+            existed_slots = self._normalize_slots(state.slots)
+            # 从用户输入再提取一遍，兜底补齐漏提取场景
+            extracted_slots = self._extract_slots_from_text(user_input)
+            # 合并最新槽位
+            merged_slots = self._merge_slots(existed_slots, extracted_slots)
+            # 构造摘要
+            summary_text = self._build_summary_text(merged_slots)
         # 获取最近路由快照，用于后续排障和审计
-        last_route = route_metrics_service.get_last_route(session_id)
+        last_route = route_snapshot if isinstance(route_snapshot, dict) else route_metrics_service.get_last_route(session_id)
         # 更新轮次计数
         next_turn_count = int(getattr(state, "turn_count", 0) or 0) + 1
 

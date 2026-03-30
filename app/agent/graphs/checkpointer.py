@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # app/agent/graphs/checkpointer.py
 import atexit
+import functools
 import inspect
 import os
 import threading
@@ -352,11 +353,9 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         attr = getattr(saver, name)
         if not callable(attr):
             return attr
-
-        def _wrapped(*args, **kwargs):
-            return self._call_with_retry(name, *args, **kwargs)
-
-        return _wrapped
+        wrapped = functools.partial(self._call_with_retry, name)
+        functools.update_wrapper(wrapped, attr)
+        return wrapped
 
 
 _DURABLE_KINDS = {"supervisor", "sql_agent", "yunyou_agent"}

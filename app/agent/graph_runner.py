@@ -47,6 +47,7 @@ from config.runtime_settings import (
     AGENT_LIVE_STREAM_ENABLED,
     AGENT_LOOP_CONFIG,
     GRAPH_RUNNER_TUNING,
+    SESSION_POOL_CONFIG,
 )
 from constants.agent_messages import GRAPH_RUNNER_REJECTED_MESSAGE
 from constants.approval_constants import (
@@ -97,6 +98,101 @@ _DISPLAY_NUMBERED_LIST_RE = re.compile(r"([：:。；;])\s*(\d+\.)")
 _DISPLAY_BULLET_LIST_RE = re.compile(r"([：:。；;])\s*([-*])\s+(?=\S)")
 
 
+class _CodeBlockStash:
+    def __init__(self) -> None:
+        self.blocks: List[str] = []
+
+    def __call__(self, match: re.Match[str]) -> str:
+        self.blocks.append(match.group(0))
+        return f"@@CODE_BLOCK_{len(self.blocks) - 1}@@"
+
+    def restore(self, text: str) -> str:
+        normalized = text
+        for index, block in enumerate(self.blocks):
+            normalized = normalized.replace(f"@@CODE_BLOCK_{index}@@", block)
+        return normalized
+
+
+class _GraphStreamAsyncBridge:
+    def __init__(
+        self,
+        *,
+        runner: "GraphRunner",
+        loop: asyncio.AbstractEventLoop,
+        event_queue: asyncio.Queue,
+        run_context,
+        graph: Any,
+        graph_inputs: Dict[str, Any],
+        graph_config: Dict[str, Any],
+    ) -> None:
+        self.runner = runner
+        self.loop = loop
+        self.event_queue = event_queue
+        self.run_context = run_context
+        self.graph = graph
+        self.graph_inputs = graph_inputs
+        self.graph_config = graph_config
+        self.run_id = run_context.run_id
+        self.owner_thread_ids: Set[int] = {threading.get_ident()}
+        self.last_log_sse = ""
+
+    def _enqueue_nowait(self, item: Tuple[str, Any], drop_on_full: bool) -> None:
+        try:
+            self.event_queue.put_nowait(item)
+        except asyncio.QueueFull:
+            if not drop_on_full:
+                asyncio.ensure_future(self.event_queue.put(item), loop=self.loop)
+
+    def safe_enqueue(self, item: Tuple[str, Any], *, drop_on_full: bool = False) -> None:
+        self.loop.call_soon_threadsafe(self._enqueue_nowait, item, drop_on_full)
+
+    def log_interceptor(self, sse_message: str) -> None:
+        if threading.get_ident() not in self.owner_thread_ids:
+            return
+        if sse_message == self.last_log_sse:
+            return
+        self.last_log_sse = sse_message
+        self.safe_enqueue((GraphQueueItemType.LOG.value, sse_message), drop_on_full=True)
+
+    def live_stream_interceptor(self, payload: Dict[str, Any]) -> None:
+        self.safe_enqueue((GraphQueueItemType.LIVE_STREAM.value, payload), drop_on_full=True)
+
+    def graph_worker(self) -> None:
+        _thread_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(_thread_loop)
+        self.owner_thread_ids.add(threading.get_ident())
+        with runtime_session_manager.bind_run(self.run_context):
+            try:
+                for ev_type, ev in self.graph.stream(
+                    self.graph_inputs,
+                    config=self.graph_config,
+                    stream_mode=list(GRAPH_STREAM_MODES),
+                ):
+                    if request_cancellation_service.is_cancelled(self.run_id):
+                        log.info(f"Graph Worker 收到取消信号，停止事件采集。run_id={self.run_id}")
+                        break
+                    self.safe_enqueue((GraphQueueItemType.GRAPH.value, (ev_type, ev)))
+                self.safe_enqueue((GraphQueueItemType.DONE.value, None))
+            except Exception as worker_exc:
+                err_msg = str(worker_exc)
+                if "Interrupt(" in err_msg or worker_exc.__class__.__name__ == "GraphInterrupt":
+                    log.info(f"Graph Worker 检测到 Interrupt 挂起: {err_msg[:200]}")
+                    self.safe_enqueue((GraphQueueItemType.DONE.value, None))
+                else:
+                    log.exception(f"Graph Worker 执行异常: {worker_exc}")
+                    self.safe_enqueue(
+                        (
+                            GraphQueueItemType.ERROR.value,
+                            self.runner._normalize_graph_error_message(worker_exc),
+                        )
+                    )
+            finally:
+                try:
+                    _thread_loop.close()
+                except Exception:
+                    pass
+
+
 class GraphRunner:
     """
     图执行器：AI 对话链路的核心调度中枢。
@@ -112,6 +208,8 @@ class GraphRunner:
         self.model_config: Dict[str, Any] = model_config or {}
         # 按模型配置指纹缓存编译好的 Supervisor 图，避免重复编译带来的初始化开销
         self._supervisor_cache: Dict[str, Any] = {}
+        self._supervisor_cache_lock = threading.Lock()
+        self._supervisor_build_events: Dict[str, threading.Event] = {}
 
     # ------------------------------------------------------------------ #
     #  Workflow 事件工具                                                   #
@@ -162,18 +260,10 @@ class GraphRunner:
         if not raw_text.strip():
             return ""
 
-        code_blocks: List[str] = []
-
-        def _stash_code_block(match: re.Match[str]) -> str:
-            code_blocks.append(match.group(0))
-            return f"@@CODE_BLOCK_{len(code_blocks) - 1}@@"
-
-        normalized = _DISPLAY_CODE_BLOCK_RE.sub(_stash_code_block, raw_text)
+        stash = _CodeBlockStash()
+        normalized = _DISPLAY_CODE_BLOCK_RE.sub(stash, raw_text)
         normalized = cls._normalize_display_text_segment(normalized)
-
-        for index, block in enumerate(code_blocks):
-            normalized = normalized.replace(f"@@CODE_BLOCK_{index}@@", block)
-        return normalized.strip()
+        return stash.restore(normalized).strip()
 
     @classmethod
     def _build_workflow_event(
@@ -234,19 +324,50 @@ class GraphRunner:
         3. 按需编译（冷启动降级）
         """
         cache_key = self._build_config_key(model_config)
-        if cache_key not in self._supervisor_cache:
+        with self._supervisor_cache_lock:
+            cached = self._supervisor_cache.get(cache_key)
+            if cached is not None:
+                return cached
+
+            build_event = self._supervisor_build_events.get(cache_key)
+            if build_event is None:
+                build_event = threading.Event()
+                self._supervisor_build_events[cache_key] = build_event
+                is_builder = True
+            else:
+                is_builder = False
+
+        if not is_builder:
+            build_event.wait()
+            with self._supervisor_cache_lock:
+                cached = self._supervisor_cache.get(cache_key)
+                if cached is not None:
+                    return cached
+            # 构建线程若异常退出，当前线程兜底重试一次。
+            return self._get_or_create_supervisor(model_config, borrow_timeout=borrow_timeout)
+
+        try:
             # 先尝试从预热池借取，命中则直接写入本地缓存
             from services.session_pool import session_pool
+
             pooled = session_pool.borrow(model_config, timeout=borrow_timeout)
             if pooled is not None:
                 log.info(f"从 SessionPool 借取预热实例，config_key={cache_key[:8]}...")
-                self._supervisor_cache[cache_key] = pooled
+                graph = pooled
             else:
                 log.info(f"首次编译 Supervisor 图，config_key={cache_key[:8]}...")
-                self._supervisor_cache[cache_key] = create_supervisor_graph(model_config)
+                graph = create_supervisor_graph(model_config)
                 # 编译完成后通知池注册该配置，下次 refill 时预热备用实例
                 session_pool.register_config(model_config)
-        return self._supervisor_cache[cache_key]
+
+            with self._supervisor_cache_lock:
+                self._supervisor_cache[cache_key] = graph
+            return graph
+        finally:
+            with self._supervisor_cache_lock:
+                event = self._supervisor_build_events.pop(cache_key, None)
+                if event is not None:
+                    event.set()
 
     def _get_supervisor(self, model_config: Dict[str, Any]) -> Any:
         """
@@ -256,6 +377,17 @@ class GraphRunner:
         避免接口重构带来非功能性回归。
         """
         return self._get_or_create_supervisor(model_config)
+
+    async def _get_or_create_supervisor_async(self, model_config: Dict[str, Any]) -> Any:
+        """
+        在后台线程中借取/编译 Supervisor 图，避免阻塞事件循环。
+        """
+        borrow_timeout = float(SESSION_POOL_CONFIG.borrow_timeout_seconds)
+        return await asyncio.to_thread(
+            self._get_or_create_supervisor,
+            model_config,
+            borrow_timeout,
+        )
 
     # ------------------------------------------------------------------ #
     #  核心公共接口：stream_run                                             #
@@ -297,7 +429,7 @@ class GraphRunner:
 
         # ── 分支一：审批恢复流程 ──────────────────────────────────────────
         if user_input == "[RESUME]":
-            graph = self._get_or_create_supervisor(effective_config, borrow_timeout=0.0)
+            graph = await self._get_or_create_supervisor_async(effective_config)
             resume_context = runtime_session_manager.create_run_context(
                 session_id=session_id,
                 user_input=user_input,
@@ -567,7 +699,7 @@ class GraphRunner:
             )
 
         # 非阻塞借取：避免在事件循环线程等待 SessionPool 轮询 sleep。
-        graph = self._get_or_create_supervisor(effective_config, borrow_timeout=0.0)
+        graph = await self._get_or_create_supervisor_async(effective_config)
 
         # ── 构造图执行 Config ─────────────────────────────────────────────
         graph_config = run_context.graph_config()
@@ -828,99 +960,27 @@ class GraphRunner:
         loop = asyncio.get_event_loop()
         # asyncio.Queue：生产者线程通过 call_soon_threadsafe 写入，消费协程 await get()
         event_queue: asyncio.Queue = asyncio.Queue(maxsize=2000)
-        # 追踪参与本次请求的线程 ID，用于日志拦截器过滤
-        owner_thread_ids: Set[int] = {threading.get_ident()}
         # 记录本轮已实时推流的 Agent，用于抑制 synthetic 重复输出
         live_streamed_agents: Set[str] = set()
         # 跨 chunk 的路由 JSON 前缀过滤状态
         router_prefix_buffer = ""
         router_prefix_done = False
-
-        def _safe_enqueue(item: Tuple[str, Any], *, drop_on_full: bool = False) -> None:
-            """从后台线程安全地向 asyncio.Queue 写入事件。"""
-            def _put():
-                try:
-                    event_queue.put_nowait(item)
-                except asyncio.QueueFull:
-                    if not drop_on_full:
-                        # 满队列时阻塞式写入（在事件循环中调度）
-                        asyncio.ensure_future(event_queue.put(item), loop=loop)
-            loop.call_soon_threadsafe(_put)
-
-        # 记录上一条日志 SSE，连续重复的日志直接丢弃，避免前端 thinking 刷屏
-        last_log_sse: str = ""
-
-        def _log_interceptor(sse_message: str) -> None:
-            """拦截当前请求线程产生的日志并推入事件队列（跨会话隔离）。"""
-            nonlocal last_log_sse
-            if threading.get_ident() not in owner_thread_ids:
-                return
-            if sse_message == last_log_sse:
-                return
-            last_log_sse = sse_message
-            _safe_enqueue((GraphQueueItemType.LOG.value, sse_message), drop_on_full=True)
-
-        def _live_stream_interceptor(payload: Dict[str, Any]) -> None:
-            """将子 Agent 实时正文流推入事件队列。"""
-            _safe_enqueue((GraphQueueItemType.LIVE_STREAM.value, payload), drop_on_full=True)
-
-        def _graph_worker() -> None:
-            """
-            后台生产者线程：驱动 Supervisor 图执行并将事件推入队列。
-
-            遇到 Interrupt 异常（子图挂起等待审批）视为正常终止，
-            其他未知异常推入 ERROR 事件由消费协程处理。
-
-            【事件循环说明】
-            LangGraph ToolNode 遇到 async 工具时会调用 asyncio.run()，
-            该函数要求当前线程没有运行中的事件循环。后台工作线程默认
-            没有事件循环，asyncio.run() 会自动创建并销毁，行为正确。
-            此处显式设置新 loop 是为了兼容某些 Python 版本在子线程中
-            无法通过 get_event_loop() 获取 loop 的边界情况。
-            """
-            # 为后台线程创建独立事件循环，确保异步工具（async tool）
-            # 通过 asyncio.run() 或 loop.run_until_complete() 可正常调用。
-            _thread_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(_thread_loop)
-            owner_thread_ids.add(threading.get_ident())
-            with runtime_session_manager.bind_run(run_context):
-                try:
-                    for ev_type, ev in graph.stream(
-                        graph_inputs,
-                        config=graph_config,
-                        stream_mode=list(GRAPH_STREAM_MODES),
-                    ):
-                        if request_cancellation_service.is_cancelled(run_id):
-                            log.info(f"Graph Worker 收到取消信号，停止事件采集。run_id={run_id}")
-                            break
-                        _safe_enqueue((GraphQueueItemType.GRAPH.value, (ev_type, ev)))
-                    _safe_enqueue((GraphQueueItemType.DONE.value, None))
-                except Exception as worker_exc:
-                    err_msg = str(worker_exc)
-                    if "Interrupt(" in err_msg or worker_exc.__class__.__name__ == "GraphInterrupt":
-                        log.info(f"Graph Worker 检测到 Interrupt 挂起: {err_msg[:200]}")
-                        _safe_enqueue((GraphQueueItemType.DONE.value, None))
-                    else:
-                        log.exception(f"Graph Worker 执行异常: {worker_exc}")
-                        _safe_enqueue(
-                            (
-                                GraphQueueItemType.ERROR.value,
-                                self._normalize_graph_error_message(worker_exc),
-                            )
-                        )
-                finally:
-                    # 关闭线程本地事件循环，释放资源
-                    try:
-                        _thread_loop.close()
-                    except Exception:
-                        pass
+        bridge = _GraphStreamAsyncBridge(
+            runner=self,
+            loop=loop,
+            event_queue=event_queue,
+            run_context=run_context,
+            graph=graph,
+            graph_inputs=graph_inputs,
+            graph_config=graph_config,
+        )
 
         # 注册日志拦截回调
-        CustomLogger.add_global_sse_callback(_log_interceptor)
+        CustomLogger.add_global_sse_callback(bridge.log_interceptor)
         # 注册子 Agent 实时流回调（可配置开关）
         runtime_session_manager.register_live_stream_callback(
             run_context,
-            _live_stream_interceptor,
+            bridge.live_stream_interceptor,
             enabled=AGENT_LIVE_STREAM_ENABLED,
         )
         runtime_session_manager.mark_running(
@@ -931,10 +991,10 @@ class GraphRunner:
         )
 
         # 启动后台图执行线程
-        worker_thread = threading.Thread(target=_graph_worker, daemon=True, name=f"graph-worker-{run_id[:8]}")
+        worker_thread = threading.Thread(target=bridge.graph_worker, daemon=True, name=f"graph-worker-{run_id[:8]}")
         worker_thread.start()
         if worker_thread.ident is not None:
-            owner_thread_ids.add(worker_thread.ident)
+            bridge.owner_thread_ids.add(worker_thread.ident)
 
         try:
             async for chunk in self._consume_event_queue_async(
@@ -957,7 +1017,7 @@ class GraphRunner:
                 run_context,
                 enabled=AGENT_LIVE_STREAM_ENABLED,
             )
-            CustomLogger.remove_global_sse_callback(_log_interceptor)
+            CustomLogger.remove_global_sse_callback(bridge.log_interceptor)
             if worker_thread.is_alive():
                 request_cancellation_service.cancel_request(run_id)
                 worker_thread.join(timeout=1.0)
@@ -2190,7 +2250,10 @@ class GraphRunner:
                         agent_name=agent_name,
                         task_id=task_id,
                         node_name=node_name,
-                        meta={"elapsed_ms": worker_item.get("elapsed_ms")},
+                        meta={
+                            "elapsed_ms": worker_item.get("elapsed_ms"),
+                            "wave": worker_item.get("wave"),
+                        },
                     )
                 )
                 elapsed = worker_item.get("elapsed_ms")
