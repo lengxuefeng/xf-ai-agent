@@ -106,6 +106,10 @@ class GraphState(TypedDict):
     direct_answer: Optional[str]
     intent_elapsed_ms: Optional[int]
 
+    # Planner 长期记忆与规划
+    plan: Optional[List[str]]
+    memory: Optional[Dict[str, Any]]
+
     # 任务规划输出 (Tier-2 DAG)
     task_list: Optional[List[SubTask]]
     task_results: Optional[Dict[str, str]]

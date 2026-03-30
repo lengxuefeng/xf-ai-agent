@@ -4,9 +4,11 @@ import time
 from typing import AsyncGenerator, Generator, Optional, Dict, Any
 
 from sqlalchemy.orm import Session
+from fastapi import Request
 from starlette.responses import StreamingResponse
 
 from agent.graph_runner import GraphRunner
+from services.request_cancellation_service import request_cancellation_service
 from constants.chat_service_constants import (
     CHAT_DEFAULT_MODEL_CONFIG,
     CHAT_SERVICE_ERROR_CONNECTION,
@@ -45,6 +47,30 @@ async def _single_error_stream(detail: str):
     yield format_error_event(detail)
 
 
+async def _disconnect_aware_stream(original_body, request: Request, session_id: str):
+    try:
+        async with request_cancellation_service.cancel_on_disconnect(session_id, request):
+            async for chunk in original_body:
+                if await request.is_disconnected():
+                    log.info(f"客户端断连，停止 SSE 推送。session_id={session_id[:16]}")
+                    request_cancellation_service.cancel_request(session_id)
+                    break
+                yield chunk
+    finally:
+        request_cancellation_service.cleanup_request(session_id)
+
+
+def _attach_disconnect_cancellation(
+    response: StreamingResponse,
+    request: Request,
+    session_id: str,
+) -> StreamingResponse:
+    original_body = response.body_iterator
+    request_cancellation_service.register_request(session_id)
+    response.body_iterator = _disconnect_aware_stream(original_body, request, session_id)
+    return response
+
+
 class ChatService:
     """聊天服务层：处理流式聊天请求、历史记录和配置管理"""
 
@@ -75,20 +101,21 @@ class ChatService:
     async def process_stream_chat_async(
             self,
             req: StreamChatRequest,
+            request: Request,
             user_id: Optional[int],
             db: Optional[Session] = None,
-            dynamic_model_config: Optional[Dict[str, Any]] = None
     ) -> StreamingResponse:
         """
         【异步入口】统一处理流式聊天请求，返回 StreamingResponse 包裹异步生成器。
-
-        路由层调用此方法，确保流式数据在 asyncio 事件循环中逐块推送，
-        不阻塞其他并发请求。
+        
+        封装了 Middleware 动态模型配置和 SSE 流控制断连逻辑。
         """
         log.info(f"收到异步流式聊天请求，会话ID: {req.session_id}, 用户ID: {user_id}", target=LogTarget.LOG)
         if req.user_input and req.user_input != "[RESUME]":
             route_metrics_service.detect_and_record_correction(req.session_id, req.user_input)
 
+        dynamic_model_config = getattr(request.state, "model_config", None)
+        
         try:
             model_config = self._resolve_model_config(req, dynamic_model_config)
         except Exception as exc:
@@ -118,11 +145,12 @@ class ChatService:
                 runtime_context={},
             )
 
-        return StreamingResponse(
+        response = StreamingResponse(
             stream_gen,
             media_type="text/event-stream",
             headers=self._get_stream_headers(),
         )
+        return _attach_disconnect_cancellation(response, request, req.session_id)
 
     def _resolve_model_config(
             self,
@@ -642,9 +670,81 @@ class ChatService:
             top_p=req.top_p,
             max_tokens=req.max_tokens,
             model_key=req.model_key,
-            model_url=req.model_url,
             workspace_root=req.workspace_root,
-            resume_message_id=req.resume_message_id,
+        )
+
+    def _disconnect_aware_stream(
+        self,
+        stream_gen: AsyncGenerator[str, None],
+        request: "fastapi.Request",
+        run_id: str,
+    ) -> AsyncGenerator[str, None]:
+        """
+        监听客户端断开连接的流式包装器。
+        若客户端异常断开（如刷新页面），则发送取消信号并终止生成。
+        """
+        async def _generator():
+            try:
+                async for chunk in stream_gen:
+                    if await request.is_disconnected():
+                        log.info(f"客户端主动断开连接，准备取消请求: {run_id}")
+                        request_cancellation_service.cancel_request(run_id)
+                        break
+                    yield chunk
+            except asyncio.CancelledError:
+                log.info(f"SSE 流被取消 (CancelledError): {run_id}")
+                request_cancellation_service.cancel_request(run_id)
+                raise
+            except Exception as e:
+                log.error(f"SSE 流异常: {e}")
+                raise
+        return _generator()
+
+    async def process_stream_chat_async(
+        self,
+        req: StreamChatRequest,
+        request: "fastapi.Request",
+        user_id: Optional[int],
+        db: Any,
+    ) -> "fastapi.responses.StreamingResponse":
+        """
+        供 API 使用的主入口：返回 FastAPI 的 StreamingResponse。
+        整合鉴权逻辑、断线检测、模型配置读取等封装任务。
+        """
+        from starlette.responses import StreamingResponse
+
+        model_config = self._build_model_config_from_request(req)
+        session_id = req.session_id
+        
+        # 简化起见，以 session_id 作为 run_id
+        run_id = session_id 
+        
+        # 将 user_id 暂存通过局部变量传入，如果在上下文中处理的话可以透传
+        # 这里包装基础生成器
+        if user_id is not None:
+            # 需要认证并有落库
+            base_stream = self.stream_chat_with_history_async(
+                user_input=req.content,
+                session_id=session_id,
+                model_config=model_config,
+                user_id=user_id,
+                is_resume=bool(req.resume_message_id),
+            )
+        else:
+            # 匿名无落库流
+            base_stream = self.stream_chat_anonymous_async(
+                user_input=req.content,
+                session_id=session_id,
+                model_config=model_config,
+            )
+
+        # 增加断开感知包装
+        aware_stream = self._disconnect_aware_stream(base_stream, request, run_id)
+        
+        return StreamingResponse(
+            aware_stream,
+            media_type="text/event-stream",
+            headers=self._get_stream_headers()
         )
 
     def build_model_config(
@@ -692,5 +792,4 @@ class ChatService:
         return dict(STREAM_HEADERS)
 
 
-# 创建全局实例
 chat_service = ChatService()

@@ -11,6 +11,7 @@ from typing import Dict, Iterable, Optional
 from runtime.exec.policy import ExecPolicy
 from runtime.exec.result import ExecResult
 from runtime.workspace.path_guard import workspace_path_guard
+import json
 
 
 class ExecRunner:
@@ -121,6 +122,71 @@ class ExecRunner:
                 temp_path.unlink(missing_ok=True)
             except Exception:
                 pass
+
+    def run_python_with_auto_fix(
+        self,
+        code: str,
+        llm: Any,
+        *,
+        cwd: Optional[str] = None,
+        workspace_root: Optional[str] = None,
+        timeout_seconds: Optional[float] = None,
+        max_retries: int = 2,
+        require_json_output: bool = False,
+    ) -> ExecResult:
+        """执行 Python代码。若遇到运行错误或所需的 JSON 解析失败，则将报错抛回 LLM 自动修复。"""
+        current_code = code
+        last_result = None
+
+        for attempt in range(max_retries + 1):
+            result = self.run_python_code(
+                current_code,
+                cwd=cwd,
+                workspace_root=workspace_root,
+                timeout_seconds=timeout_seconds,
+            )
+            last_result = result
+            error_to_fix = None
+
+            if result.success:
+                if require_json_output:
+                    try:
+                        json.loads(result.stdout)
+                        return result
+                    except json.JSONDecodeError as exc:
+                        error_to_fix = f"输出结果并非有效 JSON 格式，解析报错: {exc}\n实际输出:\n{result.stdout}"
+                else:
+                    return result
+            else:
+                error_to_fix = result.stderr or result.stdout or "Unknown execution error"
+
+            if attempt >= max_retries or not error_to_fix:
+                break
+
+            # 交给 LLM 修复
+            try:
+                from langchain_core.prompts import ChatPromptTemplate
+                prompt = ChatPromptTemplate.from_messages([
+                    ("system", "你是一名资深 Python 工程师，负责审查与修正自动生成的出错代码。请输出修复后的完整代码，务必不要解释、也不要包含除 Markdown ```python 外的任何文字。"),
+                    ("human", f"原代码：\n```python\n{{code}}\n```\n\n执行/解析报错：\n{{error}}\n\n请修改上述代码解决该报错，并重新输出完整的代码。"),
+                ])
+                chain = prompt | llm
+                response = chain.invoke({"code": current_code, "error": error_to_fix})
+                content = str(getattr(response, "content", "")).strip()
+                
+                if "```python" in content:
+                    content = content.split("```python")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                
+                if content:
+                    current_code = content
+                else:
+                    break
+            except Exception:
+                break
+
+        return last_result
 
 
 exec_runner = ExecRunner()
