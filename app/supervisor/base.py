@@ -38,7 +38,7 @@ from typing import Generator, Any, Dict, Optional
 from langchain_core.messages import AIMessageChunk, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import END, START, StateGraph
-from supervisor.graph_state import AgentRequest
+from app.supervisor.graph_state import AgentRequest
 from supervisor.checkpointer import get_checkpointer
 from config.constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
 from config.runtime_settings import AGENT_LOOP_CONFIG, AGENT_LIVE_STREAM_ENABLED

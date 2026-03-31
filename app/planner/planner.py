@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
-from supervisor.state import GraphState
+from app.supervisor.graph_state import AgentState
 from supervisor.supervisor_rule_support import split_query_clauses
 from common.utils.custom_logger import get_logger
 
@@ -38,7 +38,7 @@ class PlannerNode:
     )
 
     @staticmethod
-    def _latest_user_text(state: GraphState) -> str:
+    def _latest_user_text(state: AgentState) -> str:
         from supervisor.supervisor import _latest_human_message
 
         return _latest_human_message(state.get("messages", []) or [])
@@ -69,7 +69,7 @@ class PlannerNode:
         return not PlannerNode.SIMPLE_REQUEST_CONNECTOR_RE.search(text)
 
     @staticmethod
-    async def planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    async def planner_node(state: AgentState, model: BaseChatModel, config: RunnableConfig) -> dict:
         """Planner 节点：使用 fast model 异步拆解原子步骤列表。"""
         user_text = PlannerNode._latest_user_text(state)
         started_at = time.perf_counter()
@@ -134,6 +134,6 @@ class PlannerNode:
         }
 
     @staticmethod
-    async def parent_planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    async def parent_planner_node(state: AgentState, model: BaseChatModel, config: RunnableConfig) -> dict:
         """兼容旧引用，统一转到新的 planner_node。"""
         return await PlannerNode.planner_node(state, model=model, config=config)

@@ -1,3 +1,5 @@
+"""兼容旧引用的状态别名与结构化结果定义。"""
+
 from typing import Optional, TypedDict
 
 from app.supervisor.graph_state import AgentState
@@ -22,3 +24,5 @@ class WorkerResult(TypedDict):
 
 
 GraphState = AgentState
+
+__all__ = ["SubTask", "WorkerResult", "GraphState"]

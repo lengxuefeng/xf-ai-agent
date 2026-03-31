@@ -1,3 +1,5 @@
+"""Supervisor/Agent 全局唯一状态定义。"""
+
 from typing import Annotated, Any, Optional, TypedDict
 
 from langchain_core.messages import BaseMessage
@@ -25,3 +27,6 @@ class BatchAgentRequest(ArbitraryTypesBaseSchema):
     inputs: list[AgentRequest]
     max_threads: int = 2
     model: Any
+
+
+__all__ = ["AgentState", "AgentRequest", "BatchAgentRequest"]

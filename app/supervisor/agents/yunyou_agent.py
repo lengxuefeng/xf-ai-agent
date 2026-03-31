@@ -1,7 +1,7 @@
 import os
 
 from langchain_core.runnables import Runnable, RunnableConfig
-from langgraph.graph import START, StateGraph
+from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from models.schemas.base_skill import ConfigurableSkillMiddleware
@@ -48,5 +48,6 @@ class YunyouAgent(BaseAgent):
         workflow.add_node("tools", ToolNode(self.tools), retry_policy=self.RETRY_POLICY)
         workflow.add_edge(START, "model_node")
         workflow.add_conditional_edges("model_node", tools_condition)
+        # 工具执行完必须回到模型节点，形成闭环 ReAct 执行链。
         workflow.add_edge("tools", "model_node")
         return workflow.compile(checkpointer=self.checkpointer)

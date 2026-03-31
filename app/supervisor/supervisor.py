@@ -35,8 +35,15 @@ from config.constants.workflow_constants import (
 )
 from config.runtime_settings import ROUTER_POLICY_CONFIG
 from models.schemas.supervisor_schemas import RequestAnalysisDecision
+from planner.planner import PlannerNode
+from supervisor.agents.code_agent import CodeAgent
+from supervisor.agents.medical_agent import MedicalAgent
+from supervisor.agents.search_agent import SearchAgent
+from supervisor.agents.sql_agent import SqlAgent
+from supervisor.agents.weather_agent import WeatherAgent
+from supervisor.agents.yunyou_agent import YunyouAgent
 from supervisor.checkpointer import get_checkpointer
-from supervisor.graph_state import AgentRequest, AgentState
+from app.supervisor.graph_state import AgentRequest, AgentState
 from supervisor.registry import MEMBERS, agent_classes
 from supervisor.supervisor_rule_support import (
     analyze_request_payload as _support_analyze_request_payload,
@@ -530,42 +537,11 @@ def _run_agent_to_completion(
     raise RuntimeError(f"{agent_name} 未生成最终响应。")
 
 
-async def planner_node(state: AgentState, model: BaseChatModel, config: RunnableConfig) -> dict:
-    user_text = _latest_human_message(list(state.get("messages", []) or []))
-    started_at = time.perf_counter()
-
-    if _is_simple_request(user_text) and not _looks_like_compound_request(user_text):
-        steps = _normalize_steps([user_text], user_text)
-        planner_source = "passthrough_single"
-    else:
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", _PLANNER_SYSTEM_PROMPT),
-                ("user", "用户请求：\n{user_input}\n\n只返回 JSON。"),
-            ]
-        )
-        try:
-            chain = prompt | model.with_structured_output(Plan)
-            plan_result: Plan = await chain.ainvoke(
-                {"user_input": user_text},
-                config=_build_non_streaming_config(config),
-            )
-            steps = _normalize_steps(plan_result.steps, user_text)
-            if not steps:
-                raise ValueError("planner returned empty steps")
-            planner_source = "llm"
-        except Exception as exc:
-            log.warning("Planner structured output failed, fallback to rule split: %s", exc)
-            steps = _fallback_steps(user_text)
-            planner_source = "fallback_split"
-
-    elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+async def planner_node(state: AgentState, config: RunnableConfig, req: AgentRequest) -> dict:
+    planner_update = await PlannerNode.planner_node(state, model=req.model, config=config)
     return {
-        "plan": list(steps),
-        "current_task": "",
-        "planner_source": planner_source,
-        "planner_elapsed_ms": elapsed_ms,
-        "task_list": _build_task_list(steps),
+        "plan": list(planner_update.get("plan", []) or []),
+        "current_task": str(planner_update.get("current_task") or ""),
     }
 
 
@@ -573,11 +549,9 @@ async def dispatch_node(state: AgentState, config: RunnableConfig):
     plan = state.get("plan", [])
     if not plan:
         return {"current_task": "END_TASK"}
-
     new_plan = list(plan)
     task = new_plan.pop(0)
-    task_msg = SystemMessage(content=f"【调度器指令】：请立即且仅执行以下子任务 -> {task}")
-
+    task_msg = SystemMessage(content=f"【调度器指令】：请专注执行当前子任务 -> {task}")
     return {
         "plan": new_plan,
         "current_task": task,
@@ -585,192 +559,75 @@ async def dispatch_node(state: AgentState, config: RunnableConfig):
     }
 
 
-async def route_task_node(state: AgentState, model: BaseChatModel, config: RunnableConfig) -> dict:
-    del model, config
+def intent_policy(state: AgentState) -> str:
     current_task = str(state.get("current_task") or "").strip()
-    route_target, confidence = _select_agent_for_task(current_task)
-    return {
-        "current_task": current_task,
-        "intent": "CHAT" if route_target == "chat_node" else route_target,
-        "intent_confidence": confidence,
-        "is_complex": False,
-    }
+    if not current_task or current_task == "END_TASK":
+        return END
+    if _looks_like_holter_request(current_task):
+        return "yunyou_agent"
+    if _looks_like_sql_request(current_task):
+        return "sql_agent"
+    if _looks_like_weather_request(current_task):
+        return "weather_agent"
+    if _looks_like_search_request(current_task):
+        return "search_agent"
+    if _looks_like_medical_request(current_task):
+        return "medical_agent"
+    if _looks_like_code_request(current_task):
+        return "code_agent"
+    return "search_agent"
 
 
-async def chat_node(state: AgentState, model: BaseChatModel, config: RunnableConfig) -> dict:
-    current_task = str(state.get("current_task") or "").strip()
-    messages = list(state.get("messages", []) or [])
-    try:
-        response = await model.ainvoke(messages, config=config)
-        content = _content_to_text(getattr(response, "content", response)).strip()
-        if not content:
-            raise RuntimeError("chat_node.empty_response")
-        return {
-            "messages": [_build_named_ai_message(content, name="ChatAgent")],
-            "current_task": current_task,
-        }
-    except Exception as exc:
-        fallback = _build_graceful_chat_fallback(current_task or _latest_human_message(messages))
-        if fallback:
-            return {
-                "messages": [_build_named_ai_message(fallback, name="ChatAgent", metadata={"fallback": True})],
-                "current_task": current_task,
-            }
-        user_message, error_detail = _classify_agent_failure(exc)
-        return {
-            "current_task": "END_TASK",
-            "error_message": user_message,
-            "error_detail": error_detail,
-        }
+def route_after_dispatch(state: AgentState) -> str:
+    if state.get("current_task") == "END_TASK":
+        return END
+    return intent_policy(state)
 
 
-async def single_agent_node(
-    state: AgentState,
-    agent_name: str,
-    model: BaseChatModel,
-    config: RunnableConfig,
-) -> dict:
-    current_task = str(state.get("current_task") or "").strip()
-    user_input = current_task or _latest_human_message(list(state.get("messages", []) or []))
-    session_id = str(config.get("configurable", {}).get("thread_id") or "").strip()
-
-    try:
-        content = await asyncio.to_thread(
-            _run_agent_to_completion,
-            agent_name,
-            user_input,
-            model,
-            config,
-            session_id,
-            list(state.get("messages", []) or []),
+def build_supervisor_graph(req: AgentRequest):
+    def _agent_req(agent_name: str) -> AgentRequest:
+        return AgentRequest(
+            user_input=req.user_input,
+            state=req.state,
+            session_id=req.session_id,
+            subgraph_id=agent_name,
+            model=req.model,
+            llm_config=req.llm_config,
         )
-        if isinstance(content, dict) and content.get("type") == INTERRUPT_RESULT_TYPE:
-            payload = content.get("payload")
-            if not isinstance(payload, dict):
-                payload = {"message": str(payload or "")}
-            payload = dict(payload)
-            payload["agent_name"] = payload.get("agent_name") or agent_name
-            return {
-                "current_task": "END_TASK",
-                "interrupt_payload": payload,
-            }
 
-        if not str(content or "").strip():
-            raise RuntimeError(f"{agent_name} 返回空结果。")
+    workflow = StateGraph(AgentState)
 
-        return {
-            "messages": [_build_named_ai_message(content, name=agent_name)],
-            "current_task": current_task,
-        }
-    except Exception as exc:
-        user_message, error_detail = _classify_agent_failure(exc)
-        return {
-            "current_task": "END_TASK",
-            "error_message": user_message,
-            "error_detail": error_detail,
-        }
+    workflow.add_node("planner_node", functools.partial(planner_node, req=req))
+    workflow.add_node("dispatch_node", dispatch_node)
 
+    workflow.add_node("weather_agent", WeatherAgent(_agent_req("weather_agent")).graph)
+    workflow.add_node("search_agent", SearchAgent(_agent_req("search_agent")).graph)
+    workflow.add_node("sql_agent", SqlAgent(_agent_req("sql_agent")).graph)
+    workflow.add_node("code_agent", CodeAgent(_agent_req("code_agent")).graph)
+    workflow.add_node("medical_agent", MedicalAgent(_agent_req("medical_agent")).graph)
+    workflow.add_node("yunyou_agent", YunyouAgent(_agent_req("yunyou_agent")).graph)
 
-async def aggregator_node(state: AgentState, model: BaseChatModel, config: RunnableConfig) -> dict:
-    messages = list(state.get("messages", []) or [])
-    if not messages:
-        return {"current_task": "END_TASK"}
+    workflow.add_edge(START, "planner_node")
+    workflow.add_edge("planner_node", "dispatch_node")
+    workflow.add_conditional_edges("dispatch_node", route_after_dispatch)
 
-    request_messages = messages + [SystemMessage(content=_AGGREGATOR_SYSTEM_PROMPT)]
-    try:
-        response = await model.ainvoke(request_messages, config=config)
-        content = _content_to_text(getattr(response, "content", response)).strip()
-        if not content:
-            raise RuntimeError("aggregator.empty_response")
-        return {
-            "messages": [_build_named_ai_message(content, name="SupervisorAggregator")],
-            "current_task": "END_TASK",
-        }
-    except Exception as exc:
-        user_message, error_detail = _classify_agent_failure(exc)
-        return {
-            "current_task": "END_TASK",
-            "error_message": user_message,
-            "error_detail": error_detail,
-        }
+    workflow.add_edge("weather_agent", "dispatch_node")
+    workflow.add_edge("search_agent", "dispatch_node")
+    workflow.add_edge("sql_agent", "dispatch_node")
+    workflow.add_edge("code_agent", "dispatch_node")
+    workflow.add_edge("medical_agent", "dispatch_node")
+    workflow.add_edge("yunyou_agent", "dispatch_node")
 
-
-def _route_after_dispatch(state: AgentState) -> str:
-    current_task = str(state.get("current_task") or "").strip()
-    if (not current_task) or current_task == "END_TASK":
-        return "aggregator_node" if _should_aggregate(state) else "__end__"
-    return "Intent_Router_Node"
-
-
-def _route_current_task_after_intent(state: AgentState) -> str:
-    current_task = str(state.get("current_task") or "").strip()
-    route_target, _confidence = _select_agent_for_task(current_task)
-    return route_target if route_target in MEMBERS else "chat_node"
-
-
-def _route_after_execution(state: AgentState) -> str:
-    current_task = str(state.get("current_task") or "").strip()
-    if current_task == "END_TASK":
-        return "__end__"
-    return "dispatch_node"
+    return workflow.compile(checkpointer=get_checkpointer("supervisor"))
 
 
 def create_graph(model_config: Optional[dict] = None):
     model, _provider = create_model_from_config(**(model_config or {}))
-
-    workflow = StateGraph(AgentState)
-    workflow.add_node(
-        "Parent_Planner_Node",
-        functools.partial(planner_node, model=model),
-        retry_policy=GRAPH_RETRY_POLICY,
+    req = AgentRequest(
+        user_input="",
+        model=model,
+        session_id="",
+        subgraph_id="supervisor",
+        llm_config=model_config or {},
     )
-    workflow.add_node("dispatch_node", dispatch_node, retry_policy=GRAPH_RETRY_POLICY)
-    workflow.add_node(
-        "Intent_Router_Node",
-        functools.partial(route_task_node, model=model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
-    workflow.add_node("chat_node", functools.partial(chat_node, model=model), retry_policy=GRAPH_RETRY_POLICY)
-    workflow.add_node(
-        "aggregator_node",
-        functools.partial(aggregator_node, model=model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
-
-    for name in MEMBERS:
-        workflow.add_node(
-            name,
-            functools.partial(single_agent_node, agent_name=name, model=model),
-            retry_policy=GRAPH_RETRY_POLICY,
-        )
-
-    workflow.add_edge(START, "Parent_Planner_Node")
-    workflow.add_edge("Parent_Planner_Node", "dispatch_node")
-    workflow.add_conditional_edges(
-        "dispatch_node",
-        _route_after_dispatch,
-        {
-            "Intent_Router_Node": "Intent_Router_Node",
-            "aggregator_node": "aggregator_node",
-            "__end__": END,
-        },
-    )
-
-    router_options = {name: name for name in MEMBERS}
-    router_options["chat_node"] = "chat_node"
-    workflow.add_conditional_edges("Intent_Router_Node", _route_current_task_after_intent, router_options)
-
-    workflow.add_conditional_edges(
-        "chat_node",
-        _route_after_execution,
-        {"dispatch_node": "dispatch_node", "__end__": END},
-    )
-    for name in MEMBERS:
-        workflow.add_conditional_edges(
-            name,
-            _route_after_execution,
-            {"dispatch_node": "dispatch_node", "__end__": END},
-        )
-
-    workflow.add_edge("aggregator_node", END)
-    return workflow.compile(checkpointer=get_checkpointer("supervisor"))
+    return build_supervisor_graph(req)
