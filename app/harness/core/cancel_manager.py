@@ -624,22 +624,25 @@ class RequestCancellationService:
         - 清理请求时调用
         - 取消请求时可能也需要调用（视需求而定）
         """
-        # 从父请求的子集合中删除
-        child_ids = self._parents.pop(request_id, set())
-        self._id_pop(request_id, child_ids)
+        # 1) request_id 作为 child：从每个 parent 的 children 集合中移除
+        parent_ids = self._parents.pop(request_id, set())
+        for parent_id in parent_ids:
+            children = self._children.get(parent_id)
+            if not children:
+                continue
+            children.discard(request_id)
+            if not children:
+                self._children.pop(parent_id, None)
 
-        # 从子请求的父集合中删除
+        # 2) request_id 作为 parent：从每个 child 的 parents 集合中移除
         child_ids = self._children.pop(request_id, set())
-        self._id_pop(request_id, child_ids)
-
-    def _id_pop(self, request_id: str, ids: set[str]):
-        for id in ids:
-            parents = self._parents.get(id)
+        for child_id in child_ids:
+            parents = self._parents.get(child_id)
             if not parents:
                 continue
             parents.discard(request_id)
             if not parents:
-                self._parents.pop(id, None)
+                self._parents.pop(child_id, None)
 
 
 # 全局唯一的取消服务管理器实例

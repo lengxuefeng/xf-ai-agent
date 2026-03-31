@@ -43,6 +43,7 @@ class RouteMetricsService:
         source: str,
     ):
         """记录一次数据域路由决策。"""
+        now_ts = time.time()
         with self._lock:
             self._total_domain += 1
             self._domain_counter[domain] += 1
@@ -55,7 +56,7 @@ class RouteMetricsService:
                         "domain_confidence": confidence,
                         "domain_source": source,
                         "last_user_text": user_text,
-                        "ts": time.time(),
+                        "ts": now_ts,
                     }
                 )
             self._recent_events.append(
@@ -65,7 +66,7 @@ class RouteMetricsService:
                     "domain": domain,
                     "confidence": confidence,
                     "source": source,
-                    "ts": time.time(),
+                    "ts": now_ts,
                 }
             )
 
@@ -78,6 +79,7 @@ class RouteMetricsService:
         source: str,
     ):
         """记录一次意图路由决策。"""
+        now_ts = time.time()
         with self._lock:
             self._total_intent += 1
             self._intent_counter[intent] += 1
@@ -90,7 +92,7 @@ class RouteMetricsService:
                         "intent_confidence": confidence,
                         "intent_source": source,
                         "last_user_text": user_text,
-                        "ts": time.time(),
+                        "ts": now_ts,
                     }
                 )
             self._recent_events.append(
@@ -100,7 +102,7 @@ class RouteMetricsService:
                     "intent": intent,
                     "confidence": confidence,
                     "source": source,
-                    "ts": time.time(),
+                    "ts": now_ts,
                 }
             )
 
