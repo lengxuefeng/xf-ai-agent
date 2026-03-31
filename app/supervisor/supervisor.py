@@ -176,15 +176,7 @@ def _extract_interrupt_from_snapshot(snapshot: Any) -> Optional[dict]:
     )
 
 
-class WorkerState(TypedDict):
-    """Worker节点状态"""
-    task_id: str
-    current_task: str
-    session_id: str
-    llm_config: Dict[str, Any]
-    context_slots: Dict[str, Any]  # 会话结构化槽位
-    context_summary: str  # 会话摘要
-    messages: List[BaseMessage]  # 最近对话窗口
+WorkerState = GraphState
 
 
 def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
@@ -816,84 +808,35 @@ def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
 # ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
 def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
-    """串行弹夹调度：先收口上一任务结果，再弹出下一任务。"""
-    plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
-    task_list = [dict(task) for task in list(state.get("task_list") or [])]
-    task_results = dict(state.get("task_results") or {})
-    current_task_id = str(state.get("current_task_id") or "").strip()
-    current_task = str(state.get("current_task") or "").strip()
-    interrupt_payload = state.get("interrupt_payload")
-    error_message = str(state.get("error_message") or "").strip()
-    last_agent = str(state.get("current_step_agent") or state.get("intent") or "").strip()
-
-    if current_task_id:
-        for task in task_list:
-            if str(task.get("id") or "") != current_task_id:
-                continue
-            status = str(task.get("status") or "").strip()
-            if status != TaskStatus.DISPATCHED.value:
-                break
-            task["agent"] = last_agent or str(task.get("agent") or "")
-            if interrupt_payload:
-                task["status"] = TaskStatus.PENDING_APPROVAL.value
-                task["result"] = WORKER_PENDING_APPROVAL_RESULT
-            elif error_message:
-                task["status"] = TaskStatus.ERROR.value
-                task["result"] = error_message
-                task_results[current_task_id] = error_message
-            else:
-                result_text = _extract_last_step_result(state)
-                task["status"] = TaskStatus.DONE.value
-                task["result"] = result_text
-                task_results[current_task_id] = result_text
-            break
-
-    if interrupt_payload:
-        log.info(f"Dispatch: task [{current_task_id or current_task}] pending approval, stop main loop.")
+    """标准 dispatcher：弹出下一个原子任务，并一次性注入调度指令。"""
+    plan = [str(item or "").strip() for item in list(state.get("plan", [])) if str(item or "").strip()]
+    if state.get("interrupt_payload"):
         return {
             "plan": plan,
-            "task_list": task_list,
-            "task_results": task_results,
-            "active_tasks": [],
             "current_task": "END_TASK",
-            "current_task_id": "",
+            "current_step_input": "",
+            "current_step_agent": "",
+        }
+    if not plan:
+        return {
+            "current_task": "END_TASK",
             "current_step_input": "",
             "current_step_agent": "",
         }
 
-    next_task = ""
-    next_task_id = ""
-    if plan:
-        next_task = plan.pop(0)
-        for task in task_list:
-            if str(task.get("status") or "").strip() == TaskStatus.PENDING.value:
-                next_task_id = str(task.get("id") or "").strip()
-                task["status"] = TaskStatus.DISPATCHED.value
-                task["agent"] = ""
-                break
+    task = plan.pop(0)
+    from langchain_core.messages import SystemMessage
 
-    if next_task_id:
-        log.info(f"Dispatch: next task [{next_task_id}] -> {next_task}")
-    else:
-        log.info("Dispatch: no remaining tasks, main loop will end.")
-        next_task = "END_TASK"
-
+    task_msg = SystemMessage(content=f"【调度器指令】：请立即且仅执行以下子任务 -> {task}")
     return {
         "plan": plan,
-        "task_list": task_list,
-        "task_results": task_results,
-        "active_tasks": [],
-        "worker_results": [],
-        "current_task": next_task,
-        "current_task_id": next_task_id,
-        "current_step_input": "" if next_task == "END_TASK" else next_task,
+        "current_task": task,
+        "current_step_input": task,
         "current_step_agent": "",
+        "interrupt_payload": None,
         "error_message": None,
         "error_detail": None,
-        "intent": None,
-        "intent_confidence": None,
-        "is_complex": False,
-        "direct_answer": "",
+        "messages": [task_msg],
     }
 
 
@@ -1621,6 +1564,17 @@ async def memory_manager_node(state: GraphState, model: BaseChatModel, config: R
     }
 
 
+async def route_task_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    """当前任务只做一次域识别 + 意图识别，再交给具体 Agent。"""
+    domain_update = await IntentPolicy.domain_router_node(state, model=model, config=config)
+    routed_state = dict(state)
+    routed_state.update(domain_update)
+    intent_update = await IntentPolicy.intent_router_node(routed_state, model=model, config=config)
+    merged = dict(domain_update)
+    merged.update(intent_update)
+    return merged
+
+
 async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """聊天节点：处理通用对话"""
     started_at = time.perf_counter()
@@ -1939,17 +1893,16 @@ def _route_after_dispatch(state: GraphState) -> str:
     current_task = str(state.get("current_task") or "").strip()
     if (not current_task) or current_task == "END_TASK":
         return "__end__"
-    return "Domain_Router_Node"
+    return "Intent_Router_Node"
 
 
 def _route_current_task_after_intent(state: GraphState) -> str:
     """当前原子任务只允许落到单兵 Agent 或 chat_node，不再二次进入 planner。"""
-    conf = float(state.get("intent_confidence") or 0.0)
     intent = str(state.get("intent") or "CHAT").strip() or "CHAT"
-    if conf >= 0.7 and intent in MEMBERS:
-        log.info(f"当前任务路由: {intent} (conf={conf:.2f})")
+    if intent in MEMBERS:
+        log.info(f"当前任务路由: {intent}")
         return intent
-    log.info(f"当前任务路由: chat_node (intent={intent}, conf={conf:.2f})")
+    log.info(f"当前任务路由: chat_node (intent={intent})")
     return "chat_node"
 
 
@@ -1999,24 +1952,17 @@ def create_graph(model_config: Optional[dict] = None):
 
     workflow = StateGraph(GraphState)
 
-    # 上层的决策分析
-    workflow.add_node(
-        "Domain_Router_Node",
-        functools.partial(IntentPolicy.domain_router_node, model=router_model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
-    workflow.add_node(
-        "Intent_Router_Node",
-        functools.partial(IntentPolicy.intent_router_node, model=router_model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
     workflow.add_node(
         "Parent_Planner_Node",
         functools.partial(PlannerNode.planner_node, model=router_model),
         retry_policy=GRAPH_RETRY_POLICY,
     )
     workflow.add_node("dispatch_node", dispatch_node, retry_policy=GRAPH_RETRY_POLICY)
-
+    workflow.add_node(
+        "Intent_Router_Node",
+        functools.partial(route_task_node, model=router_model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
     workflow.add_node("chat_node", functools.partial(chat_node, model=chat_model), retry_policy=GRAPH_RETRY_POLICY)
     for name in MEMBERS:
         workflow.add_node(
@@ -2024,15 +1970,14 @@ def create_graph(model_config: Optional[dict] = None):
             functools.partial(single_agent_node, agent_name=name, model=model),
             retry_policy=GRAPH_RETRY_POLICY,
         )
-    # ================= 编织拓扑关系 =================
+
     workflow.add_edge(START, "Parent_Planner_Node")
     workflow.add_edge("Parent_Planner_Node", "dispatch_node")
     workflow.add_conditional_edges(
         "dispatch_node",
         _route_after_dispatch,
-        {"Domain_Router_Node": "Domain_Router_Node", "__end__": END},
+        {"Intent_Router_Node": "Intent_Router_Node", "__end__": END},
     )
-    workflow.add_edge("Domain_Router_Node", "Intent_Router_Node")
 
     router_options = {name: name for name in MEMBERS}
     router_options.update({"chat_node": "chat_node"})

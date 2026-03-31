@@ -400,16 +400,22 @@ class BaseAgent(ABC):
         head_part = recent_messages[:-tail_window]
         filtered_messages: list[BaseMessage] = []
 
-        # 头部窗口：只保留与当前问题相关的消息
+        # 头部窗口：只保留与当前问题相关的消息，同时强保留调度器注入的系统任务。
         if current_tokens:
             for msg in head_part:
+                if isinstance(msg, SystemMessage) and "【调度器指令】" in cls._message_text(msg):
+                    filtered_messages.append(msg)
+                    continue
                 msg_tokens = cls._extract_text_tokens(cls._message_text(msg))
                 if msg_tokens & current_tokens:
                     filtered_messages.append(msg)
 
-        # 尾部窗口：强保留最近用户消息，AI 消息需与当前问题相关
+        # 尾部窗口：强保留最近用户消息和调度器系统任务，AI 消息需与当前问题相关
         for msg in tail_part:
             if isinstance(msg, HumanMessage):
+                filtered_messages.append(msg)
+                continue
+            if isinstance(msg, SystemMessage) and "【调度器指令】" in cls._message_text(msg):
                 filtered_messages.append(msg)
                 continue
             msg_tokens = cls._extract_text_tokens(cls._message_text(msg))
@@ -768,10 +774,18 @@ class BaseAgent(ABC):
         # 读取会话摘要（如城市/用户画像），减少反复追问
         context_summary = self._extract_context_summary(req)
 
-        input_messages: list[BaseMessage] = [
-            SystemMessage(content=get_agent_date_context()),
-            SystemMessage(content=get_current_time_context()),
-        ]
+        input_messages: list[BaseMessage] = []
+
+        system_prompt = str(getattr(self, "system_prompt", "") or "").strip()
+        if system_prompt:
+            input_messages.append(SystemMessage(content=system_prompt))
+
+        input_messages.extend(
+            [
+                SystemMessage(content=get_agent_date_context()),
+                SystemMessage(content=get_current_time_context()),
+            ]
+        )
 
         # 添加会话摘要（如果有）
         if context_summary:
@@ -788,7 +802,16 @@ class BaseAgent(ABC):
                 break
 
         current_text = (req.user_input or "").strip()
-        if not latest_human_text or latest_human_text != current_text:
+        dispatch_instruction_present = any(
+            isinstance(msg, SystemMessage)
+            and "【调度器指令】" in self._message_text(msg)
+            and current_text
+            and current_text in self._message_text(msg)
+            for msg in history_messages[-6:]
+        )
+        if current_text and (not dispatch_instruction_present) and (
+            (not latest_human_text) or latest_human_text != current_text
+        ):
             input_messages.append(HumanMessage(content=req.user_input))
 
         request_state = getattr(req, "state", None) or {}
