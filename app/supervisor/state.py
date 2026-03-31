@@ -80,6 +80,9 @@ class GraphState(TypedDict):
         ---- 路由元数据 ----
         current_node: 当前执行到的节点名称
         next: 路由指示器
+        current_step_input: 当前正在执行的原子步骤
+        current_step_agent: 当前步骤分配到的 Agent
+        executor_active: 是否处于 Plan-and-Execute 执行闭环中
     """
     messages: Annotated[List[BaseMessage], add_messages]
     session_id: Optional[str]
@@ -130,6 +133,9 @@ class GraphState(TypedDict):
     # 路由元数据
     current_node: Optional[str]
     next: Optional[str]
+    current_step_input: Optional[str]
+    current_step_agent: Optional[str]
+    executor_active: Optional[bool]
     interrupt_payload: Optional[Dict]
     error_message: Optional[str]
     error_detail: Optional[str]

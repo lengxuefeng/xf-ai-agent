@@ -43,10 +43,11 @@ class SupervisorKeywordGroup(str, Enum):
     WEATHER_DOMAIN = "weather_domain"  # 天气相关领域关键词
     SEARCH_DOMAIN = "search_domain"  # 搜索相关领域关键词
     FOLLOWUP_ORDER_HINT = "followup_order_hint"  # 顺序提示词
-    HISTORY_FILTER = "history_filter"  # 历史过滤关键词
-    HISTORY_YUNYOU = "history_yunyou"  # SQL 历史关键词
+    HISTORY_FILTER = "history_filter"  # 历史指代/回溯关键词
+    HISTORY_YUNYOU = "history_yunyou"  # 云柚历史关键词
     HISTORY_SQL = "history_sql"  # SQL 历史关键词
     HISTORY_WEATHER = "history_weather"  # 天气历史关键词
+    HISTORY_WEATHER_FACT = "history_weather_fact"  # 天气事实复用关键词
     HISTORY_SEARCH = "history_search"  # 搜索历史关键词
     FOLLOWUP_CONFIRM = "followup_confirm"  # 跟进确认关键词
     FOLLOWUP_REFERENCE = "followup_reference"  # 指代关系关键词
@@ -346,7 +347,65 @@ SUPERVISOR_KEYWORDS: Dict[SupervisorKeywordGroup, Tuple[str, ...]] = {
         "limit",
         "order by",
     ),
+
+    SupervisorKeywordGroup.HISTORY_FILTER: (
+        "历史",
+        "刚才",
+        "刚刚",
+        "刚说的",
+        "之前",
+        "前面",
+        "上一轮",
+        "上次",
+    ),
+
+    SupervisorKeywordGroup.HISTORY_YUNYOU: (
+        "心电", "报告", "贴片", "状态", "审核", "云柚", "心跳"
+    ),
+
+    SupervisorKeywordGroup.HISTORY_SQL: (
+        "查询", "数据库", "表", "前几条", "最新", "排序", "总数", "数据"
+    ),
+
+    SupervisorKeywordGroup.HISTORY_WEATHER: (
+        "天气", "温度", "多少度", "下雨", "出门", "预报", "气温", "冷不冷"
+    ),
+
+    SupervisorKeywordGroup.HISTORY_WEATHER_FACT: (
+        "天气",
+        "气温",
+        "温度",
+        "最高温",
+        "最低温",
+        "降雨",
+        "湿度",
+        "风力",
+        "空气质量",
+        "体感",
+        "穿衣建议",
+        "带伞",
+    ),
+
+    SupervisorKeywordGroup.HISTORY_SEARCH: (
+        "搜索", "查一下", "搜一下", "新闻", "百度", "活动", "推荐", "攻略"
+    ),
 }
+
+
+def _validate_supervisor_keyword_mapping() -> None:
+    """确保 Supervisor 关键词字典与枚举完全对齐。"""
+    enum_members = set(SupervisorKeywordGroup)
+    mapping_keys = set(SUPERVISOR_KEYWORDS)
+    missing = sorted(item.value for item in enum_members - mapping_keys)
+    extra = sorted(getattr(item, "value", str(item)) for item in mapping_keys - enum_members)
+    if missing or extra:
+        raise RuntimeError(
+            "SUPERVISOR_KEYWORDS 与 SupervisorKeywordGroup 不一致: "
+            f"missing={missing}, extra={extra}"
+        )
+
+
+_validate_supervisor_keyword_mapping()
 
 # ------------------------------------------------------------------
 # SQL 显式锚点：用户明确提到 SQL 关键词时强制路由到 SQL Agent

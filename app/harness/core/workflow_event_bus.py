@@ -89,7 +89,7 @@ def workflow_role_for_agent(agent_name: str) -> str:
     """
     normalized = str(agent_name or "").strip()
     # 管理者类Agent
-    if normalized in {"ChatAgent", "Aggregator", "chat_node", "aggregator_node"}:
+    if normalized in {"ChatAgent", "Aggregator", "chat_node", "aggregator_node", "Parent_Planner_Node", "executor_node"}:
         return "supervisor"
     # 执行者类Agent
     if normalized:
@@ -139,6 +139,8 @@ def workflow_display_name(agent_name: str) -> str:
         "code_agent": "工坊司",
         "chat_node": "掌柜",
         "aggregator_node": "总管汇总",
+        "Parent_Planner_Node": "掌柜筹划",
+        "executor_node": "掌柜派单",
     }
     return display_map.get(normalized, normalized or "流程节点")
 
@@ -266,4 +268,3 @@ def parse_workflow_event_chunk(chunk: str) -> Optional[Dict[str, Any]]:
         return dict(payload)  # 返回payload的深拷贝
 
     return None
-

@@ -1,130 +1,108 @@
-from planner.task_builder import (
-    build_agent_specific_task_input as _support_build_agent_specific_task_input,
-    build_planner_fallback_tasks as _support_build_planner_fallback_tasks,
-    build_rule_based_multidomain_tasks as _support_build_rule_based_multidomain_tasks,
-    extract_agent_focus_text as _support_extract_agent_focus_text,
-)
-import functools
-import queue
-import json
 import re
-import threading
 import time
-from typing import Optional, List, Dict, Any, TypedDict, Type
+from typing import List
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph import StateGraph, END, START
-from langgraph.constants import Send
-from pydantic import BaseModel
 
-from supervisor.graph_state import AgentRequest
-from supervisor.checkpointer import get_checkpointer
-from supervisor.state import GraphState, SubTask, WorkerResult
-from supervisor.supervisor_support import (
-    build_non_streaming_config as _support_build_non_streaming_config,
-    can_reuse_weather_context as _support_can_reuse_weather_context,
-    content_to_text as _support_content_to_text,
-    extract_city_from_context_slots as _support_extract_city_from_context_slots,
-    extract_recent_city_from_history as _support_extract_recent_city_from_history,
-    extract_interrupt_from_snapshot as _support_extract_interrupt_from_snapshot,
-    has_recent_weather_fact as _support_has_recent_weather_fact,
-    history_hint_intent as _support_history_hint_intent,
-    history_requests_location as _support_history_requests_location,
-    input_has_location_anchor as _support_input_has_location_anchor,
-    is_followup_supplement as _support_is_followup_supplement,
-    invoke_with_timeout as _support_invoke_with_timeout,
-    latest_human_message as _support_latest_human_message,
-    looks_like_location_fragment as _support_looks_like_location_fragment,
-    looks_like_weather_reuse_query as _support_looks_like_weather_reuse_query,
-    normalize_interrupt_payload as _support_normalize_interrupt_payload,
-    parse_json_from_text as _support_parse_json_from_text,
-    wants_weather_refresh as _support_wants_weather_refresh,
-)
-from supervisor.supervisor_rule_support import (
-    analyze_request_payload as _support_analyze_request_payload,
-    
-    
-    
-    collect_intent_signals as _support_collect_intent_signals,
-    dedupe_keep_order as _support_dedupe_keep_order,
-    
-    has_dependency_hint as _support_has_dependency_hint,
-    is_explicit_request_clause as _support_is_explicit_request_clause,
-    looks_like_compound_request as _support_looks_like_compound_request,
-    select_primary_agent_for_clause as _support_select_primary_agent_for_clause,
-    split_query_clauses as _support_split_query_clauses,
-)
-from common.llm.unified_loader import create_model_from_config
+from supervisor.state import GraphState
 from prompts.agent_prompts.domain_prompt import DomainPrompt
-from supervisor.registry import agent_classes, MEMBERS
+from supervisor.registry import MEMBERS
 from prompts.agent_prompts.supervisor_prompt import (
     IntentRouterPrompt,
-    ChatFallbackPrompt,
-    PlannerPrompt,
-    ReflectionPrompt,
-    AggregatorPrompt,
-)
-from config.constants.agent_registry_keywords import AGENT_KEYWORDS, AgentKeywordGroup
-from config.constants.approval_constants import DEFAULT_ALLOWED_DECISIONS, DEFAULT_INTERRUPT_MESSAGE
-from config.constants.supervisor_keywords import (
-    SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS,
-    SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS,
-    SUPERVISOR_CODE_ACTION_HINTS,
-    SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS,
-    SUPERVISOR_CODE_LEARNING_HINTS,
-    SUPERVISOR_CODE_SNIPPET_PATTERNS,
-    SUPERVISOR_KEYWORDS,
-    SUPERVISOR_SEARCH_ACTION_HINTS,
-    SUPERVISOR_SEARCH_GENERIC_QUERY_HINTS,
-    SUPERVISOR_SQL_EXPLICIT_ANCHORS,
-    SUPERVISOR_WEATHER_ACTION_PATTERNS,
-    SupervisorKeywordGroup,
 )
 from config.constants.workflow_constants import (
     AGENT_DOMAIN_MAP,
-    MULTI_DOMAIN_AGENT_PRIORITY,
-    PENDING_TASK_STATUSES,
     RouteStrategy,
-    TaskStatus,
-    WORKER_CANCELLED_RESULT,
-    WORKER_PENDING_APPROVAL_RESULT,
-    WORKFLOW_INTERRUPT_RESULT_TYPE,
 )
 from config.runtime_settings import (
-    AGENT_LOOP_CONFIG,
-    AGENT_LIVE_STREAM_ENABLED,
-    AGGREGATOR_CONFIG,
-    CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC,
-    CHAT_NODE_STREAM_ENABLED,
-    CHAT_NODE_TOTAL_TIMEOUT_SEC,
-    MODEL_TIERING_CONFIG,
     ROUTER_POLICY_CONFIG,
-    WORKFLOW_REFLECTION_CONFIG,
 )
 from common.enums.agent_enum import AgentTypeEnum
 from models.schemas.supervisor_schemas import (
     DomainDecision,
     IntentDecision,
-    PlannerDecision,
-    PlannerTaskDecision,
-    ReflectionDecision,
     RequestAnalysisDecision,
 )
 from services.route_metrics_service import route_metrics_service
-from services.agent_stream_bus import agent_stream_bus
-from services.request_cancellation_service import request_cancellation_service
-from common.utils.custom_logger import get_logger
-from common.utils.date_utils import get_agent_date_context
-
-
+from common.utils.location_parser import (
+    extract_valid_city_candidate,
+)
 from common.utils.custom_logger import get_logger
 log = get_logger(__name__)
 
 
 class IntentPolicy:
+    _COMPOUND_CONNECTOR_RE = re.compile(
+        r"(?:\b(?:and|then)\b|然后|接着|并且|以及|同时|顺便|后面|随后|先[^。！？\n]{0,80}?再)",
+        flags=re.IGNORECASE,
+    )
+
+    @staticmethod
+    def _extract_location_entities(text: str) -> List[str]:
+        entities: List[str] = []
+        chunks = re.split(
+            r"(?:然后|接着|并且|以及|同时|顺便|后面|随后|和|及|与|,|，|;|；|\band\b|\bthen\b|先|再)",
+            text or "",
+            flags=re.IGNORECASE,
+        )
+        for chunk in chunks:
+            normalized_chunk = re.sub(
+                r"^(?:先|再|接着|然后|请|帮我|帮忙|查一下|查|查询|看一下|看|搜一下|搜索|搜|讲个|讲|说个|说)\s*",
+                "",
+                str(chunk or "").strip(),
+                flags=re.IGNORECASE,
+            )
+            city = extract_valid_city_candidate(normalized_chunk)
+            if city and city not in entities:
+                entities.append(city)
+        return entities
+
+    @staticmethod
+    def _has_compound_structure(text: str) -> bool:
+        normalized = (text or "").strip()
+        if not normalized:
+            return False
+        if len(normalized) >= 6 and IntentPolicy._COMPOUND_CONNECTOR_RE.search(normalized):
+            return True
+        return False
+
+    @staticmethod
+    def _resolve_complex_intent(
+            *,
+            latest_user_text: str,
+            data_domain: str,
+            intent_candidates: List[str],
+            looks_like_holter_request,
+            looks_like_sql_request,
+            looks_like_weather_request,
+            looks_like_search_request,
+            looks_like_medical_request,
+            looks_like_code_request,
+    ) -> str:
+        if intent_candidates:
+            return intent_candidates[0]
+        if looks_like_holter_request(latest_user_text):
+            return "yunyou_agent"
+        if looks_like_sql_request(latest_user_text):
+            return "sql_agent"
+        if looks_like_weather_request(latest_user_text):
+            return "weather_agent"
+        if looks_like_search_request(latest_user_text):
+            return "search_agent"
+        if looks_like_medical_request(latest_user_text) and "medical_agent" in MEMBERS:
+            return "medical_agent"
+        if looks_like_code_request(latest_user_text) and "code_agent" in MEMBERS:
+            return "code_agent"
+        if data_domain == "YUNYOU_DB":
+            return "yunyou_agent"
+        if data_domain == "LOCAL_DB":
+            return "sql_agent"
+        if data_domain == "WEB_SEARCH":
+            return "search_agent"
+        return "CHAT"
+
     @staticmethod
     def _finalize_domain_decision(
             *,
@@ -356,6 +334,11 @@ class IntentPolicy:
 
         latest_user_text = _latest_human_message(trimmed_messages)
         started_at = time.perf_counter()
+        compound_signal = IntentPolicy._has_compound_structure(latest_user_text) or _looks_like_compound_request(
+            latest_user_text
+        )
+        location_entities = IntentPolicy._extract_location_entities(latest_user_text)
+        multi_location_signal = len(location_entities) >= 2
 
         # 根因修复：多意图输入在 Intent 层直接标记复杂任务，强制走 Parent Planner。
         if route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value and len(intent_candidates) >= 2:
@@ -385,6 +368,47 @@ class IntentPolicy:
                 direct_answer="",
                 session_id=session_id,
                 latest_user_text=latest_user_text,
+                    started_at=started_at,
+                )
+
+        # 强制复杂任务：复合连接词、多地点实体、或复杂单域策略都必须进入 Planner。
+        forced_complex = (
+                compound_signal
+                or multi_location_signal
+                or route_strategy == RouteStrategy.COMPLEX_SINGLE_DOMAIN.value
+        )
+        if forced_complex:
+            planned_intent = IntentPolicy._resolve_complex_intent(
+                latest_user_text=latest_user_text,
+                data_domain=data_domain,
+                intent_candidates=intent_candidates,
+                looks_like_holter_request=_looks_like_holter_request,
+                looks_like_sql_request=_looks_like_sql_request,
+                looks_like_weather_request=_looks_like_weather_request,
+                looks_like_search_request=_looks_like_search_request,
+                looks_like_medical_request=_looks_like_medical_request,
+                looks_like_code_request=_looks_like_code_request,
+            )
+            complex_reason_parts = []
+            if compound_signal:
+                complex_reason_parts.append("compound_connector")
+            if multi_location_signal:
+                complex_reason_parts.append(f"multi_location:{','.join(location_entities)}")
+            if route_strategy == RouteStrategy.COMPLEX_SINGLE_DOMAIN.value:
+                complex_reason_parts.append("complex_single_domain")
+            complex_reason = "|".join(complex_reason_parts) or route_reason or "forced_complex"
+            log.info(
+                "Intent forced complex: 命中复合任务信号，转入 Planner "
+                f"(intent={planned_intent}, reason={complex_reason})"
+            )
+            return IntentPolicy._finalize_intent_decision(
+                intent=planned_intent,
+                confidence=max(domain_conf, 0.95 if planned_intent != "CHAT" else 0.9),
+                is_complex=True,
+                source=f"forced_complex[{complex_reason}]",
+                direct_answer="",
+                session_id=session_id,
+                latest_user_text=latest_user_text,
                 started_at=started_at,
             )
 
@@ -403,7 +427,7 @@ class IntentPolicy:
             )
 
         # 先处理“补充参数”场景：继承上轮领域，避免补充句被 SQL fast-path 截走。
-        if _is_followup_supplement(latest_user_text, trimmed_messages):
+        if _support_is_followup_supplement(latest_user_text, trimmed_messages):
             hinted_intent = _history_hint_intent(trimmed_messages, latest_user_text)
             if hinted_intent:
                 log.info(f"Intent follow-up carry-over: route to [{hinted_intent}]")
@@ -628,6 +652,3 @@ class IntentPolicy:
             latest_user_text=latest_user_text,
             started_at=started_at,
         )
-
-
-

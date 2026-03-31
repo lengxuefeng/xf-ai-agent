@@ -1707,6 +1707,7 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
     """聊天节点：处理通用对话"""
     started_at = time.perf_counter()
     direct_ans = state.get("direct_answer", "")
+    current_step_input = str(state.get("current_step_input") or "").strip()
     if direct_ans and len(direct_ans.strip()) > 3:
         msg = AIMessage(content=direct_ans, name="ChatAgent", response_metadata={"synthetic": True})
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
@@ -1715,6 +1716,8 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
         prompt = ChatFallbackPrompt.get_system_prompt()
         # Chat 兜底只保留最近窗口，避免超长历史拖慢响应。
         recent_messages = state.get("messages", [])[-AGENT_LOOP_CONFIG.context_history_messages:]
+        if current_step_input:
+            recent_messages = list(recent_messages) + [HumanMessage(content=current_step_input)]
         request_messages = [("system", prompt), ("system", get_agent_date_context())] + recent_messages
         runtime_config = _build_non_streaming_config(config)
         run_id = str(
@@ -1826,7 +1829,9 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
                         final_error = retry_exc
 
         if msg is None:
-            graceful_reply = _build_graceful_chat_fallback(_latest_human_message(state.get("messages", [])))
+            graceful_reply = _build_graceful_chat_fallback(
+                current_step_input or _latest_human_message(state.get("messages", []))
+            )
             if graceful_reply:
                 elapsed_ms = int((time.perf_counter() - started_at) * 1000)
                 log.warning(
@@ -1855,7 +1860,8 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
 
 def single_agent_node(state: GraphState, agent_name: str, model: BaseChatModel, config: RunnableConfig) -> dict:
     """单一Agent节点：执行单个专业Agent"""
-    user_input = _latest_human_message(state.get("messages", []))
+    planned_step_input = str(state.get("current_step_input") or "").strip()
+    user_input = planned_step_input or _latest_human_message(state.get("messages", []))
     try:
         history_messages = _build_worker_history_messages_for_agent(
             agent_name=agent_name,
@@ -1906,12 +1912,135 @@ def single_agent_node(state: GraphState, agent_name: str, model: BaseChatModel, 
 
 
 # ==================== 路由与编排逻辑 ====================
+def _extract_last_step_result(state: GraphState) -> str:
+    """抽取最近一步执行结果，写入 memory 供后续步骤参考。"""
+    error_message = str(state.get("error_message") or "").strip()
+    if error_message:
+        return f"执行失败：{error_message}"
+
+    for message in reversed(state.get("messages", []) or []):
+        if not isinstance(message, AIMessage):
+            continue
+        text = _content_to_text(getattr(message, "content", "")).strip()
+        if text:
+            return text
+    return ""
+
+
+def _resolve_executor_route(step_state: GraphState) -> str:
+    """根据当前原子步骤的意图结果决定下一跳节点。"""
+    intent = str(step_state.get("intent") or "").strip()
+    if intent in MEMBERS:
+        return intent
+    return "chat_node"
+
+
+def executor_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    """
+    Plan-and-Execute 执行器。
+
+    1. 先把上一轮步骤结果沉淀到 memory；
+    2. 再从 plan 队列取出下一步；
+    3. 对该步骤重跑一次 IntentPolicy；
+    4. 决定派给哪个单兵 Agent 或 chat_node。
+    """
+    memory = dict(state.get("memory") or {})
+    step_results = list(memory.get("step_results") or [])
+
+    previous_step = str(state.get("current_step_input") or "").strip()
+    if previous_step:
+        last_entry = step_results[-1] if step_results else None
+        if not isinstance(last_entry, dict) or str(last_entry.get("step") or "").strip() != previous_step:
+            step_results.append(
+                {
+                    "step": previous_step,
+                    "agent": str(state.get("current_step_agent") or "").strip(),
+                    "result": _extract_last_step_result(state),
+                }
+            )
+        memory["step_results"] = step_results
+
+    remaining_plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
+    if not remaining_plan:
+        return {
+            "memory": memory,
+            "executor_active": False,
+            "current_step_input": None,
+            "current_step_agent": None,
+            "next": "__end__",
+            "error_message": None,
+            "error_detail": None,
+        }
+
+    step = remaining_plan.pop(0)
+    step_state: GraphState = dict(state)
+    step_state["messages"] = list(state.get("messages", []) or []) + [HumanMessage(content=step)]
+    step_state["error_message"] = None
+    step_state["error_detail"] = None
+    step_state["interrupt_payload"] = None
+    step_state["direct_answer"] = ""
+
+    domain_update = IntentPolicy.domain_router_node(step_state, model=model, config=config)
+    step_state.update(domain_update)
+    intent_update = IntentPolicy.intent_router_node(step_state, model=model, config=config)
+    step_state.update(intent_update)
+
+    route_target = _resolve_executor_route(step_state)
+    if step_state.get("is_complex"):
+        log.warning(f"Executor 收到仍被判定为复杂的步骤，强制按单步执行: step={step}, intent={route_target}")
+
+    memory["last_planned_step"] = step
+    memory["step_results"] = step_results
+
+    return {
+        "plan": remaining_plan,
+        "memory": memory,
+        "data_domain": step_state.get("data_domain"),
+        "domain_confidence": step_state.get("domain_confidence"),
+        "domain_route_source": step_state.get("domain_route_source"),
+        "domain_candidates": step_state.get("domain_candidates"),
+        "intent_candidates": step_state.get("intent_candidates"),
+        "route_strategy": step_state.get("route_strategy"),
+        "route_reason": step_state.get("route_reason"),
+        "domain_elapsed_ms": step_state.get("domain_elapsed_ms"),
+        "intent": step_state.get("intent"),
+        "intent_confidence": step_state.get("intent_confidence"),
+        "is_complex": step_state.get("is_complex"),
+        "direct_answer": step_state.get("direct_answer"),
+        "intent_elapsed_ms": step_state.get("intent_elapsed_ms"),
+        "current_step_input": step,
+        "current_step_agent": route_target,
+        "executor_active": True,
+        "next": route_target,
+        "error_message": None,
+        "error_detail": None,
+        "interrupt_payload": None,
+    }
+
+
+def _route_after_executor(state: GraphState) -> str:
+    next_node = str(state.get("next") or "").strip()
+    if (not state.get("executor_active")) or next_node == "__end__":
+        return "__end__"
+    if next_node in MEMBERS or next_node == "chat_node":
+        return next_node
+    return "chat_node"
+
+
+def _route_after_step_completion(state: GraphState) -> str:
+    if state.get("interrupt_payload"):
+        return "__end__"
+    if state.get("executor_active"):
+        return "executor_node"
+    return "__end__"
+
+
 def _route_after_intent(state: GraphState) -> str:
     """
-    条件边：Intent_Router → 单兵/DAG/聊天
+    条件边：Intent_Router → 单兵 / Planner / 聊天
 
     决策逻辑（与架构规范对齐）：
-    1. is_complex=True → Parent_Planner_Node（DAG 拆解）
+    1. is_complex=True → Parent_Planner_Node（Plan-and-Execute）
     2. confidence >= 0.7 且 intent 在 MEMBERS 中 → 直接路由到专业 Agent
     3. 其余情况 → chat_node（通用对话兜底）
     """
@@ -1935,7 +2064,7 @@ def _route_after_intent(state: GraphState) -> str:
 
 
 def create_graph(model_config: Optional[dict] = None):
-    """构建遵循生产级 3 层逻辑拓扑结构的融合 StateGraph"""
+    """构建带 Planner + Executor 闭环的 Supervisor 主图。"""
     config_dict = model_config or {}
     model, _ = create_model_from_config(**config_dict)
 
@@ -1982,16 +2111,10 @@ def create_graph(model_config: Optional[dict] = None):
     # 上层的决策分析
     workflow.add_node("Domain_Router_Node", functools.partial(IntentPolicy.domain_router_node, model=router_model))
     workflow.add_node("Intent_Router_Node", functools.partial(IntentPolicy.intent_router_node, model=router_model))
-    workflow.add_node("Parent_Planner_Node", functools.partial(PlannerNode.parent_planner_node, model=model))
+    workflow.add_node("Parent_Planner_Node", functools.partial(PlannerNode.planner_node, model=model))
+    workflow.add_node("executor_node", functools.partial(executor_node, model=router_model))
 
-    # 动态 DAG 发牌与执行网络
-    workflow.add_node("dispatcher_node", dispatcher_node)
-    workflow.add_node("worker_node", functools.partial(worker_node, model=model))
-    workflow.add_node("reducer_node", reducer_node)
-    workflow.add_node("reflection_node", functools.partial(reflection_node, model=model))
-    workflow.add_node("aggregator_node", functools.partial(aggregator_node, model=model))
-
-    # 单兵节点 (非 DAG 路径使用): 简单单意图优先走轻量模型，复杂任务仍走 DAG+主模型
+    # 单兵节点: 简单任务直达；复杂任务由 executor_node 逐步派发
     workflow.add_node("chat_node", functools.partial(chat_node, model=chat_model))
     for name in MEMBERS:
         workflow.add_node(name, functools.partial(single_agent_node, agent_name=name, model=chat_model))
@@ -2004,18 +2127,15 @@ def create_graph(model_config: Optional[dict] = None):
     router_options.update({"chat_node": "chat_node", "Parent_Planner_Node": "Parent_Planner_Node"})
     workflow.add_conditional_edges("Intent_Router_Node", _route_after_intent, router_options)
 
-    # DAG 循环执行部分
-    workflow.add_edge("Parent_Planner_Node", "dispatcher_node")
-    workflow.add_conditional_edges("dispatcher_node", dispatch_router, ["worker_node", "aggregator_node"])
-    workflow.add_edge("worker_node", "reducer_node")
-    workflow.add_edge("reducer_node", "reflection_node")
-    workflow.add_edge("reflection_node", "dispatcher_node")  # 闭环：反思后拉取下一波任务
+    # Plan-and-Execute 闭环
+    workflow.add_edge("Parent_Planner_Node", "executor_node")
+    executor_options = {name: name for name in MEMBERS}
+    executor_options.update({"chat_node": "chat_node", "__end__": END})
+    workflow.add_conditional_edges("executor_node", _route_after_executor, executor_options)
 
-    # 单兵出口
-    workflow.add_edge("chat_node", END)
+    # 单兵出口：简单任务直接结束；规划任务执行完一步后回到 executor_node
+    workflow.add_conditional_edges("chat_node", _route_after_step_completion, {"executor_node": "executor_node", "__end__": END})
     for name in MEMBERS:
-        workflow.add_edge(name, END)
-
-    workflow.add_edge("aggregator_node", END)
+        workflow.add_conditional_edges(name, _route_after_step_completion, {"executor_node": "executor_node", "__end__": END})
 
     return workflow.compile(checkpointer=get_checkpointer("supervisor"))

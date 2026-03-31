@@ -502,7 +502,7 @@ class GraphRunner:
         rule_result = self._try_rule_intercept(user_input)
         if rule_result is not None:
             # 规则命中，直接返回结果，不进入图执行
-            rule_handle(user_input=user_input, session_id=session_id, rule_result=rule_result,
+            rule_handle(self, user_input=user_input, session_id=session_id, rule_result=rule_result,
                         emit_response_start=emit_response_start, run_context=run_context, run_id=run_id)
 
         # response_start 必须在任何内容之前发出，让前端进入流式接收模式
@@ -1392,6 +1392,7 @@ class GraphRunner:
             "Rule_Engine_Node",
             "Intent_Router_Node",
             "Parent_Planner_Node",
+            "executor_node",
             "dispatcher_node",
             "worker_node",
             "reducer_node",

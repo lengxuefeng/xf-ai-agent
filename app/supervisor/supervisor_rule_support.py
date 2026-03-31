@@ -495,7 +495,7 @@ def analyze_request_payload(
     # 只有显式明确的动作才保留，避免误路由
     # 只有当有命中的Agent时才进行过滤
     if any(agent_name in AGENT_MEMBERS_TUPLE for agent_name in candidate_agents):
-        filtered_candidates = list(candidate_candidates)
+        filtered_candidates = list(candidate_agents)
  
         # 3.1 检查天气Agent是否为弱匹配
         # 天气Agent只有在显式查询天气时才保留

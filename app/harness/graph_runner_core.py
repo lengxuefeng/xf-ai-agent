@@ -17,7 +17,7 @@
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from config.constants.sse_constants import SseEventType
 from harness.core.session_manager import runtime_session_manager
@@ -31,7 +31,7 @@ log = get_logger(__name__)
 def rule_handle(self,
                 user_input: str,
                 session_id: str,
-                rule_result: Optional[Dict[str, Any]] = None,
+                rule_result: Optional[Tuple[str, str]] = None,
                 emit_response_start: bool = True,
                 run_context: RunContext = None,
                 run_id: str = None,
