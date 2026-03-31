@@ -15,7 +15,7 @@ from config.constants.approval_constants import (
 )
 from prompts.agent_prompts.code_prompt import CodePrompt
 from supervisor.base import BaseAgent
-from supervisor.graph_state import AgentRequest, AgentState
+from app.supervisor.graph_state import AgentRequest, AgentState
 
 
 def _strip_markdown_fences(code: str) -> str:
@@ -81,7 +81,7 @@ class CodeAgent(BaseAgent):
         self.graph = self._build_graph()
 
     async def _model_node(self, state: AgentState, config: RunnableConfig):
-        messages = list(state.get("messages", []) or [])
+        messages = state.get("messages", [])
         llm_with_tools = self.llm.bind_tools(self.tools)
         response = await llm_with_tools.ainvoke(messages, config=config)
         return {"messages": [response]}

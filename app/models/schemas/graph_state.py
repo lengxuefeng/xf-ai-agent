@@ -1,4 +1,4 @@
-from supervisor.graph_state import AgentState
+from app.supervisor.graph_state import AgentState
 
 GraphState = AgentState
 

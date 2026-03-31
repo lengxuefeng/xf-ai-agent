@@ -4,7 +4,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 from prompts.agent_prompts.medical_prompt import MedicalPrompt
 from supervisor.base import BaseAgent
-from supervisor.graph_state import AgentRequest, AgentState
+from app.supervisor.graph_state import AgentRequest, AgentState
 
 
 class MedicalAgent(BaseAgent):
@@ -19,10 +19,9 @@ class MedicalAgent(BaseAgent):
         self.graph = self._build_graph()
 
     async def _model_node(self, state: AgentState, config: RunnableConfig):
-        messages = list(state.get("messages", []) or [])
-        llm_with_tools = self.llm.bind_tools(self.tools) if self.tools else self.llm
+        messages = state.get("messages", [])
+        llm_with_tools = self.llm.bind_tools(self.tools)
         response = await llm_with_tools.ainvoke(messages, config=config)
-        response.content = f"{self._message_text(response)}{MedicalPrompt.DISCLAIMER}"
         return {"messages": [response]}
 
     def _build_graph(self) -> Runnable:

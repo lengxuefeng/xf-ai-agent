@@ -1,13 +1,13 @@
-from typing import Optional, List, TypedDict
+from typing import Optional, TypedDict
 
-from supervisor.graph_state import AgentState
+from app.supervisor.graph_state import AgentState
 
 
 class SubTask(TypedDict):
     id: str
     agent: str
     input: str
-    depends_on: List[str]
+    depends_on: list[str]
     status: str
     result: Optional[str]
 

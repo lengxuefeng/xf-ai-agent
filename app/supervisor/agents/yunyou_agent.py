@@ -7,7 +7,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from models.schemas.base_skill import ConfigurableSkillMiddleware
 from prompts.agent_prompts.yunyou_prompt import YunyouPrompt
 from supervisor.base import BaseAgent
-from supervisor.graph_state import AgentRequest, AgentState
+from app.supervisor.graph_state import AgentRequest, AgentState
 from tools.agent_tools.yunyou_tools import (
     holter_list,
     holter_log_info,
@@ -37,7 +37,7 @@ class YunyouAgent(BaseAgent):
         self.graph = self._build_graph()
 
     async def _model_node(self, state: AgentState, config: RunnableConfig):
-        messages = list(state.get("messages", []) or [])
+        messages = state.get("messages", [])
         llm_with_tools = self.llm.bind_tools(self.tools)
         response = await llm_with_tools.ainvoke(messages, config=config)
         return {"messages": [response]}
