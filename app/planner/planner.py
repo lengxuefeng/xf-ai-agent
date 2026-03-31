@@ -85,7 +85,53 @@ from common.utils.custom_logger import get_logger
 log = get_logger(__name__)
 
 
+class Plan(BaseModel):
+    """任务拆分返回的结构化目标基类"""
+    from pydantic import Field
+    steps: List[str] = Field(description="不同步骤以执行该任务需要的按序排列的子任务列表")
+
+
 class PlannerNode:
+    @staticmethod
+    def planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+        """
+        核心 Planner 逻辑注入：
+        接收 AgentState 中的 messages，利用极其专业的 System Prompt 解析为具体的 List[str] 子任务步骤。
+        并将生成的步骤列表存入 AgentState 的 plan 字段中返回。
+        """
+        from langchain_core.prompts import ChatPromptTemplate
+        from supervisor.supervisor import _latest_human_message
+
+        system_prompt = (
+            "You are a world-class Task Breakdown Expert. Your goal is to break down the user's complex request "
+            "into a clear, sequential list of discrete logical steps.\n"
+            "Rules:\n"
+            "1. Focus solely on creating a step-by-step execution plan.\n"
+            "2. Each step MUST be a detailed, actionable instruction string.\n"
+            "3. Ensure the plan covers the entire scope of the user's request.\n"
+            "4. Do NOT attempt to answer the user's query here. Only provide the methodology."
+        )
+
+        messages = state.get("messages", [])
+        prompt_tmpl = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("user", "{user_input}"),
+        ])
+
+        user_input = _latest_human_message(messages)
+        planner_model = model.with_structured_output(Plan)
+        chain = prompt_tmpl | planner_model
+        
+        started_at = time.perf_counter()
+        try:
+            plan_result: Plan = chain.invoke({"user_input": user_input}, config=config)
+            elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+            log.info(f"⏱️ Planner [LLM Breakdown] 耗时: {elapsed_ms}ms, Steps: {plan_result.steps}")
+            return {"plan": plan_result.steps}
+        except Exception as exc:
+            log.error(f"Planner failed to parse plan: {exc}")
+            return {"plan": [user_input]}
+
     @staticmethod
     def _build_planner_state_payload(task_list: List[SubTask], *, planner_source: str, elapsed_ms: int) -> dict:
         """为 DAG 规划节点构造统一初始状态。"""
@@ -102,7 +148,6 @@ class PlannerNode:
             "reflection_source": "",
             "reflection_summary": "",
         }
-
 
     @staticmethod
     def parent_planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
