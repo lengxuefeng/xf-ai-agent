@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Annotated, Dict, List, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import END, START, StateGraph, add_messages
 
 from supervisor.base import BaseAgent
@@ -172,7 +172,7 @@ class WeatherAgent(BaseAgent):
         visible = [item for item in ordered if item]
         return "\n\n".join(visible) if visible else "天气服务暂时不可用，请稍后重试。"
 
-    def _model_node(self, state: WeatherAgentState) -> Dict[str, List[AIMessage]]:
+    def _model_node(self, state: WeatherAgentState, config: RunnableConfig) -> Dict[str, List[AIMessage]]:
         messages = state.get("messages", [])
         latest_user_text = self._latest_human_text(messages)
         context_city = self._extract_city_from_system_context(messages)

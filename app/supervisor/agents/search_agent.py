@@ -36,8 +36,9 @@
 from typing import Annotated, List, TypedDict
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import Runnable
-from langgraph.graph import add_messages
+from langchain_core.runnables import Runnable, RunnableConfig
+from langgraph.graph import StateGraph, START, add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
 
 from supervisor.base import BaseAgent
 from supervisor.graph_state import AgentRequest
@@ -300,7 +301,7 @@ class SearchAgent(BaseAgent):
                 return True
         return False
 
-    async def _model_node(self, state: SearchAgentState):
+    async def _model_node(self, state: SearchAgentState, config: RunnableConfig):
         """
         搜索子图的模型节点：执行推理和搜索
 
@@ -364,7 +365,7 @@ class SearchAgent(BaseAgent):
 
         # 调用 LLM，可能返回搜索工具调用或直接回答
         chain = self.prompt | self.model_with_tools
-        ai_msg = await chain.ainvoke(state)
+        ai_msg = await chain.ainvoke(state, config=config)
 
         # 如果 LLM 直接生成回答（未调用工具），检测主题是否跑偏
         if isinstance(ai_msg, AIMessage) and not getattr(ai_msg, "tool_calls", None):
@@ -388,7 +389,7 @@ class SearchAgent(BaseAgent):
 
                 # 使用防护提示词重试
                 retry_chain = self.guard_prompt | self.model_with_tools
-                retry_msg = await retry_chain.ainvoke({"messages": retry_messages})
+                retry_msg = await retry_chain.ainvoke({"messages": retry_messages}, config=config)
 
                 # 检查重试结果是否仍然跑偏
                 if isinstance(retry_msg, AIMessage):
@@ -411,22 +412,14 @@ class SearchAgent(BaseAgent):
         构建搜索子图
 
         设计目的：
-        - 使用 BaseAgent 提供的通用 ReAct 工厂方法
-        - 避免重复的拓扑代码
-        - 统一子图构建模式
+        - 显式构建标准 ReAct 循环
+        - 确保 tool_calls 会真正进入工具执行节点
+        - 工具执行结果回传给 LLM 做下一步推理或总结
 
         子图结构：
-        - 使用 _build_react_graph 方法构建
-        - 包含模型节点（_model_node）和工具节点
-        - 自动处理条件路由：有工具调用 → 工具节点，否则 → 结束
-        - 自动处理循环控制和次数限制
-
-        参数说明：
-        - state_schema: 状态模式 SearchAgentState
-        - model_node_fn: 模型节点函数 self._model_node
-        - tools: 可用工具列表 [tavily_search_tool]
-        - max_tool_loops: 最大工具循环次数
-        - loop_exceeded_message: 超限时的提示消息
+        - START → model_node
+        - model_node → tools_condition → tools / END
+        - tools → model_node
 
         返回值：
         - Runnable: 可执行的 LangGraph 子图
@@ -435,10 +428,10 @@ class SearchAgent(BaseAgent):
         - 在 __init__ 中调用，构建完整的搜索子图
         - 子图可被主图的 Supervisor 调用
         """
-        return self._build_react_graph(
-            state_schema=SearchAgentState,
-            model_node_fn=self._model_node,
-            tools=self.tools,
-            max_tool_loops=AGENT_LOOP_CONFIG.search_max_tool_loops,
-            loop_exceeded_message=SEARCH_TOOL_LOOP_EXCEEDED_MESSAGE,
-        )
+        workflow = StateGraph(SearchAgentState)
+        workflow.add_node("model_node", self._model_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("tools", ToolNode(self.tools), retry_policy=self.RETRY_POLICY)
+        workflow.add_edge(START, "model_node")
+        workflow.add_conditional_edges("model_node", tools_condition)
+        workflow.add_edge("tools", "model_node")
+        return workflow.compile(checkpointer=self.checkpointer)

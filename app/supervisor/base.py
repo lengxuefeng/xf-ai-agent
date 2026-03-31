@@ -107,6 +107,7 @@ def _unwrap_interrupt_candidate(obj: Any) -> Optional[dict]:
 
 async def _guarded_model_node(
     state,
+    config: RunnableConfig,
     *,
     model_node_fn,
     max_tool_loops: int,
@@ -154,7 +155,7 @@ async def _guarded_model_node(
             "tool_loop_count": loop_count,
             "messages": [AIMessage(content=loop_exceeded_message)],
         }
-    result = model_node_fn(state)
+    result = model_node_fn(state, config)
     if inspect.isawaitable(result):
         return await result
     return result

@@ -3,6 +3,7 @@ import time
 from typing import List
 
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 
@@ -168,6 +169,17 @@ class IntentPolicy:
             "intent_elapsed_ms": elapsed_ms,
         }
 
+    @staticmethod
+    def _build_routing_messages(state: GraphState, *, window: int) -> tuple[List, str]:
+        messages = list(state.get("messages", []) or [])
+        trimmed_messages = messages[-window:]
+        current_task = str(state.get("current_task") or state.get("current_step_input") or "").strip()
+        if current_task:
+            trimmed_messages = trimmed_messages + [HumanMessage(content=current_task)]
+            return trimmed_messages, current_task
+        from supervisor.supervisor import _latest_human_message
+        return trimmed_messages, _latest_human_message(trimmed_messages)
+
 
     @staticmethod
     async def domain_router_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
@@ -192,12 +204,13 @@ class IntentPolicy:
         3. WEB_SEARCH: 互联网检索域
         4. GENERAL: 通用对话域
         """
-        messages = state.get("messages", [])
         # 分类窗口：避免把过长历史塞给路由器，降低延迟和漂移概率。
         classify_window = max(3, int(ROUTER_POLICY_CONFIG.classifier_history_messages))
-        classify_messages = messages[-classify_window:]
+        classify_messages, latest_user_text = IntentPolicy._build_routing_messages(
+            state,
+            window=classify_window,
+        )
         session_id = state.get("session_id") or config.get("configurable", {}).get("thread_id", "")
-        latest_user_text = _latest_human_message(classify_messages)
         request_analysis = _analyze_request(latest_user_text)
         started_at = time.perf_counter()
 
@@ -320,7 +333,6 @@ class IntentPolicy:
             _analyze_request, _invoke_structured_output_with_fallback
         )
         """第二级：意图识别节点 (Intent_Router_Node)"""
-        messages = state.get("messages", [])
         session_id = state.get("session_id") or config.get("configurable", {}).get("thread_id", "")
         data_domain = (state.get("data_domain") or "GENERAL").upper()
         route_strategy = (state.get("route_strategy") or RouteStrategy.SINGLE_DOMAIN.value).strip()
@@ -330,9 +342,10 @@ class IntentPolicy:
         domain_source = state.get("domain_route_source") or "unknown"
         # 保留最近多轮上下文，避免“用户补充参数”被误判为新问题导致重复追问。
         classify_window = max(3, int(ROUTER_POLICY_CONFIG.classifier_history_messages))
-        trimmed_messages = messages[-classify_window:]
-
-        latest_user_text = _latest_human_message(trimmed_messages)
+        trimmed_messages, latest_user_text = IntentPolicy._build_routing_messages(
+            state,
+            window=classify_window,
+        )
         started_at = time.perf_counter()
         compound_signal = IntentPolicy._has_compound_structure(latest_user_text) or _looks_like_compound_request(
             latest_user_text

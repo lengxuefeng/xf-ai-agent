@@ -13,6 +13,7 @@ from typing import Any, Iterable, List, Optional
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableConfig
 
 from common.utils.custom_logger import get_logger
 
@@ -217,6 +218,7 @@ async def build_sliding_summary_messages(
     messages: List[BaseMessage],
     *,
     model: Optional[BaseChatModel] = None,
+    config: Optional[RunnableConfig] = None,
     trigger_rounds: int = HISTORY_SUMMARY_TRIGGER_ROUNDS,
     summarize_rounds: int = HISTORY_SUMMARY_BATCH_ROUNDS,
     keep_recent_rounds: int = HISTORY_SUMMARY_KEEP_RECENT_ROUNDS,
@@ -280,7 +282,8 @@ async def build_sliding_summary_messages(
                 {
                     "existing_summary": existing_summary or "（无）",
                     "history_text": history_text,
-                }
+                },
+                config=config,
             )
             summary_text = _message_text(response).strip()
         except Exception as exc:

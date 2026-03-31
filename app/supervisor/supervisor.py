@@ -815,53 +815,82 @@ def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
 # ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
 def dispatch_node(state: GraphState) -> dict:
-    """根据 Planner 输出构造并发扇出的任务清单。"""
+    """串行弹夹调度：先收口上一任务结果，再弹出下一任务。"""
     plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
-    active_tasks = [
-        {
-            "id": f"t{index + 1}",
-            "input": task,
-            "status": TaskStatus.DISPATCHED.value,
+    task_list = [dict(task) for task in list(state.get("task_list") or [])]
+    task_results = dict(state.get("task_results") or {})
+    current_task_id = str(state.get("current_task_id") or "").strip()
+    current_task = str(state.get("current_task") or "").strip()
+    interrupt_payload = state.get("interrupt_payload")
+    error_message = str(state.get("error_message") or "").strip()
+    last_agent = str(state.get("current_step_agent") or state.get("intent") or "").strip()
+
+    if current_task_id:
+        for task in task_list:
+            if str(task.get("id") or "") != current_task_id:
+                continue
+            status = str(task.get("status") or "").strip()
+            if status != TaskStatus.DISPATCHED.value:
+                break
+            task["agent"] = last_agent or str(task.get("agent") or "")
+            if interrupt_payload:
+                task["status"] = TaskStatus.PENDING_APPROVAL.value
+                task["result"] = WORKER_PENDING_APPROVAL_RESULT
+            elif error_message:
+                task["status"] = TaskStatus.ERROR.value
+                task["result"] = error_message
+                task_results[current_task_id] = error_message
+            else:
+                result_text = _extract_last_step_result(state)
+                task["status"] = TaskStatus.DONE.value
+                task["result"] = result_text
+                task_results[current_task_id] = result_text
+            break
+
+    if interrupt_payload:
+        log.info(f"Dispatch: task [{current_task_id or current_task}] pending approval, stop main loop.")
+        return {
+            "plan": plan,
+            "task_list": task_list,
+            "task_results": task_results,
+            "active_tasks": [],
+            "current_task": None,
+            "current_task_id": None,
         }
-        for index, task in enumerate(plan)
-    ]
-    log.info(f"Dispatch: ready to fan out {len(active_tasks)} tasks")
+
+    next_task = ""
+    next_task_id = ""
+    if plan:
+        next_task = plan.pop(0)
+        for task in task_list:
+            if str(task.get("status") or "").strip() == TaskStatus.PENDING.value:
+                next_task_id = str(task.get("id") or "").strip()
+                task["status"] = TaskStatus.DISPATCHED.value
+                task["agent"] = ""
+                break
+
+    if next_task_id:
+        log.info(f"Dispatch: next task [{next_task_id}] -> {next_task}")
+    else:
+        log.info("Dispatch: no remaining tasks, main loop will end.")
+
     return {
         "plan": plan,
-        "active_tasks": active_tasks,
-        "current_task": None,
+        "task_list": task_list,
+        "task_results": task_results,
+        "active_tasks": [],
         "worker_results": [],
-        "current_wave": 1 if active_tasks else 0,
+        "current_task": next_task or None,
+        "current_task_id": next_task_id or None,
+        "current_step_input": next_task or None,
+        "current_step_agent": None,
+        "error_message": None,
+        "error_detail": None,
+        "intent": None,
+        "intent_confidence": None,
+        "is_complex": False,
+        "direct_answer": "",
     }
-
-
-def _fanout_workers(state: GraphState):
-    """使用 Send API 将 plan 中的所有子任务并发扇出到 worker_node。"""
-    active = list(state.get("active_tasks") or [])
-    if not active:
-        return "aggregator_node"
-
-    worker_context_slots = state.get("context_slots") or {}
-    worker_context_summary = state.get("context_summary") or ""
-    history_messages = list(state.get("messages", []) or [])[-AGENT_LOOP_CONFIG.context_history_messages:]
-    session_id = str(state.get("session_id") or "")
-    llm_config = dict(state.get("llm_config") or {})
-
-    return [
-        Send(
-            "worker_node",
-            {
-                "task_id": str(task_item.get("id") or f"t{index + 1}"),
-                "current_task": str(task_item.get("input") or "").strip(),
-                "session_id": session_id,
-                "llm_config": llm_config,
-                "context_slots": worker_context_slots,
-                "context_summary": worker_context_summary,
-                "messages": history_messages,
-            },
-        )
-        for index, task_item in enumerate(active)
-    ]
 
 
 # ==================== Worker & Reducer ====================
@@ -1570,6 +1599,7 @@ async def memory_manager_node(state: GraphState, model: BaseChatModel, config: R
     compact_messages = await build_sliding_summary_messages(
         messages,
         model=model,
+        config=config,
         trigger_rounds=HISTORY_SUMMARY_TRIGGER_ROUNDS,
         summarize_rounds=HISTORY_SUMMARY_BATCH_ROUNDS,
         keep_recent_rounds=HISTORY_SUMMARY_KEEP_RECENT_ROUNDS,
@@ -1898,8 +1928,29 @@ def _route_after_intent(state: GraphState) -> str:
     return "chat_node"
 
 
+def _route_after_dispatch(state: GraphState) -> str:
+    """弹夹循环：有 current_task 则进入路由，无任务或中断则结束。"""
+    if state.get("interrupt_payload"):
+        return "__end__"
+    current_task = str(state.get("current_task") or "").strip()
+    if not current_task:
+        return "__end__"
+    return "Domain_Router_Node"
+
+
+def _route_current_task_after_intent(state: GraphState) -> str:
+    """当前原子任务只允许落到单兵 Agent 或 chat_node，不再二次进入 planner。"""
+    conf = float(state.get("intent_confidence") or 0.0)
+    intent = str(state.get("intent") or "CHAT").strip() or "CHAT"
+    if conf >= 0.7 and intent in MEMBERS:
+        log.info(f"当前任务路由: {intent} (conf={conf:.2f})")
+        return intent
+    log.info(f"当前任务路由: chat_node (intent={intent}, conf={conf:.2f})")
+    return "chat_node"
+
+
 def create_graph(model_config: Optional[dict] = None):
-    """构建基于 Send 并发扇出的 Supervisor 主图。"""
+    """构建统一入口 + 串行弹夹循环的 Supervisor 主图。"""
     config_dict = model_config or {}
     model, _ = create_model_from_config(**config_dict)
 
@@ -1969,43 +2020,22 @@ def create_graph(model_config: Optional[dict] = None):
             functools.partial(single_agent_node, agent_name=name, model=model),
             retry_policy=GRAPH_RETRY_POLICY,
         )
-    workflow.add_node(
-        "worker_node",
-        functools.partial(worker_node, model=model, router_model=router_model, chat_model=chat_model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
-    workflow.add_node(
-        "aggregator_node",
-        functools.partial(aggregator_node, model=model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
-    workflow.add_node(
-        "memory_manager_node",
-        functools.partial(memory_manager_node, model=router_model),
-        retry_policy=GRAPH_RETRY_POLICY,
-    )
-
     # ================= 编织拓扑关系 =================
-    workflow.add_edge(START, "Domain_Router_Node")
-    workflow.add_edge("Domain_Router_Node", "Intent_Router_Node")
-
-    router_options = {name: name for name in MEMBERS}
-    router_options.update({"chat_node": "chat_node", "Parent_Planner_Node": "Parent_Planner_Node"})
-    workflow.add_conditional_edges("Intent_Router_Node", _route_after_intent, router_options)
-
+    workflow.add_edge(START, "Parent_Planner_Node")
     workflow.add_edge("Parent_Planner_Node", "dispatch_node")
     workflow.add_conditional_edges(
         "dispatch_node",
-        _fanout_workers,
-        {"worker_node": "worker_node", "aggregator_node": "aggregator_node"},
+        _route_after_dispatch,
+        {"Domain_Router_Node": "Domain_Router_Node", "__end__": END},
     )
-    workflow.add_edge("worker_node", "aggregator_node")
-    workflow.add_edge("aggregator_node", "memory_manager_node")
+    workflow.add_edge("Domain_Router_Node", "Intent_Router_Node")
 
-    workflow.add_edge("chat_node", "memory_manager_node")
+    router_options = {name: name for name in MEMBERS}
+    router_options.update({"chat_node": "chat_node"})
+    workflow.add_conditional_edges("Intent_Router_Node", _route_current_task_after_intent, router_options)
+
+    workflow.add_edge("chat_node", "dispatch_node")
     for name in MEMBERS:
-        workflow.add_edge(name, "memory_manager_node")
-
-    workflow.add_edge("memory_manager_node", END)
+        workflow.add_edge(name, "dispatch_node")
 
     return workflow.compile(checkpointer=get_checkpointer("supervisor"))

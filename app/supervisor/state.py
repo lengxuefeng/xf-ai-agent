@@ -115,6 +115,7 @@ class GraphState(TypedDict):
     # Planner 长期记忆与规划
     plan: Optional[List[str]]
     current_task: Optional[str]
+    current_task_id: Optional[str]
     memory: Optional[Dict[str, Any]]
 
     # 任务规划输出 (Tier-2 DAG)

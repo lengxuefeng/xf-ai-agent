@@ -740,7 +740,7 @@ class CodeAgent(BaseAgent):
         except Exception as e:
             return {"execution_result": f"代码执行错误: {str(e)}"}
 
-    def _analyze_result_node(self, state: CodeAgentState):
+    def _analyze_result_node(self, state: CodeAgentState, config: RunnableConfig):
         """
         分析结果节点
 

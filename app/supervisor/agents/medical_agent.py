@@ -45,7 +45,7 @@
 from typing import Annotated, TypedDict, List
 from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import StateGraph, START, END, add_messages
 
 from supervisor.base import BaseAgent
@@ -142,7 +142,7 @@ class MedicalAgent(BaseAgent):
         )
         self.graph = self._build_graph()
 
-    async def _model_node(self, state: MedicalAgentState):
+    async def _model_node(self, state: MedicalAgentState, config: RunnableConfig):
         """
         模型节点：生成医疗问答回复
 
@@ -173,7 +173,7 @@ class MedicalAgent(BaseAgent):
         {"messages": [AIMessage(content="高血压的主要症状包括头晕、头痛、心悸等...\\n\\n注：以上内容仅供参考，不能替代专业医疗诊断。如有健康问题，请及时就医。")]}
         """
         chain = self.prompt | self.llm
-        response = await chain.ainvoke(state)
+        response = await chain.ainvoke(state, config=config)
 
         # 在回答后附加免责声明
         response.content = f"{self._message_text(response)}{MedicalPrompt.DISCLAIMER}"

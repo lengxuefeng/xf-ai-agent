@@ -47,9 +47,11 @@ import time
 from langchain_core.messages import BaseMessage, AIMessage, ToolMessage, HumanMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.types import interrupt
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.tools import tool
 
 from supervisor.base import BaseAgent
 from tools.gateway.federated_query_gateway import federated_query_gateway
@@ -75,6 +77,42 @@ from common.utils.custom_logger import get_logger, LogTarget
 from prompts.agent_prompts.sql_prompt import SqlPrompt
 
 log = get_logger(__name__)
+
+SQL_SCHEMA_TOOL_NAME = "get_schema"
+
+
+@tool(SQL_SCHEMA_TOOL_NAME)
+def get_schema_tool() -> str:
+    """读取当前数据库 schema，供 SQL 生成使用。"""
+    return get_schema()
+
+
+@tool(SQL_APPROVAL_ACTION_NAME)
+def execute_sql_tool(sql: str) -> str:
+    """执行只读 SQL 查询；真正执行前先走 LangGraph 审批中断。"""
+    normalized_sql = str(sql or "").strip()
+    if not normalized_sql:
+        return "未生成可执行 SQL，请重试。"
+
+    decision_payload = {
+        "action_requests": [{
+            "type": "sql_approval",
+            "name": SQL_APPROVAL_ACTION_NAME,
+            "args": {"sql": normalized_sql},
+            "description": SQL_AGENT_APPROVAL_DESC_TEMPLATE.format(sql=normalized_sql),
+            "id": f"{SQL_APPROVAL_ACTION_NAME}_{hashlib.md5((normalized_sql + str(int(time.time() * 1000))).encode('utf-8')).hexdigest()[:10]}",
+        }],
+        "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
+        "message": SQL_AGENT_APPROVAL_MESSAGE,
+    }
+
+    decision = interrupt(decision_payload)
+    action = decision.get("action") if isinstance(decision, dict) else decision
+    if action == ApprovalDecision.REJECT.value:
+        return SQL_AGENT_REJECTED_MESSAGE
+
+    raw_result = federated_query_gateway.execute_local_sql(normalized_sql)
+    return format_sql_result_for_user(normalized_sql, raw_result)
 
 
 class SqlAgentState(TypedDict):
@@ -133,6 +171,18 @@ class SqlAgent(BaseAgent):
     - LIMIT 约束：默认限制查询条数，可按需调整
     """
 
+    REACT_SYSTEM_PROMPT = (
+        "你是一个 SQL 专家，必须通过真实工具完成数据库查询。"
+        f"可用工具只有两个：`{SQL_SCHEMA_TOOL_NAME}` 用于读取数据库 schema，"
+        f"`{SQL_APPROVAL_ACTION_NAME}` 用于执行只读 SQL 查询。"
+        "规则："
+        "1. 拿不准表名或字段名时，先调用 get_schema，不要编造 schema。"
+        "2. 需要真实查库时，必须调用 execute_sql，不要只停留在口头分析。"
+        "3. 一次只推进一个动作：先看 schema，再执行 SQL，拿到工具结果后再给用户中文结论。"
+        "4. 只允许只读 SQL，优先 SELECT / WITH / EXPLAIN。"
+        "5. 不要向用户暴露内部工具名、推理过程或审批细节。"
+    )
+
     def __init__(self, req: AgentRequest):
         """
         初始化 SQL Agent
@@ -160,12 +210,13 @@ class SqlAgent(BaseAgent):
             raise ValueError("SQL 模型初始化失败，请检查配置。")
         self.llm = req.model
         self.subgraph_id = "sql_agent"
+        self.tools = [get_schema_tool, execute_sql_tool]
+        self.model_with_tools = self.llm.bind_tools(self.tools)
 
-        # 提示词模板：生成 SQL 用的提示词
-        # GENERATE_SQL 包含 SQL 生成规则、schema 信息占位符等
+        # 提示词模板：采用工具驱动的 ReAct 流程，让模型先读 schema，再执行 SQL。
         self.prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", SqlPrompt.GENERATE_SQL),
+                ("system", self.REACT_SYSTEM_PROMPT),
                 MessagesPlaceholder(variable_name="messages")
             ]
         )
@@ -176,32 +227,20 @@ class SqlAgent(BaseAgent):
         构建 SQL 子图
 
         子图结构：
-        1. get_schema：获取数据库 schema 信息
-        2. generate_sql：根据用户问题生成 SQL
-        3. execute_sql：执行 SQL（含审批中断）
-        4. generate_response：格式化结果并返回
+        1. model_node：大模型推理，决定是继续调用工具还是直接回答
+        2. tools：真正执行 get_schema / execute_sql
 
-        流程：START → get_schema → generate_sql → execute_sql → generate_response → END
+        流程：START → model_node → tools_condition → tools / END → model_node
 
         返回值：
         - StateGraph: 编译后的可执行子图，使用全局 checkpointer
         """
         workflow = StateGraph(SqlAgentState)
-
-        # 添加节点
-        workflow.add_node("get_schema", self._get_schema_node, retry_policy=self.RETRY_POLICY)
-        workflow.add_node("generate_sql", self._generate_sql_node, retry_policy=self.RETRY_POLICY)
-        workflow.add_node("execute_sql", self._execute_sql_node, retry_policy=self.RETRY_POLICY)
-        workflow.add_node("generate_response", self._generate_response_node, retry_policy=self.RETRY_POLICY)
-
-        # 定义边：线性的执行流程
-        workflow.add_edge(START, "get_schema")
-        workflow.add_edge("get_schema", "generate_sql")
-        workflow.add_edge("generate_sql", "execute_sql")
-        workflow.add_edge("execute_sql", "generate_response")
-        workflow.add_edge("generate_response", END)
-
-        # 编译图 (使用全局 checkpointer，支持中断恢复)
+        workflow.add_node("model_node", self._model_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("tools", ToolNode(self.tools), retry_policy=self.RETRY_POLICY)
+        workflow.add_edge(START, "model_node")
+        workflow.add_conditional_edges("model_node", tools_condition)
+        workflow.add_edge("tools", "model_node")
         return workflow.compile(checkpointer=self.checkpointer)
 
     @staticmethod
@@ -585,7 +624,170 @@ class SqlAgent(BaseAgent):
         select_expr = ", ".join(selected_cols) if selected_cols else "*"
         return f"SELECT {select_expr} FROM {table} ORDER BY {order_col} DESC LIMIT {limit_n};"
 
-    def _get_schema_node(self, state: SqlAgentState):
+    @staticmethod
+    def _tool_message_name(message: BaseMessage) -> str:
+        return str(getattr(message, "name", "") or "").strip()
+
+    @staticmethod
+    def _clean_sql_text(text: str) -> str:
+        return str(text or "").replace("```sql", "").replace("```", "").strip()
+
+    @classmethod
+    def _looks_like_sql_statement(cls, text: str) -> bool:
+        normalized = cls._clean_sql_text(text)
+        if not normalized:
+            return False
+        return bool(re.match(r"^(SELECT|WITH|EXPLAIN)\b", normalized, flags=re.IGNORECASE))
+
+    def _build_react_prompt(self, *, schema_info: str, holter_intent: bool) -> ChatPromptTemplate:
+        if not holter_intent:
+            return self.prompt
+
+        schema_tables = self._parse_schema_tables(schema_info) if schema_info else {}
+        holter_tables = [
+            table_name
+            for table_name in schema_tables.keys()
+            if any(k in table_name.lower() for k in SQL_AGENT_KEYWORDS[SqlAgentKeywordGroup.HOLTER_TABLE_HINT])
+        ]
+        allowed_tables = holter_tables or ["holter"]
+        extra_rule = (
+            "【强约束】用户明确要查 holter 业务数据。"
+            f"你只能使用这些表: {', '.join(allowed_tables)}。"
+            "严禁使用 t_chat_message、t_chat_session 等聊天记录表。"
+            f"{SQL_AGENT_ORDER_RULE_HINT}"
+        )
+        return ChatPromptTemplate.from_messages([
+            ("system", self.REACT_SYSTEM_PROMPT),
+            ("system", extra_rule),
+            MessagesPlaceholder(variable_name="messages"),
+        ])
+
+    def _sanitize_sql_for_tool_call(self, sql_text: str, *, messages: List[BaseMessage], schema_info: str) -> str:
+        sql = self._clean_sql_text(sql_text)
+        if not sql:
+            return ""
+
+        holter_intent = self._infer_holter_intent(messages)
+        if not holter_intent:
+            return sql
+
+        latest_user_text = self._latest_human_text(messages)
+        schema_tables = self._parse_schema_tables(schema_info) if schema_info else {}
+        used_tables = self._extract_sql_tables(sql)
+        bad_tables = set(SQL_AGENT_KEYWORDS[SqlAgentKeywordGroup.HOLTER_BAD_TABLES])
+        has_holter_table = any(
+            any(k in table_name.lower() for k in SQL_AGENT_KEYWORDS[SqlAgentKeywordGroup.HOLTER_TABLE_HINT])
+            for table_name in used_tables
+        )
+        if (used_tables & bad_tables) or not has_holter_table:
+            fallback_sql = self._build_holter_fallback_sql(latest_user_text, schema_tables)
+            log.warning(f"SQL Tool Guard: 检测到非 holter 表 SQL，已改写为: {fallback_sql}")
+            return fallback_sql
+        return sql
+
+    def _normalize_model_response(
+        self,
+        response: AIMessage,
+        *,
+        messages: List[BaseMessage],
+        schema_info: str,
+    ) -> tuple[AIMessage, str]:
+        tool_calls = list(getattr(response, "tool_calls", []) or [])
+        pending_sql = ""
+
+        if tool_calls:
+            normalized_tool_calls = []
+            for tool_call in tool_calls:
+                tool_name = str(tool_call.get("name") or "").strip()
+                if tool_name != SQL_APPROVAL_ACTION_NAME:
+                    normalized_tool_calls.append(tool_call)
+                    continue
+
+                raw_args = tool_call.get("args") or {}
+                raw_sql = raw_args.get("sql") if isinstance(raw_args, dict) else raw_args
+                normalized_sql = self._sanitize_sql_for_tool_call(
+                    str(raw_sql or ""),
+                    messages=messages,
+                    schema_info=schema_info,
+                )
+                if not normalized_sql:
+                    continue
+
+                tool_call["args"] = {"sql": normalized_sql}
+                normalized_tool_calls.append(tool_call)
+                pending_sql = normalized_sql
+
+            response.tool_calls = normalized_tool_calls
+            if normalized_tool_calls:
+                return response, pending_sql
+            if self._message_text(response):
+                return response, ""
+            return AIMessage(content="未生成可执行 SQL，请补充更明确的查询条件。"), ""
+
+        content_text = self._message_text(response)
+        if not self._looks_like_sql_statement(content_text):
+            return response, ""
+
+        pending_sql = self._sanitize_sql_for_tool_call(
+            content_text,
+            messages=messages,
+            schema_info=schema_info,
+        )
+        if not pending_sql:
+            return AIMessage(content="未生成可执行 SQL，请补充更明确的查询条件。"), ""
+
+        synthesized_tool_call = {
+            "name": SQL_APPROVAL_ACTION_NAME,
+            "args": {"sql": pending_sql},
+            "id": f"{SQL_APPROVAL_ACTION_NAME}_auto_{int(time.time() * 1000)}",
+            "type": "tool_call",
+        }
+        return AIMessage(content="", tool_calls=[synthesized_tool_call]), pending_sql
+
+    async def _model_node(self, state: SqlAgentState, config: RunnableConfig):
+        """
+        SQL ReAct 模型节点。
+
+        角色：
+        - 让 LLM 决定何时读取 schema、何时执行 SQL、何时直接总结
+        - 对 execute_sql 的 tool call 做 SQL 守卫修正
+        - 在工具执行后继续回到模型节点收敛最终答复
+        """
+        messages = list(state.get("messages", []) or [])
+        updates: Dict[str, str] = {}
+        schema_info = str(state.get("schema_info") or "").strip()
+
+        last_message = messages[-1] if messages else None
+        if isinstance(last_message, ToolMessage):
+            tool_name = self._tool_message_name(last_message)
+            if tool_name == SQL_SCHEMA_TOOL_NAME:
+                schema_info = self._message_text(last_message).strip()
+                updates["schema_info"] = schema_info
+            elif tool_name == SQL_APPROVAL_ACTION_NAME:
+                updates["sql_result"] = self._message_text(last_message).strip()
+
+        prompt = self._build_react_prompt(
+            schema_info=schema_info,
+            holter_intent=self._infer_holter_intent(messages),
+        )
+        response = await (prompt | self.model_with_tools).ainvoke({"messages": messages}, config=config)
+        if not isinstance(response, AIMessage):
+            response = AIMessage(content=self._message_text(response))
+
+        response, pending_sql = self._normalize_model_response(
+            response,
+            messages=messages,
+            schema_info=schema_info,
+        )
+        if pending_sql:
+            updates["sql_to_execute"] = pending_sql
+
+        return {
+            **updates,
+            "messages": [response],
+        }
+
+    def _get_schema_node(self, state: SqlAgentState, config: RunnableConfig):
         """
         获取数据库 schema 信息
 
@@ -607,7 +809,7 @@ class SqlAgent(BaseAgent):
             "messages": [AIMessage(content=SQL_AGENT_SCHEMA_LOADED_MESSAGE)],
         }
 
-    async def _generate_sql_node(self, state: SqlAgentState):
+    async def _generate_sql_node(self, state: SqlAgentState, config: RunnableConfig):
         """
         生成 SQL 语句
 
@@ -664,7 +866,7 @@ class SqlAgent(BaseAgent):
 
         # 调用 LLM 生成 SQL
         chain = prompt.partial(schema=schema_info) | self.llm
-        response = await chain.ainvoke({"messages": messages})
+        response = await chain.ainvoke({"messages": messages}, config=config)
         sql = self._message_text(response).replace("```sql", "").replace("```", "").strip()
 
         # 如果是 Holter 查询，SQL 守卫检测
@@ -681,7 +883,7 @@ class SqlAgent(BaseAgent):
 
         return {"sql_to_execute": sql}
 
-    def _execute_sql_node(self, state: SqlAgentState):
+    def _execute_sql_node(self, state: SqlAgentState, config: RunnableConfig):
         """
         执行 SQL（含审批中断）
 
@@ -763,7 +965,7 @@ class SqlAgent(BaseAgent):
                 "sql_result": error_text
             }
 
-    def _generate_response_node(self, state: SqlAgentState):
+    def _generate_response_node(self, state: SqlAgentState, config: RunnableConfig):
         """
         格式化查询结果并返回
 

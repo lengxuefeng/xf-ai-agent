@@ -69,7 +69,7 @@ from typing import Annotated, Any, Dict, List, Optional, Sequence, Tuple, TypedD
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -1310,7 +1310,7 @@ class YunyouAgent(BaseAgent):
         rules = YunyouPrompt.EXECUTION_RULES.format(current_time, current_weekday)
         return (base_prompt or YunyouPrompt.DEFAULT_SYSTEM_ROLE) + rules
 
-    async def _model_node(self, state: YunyouState):
+    async def _model_node(self, state: YunyouState, config: RunnableConfig):
         """
         模型处理节点：接收并响应最新对话
 
@@ -1363,7 +1363,7 @@ class YunyouAgent(BaseAgent):
         # 调用 LLM
         chain = self.prompt | self.model_with_tools
         try:
-            response = await chain.ainvoke({"messages": recent_messages})
+            response = await chain.ainvoke({"messages": recent_messages}, config=config)
             return {"tool_loop_count": loop_count + 1, "messages": [response]}
         except Exception as exc:
             log.exception(f"yunyou model_node 调用失败，执行降级回复: {exc}")
@@ -1375,7 +1375,7 @@ class YunyouAgent(BaseAgent):
                 "messages": [AIMessage(content=self._build_tool_failure_reply())],
             }
 
-    def _human_review_node(self, state: YunyouState):
+    def _human_review_node(self, state: YunyouState, config: RunnableConfig):
         """
         人工审批节点：检查是否需要调用敏感工具
 

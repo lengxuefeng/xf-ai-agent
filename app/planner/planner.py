@@ -1,5 +1,6 @@
 import time
 from typing import List
+import re
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
@@ -20,6 +21,11 @@ class Plan(BaseModel):
 
 
 class PlannerNode:
+    SIMPLE_REQUEST_CONNECTOR_RE = re.compile(
+        r"(?:然后|接着|并且|以及|同时|顺便|后面|随后|再|\band\b|\bthen\b|(?<![A-Za-z0-9])和(?![A-Za-z0-9]))",
+        flags=re.IGNORECASE,
+    )
+
     SYSTEM_PROMPT = (
         "你是一个任务拆解专家，请将用户的复杂请求拆分为多个原子的、可独立执行的子任务步骤。\n"
         "要求：\n"
@@ -56,29 +62,40 @@ class PlannerNode:
         return PlannerNode._normalize_steps(steps, user_text)
 
     @staticmethod
+    def _is_simple_request(user_text: str) -> bool:
+        text = str(user_text or "").strip()
+        if not text:
+            return True
+        return not PlannerNode.SIMPLE_REQUEST_CONNECTOR_RE.search(text)
+
+    @staticmethod
     async def planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
         """Planner 节点：使用 fast model 异步拆解原子步骤列表。"""
         user_text = PlannerNode._latest_user_text(state)
         started_at = time.perf_counter()
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", PlannerNode.SYSTEM_PROMPT),
-                ("user", "用户请求：\n{user_input}\n\n只返回 JSON。"),
-            ]
-        )
+        if PlannerNode._is_simple_request(user_text):
+            steps = PlannerNode._normalize_steps([user_text], user_text)
+            planner_source = "passthrough_single"
+        else:
+            prompt = ChatPromptTemplate.from_messages(
+                [
+                    ("system", PlannerNode.SYSTEM_PROMPT),
+                    ("user", "用户请求：\n{user_input}\n\n只返回 JSON。"),
+                ]
+            )
 
-        planner_source = "llm"
-        try:
-            chain = prompt | model.with_structured_output(Plan)
-            plan_result: Plan = await chain.ainvoke({"user_input": user_text}, config=config)
-            steps = PlannerNode._normalize_steps(plan_result.steps, user_text)
-            if not steps:
-                raise ValueError("planner returned empty steps")
-        except Exception as exc:
-            planner_source = "fallback_split"
-            log.warning(f"Planner structured output failed, fallback to rule split: {exc}")
-            steps = PlannerNode._fallback_steps(user_text)
+            planner_source = "llm"
+            try:
+                chain = prompt | model.with_structured_output(Plan)
+                plan_result: Plan = await chain.ainvoke({"user_input": user_text}, config=config)
+                steps = PlannerNode._normalize_steps(plan_result.steps, user_text)
+                if not steps:
+                    raise ValueError("planner returned empty steps")
+            except Exception as exc:
+                planner_source = "fallback_split"
+                log.warning(f"Planner structured output failed, fallback to rule split: {exc}")
+                steps = PlannerNode._fallback_steps(user_text)
 
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         memory = dict(state.get("memory") or {})
@@ -106,7 +123,13 @@ class PlannerNode:
             "memory": memory,
             "active_tasks": task_list,
             "current_task": None,
+            "current_task_id": None,
+            "current_step_input": None,
+            "current_step_agent": None,
             "executor_active": False,
+            "interrupt_payload": None,
+            "error_message": None,
+            "error_detail": None,
             "next": "dispatch_node",
         }
 
