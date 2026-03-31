@@ -11,7 +11,7 @@ from typing import Any, Dict
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from utils.custom_logger import get_logger
+from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 
@@ -64,10 +64,10 @@ def _check_cancellation_service() -> Dict[str, Any]:
 def _check_runtime_harness() -> Dict[str, Any]:
     """检查 Runtime/Harness 主骨架状态。"""
     try:
-        from runtime.exec.command_session_service import command_session_service
-        from runtime.core.run_state_store import run_state_store
-        from runtime.tools.tool_registry import runtime_tool_registry
-        from runtime.workspace.manager import workspace_manager
+        from harness.exec.command_session_service import command_session_service
+        from harness.core.run_state_store import run_state_store
+        from tools.runtime_tools.tool_registry import runtime_tool_registry
+        from harness.workspace.manager import workspace_manager
 
         return {
             "status": "ok",

@@ -3,15 +3,15 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from db.crud import user_info_db
-from exceptions.business_exception import BusinessException
+from common.exceptions.business_exception import BusinessException
 from models.user_info import UserInfo
-from schemas.user_info_schemas import (
+from models.schemas.user_info_schemas import (
     UserInfoBase, UserInfoCreate, UserInfoUpdate, UserInfoResp, 
     UserInfoChangePassword, TokenResponse
 )
 from services.base_service import BaseService
-from utils.pwd_utils import encryption_utils, PasswordStrengthError
-from utils.config import settings
+from common.utils.pwd_utils import encryption_utils, PasswordStrengthError
+from common.utils.config import settings
 
 
 class UserInfoService(BaseService[UserInfo, UserInfoCreate, UserInfoUpdate]):

@@ -1,5 +1,0 @@
-# -*- coding: utf-8 -*-
-from runtime.workspace.manager import workspace_manager
-
-__all__ = ["workspace_manager"]
-

@@ -3,10 +3,10 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from core.security import verify_token
+from common.core.security import verify_token
 from db import get_db
-from schemas.response_model import ResponseModel
-from schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate, UserMCPOut
+from models.schemas.response_model import ResponseModel
+from models.schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate, UserMCPOut
 from services.user_mcp_service import user_mcp_service
 
 router = APIRouter(prefix="/user_mcp", tags=["用户MCP配置"])

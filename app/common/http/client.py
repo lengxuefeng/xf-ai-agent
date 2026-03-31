@@ -7,7 +7,7 @@ from typing import Any
 
 import httpx
 
-from schemas.http_client_schemas import HttpRequestConfig, HttpResponsePayload
+from models.schemas.http_client_schemas import HttpRequestConfig, HttpResponsePayload
 
 
 class HttpRequestError(RuntimeError):

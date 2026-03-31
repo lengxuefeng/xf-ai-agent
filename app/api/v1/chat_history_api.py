@@ -2,13 +2,13 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from core.security import verify_token
+from common.core.security import verify_token
 from db import get_db
-from schemas.chat_history_schemas import (
+from models.schemas.chat_history_schemas import (
     ChatMessageCreate, ChatSessionCreate,
     ChatSessionIn, ChatSession, ChatMessage
 )
-from schemas.response_model import ResponseModel
+from models.schemas.response_model import ResponseModel
 from services.chat_history_service import chat_history_service
 
 chat_history_router = APIRouter(prefix="/chat-history", tags=["聊天历史"])

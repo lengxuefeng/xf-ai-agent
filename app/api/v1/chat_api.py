@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
-from core.security import verify_token
+from common.core.security import verify_token
 from db import get_db
-from schemas.chat_schemas import StreamChatRequest
+from models.schemas.chat_schemas import StreamChatRequest
 from services.chat_service import chat_service
-from utils.custom_logger import get_logger
+from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 

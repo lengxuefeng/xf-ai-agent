@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from db.crud import chat_session_db, chat_message_db
-from schemas.chat_history_schemas import ChatSessionCreate, ChatSessionIn, ChatSessionUpdate, ChatMessageCreate
+from models.schemas.chat_history_schemas import ChatSessionCreate, ChatSessionIn, ChatSessionUpdate, ChatMessageCreate
 
 
 class ChatHistoryService:

@@ -5,7 +5,7 @@ from collections import Counter, deque
 from typing import Dict, Any
 
 from config.runtime_settings import ROUTE_METRICS_CONFIG
-from utils.custom_logger import get_logger, LogTarget
+from common.utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
 

@@ -2,10 +2,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from core.security import verify_token
+from common.core.security import verify_token
 from db import get_db
-from schemas.response_model import ResponseModel
-from schemas.user_info_schemas import UserInfoLogin, UserInfoCreate, UserInfoUpdate, UserInfoChangePassword
+from models.schemas.response_model import ResponseModel
+from models.schemas.user_info_schemas import UserInfoLogin, UserInfoCreate, UserInfoUpdate, UserInfoChangePassword
 from services.user_info_service import user_info_service
 
 user_router = APIRouter(prefix="/user", tags=["用户信息"])

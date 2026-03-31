@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """兼容层：统一转发到 runtime.core.cancel_manager。"""
 
-from runtime.core.cancel_manager import (
+from harness.core.cancel_manager import (
     RequestCancellationService,
     runtime_cancel_manager,
 )

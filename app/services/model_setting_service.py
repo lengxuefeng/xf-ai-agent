@@ -1,7 +1,7 @@
 # app/services/model_setting_service.py
 from sqlalchemy.orm import Session
 
-from constants.model_category_keywords import (
+from config.constants.model_category_keywords import (
     CLAUDE_VISION_MARKERS,
     DISTILBERT_EMBED_MARKERS,
     EMBEDDING_EXACT_NAMES,
@@ -9,7 +9,7 @@ from constants.model_category_keywords import (
     ModelCategory,
 )
 from db.crud import model_setting_db
-from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
+from models.schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 
 
 class ModelSettingService:

@@ -13,12 +13,12 @@ from models.chat_history import ChatSessionModel, ChatMessageModel
 from models.session_state import SessionStateModel
 
 # --- 导入 Schemas ---
-from schemas.user_info_schemas import UserInfoCreate, UserInfoUpdate
-from schemas.user_model_schemas import UserModelCreate, UserModelUpdate
-from schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
-from schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate
-from schemas.chat_history_schemas import ChatSessionCreate, ChatSessionUpdate, ChatMessageCreate, ChatMessageUpdate
-from schemas.session_state_schemas import SessionStateCreate, SessionStateUpdate
+from models.schemas.user_info_schemas import UserInfoCreate, UserInfoUpdate
+from models.schemas.user_model_schemas import UserModelCreate, UserModelUpdate
+from models.schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
+from models.schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate
+from models.schemas.chat_history_schemas import ChatSessionCreate, ChatSessionUpdate, ChatMessageCreate, ChatMessageUpdate
+from models.schemas.session_state_schemas import SessionStateCreate, SessionStateUpdate
 
 """
 【大一统 CRUD 注册中心】

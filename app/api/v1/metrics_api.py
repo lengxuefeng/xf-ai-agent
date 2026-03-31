@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from core.security import verify_token
-from schemas.response_model import ResponseModel
+from common.core.security import verify_token
+from models.schemas.response_model import ResponseModel
 from services.route_metrics_service import route_metrics_service
 from services.semantic_cache_service import semantic_cache_service
 

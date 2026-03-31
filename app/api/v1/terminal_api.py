@@ -5,10 +5,10 @@
 """
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.security import verify_token
-from runtime.exec.command_session_service import command_session_service
-from runtime.workspace.manager import workspace_manager
-from schemas.terminal_schemas import (
+from common.core.security import verify_token
+from harness.exec.command_session_service import command_session_service
+from harness.workspace.manager import workspace_manager
+from models.schemas.terminal_schemas import (
     TerminalDirectoryCreateRequest,
     TerminalCommandStartRequest,
     TerminalEntryDeleteRequest,

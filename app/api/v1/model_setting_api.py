@@ -3,11 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from core.security import verify_token
+from common.core.security import verify_token
 from db import get_db
-from schemas.model_setting_schemas import ModelServiceOut, ModelServiceCreate, ModelServiceUpdate, \
+from models.schemas.model_setting_schemas import ModelServiceOut, ModelServiceCreate, ModelServiceUpdate, \
     TestConnectionRequest, ToggleServiceRequest
-from schemas.response_model import ResponseModel
+from models.schemas.response_model import ResponseModel
 from services.model_setting_service import model_setting_service
 
 router = APIRouter(prefix="/model_setting", tags=["用户设置"])

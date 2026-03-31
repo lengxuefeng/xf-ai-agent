@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 
-from utils.custom_logger import get_logger
+from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 load_dotenv()

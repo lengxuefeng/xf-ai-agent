@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 
-from constants.approval_constants import (
+from config.constants.approval_constants import (
     APPROVAL_HANDLE_STATUS_PROCESSED,
     ApprovalDecision,
     ApprovalStatus,
@@ -9,7 +9,7 @@ from constants.approval_constants import (
 )
 from db import get_db_context
 from models.interrupt_approval import InterruptApprovalModel
-from utils.custom_logger import get_logger, LogTarget
+from common.utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
 
@@ -199,6 +199,96 @@ class InterruptService:
                 checkpoint_ns=checkpoint_ns,
             )
 
+    def _handle_approval_db(
+        self,
+        db,
+        session_id: str,
+        message_id: str,
+        normalized_decision: str,
+        user_id: Optional[int],
+        action_name: Optional[str],
+        action_args: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        row = self._query_by_message(db, session_id, message_id)
+        if not row:
+            log.warning(f"未找到待审核请求(PG): {session_id}:{message_id}", target=LogTarget.ALL)
+            pending_rows = self._query_session_pending(db, session_id)
+            if len(pending_rows) == 1:
+                row = pending_rows[0]
+                message_id = row.message_id
+                log.warning(
+                    f"使用兜底待审核ID(PG): {session_id}:{message_id}",
+                    target=LogTarget.ALL,
+                )
+
+        if not row and action_name and action_args is not None:
+            row = self._upsert_pending_row(
+                db=db,
+                session_id=session_id,
+                message_id=message_id,
+                action_name=action_name,
+                action_args=action_args,
+                description="",
+            )
+
+        if not row:
+            raise ValueError("未找到待审核请求")
+
+        row.status = normalized_decision
+        row.user_id = user_id
+        row.decision_time = datetime.utcnow()
+        row.is_consumed = False
+        log_action_name = action_name or row.action_name
+
+        if normalized_decision == ApprovalDecision.APPROVE.value:
+            log.warning(f"✅ 用户 {user_id} 批准了工具调用: {log_action_name}", target=LogTarget.ALL)
+            log.warning("审核已批准，等待前端触发恢复执行。", target=LogTarget.ALL)
+        else:
+            log.warning(f"❌ 用户 {user_id} 拒绝了工具调用: {log_action_name}", target=LogTarget.ALL)
+            log.warning("审核已拒绝，操作已取消", target=LogTarget.ALL)
+
+        return {
+            "session_id": session_id,
+            "message_id": message_id,
+            "decision": normalized_decision,
+            "status": APPROVAL_HANDLE_STATUS_PROCESSED,
+        }
+
+    def _handle_approval_memory(
+        self, 
+        session_id: str,
+        message_id: str,
+        normalized_decision: str,
+        user_id: Optional[int],
+        action_name: Optional[str],
+        action_args: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        if session_id not in self.pending_approvals or message_id not in self.pending_approvals[session_id]:
+            session_pending = self.pending_approvals.get(session_id, {})
+            if len(session_pending) == 1:
+                message_id = next(iter(session_pending.keys()))
+            elif action_name and action_args is not None:
+                self._fallback_register(
+                    session_id=session_id,
+                    message_id=message_id,
+                    action_name=action_name,
+                    action_args=action_args,
+                    description="",
+                )
+            else:
+                raise ValueError("未找到待审核请求")
+
+        self.pending_approvals[session_id][message_id]["status"] = normalized_decision
+        self.pending_approvals[session_id][message_id]["user_id"] = user_id
+        self.pending_approvals[session_id][message_id]["decision_time"] = datetime.utcnow().isoformat()
+        self.pending_approvals[session_id][message_id]["is_consumed"] = False
+        return {
+            "session_id": session_id,
+            "message_id": message_id,
+            "decision": normalized_decision,
+            "status": APPROVAL_HANDLE_STATUS_PROCESSED,
+        }
+
     def handle_approval(
         self,
         session_id: str,
@@ -213,79 +303,16 @@ class InterruptService:
 
         try:
             with get_db_context() as db:
-                row = self._query_by_message(db, session_id, message_id)
-                if not row:
-                    log.warning(f"未找到待审核请求(PG): {session_id}:{message_id}", target=LogTarget.ALL)
-                    pending_rows = self._query_session_pending(db, session_id)
-                    if len(pending_rows) == 1:
-                        row = pending_rows[0]
-                        message_id = row.message_id
-                        log.warning(
-                            f"使用兜底待审核ID(PG): {session_id}:{message_id}",
-                            target=LogTarget.ALL,
-                        )
-
-                if not row and action_name and action_args is not None:
-                    row = self._upsert_pending_row(
-                        db=db,
-                        session_id=session_id,
-                        message_id=message_id,
-                        action_name=action_name,
-                        action_args=action_args,
-                        description="",
-                    )
-
-                if not row:
-                    raise ValueError("未找到待审核请求")
-
-                row.status = normalized_decision
-                row.user_id = user_id
-                row.decision_time = datetime.utcnow()
-                row.is_consumed = False
-                log_action_name = action_name or row.action_name
-
-            if normalized_decision == ApprovalDecision.APPROVE.value:
-                log.warning(f"✅ 用户 {user_id} 批准了工具调用: {log_action_name}", target=LogTarget.ALL)
-                log.warning("审核已批准，等待前端触发恢复执行。", target=LogTarget.ALL)
-            else:
-                log.warning(f"❌ 用户 {user_id} 拒绝了工具调用: {log_action_name}", target=LogTarget.ALL)
-                log.warning("审核已拒绝，操作已取消", target=LogTarget.ALL)
-
-            return {
-                "session_id": session_id,
-                "message_id": message_id,
-                "decision": normalized_decision,
-                "status": APPROVAL_HANDLE_STATUS_PROCESSED,
-            }
+                return self._handle_approval_db(
+                    db, session_id, message_id, normalized_decision, user_id, action_name, action_args
+                )
         except ValueError:
             raise
         except Exception as e:
             log.error(f"处理审批写入 PG 失败，降级内存: {e}", target=LogTarget.ALL)
-            if session_id not in self.pending_approvals or message_id not in self.pending_approvals[session_id]:
-                session_pending = self.pending_approvals.get(session_id, {})
-                if len(session_pending) == 1:
-                    message_id = next(iter(session_pending.keys()))
-                elif action_name and action_args is not None:
-                    self._fallback_register(
-                        session_id=session_id,
-                        message_id=message_id,
-                        action_name=action_name,
-                        action_args=action_args,
-                        description="",
-                    )
-                else:
-                    raise ValueError("未找到待审核请求")
-
-            self.pending_approvals[session_id][message_id]["status"] = normalized_decision
-            self.pending_approvals[session_id][message_id]["user_id"] = user_id
-            self.pending_approvals[session_id][message_id]["decision_time"] = datetime.utcnow().isoformat()
-            self.pending_approvals[session_id][message_id]["is_consumed"] = False
-            return {
-                "session_id": session_id,
-                "message_id": message_id,
-                "decision": normalized_decision,
-                "status": APPROVAL_HANDLE_STATUS_PROCESSED,
-            }
+            return self._handle_approval_memory(
+                session_id, message_id, normalized_decision, user_id, action_name, action_args
+            )
 
     def get_pending_approval(
         self,

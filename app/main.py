@@ -12,7 +12,7 @@ FastAPI 应用主入口模块。
 import logging
 import os
 
-from utils.tracing_guard import apply_tracing_env_guard
+from common.utils.tracing_guard import apply_tracing_env_guard
 
 # tracing 全局守卫：默认关闭时，统一压制兼容 tracing 开关，避免被环境变量反向开启。
 apply_tracing_env_guard()
@@ -34,12 +34,12 @@ from api.v1.interrupt_api import interrupt_router
 from api.v1.metrics_api import metrics_router
 from api.v1.health_api import health_router
 from api.v1.terminal_api import terminal_router
-from core.logger import setup_logger
+from common.core.logger import setup_logger
 from db import Base, engine
 import models  # noqa: F401  # 确保所有 ORM 模型在 create_all 前被加载
-from exceptions.business_exception import BusinessException
-from schemas.response_model import ResponseModel
-from core.middleware import ProcessTimeMiddleware, DynamicModelMiddleware, SSESafeGZipMiddleware
+from common.exceptions.business_exception import BusinessException
+from models.schemas.response_model import ResponseModel
+from common.core.middleware import ProcessTimeMiddleware, DynamicModelMiddleware, SSESafeGZipMiddleware
 
 # 配置日志
 setup_logger()
@@ -85,7 +85,7 @@ async def startup_initialize_tables():
     # 启动 Supervisor 图预热池（后台 daemon 线程，不阻塞服务启动）
     try:
         from services.session_pool import session_pool
-        from constants.chat_service_constants import CHAT_DEFAULT_MODEL_CONFIG
+        from config.constants.chat_service_constants import CHAT_DEFAULT_MODEL_CONFIG
         import asyncio
         # 在后台线程中执行预热（create_supervisor_graph 是同步阻塞操作）
         await asyncio.to_thread(session_pool.start, dict(CHAT_DEFAULT_MODEL_CONFIG))

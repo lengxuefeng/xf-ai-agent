@@ -3,16 +3,16 @@ import asyncio
 import json
 from typing import Any, Dict, Generator, Optional
 
-from constants.chat_service_constants import (
+from config.constants.chat_service_constants import (
     CHAT_AI_CONTENT_TYPES,
     CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE,
     CHAT_SERVICE_INTERRUPTED_TEMPLATE,
 )
-from constants.sse_constants import SseEventType, SsePayloadField
-from runtime.core.run_context import build_run_context
-from runtime.core.run_state_store import run_state_store
-from runtime.workspace.manager import workspace_manager
-from utils.chat_utils import ChatUtils
+from config.constants.sse_constants import SseEventType, SsePayloadField
+from harness.core.run_context import build_run_context
+from harness.core.run_state_store import run_state_store
+from harness.workspace.manager import workspace_manager
+from common.utils.chat_utils import ChatUtils
 
 
 def is_async_stream(stream_obj: Any) -> bool:
@@ -163,6 +163,70 @@ def collect_trace_from_chunk(
             )
 
 
+def _build_thinking_trace_data(extra_data: Dict[str, Any], thinking_entries: list[str]) -> None:
+    if thinking_entries:
+        extra_data["thinking_trace"] = "\n\n".join(thinking_entries)
+
+def _build_workflow_trace_data(extra_data: Dict[str, Any], workflow_trace: list[dict]) -> None:
+    if workflow_trace:
+        extra_data["workflow_trace"] = workflow_trace
+        extra_data["workflow_version"] = 1
+
+def _build_runtime_snapshot_data(extra_data: Dict[str, Any], session_id: str) -> None:
+    if not session_id:
+        return
+    snapshot = run_state_store.get_latest_for_session(session_id)
+    if not snapshot:
+        return
+    extra_data["runtime_snapshot"] = {
+        "run_id": snapshot.run_id,
+        "session_id": snapshot.session_id,
+        "status": snapshot.status,
+        "current_phase": snapshot.current_phase,
+        "title": snapshot.title,
+        "summary": snapshot.summary,
+        "error": snapshot.error,
+        "agent_name": snapshot.agent_name,
+        "updated_at": snapshot.updated_at,
+    }
+    if snapshot.meta:
+        extra_data["runtime_meta"] = snapshot.meta
+
+def _write_artifacts_and_collect(
+    extra_data: Dict[str, Any],
+    session_id: str,
+    final_response: str,
+    workflow_trace: list[dict]
+) -> None:
+    if not session_id:
+        return
+    snapshot = run_state_store.get_latest_for_session(session_id)
+    if not snapshot:
+        return
+    run_context = build_run_context(
+        session_id=snapshot.session_id,
+        user_input="",
+        run_id=snapshot.run_id,
+    )
+    if final_response:
+        workspace_manager.write_text_artifact(
+            run_context,
+            name="final_response.md",
+            content=final_response,
+            category="response",
+            media_type="text/markdown",
+        )
+    if workflow_trace:
+        workspace_manager.write_json_artifact(
+            run_context,
+            name="workflow_trace",
+            payload=workflow_trace,
+            category="trace",
+        )
+    artifacts = workspace_manager.list_artifacts(run_context)
+    if artifacts:
+        extra_data["runtime_artifacts"] = artifacts
+
 def build_chat_extra_data(
     thinking_entries: list[str],
     workflow_trace: list[dict],
@@ -172,51 +236,10 @@ def build_chat_extra_data(
 ) -> Optional[Dict[str, Any]]:
     """构造消息落库需要的扩展数据，并同步写入运行产物。"""
     extra_data: Dict[str, Any] = {}
-    if thinking_entries:
-        extra_data["thinking_trace"] = "\n\n".join(thinking_entries)
-    if workflow_trace:
-        extra_data["workflow_trace"] = workflow_trace
-        extra_data["workflow_version"] = 1
-    if session_id:
-        snapshot = run_state_store.get_latest_for_session(session_id)
-        if snapshot:
-            extra_data["runtime_snapshot"] = {
-                "run_id": snapshot.run_id,
-                "session_id": snapshot.session_id,
-                "status": snapshot.status,
-                "current_phase": snapshot.current_phase,
-                "title": snapshot.title,
-                "summary": snapshot.summary,
-                "error": snapshot.error,
-                "agent_name": snapshot.agent_name,
-                "updated_at": snapshot.updated_at,
-            }
-            if snapshot.meta:
-                extra_data["runtime_meta"] = snapshot.meta
-
-            run_context = build_run_context(
-                session_id=snapshot.session_id,
-                user_input="",
-                run_id=snapshot.run_id,
-            )
-            if final_response:
-                workspace_manager.write_text_artifact(
-                    run_context,
-                    name="final_response.md",
-                    content=final_response,
-                    category="response",
-                    media_type="text/markdown",
-                )
-            if workflow_trace:
-                workspace_manager.write_json_artifact(
-                    run_context,
-                    name="workflow_trace",
-                    payload=workflow_trace,
-                    category="trace",
-                )
-            artifacts = workspace_manager.list_artifacts(run_context)
-            if artifacts:
-                extra_data["runtime_artifacts"] = artifacts
+    _build_thinking_trace_data(extra_data, thinking_entries)
+    _build_workflow_trace_data(extra_data, workflow_trace)
+    _build_runtime_snapshot_data(extra_data, session_id)
+    _write_artifacts_and_collect(extra_data, session_id, final_response, workflow_trace)
     return extra_data or None
 
 

@@ -4,16 +4,16 @@ from typing import Any, Dict, Optional, List
 
 from sqlalchemy.orm import Session
 
-from constants.session_state_constants import (
+from config.constants.session_state_constants import (
     SESSION_CITY_STOPWORDS,
     SESSION_TOPIC_KEYWORDS,
     SESSION_MAX_KEY_FACTS,
 )
 from db.crud import session_state_db, user_info_db
-from schemas.session_state_schemas import SessionStateCreate
+from models.schemas.session_state_schemas import SessionStateCreate
 from services.route_metrics_service import route_metrics_service
-from utils.custom_logger import get_logger
-from utils.location_parser import extract_valid_city_candidate, is_reliable_city_name
+from common.utils.custom_logger import get_logger
+from common.utils.location_parser import extract_valid_city_candidate, is_reliable_city_name
 
 log = get_logger(__name__)
 
@@ -160,57 +160,44 @@ class SessionStateService:
             seed_slots["name"] = name_value
         return seed_slots
 
-    def _extract_slots_from_text(self, text: str) -> Dict[str, Any]:
-        """从一段文本中抽取结构化槽位。"""
-        # 统一字符串输入
-        raw_text = (text or "").strip()
-        if not raw_text:
-            return {}
-
-        # 小写副本用于英文关键词匹配
-        lower_text = raw_text.lower()
-        slots: Dict[str, Any] = {}
-
-        # 1) 城市
+    def _extract_basic_profile(self, slots: Dict[str, Any], raw_text: str, lower_text: str) -> None:
         city_value = self._extract_city(raw_text)
         if city_value:
             slots["city"] = city_value
-
-        # 2) 姓名
         name_value = self._extract_name(raw_text)
         if name_value:
             slots["name"] = name_value
-
-        # 3) 年龄
         age_value = self._extract_age(raw_text)
         if age_value is not None:
             slots["age"] = age_value
-
-        # 4) 性别
         gender_value = self._extract_gender(raw_text, lower_text)
         if gender_value:
             slots["gender"] = gender_value
-
-        # 5) 身高（单位统一为 cm）
         height_value = self._extract_height_cm(raw_text, lower_text)
         if height_value is not None:
             slots["height_cm"] = height_value
-
-        # 6) 体重（单位统一为 kg）
         weight_value = self._extract_weight_kg(raw_text, lower_text)
         if weight_value is not None:
             slots["weight_kg"] = weight_value
 
-        # 7) 最近主题（用于路由和上下文聚焦）
+    def _extract_topic_and_facts(self, slots: Dict[str, Any], raw_text: str, lower_text: str) -> None:
         topic_value = self._extract_topic(raw_text, lower_text)
         if topic_value:
             slots["last_topic"] = topic_value
-
-        # 8) 用户任务关键信息（目标、约束、偏好等）
         key_facts = self._extract_key_facts(raw_text)
         if key_facts:
             slots["key_facts"] = key_facts
 
+    def _extract_slots_from_text(self, text: str) -> Dict[str, Any]:
+        """从一段文本中抽取结构化槽位。"""
+        raw_text = (text or "").strip()
+        if not raw_text:
+            return {}
+        lower_text = raw_text.lower()
+        slots: Dict[str, Any] = {}
+        
+        self._extract_basic_profile(slots, raw_text, lower_text)
+        self._extract_topic_and_facts(slots, raw_text, lower_text)
         return slots
 
     @staticmethod
@@ -247,57 +234,47 @@ class SessionStateService:
             merged_slots[key] = value
         return merged_slots
 
-    def _build_summary_text(self, slots: Dict[str, Any]) -> str:
-        """将槽位渲染为简洁上下文摘要，控制 token 成本。"""
-        # 标准化槽位，避免脏数据
-        clean_slots = self._normalize_slots(slots)
-        if not clean_slots:
-            return ""
-
-        # 城市摘要
-        city_value = str(clean_slots.get("city", "") or "").strip()
-        # 画像摘要片段
+    def _build_profile_summary(self, clean_slots: Dict[str, Any]) -> List[str]:
         profile_parts: List[str] = []
-
         name_value = clean_slots.get("name")
         if name_value:
             profile_parts.append(f"姓名={name_value}")
-
         age_value = clean_slots.get("age")
         if isinstance(age_value, int):
             profile_parts.append(f"年龄={age_value}岁")
-
         gender_value = clean_slots.get("gender")
         if gender_value:
-            # 性别统一展示为中文，便于提示词直接使用
             gender_label = "男" if str(gender_value).lower() == "male" else "女" if str(gender_value).lower() == "female" else str(gender_value)
             profile_parts.append(f"性别={gender_label}")
-
         height_value = clean_slots.get("height_cm")
         if isinstance(height_value, int):
             profile_parts.append(f"身高={height_value}cm")
-
         weight_value = clean_slots.get("weight_kg")
         if isinstance(weight_value, (int, float)):
             profile_parts.append(f"体重={float(weight_value):.1f}kg")
+        return profile_parts
 
-        # 任务关键信息摘要（最多展示 3 条，避免上下文过长）
+    def _build_facts_summary(self, clean_slots: Dict[str, Any]) -> List[str]:
         key_facts = clean_slots.get("key_facts", [])
-        fact_preview: List[str] = []
         if isinstance(key_facts, list):
-            fact_preview = [str(item).strip() for item in key_facts if str(item).strip()][:3]
+            return [str(item).strip() for item in key_facts if str(item).strip()][:3]
+        return []
 
-        # 组装为系统上下文
+    def _build_summary_text(self, slots: Dict[str, Any]) -> str:
+        """将槽位渲染为简洁上下文摘要，控制 token 成本。"""
+        clean_slots = self._normalize_slots(slots)
+        if not clean_slots: return ""
+
+        city_value = str(clean_slots.get("city", "") or "").strip()
+        profile_parts = self._build_profile_summary(clean_slots)
+        fact_preview = self._build_facts_summary(clean_slots)
+
         lines: List[str] = ["【会话关键上下文】"]
-        if city_value:
-            lines.append(f"- 当前城市: {city_value}")
-        if profile_parts:
-            lines.append(f"- 用户画像: {'，'.join(profile_parts)}")
-        if fact_preview:
-            lines.append(f"- 近期关键信息: {'；'.join(fact_preview)}")
-        if len(lines) == 1:
-            return ""
-        return "\n".join(lines)
+        if city_value: lines.append(f"- 当前城市: {city_value}")
+        if profile_parts: lines.append(f"- 用户画像: {'，'.join(profile_parts)}")
+        if fact_preview: lines.append(f"- 近期关键信息: {'；'.join(fact_preview)}")
+        
+        return "" if len(lines) == 1 else "\n".join(lines)
 
     @staticmethod
     def _extract_topic(raw_text: str, lower_text: str) -> Optional[str]:

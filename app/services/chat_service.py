@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from fastapi import Request
 from starlette.responses import StreamingResponse
 
-from agent.graph_runner import GraphRunner
+from harness.graph_runner import GraphRunner
 from services.request_cancellation_service import request_cancellation_service
-from constants.chat_service_constants import (
+from config.constants.chat_service_constants import (
     CHAT_DEFAULT_MODEL_CONFIG,
     CHAT_SERVICE_ERROR_CONNECTION,
     CHAT_SERVICE_ERROR_FALLBACK_TEMPLATE,
@@ -17,11 +17,11 @@ from constants.chat_service_constants import (
     CHAT_SERVICE_ERROR_TIMEOUT,
     STREAM_HEADERS,
 )
-from constants.sse_constants import SseEventType, SsePayloadField
+from config.constants.sse_constants import SseEventType, SsePayloadField
 from config.runtime_settings import CHAT_STREAM_HISTORY_LIMIT, MODEL_TIERING_CONFIG
 from db import get_db_context
-from schemas.chat_history_schemas import ChatMessageCreate
-from schemas.chat_schemas import StreamChatRequest
+from models.schemas.chat_history_schemas import ChatMessageCreate
+from models.schemas.chat_schemas import StreamChatRequest
 from services.chat_history_service import chat_history_service
 from services.chat_stream_support import (
     build_chat_extra_data,
@@ -37,8 +37,8 @@ from services.exception_service import exception_handler
 from services.route_metrics_service import route_metrics_service
 from services.session_state_service import session_state_service
 from services.user_model_service import user_model_service
-from utils.chat_utils import ChatUtils
-from utils.custom_logger import get_logger, LogTarget
+from common.utils.chat_utils import ChatUtils
+from common.utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
 
@@ -348,22 +348,29 @@ class ChatService:
             yield format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
 
         finally:
-            # 收尾落库：在线程池中执行，避免阻塞事件循环
-            if user_id and not is_resume:
-                log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
-                await asyncio.to_thread(
-                    self._save_chat_history,
-                    user_id, session_id, user_input, ai_response,
-                    model_config, start_time, error_occurred, error_message,
-                    self._build_extra_data(
-                        thinking_entries,
-                        workflow_trace,
-                        session_id=session_id,
-                        final_response=ai_response,
-                    ),
-                    runtime_context,
-                    route_metrics_service.get_last_route(session_id),
-                )
+            self._finalize_chat_history_async(
+                user_id, session_id, is_resume, user_input, 
+                ai_response, model_config, start_time, 
+                error_occurred, error_message, 
+                thinking_entries, workflow_trace, runtime_context
+            )
+
+    def _finalize_chat_history_async(self, user_id, session_id, is_resume, user_input, ai_response, model_config, start_time, error_occurred, error_message, thinking_entries, workflow_trace, runtime_context):
+        if user_id and not is_resume:
+            log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
+            asyncio.create_task(asyncio.to_thread(
+                self._save_chat_history,
+                user_id, session_id, user_input, ai_response,
+                model_config, start_time, error_occurred, error_message,
+                self._build_extra_data(
+                    thinking_entries,
+                    workflow_trace,
+                    session_id=session_id,
+                    final_response=ai_response,
+                ),
+                runtime_context,
+                route_metrics_service.get_last_route(session_id),
+            ))
 
     def _init_session_and_load_history(
             self,
@@ -581,44 +588,46 @@ class ChatService:
             yield format_error_event(CHAT_SERVICE_ERROR_RUNTIME_TEMPLATE.format(error=error_message))
 
         finally:
-            # 3. 收尾动作：落库。无论是正常结束、报错，还是前端断开，只要有话出来，统统存下。
-            if user_id and not is_resume:
-                # 哪怕 error_occurred，只要 ai_response 里面有半截话，也值得保存
-                log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
-                with get_db_context() as db:
-                    # 组装要入库的最终回答文本
-                    final_content = build_final_response(ai_response, error_occurred, error_message)
+            self._finalize_chat_history_sync(
+                user_id, session_id, is_resume, user_input, 
+                ai_response, model_config, start_time, 
+                error_occurred, error_message, 
+                thinking_entries, workflow_trace, runtime_context
+            )
 
-                    # 仅当本轮有可存内容时才写聊天消息，避免空白消息污染历史
-                    if final_content:
-                        chat_data = ChatMessageCreate(
-                            user_id=user_id,
-                            session_id=session_id,
-                            user_content=user_input,
-                            model_content=final_content,
-                            model_name=model_config.get('model'),
-                            latency_ms=int((time.time() - start_time) * 1000),
-                            tokens=ChatUtils.estimate_tokens(user_input + ai_response),
-                            extra_data=self._build_extra_data(
-                                thinking_entries,
-                                workflow_trace,
-                                session_id=session_id,
-                                final_response=final_content,
-                            ),
-                        )
-                        chat_history_service.create_chat_message(db, user_id, chat_data, ensure_session=False)
-
-                    # 无论是否产出正文，都回写会话状态（轮次、路由快照、槽位补全）
-                    route_snapshot = route_metrics_service.get_last_route(session_id)
-                    session_state_service.update_after_turn(
-                        db=db,
+    def _finalize_chat_history_sync(self, user_id, session_id, is_resume, user_input, ai_response, model_config, start_time, error_occurred, error_message, thinking_entries, workflow_trace, runtime_context):
+        if user_id and not is_resume:
+            log.info(f"保存聊天历史，会话ID: {session_id}，总长: {len(ai_response)}字符", target=LogTarget.LOG)
+            with get_db_context() as db:
+                final_content = build_final_response(ai_response, error_occurred, error_message)
+                if final_content:
+                    chat_data = ChatMessageCreate(
                         user_id=user_id,
                         session_id=session_id,
-                        user_input=user_input,
-                        ai_response=final_content,
-                        runtime_context=runtime_context,
-                        route_snapshot=route_snapshot,
+                        user_content=user_input,
+                        model_content=final_content,
+                        model_name=model_config.get('model'),
+                        latency_ms=int((time.time() - start_time) * 1000),
+                        tokens=ChatUtils.estimate_tokens(user_input + ai_response),
+                        extra_data=self._build_extra_data(
+                            thinking_entries,
+                            workflow_trace,
+                            session_id=session_id,
+                            final_response=final_content,
+                        ),
                     )
+                    chat_history_service.create_chat_message(db, user_id, chat_data, ensure_session=False)
+
+                route_snapshot = route_metrics_service.get_last_route(session_id)
+                session_state_service.update_after_turn(
+                    db=db,
+                    user_id=user_id,
+                    session_id=session_id,
+                    user_input=user_input,
+                    ai_response=final_content,
+                    runtime_context=runtime_context,
+                    route_snapshot=route_snapshot,
+                )
 
     def stream_chat_anonymous(
             self,
@@ -671,80 +680,6 @@ class ChatService:
             max_tokens=req.max_tokens,
             model_key=req.model_key,
             workspace_root=req.workspace_root,
-        )
-
-    def _disconnect_aware_stream(
-        self,
-        stream_gen: AsyncGenerator[str, None],
-        request: "fastapi.Request",
-        run_id: str,
-    ) -> AsyncGenerator[str, None]:
-        """
-        监听客户端断开连接的流式包装器。
-        若客户端异常断开（如刷新页面），则发送取消信号并终止生成。
-        """
-        async def _generator():
-            try:
-                async for chunk in stream_gen:
-                    if await request.is_disconnected():
-                        log.info(f"客户端主动断开连接，准备取消请求: {run_id}")
-                        request_cancellation_service.cancel_request(run_id)
-                        break
-                    yield chunk
-            except asyncio.CancelledError:
-                log.info(f"SSE 流被取消 (CancelledError): {run_id}")
-                request_cancellation_service.cancel_request(run_id)
-                raise
-            except Exception as e:
-                log.error(f"SSE 流异常: {e}")
-                raise
-        return _generator()
-
-    async def process_stream_chat_async(
-        self,
-        req: StreamChatRequest,
-        request: "fastapi.Request",
-        user_id: Optional[int],
-        db: Any,
-    ) -> "fastapi.responses.StreamingResponse":
-        """
-        供 API 使用的主入口：返回 FastAPI 的 StreamingResponse。
-        整合鉴权逻辑、断线检测、模型配置读取等封装任务。
-        """
-        from starlette.responses import StreamingResponse
-
-        model_config = self._build_model_config_from_request(req)
-        session_id = req.session_id
-        
-        # 简化起见，以 session_id 作为 run_id
-        run_id = session_id 
-        
-        # 将 user_id 暂存通过局部变量传入，如果在上下文中处理的话可以透传
-        # 这里包装基础生成器
-        if user_id is not None:
-            # 需要认证并有落库
-            base_stream = self.stream_chat_with_history_async(
-                user_input=req.content,
-                session_id=session_id,
-                model_config=model_config,
-                user_id=user_id,
-                is_resume=bool(req.resume_message_id),
-            )
-        else:
-            # 匿名无落库流
-            base_stream = self.stream_chat_anonymous_async(
-                user_input=req.content,
-                session_id=session_id,
-                model_config=model_config,
-            )
-
-        # 增加断开感知包装
-        aware_stream = self._disconnect_aware_stream(base_stream, request, run_id)
-        
-        return StreamingResponse(
-            aware_stream,
-            media_type="text/event-stream",
-            headers=self._get_stream_headers()
         )
 
     def build_model_config(

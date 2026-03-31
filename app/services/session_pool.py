@@ -27,7 +27,7 @@ from collections import defaultdict
 from typing import Any, Dict, Optional
 
 from config.runtime_settings import SESSION_POOL_CONFIG
-from utils.custom_logger import get_logger
+from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 
@@ -266,7 +266,7 @@ class SessionPool:
 
         # 延迟导入，避免循环依赖
         try:
-            from agent.graphs.supervisor import create_graph as create_supervisor_graph
+            from supervisor.supervisor import create_graph as create_supervisor_graph
         except Exception as import_exc:
             log.warning(f"SessionPool refill 导入 create_graph 失败: {import_exc}")
             return

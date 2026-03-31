@@ -5,7 +5,7 @@ import time
 from typing import Dict, Any, Optional
 
 from config.runtime_settings import SEMANTIC_CACHE_CONFIG
-from utils.custom_logger import get_logger, LogTarget
+from common.utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
 

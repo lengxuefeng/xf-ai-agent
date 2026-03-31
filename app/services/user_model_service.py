@@ -4,8 +4,8 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from db.crud import user_model_db
-from schemas.user_model_schemas import UserModelCreate, UserModelUpdate
-from utils.custom_logger import get_logger
+from models.schemas.user_model_schemas import UserModelCreate, UserModelUpdate
+from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from core.security import verify_token
+from common.core.security import verify_token
 
-from schemas.interrupt_schemas import InterruptApprovalRequest, InterruptApprovalResponse
+from models.schemas.interrupt_schemas import InterruptApprovalRequest, InterruptApprovalResponse
 from services.interrupt_service import interrupt_service
 
 """

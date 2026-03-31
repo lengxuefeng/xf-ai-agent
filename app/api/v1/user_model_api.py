@@ -3,13 +3,13 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from core.security import verify_token
+from common.core.security import verify_token
 from db import get_db
-from schemas.response_model import ResponseModel
-from schemas.user_model_schemas import UserModelCreate, UserModelUpdate, UserModelOut
+from models.schemas.response_model import ResponseModel
+from models.schemas.user_model_schemas import UserModelCreate, UserModelUpdate, UserModelOut
 from services.user_model_service import user_model_service
 
-from utils.custom_logger import get_logger, LogTarget
+from common.utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/user_model", tags=["用户模型配置"])
