@@ -1073,8 +1073,18 @@ class GraphRunner:
         # 流程状态标志
         interrupt_emitted = False
         error_emitted = False
+        cancelled_emitted = False
         stream_content_emitted = False
         progress_emitted = False
+
+        # 观测指标：首包/心跳/队列消费统计
+        metrics: Dict[str, Any] = {
+            "queue_timeouts": 0,
+            "heartbeat_count": 0,
+            "events_consumed": 0,
+            "first_event_latency_ms": None,
+            "first_stream_latency_ms": None,
+        }
 
         # 记录本轮真正参与执行的 Agent，用于定向中断扫描
         active_agent_candidates: Set[str] = set()
@@ -1088,6 +1098,13 @@ class GraphRunner:
 
         while True:
             now = time.time()
+
+            # ── 取消信号优先处理：统一 cancelled 终态 ─────────────────────
+            if request_cancellation_service.is_cancelled(run_id):
+                cancelled_emitted = True
+                runtime_session_manager.cancel_run(run_context, summary="运行已取消")
+                yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
+                break
 
             # ── 总执行硬超时保护 ────────────────────────────────────────
             if (now - start_ts > hard_timeout_sec) and (now - last_event_ts >= idle_timeout_sec):
@@ -1109,6 +1126,7 @@ class GraphRunner:
                     event_queue.get(), timeout=poll_timeout_sec
                 )
             except asyncio.TimeoutError:
+                metrics["queue_timeouts"] = int(metrics.get("queue_timeouts", 0)) + 1
                 now = time.time()
                 if worker_thread.is_alive():
                     # 可配置的空闲超时
@@ -1131,6 +1149,7 @@ class GraphRunner:
                             and not error_emitted
                     )
                     if waiting_first_output and (now - last_heartbeat_ts >= idle_heartbeat_sec):
+                        metrics["heartbeat_count"] = int(metrics.get("heartbeat_count", 0)) + 1
                         yield self._fmt_sse(
                             SseEventType.THINKING.value,
                             f"⏱️ 正在等待模型首包返回（已等待 {int(now - start_ts)}s）",
@@ -1139,29 +1158,42 @@ class GraphRunner:
                     continue
 
                 # Worker 已退出但没有发送 DONE/ERROR，兜底防止协程永久阻塞
-                if not error_emitted:
-                    error_emitted = True
-                    yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
+                if not error_emitted and not cancelled_emitted:
+                    if request_cancellation_service.is_cancelled(run_id):
+                        cancelled_emitted = True
+                        runtime_session_manager.cancel_run(run_context, summary="运行已取消")
+                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
+                    else:
+                        error_emitted = True
+                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
                 break
 
             # 更新最后事件时间戳
             last_event_ts = time.time()
+            metrics["events_consumed"] = int(metrics.get("events_consumed", 0)) + 1
+            if metrics.get("first_event_latency_ms") is None:
+                metrics["first_event_latency_ms"] = int((last_event_ts - start_ts) * 1000)
 
             # ── 处理各类事件 ────────────────────────────────────────────
             if item_type == GraphQueueItemType.DONE.value:
                 break
 
             elif item_type == GraphQueueItemType.ERROR.value:
-                error_emitted = True
-                request_cancellation_service.cancel_request(run_id)
-                runtime_session_manager.mark_failed(
-                    run_context,
-                    phase="graph_worker_error",
-                    summary=str(item_data or "运行失败"),
-                    title="运行失败",
-                    error=str(item_data or "运行失败"),
-                )
-                yield self._fmt_sse(SseEventType.ERROR.value, item_data)
+                if request_cancellation_service.is_cancelled(run_id):
+                    cancelled_emitted = True
+                    runtime_session_manager.cancel_run(run_context, summary="运行已取消")
+                    yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
+                else:
+                    error_emitted = True
+                    request_cancellation_service.cancel_request(run_id)
+                    runtime_session_manager.mark_failed(
+                        run_context,
+                        phase="graph_worker_error",
+                        summary=str(item_data or "运行失败"),
+                        title="运行失败",
+                        error=str(item_data or "运行失败"),
+                    )
+                    yield self._fmt_sse(SseEventType.ERROR.value, item_data)
                 break
 
             elif item_type == GraphQueueItemType.LOG.value:
@@ -1180,6 +1212,8 @@ class GraphRunner:
                     progress_emitted = True
                     if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
                         stream_content_emitted = True
+                        if metrics.get("first_stream_latency_ms") is None:
+                            metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
                     runtime_session_manager.record_workflow_event_chunk(run_context, sse_chunk)
                     yield sse_chunk
 
@@ -1194,6 +1228,8 @@ class GraphRunner:
                         if sse_chunk:
                             progress_emitted = True
                             stream_content_emitted = True
+                            if metrics.get("first_stream_latency_ms") is None:
+                                metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
                             yield sse_chunk
 
                 elif ev_type == "updates":
@@ -1219,6 +1255,8 @@ class GraphRunner:
                             error_emitted = True
                         if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
                             stream_content_emitted = True
+                            if metrics.get("first_stream_latency_ms") is None:
+                                metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
                         runtime_session_manager.record_workflow_event_chunk(run_context, sse_chunk)
                         yield sse_chunk
                     if error_emitted:
@@ -1246,6 +1284,8 @@ class GraphRunner:
             fallback_text = self._extract_final_answer_from_state(graph, session_id)
             if fallback_text:
                 stream_content_emitted = True
+                if metrics.get("first_stream_latency_ms") is None:
+                    metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
                 yield self._fmt_sse(SseEventType.STREAM.value, fallback_text)
             else:
                 error_emitted = True
@@ -1259,10 +1299,12 @@ class GraphRunner:
                 yield self._fmt_sse(SseEventType.ERROR.value, "本轮未生成可展示的最终答复，请重试。")
 
         final_answer = ""
-        if not interrupt_emitted and not error_emitted:
+        if not interrupt_emitted and not error_emitted and not cancelled_emitted:
             final_answer = self._extract_final_answer_from_state(graph, session_id)
 
-        if interrupt_emitted and not error_emitted:
+        if cancelled_emitted:
+            runtime_session_manager.cancel_run(run_context, summary="运行已取消")
+        elif interrupt_emitted and not error_emitted:
             runtime_session_manager.mark_interrupted(
                 run_context,
                 phase="awaiting_approval",
@@ -1276,6 +1318,18 @@ class GraphRunner:
                 summary="运行已完成",
                 title="运行完成",
             )
+
+        runtime_session_manager.attach_meta(
+            run_context,
+            workflow_metrics={
+                **metrics,
+                "run_elapsed_ms": int((time.time() - start_ts) * 1000),
+                "interrupt_emitted": bool(interrupt_emitted),
+                "error_emitted": bool(error_emitted),
+                "cancelled_emitted": bool(cancelled_emitted),
+                "stream_content_emitted": bool(stream_content_emitted),
+            },
+        )
 
         post_run_hooks = runtime_hook_manager.run_post_run_hooks(run_context, final_text=final_answer)
         if final_answer:

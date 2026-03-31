@@ -270,8 +270,28 @@ class RunStateStore:
             if snapshot is None:
                 return None
 
+            incoming_status = str(status or snapshot.status)
+            terminal_statuses = {
+                RunStatus.COMPLETED.value,
+                RunStatus.FAILED.value,
+                RunStatus.CANCELLED.value,
+                RunStatus.INTERRUPTED.value,
+                RunStatus.WAITING_APPROVAL.value,
+            }
+            current_status = str(snapshot.status or "")
+
+            # 终态幂等收口：
+            # - 已取消后不允许被其他终态覆盖；
+            # - 其他终态之间默认不互相覆盖；
+            # - 允许任何状态升级为 cancelled（例如客户端断连晚到）。
+            if current_status in terminal_statuses and incoming_status != current_status:
+                if current_status == RunStatus.CANCELLED.value:
+                    return copy.deepcopy(snapshot)
+                if incoming_status != RunStatus.CANCELLED.value:
+                    return copy.deepcopy(snapshot)
+
             # 更新状态（必填）
-            snapshot.status = str(status or snapshot.status)
+            snapshot.status = incoming_status
 
             # 更新可选字段
             if phase:

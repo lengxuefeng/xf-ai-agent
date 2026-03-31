@@ -47,6 +47,10 @@ _STALE_TTL_SECONDS = 600
 # 平衡了清理频率和CPU开销
 _CLEANUP_INTERVAL_SECONDS = 120
 
+# 并发保护阈值：超出后打告警日志，便于线上排查级联取消风暴
+_ACTIVE_COUNT_WARN_THRESHOLD = 2000
+_CASCADE_CANCEL_WARN_THRESHOLD = 200
+
 
 class _CancellationEntry:
     """
@@ -251,6 +255,13 @@ class RequestCancellationService:
                 entry.clear()
                 if loop:
                     entry.loop = loop
+
+            active_count = len(self._entries)
+            if (
+                active_count >= _ACTIVE_COUNT_WARN_THRESHOLD
+                and active_count % 200 == 0
+            ):
+                log.warning(f"取消令牌活跃数量过高: active={active_count}")
             return entry.thread_event
 
     def cancel_request(self, request_id: str) -> None:
@@ -291,11 +302,27 @@ class RequestCancellationService:
             # 取出对应的取消令牌
             entries = [(rid, self._entries.get(rid)) for rid in pending_ids]
 
+        pending_count = len(pending_ids)
+        if pending_count >= _CASCADE_CANCEL_WARN_THRESHOLD:
+            log.warning(
+                f"级联取消规模较大: root={request_id[:16]}..., affected={pending_count}"
+            )
+
         # 在锁外执行取消操作，避免持有锁太久
+        cancelled_count = 0
+        debug_budget = 20
         for rid, entry in entries:
             if entry is not None:
                 entry.set()
-                log.debug(f"请求已取消: request_id={rid[:16]}...")
+                cancelled_count += 1
+                if cancelled_count <= debug_budget:
+                    log.debug(f"请求已取消: request_id={rid[:16]}...")
+
+        if cancelled_count > debug_budget:
+            log.debug(
+                f"请求取消日志已折叠: total={cancelled_count}, shown={debug_budget}, "
+                f"root={request_id[:16]}..."
+            )
 
     def cleanup_request(self, request_id: str) -> None:
         """
