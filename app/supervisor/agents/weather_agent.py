@@ -3,15 +3,16 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Annotated, Dict, List, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.runnables import Runnable
 from langgraph.graph import END, START, StateGraph, add_messages
 
-from app.supervisor.base import BaseAgent
-from app.supervisor.graph_state import AgentRequest
-from app.tools.agent_tools.weather_tools import location_search
-from app.config.constants.weather_agent_keywords import WEATHER_FOLLOWUP_CONFIRM_TOKENS
-from app.config.constants.weather_tool_constants import WEATHER_CITY_REQUIRED_MESSAGE, WEATHER_QUERY_KEYWORDS
-from app.common.utils.custom_logger import get_logger
-from app.common.utils.location_parser import extract_valid_city_candidate
+from supervisor.base import BaseAgent
+from supervisor.graph_state import AgentRequest
+from tools.agent_tools.weather_tools import location_search
+from config.constants.weather_agent_keywords import WEATHER_FOLLOWUP_CONFIRM_TOKENS, WEATHER_QUERY_KEYWORDS
+from config.constants.weather_tool_constants import WEATHER_CITY_REQUIRED_MESSAGE
+from common.utils.custom_logger import get_logger
+from common.utils.location_parser import extract_valid_city_candidate
 
 log = get_logger(__name__)
 
@@ -35,16 +36,16 @@ class WeatherAgent(BaseAgent):
     # ==========================================
     # 🆕 补全的方法 1: 构建 LangGraph 的执行图
     # ==========================================
-    def _build_graph(self):
+    def _build_graph(self) -> Runnable:
         """构建天气Agent的执行流图"""
         workflow = StateGraph(WeatherAgentState)
         # 添加核心推理节点
-        workflow.add_node("weather_model_node", self._model_node)
+        workflow.add_node("weather_model_node", self._model_node, retry_policy=self.RETRY_POLICY)
         # 定义流转边
         workflow.add_edge(START, "weather_model_node")
         workflow.add_edge("weather_model_node", END)
 
-        return workflow.compile()
+        return workflow.compile(checkpointer=self.checkpointer)
 
     # ==========================================
     # 🆕 补全的方法 2: 判断是否是天气查询
@@ -92,7 +93,7 @@ class WeatherAgent(BaseAgent):
         raw = (text or "").strip()
         if not raw:
             return []
-        task_match = re.search(r"用户子任务[:]]\s*(.+)$", raw, flags=re.S)
+        task_match = re.search(r"用户子任务[:：]\s*(.+)$", raw, flags=re.S)
         if task_match:
             raw = (task_match.group(1) or "").strip() or raw
 

@@ -300,7 +300,7 @@ class SearchAgent(BaseAgent):
                 return True
         return False
 
-    def _model_node(self, state: SearchAgentState):
+    async def _model_node(self, state: SearchAgentState):
         """
         搜索子图的模型节点：执行推理和搜索
 
@@ -364,7 +364,7 @@ class SearchAgent(BaseAgent):
 
         # 调用 LLM，可能返回搜索工具调用或直接回答
         chain = self.prompt | self.model_with_tools
-        ai_msg = chain.invoke(state)
+        ai_msg = await chain.ainvoke(state)
 
         # 如果 LLM 直接生成回答（未调用工具），检测主题是否跑偏
         if isinstance(ai_msg, AIMessage) and not getattr(ai_msg, "tool_calls", None):
@@ -388,7 +388,7 @@ class SearchAgent(BaseAgent):
 
                 # 使用防护提示词重试
                 retry_chain = self.guard_prompt | self.model_with_tools
-                retry_msg = retry_chain.invoke({"messages": retry_messages})
+                retry_msg = await retry_chain.ainvoke({"messages": retry_messages})
 
                 # 检查重试结果是否仍然跑偏
                 if isinstance(retry_msg, AIMessage):

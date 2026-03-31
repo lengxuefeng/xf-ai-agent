@@ -14,6 +14,7 @@ from config.constants.weather_tool_constants import (
 )
 from common.utils.custom_logger import get_logger
 from common.utils.location_parser import extract_valid_city_candidate, normalize_city_candidate
+from common.utils.retry_utils import execute_with_retry
 
 """
 定义天气查询相关的工具。
@@ -40,13 +41,16 @@ class WeatherAPIClient:
     def _make_request(self, url: str, params: Dict) -> Dict:
         """执行 API 请求并处理错误"""
         try:
-            response = common_http_client.request(
-                {
-                    "method": "GET",
-                    "url": url,
-                    "params": {**self.base_params, **params},
-                    "timeout_seconds": float(WEATHER_TOOL_TIMEOUT_SECONDS),
-                }
+            response = execute_with_retry(
+                lambda: common_http_client.request(
+                    {
+                        "method": "GET",
+                        "url": url,
+                        "params": {**self.base_params, **params},
+                        "timeout_seconds": float(WEATHER_TOOL_TIMEOUT_SECONDS),
+                    }
+                ),
+                label=f"weather_api:{url}",
             )
             if isinstance(response.json_body, dict):
                 return response.json_body

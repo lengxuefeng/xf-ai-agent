@@ -142,7 +142,7 @@ class MedicalAgent(BaseAgent):
         )
         self.graph = self._build_graph()
 
-    def _model_node(self, state: MedicalAgentState):
+    async def _model_node(self, state: MedicalAgentState):
         """
         模型节点：生成医疗问答回复
 
@@ -173,10 +173,10 @@ class MedicalAgent(BaseAgent):
         {"messages": [AIMessage(content="高血压的主要症状包括头晕、头痛、心悸等...\\n\\n注：以上内容仅供参考，不能替代专业医疗诊断。如有健康问题，请及时就医。")]}
         """
         chain = self.prompt | self.llm
-        response = chain.invoke(state)
+        response = await chain.ainvoke(state)
 
         # 在回答后附加免责声明
-        response.content += MedicalPrompt.DISCLAIMER
+        response.content = f"{self._message_text(response)}{MedicalPrompt.DISCLAIMER}"
 
         return {"messages": [response]}
 
@@ -199,7 +199,7 @@ class MedicalAgent(BaseAgent):
         - Runnable: 编译后的可执行子图，使用全局 checkpointer
         """
         workflow = StateGraph(MedicalAgentState)
-        workflow.add_node("agent", self._model_node)
+        workflow.add_node("agent", self._model_node, retry_policy=self.RETRY_POLICY)
         workflow.add_edge(START, "agent")
         workflow.add_edge("agent", END)
 

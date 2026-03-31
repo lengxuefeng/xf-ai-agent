@@ -47,7 +47,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.types import interrupt
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnableConfig
+from langchain_core.runnables import Runnable, RunnableConfig
 
 from supervisor.base import BaseAgent
 from supervisor.graph_state import AgentRequest
@@ -547,7 +547,7 @@ class CodeAgent(BaseAgent):
         )
         self.graph = self._build_graph()
 
-    def _build_graph(self):
+    def _build_graph(self) -> Runnable:
         """
         构建代码生成/执行双模式图
 
@@ -572,9 +572,9 @@ class CodeAgent(BaseAgent):
         workflow = StateGraph(CodeAgentState)
 
         # 添加节点
-        workflow.add_node("generate_code", self._generate_code_node)
-        workflow.add_node("execute_code", self._execute_code_node)
-        workflow.add_node("analyze_result", self._analyze_result_node)
+        workflow.add_node("generate_code", self._generate_code_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("execute_code", self._execute_code_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("analyze_result", self._analyze_result_node, retry_policy=self.RETRY_POLICY)
 
         # 定义边
         workflow.add_edge(START, "generate_code")
@@ -585,7 +585,7 @@ class CodeAgent(BaseAgent):
         # 编译图 (使用全局 checkpointer，支持中断恢复)
         return workflow.compile(checkpointer=self.checkpointer)
 
-    def _generate_code_node(self, state: CodeAgentState, config: RunnableConfig):
+    async def _generate_code_node(self, state: CodeAgentState, config: RunnableConfig):
         """
         生成代码节点
 
@@ -612,7 +612,7 @@ class CodeAgent(BaseAgent):
         - dict: 更新后的状态，包含生成的代码和执行相关信息
         """
         chain = self.prompt | self.llm
-        response = chain.invoke({"messages": state["messages"]}, config=config)
+        response = await chain.ainvoke({"messages": state["messages"]}, config=config)
 
         # 提取最新用户消息，用于检测语言和执行意图
         latest_human_text = _latest_human_text(state["messages"])
@@ -700,7 +700,9 @@ class CodeAgent(BaseAgent):
         - 从 config 或 state 获取 workspace_root
         - 代码在工作目录内执行（受控环境）
         """
-        code = state["code_to_execute"]
+        code = str(state.get("code_to_execute") or "").strip()
+        if not code:
+            return {"execution_result": "未生成可执行代码。"}
 
         # 获取工作目录（受控执行环境）
         workspace_root = (
@@ -789,5 +791,5 @@ class CodeAgent(BaseAgent):
             }
 
         # 已执行代码：简单包装结果
-        result = state["execution_result"]
+        result = str(state.get("execution_result") or "代码执行已结束，但未返回结果。")
         return {"messages": [AIMessage(content=CodePrompt.EXECUTION_PREFIX.format(result))]}

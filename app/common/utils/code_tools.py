@@ -4,6 +4,7 @@ from langchain_core.tools import tool
 from harness.exec.runner import exec_runner
 from tools.runtime_tools.tool_executor import tool_executor
 from tools.runtime_tools.tool_registry import runtime_tool_registry
+from common.utils.retry_utils import execute_with_retry
 
 
 def _execute_python_handler(
@@ -33,11 +34,14 @@ def execute_python_code(
     执行 Python 代码并返回标准输出。
     注意：此工具在本地环境中运行，仅用于演示或受信任的内部使用。
     """
-    execution = tool_executor.execute(
-        "execute_python_code",
-        code=code,
-        cwd=cwd,
-        workspace_root=workspace_root,
+    execution = execute_with_retry(
+        lambda: tool_executor.execute(
+            "execute_python_code",
+            code=code,
+            cwd=cwd,
+            workspace_root=workspace_root,
+        ),
+        label="execute_python_code",
     )
     if not execution.get("ok"):
         return f"代码执行出错: {execution.get('error', '未知错误')}"

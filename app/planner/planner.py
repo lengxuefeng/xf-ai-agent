@@ -56,8 +56,8 @@ class PlannerNode:
         return PlannerNode._normalize_steps(steps, user_text)
 
     @staticmethod
-    def planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
-        """Planner 节点：输出可循环执行的原子步骤列表。"""
+    async def planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+        """Planner 节点：使用 fast model 异步拆解原子步骤列表。"""
         user_text = PlannerNode._latest_user_text(state)
         started_at = time.perf_counter()
 
@@ -71,7 +71,7 @@ class PlannerNode:
         planner_source = "llm"
         try:
             chain = prompt | model.with_structured_output(Plan)
-            plan_result: Plan = chain.invoke({"user_input": user_text}, config=config)
+            plan_result: Plan = await chain.ainvoke({"user_input": user_text}, config=config)
             steps = PlannerNode._normalize_steps(plan_result.steps, user_text)
             if not steps:
                 raise ValueError("planner returned empty steps")
@@ -87,16 +87,30 @@ class PlannerNode:
         memory["plan_source"] = planner_source
 
         log.info(f"⏱️ Planner [{planner_source}] 耗时: {elapsed_ms}ms, steps={steps}")
+        task_list = [
+            {
+                "id": f"t{index + 1}",
+                "agent": "",
+                "input": step,
+                "depends_on": [],
+                "status": "pending",
+                "result": None,
+            }
+            for index, step in enumerate(steps)
+        ]
         return {
             "plan": steps,
+            "task_list": task_list,
             "planner_source": planner_source,
             "planner_elapsed_ms": elapsed_ms,
             "memory": memory,
-            "executor_active": True,
-            "next": "executor_node",
+            "active_tasks": task_list,
+            "current_task": None,
+            "executor_active": False,
+            "next": "dispatch_node",
         }
 
     @staticmethod
-    def parent_planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    async def parent_planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
         """兼容旧引用，统一转到新的 planner_node。"""
-        return PlannerNode.planner_node(state, model=model, config=config)
+        return await PlannerNode.planner_node(state, model=model, config=config)

@@ -170,7 +170,7 @@ class IntentPolicy:
 
 
     @staticmethod
-    def domain_router_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    async def domain_router_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
         from supervisor.supervisor import (
             _looks_like_holter_request, _looks_like_sql_request,
             _looks_like_weather_request, _is_weather_actionable_clause,
@@ -267,7 +267,7 @@ class IntentPolicy:
                     MessagesPlaceholder(variable_name="messages"),
                 ])
                 try:
-                    structured = _invoke_structured_output_with_fallback(
+                    structured = await _invoke_structured_output_with_fallback(
                         prompt=prompt,
                         model=model,
                         schema=DomainDecision,
@@ -306,7 +306,7 @@ class IntentPolicy:
 
 
     @staticmethod
-    def intent_router_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    async def intent_router_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
         from supervisor.supervisor import (
             _looks_like_holter_request, _looks_like_sql_request,
             _looks_like_weather_request, _is_weather_actionable_clause,
@@ -611,7 +611,7 @@ class IntentPolicy:
         decision_source = "llm"
 
         try:
-            structured = _invoke_structured_output_with_fallback(
+            structured = await _invoke_structured_output_with_fallback(
                 prompt=prompt,
                 model=model,
                 schema=IntentDecision,

@@ -30,7 +30,9 @@
 """
 
 from abc import ABC, abstractmethod
+import asyncio
 import functools
+import inspect
 import re
 from typing import Generator, Any, Dict, Optional
 from langchain_core.messages import AIMessageChunk, BaseMessage, HumanMessage, SystemMessage
@@ -44,6 +46,7 @@ from services.agent_stream_bus import agent_stream_bus
 from common.utils.history_compressor import compress_history_messages
 from common.utils.custom_logger import get_logger
 from common.utils.date_utils import get_agent_date_context, get_current_time_context
+from common.utils.retry_utils import GRAPH_RETRY_POLICY
 
 log = get_logger(__name__)
 
@@ -102,7 +105,7 @@ def _unwrap_interrupt_candidate(obj: Any) -> Optional[dict]:
     return None
 
 
-def _guarded_model_node(
+async def _guarded_model_node(
     state,
     *,
     model_node_fn,
@@ -151,7 +154,10 @@ def _guarded_model_node(
             "tool_loop_count": loop_count,
             "messages": [AIMessage(content=loop_exceeded_message)],
         }
-    return model_node_fn(state)
+    result = model_node_fn(state)
+    if inspect.isawaitable(result):
+        return await result
+    return result
 
 
 def _route_after_agent(state, *, max_tool_loops: int, tools_condition_fn):
@@ -552,6 +558,8 @@ class BaseAgent(ABC):
         # 创建 checkpointer，用于状态持久化
         self.checkpointer = get_checkpointer(self.subgraph_id)
 
+    RETRY_POLICY = GRAPH_RETRY_POLICY
+
     @abstractmethod
     def _build_graph(self) -> Runnable:
         """
@@ -654,10 +662,11 @@ class BaseAgent(ABC):
                 max_tool_loops=max_tool_loops,
                 loop_exceeded_message=loop_exceeded_message,
             ),
+            retry_policy=self.RETRY_POLICY,
         )
 
         # 添加 tools 节点
-        workflow.add_node("tools", tool_node)
+        workflow.add_node("tools", tool_node, retry_policy=self.RETRY_POLICY)
 
         # 添加边
         workflow.add_edge(START, "agent")
@@ -788,55 +797,69 @@ class BaseAgent(ABC):
             stream_channel_id = str(configurable.get("run_id") or "").strip()
             stream_mode = ["updates", "messages"] if AGENT_LIVE_STREAM_ENABLED else ["updates"]
 
-            for raw_event in self.graph.stream(
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            stream_iter = self.graph.astream(
                 input_message,
                 config=final_config,
                 stream_mode=stream_mode,
-            ):
-                event_type = "updates"
-                event_payload = raw_event
+            )
+            try:
+                while True:
+                    try:
+                        raw_event = loop.run_until_complete(stream_iter.__anext__())
+                    except StopAsyncIteration:
+                        break
+                    event_type = "updates"
+                    event_payload = raw_event
 
-                # 解析事件类型和载荷
-                if isinstance(raw_event, tuple) and len(raw_event) == 2:
-                    event_type, event_payload = raw_event
+                    # 解析事件类型和载荷
+                    if isinstance(raw_event, tuple) and len(raw_event) == 2:
+                        event_type, event_payload = raw_event
 
-                # 处理 updates 事件（状态更新）
-                if event_type == "updates":
-                    if isinstance(event_payload, dict):
-                        yield event_payload
-                    continue
-
-                # 处理 messages 事件（实时输出）
-                if event_type == "messages":
-                    # 如果未启用实时流式输出，跳过
-                    if not AGENT_LIVE_STREAM_ENABLED:
-                        continue
-                    # 检查事件格式
-                    if not (isinstance(event_payload, tuple) and len(event_payload) == 2):
+                    # 处理 updates 事件（状态更新）
+                    if event_type == "updates":
+                        if isinstance(event_payload, dict):
+                            yield event_payload
                         continue
 
-                    msg_chunk, _metadata = event_payload
+                    # 处理 messages 事件（实时输出）
+                    if event_type == "messages":
+                        # 如果未启用实时流式输出，跳过
+                        if not AGENT_LIVE_STREAM_ENABLED:
+                            continue
+                        # 检查事件格式
+                        if not (isinstance(event_payload, tuple) and len(event_payload) == 2):
+                            continue
 
-                    # 只处理 AIMessageChunk
-                    if not isinstance(msg_chunk, AIMessageChunk):
-                        continue
+                        msg_chunk, _metadata = event_payload
 
-                    # 需要有效的 stream_channel_id
-                    if not stream_channel_id:
-                        continue
+                        # 只处理 AIMessageChunk
+                        if not isinstance(msg_chunk, AIMessageChunk):
+                            continue
 
-                    # 跳过工具调用
-                    if getattr(msg_chunk, "tool_calls", None):
-                        continue
+                        # 需要有效的 stream_channel_id
+                        if not stream_channel_id:
+                            continue
 
-                    # 提取文本并推送到流式总线
-                    chunk_text = self._message_text(msg_chunk)
-                    if chunk_text:
-                        agent_stream_bus.publish(
-                            run_id=stream_channel_id,
-                            agent_name=self.subgraph_id,
-                            content=chunk_text,
-                        )
+                        # 跳过工具调用
+                        if getattr(msg_chunk, "tool_calls", None):
+                            continue
+
+                        # 提取文本并推送到流式总线
+                        chunk_text = self._message_text(msg_chunk)
+                        if chunk_text:
+                            agent_stream_bus.publish(
+                                run_id=stream_channel_id,
+                                agent_name=self.subgraph_id,
+                                content=chunk_text,
+                            )
+            finally:
+                try:
+                    loop.run_until_complete(stream_iter.aclose())
+                except Exception:
+                    pass
+                loop.close()
 
         except Exception as e:
             err_msg = str(e)

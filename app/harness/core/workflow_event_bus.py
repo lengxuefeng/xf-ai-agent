@@ -89,7 +89,16 @@ def workflow_role_for_agent(agent_name: str) -> str:
     """
     normalized = str(agent_name or "").strip()
     # 管理者类Agent
-    if normalized in {"ChatAgent", "Aggregator", "chat_node", "aggregator_node", "Parent_Planner_Node", "executor_node"}:
+    if normalized in {
+        "ChatAgent",
+        "Aggregator",
+        "chat_node",
+        "aggregator_node",
+        "Parent_Planner_Node",
+        "dispatch_node",
+        "memory_manager_node",
+        "executor_node",
+    }:
         return "supervisor"
     # 执行者类Agent
     if normalized:
@@ -140,6 +149,8 @@ def workflow_display_name(agent_name: str) -> str:
         "chat_node": "掌柜",
         "aggregator_node": "总管汇总",
         "Parent_Planner_Node": "掌柜筹划",
+        "dispatch_node": "掌柜派单",
+        "memory_manager_node": "掌柜理账",
         "executor_node": "掌柜派单",
     }
     return display_map.get(normalized, normalized or "流程节点")

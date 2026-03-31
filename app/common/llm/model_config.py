@@ -20,6 +20,7 @@ class ModelConfig(BaseModel):
 
     # --- 可选字段 (有默认值) ---
     deep_thinking_mode: str = Field(default="auto", description="深度思考模式开关")
+    model_size: str = Field(default="large", description="模型规格: fast 或 large")
     rag_enabled: bool = Field(default=False, description="是否启用 RAG 向量检索")
     similarity_threshold: float = Field(default=0.7, ge=0.0, le=1.0, description="向量检索的相似度阈值")
     embedding_model: str = Field(default="bge-m3:latest", description="所使用的 Embedding 模型名称")

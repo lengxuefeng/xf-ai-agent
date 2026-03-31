@@ -1,17 +1,17 @@
+import asyncio
 import functools
-import queue
 import json
 import re
-import threading
 import time
 from typing import Optional, List, Dict, Any, TypedDict, Type
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, RemoveMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END, START
-from langgraph.constants import Send
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langgraph.types import Send
 from pydantic import BaseModel
 
 from supervisor.graph_state import AgentRequest
@@ -87,8 +87,6 @@ from config.runtime_settings import (
     AGENT_LOOP_CONFIG,
     AGENT_LIVE_STREAM_ENABLED,
     AGGREGATOR_CONFIG,
-    CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC,
-    CHAT_NODE_STREAM_ENABLED,
     CHAT_NODE_TOTAL_TIMEOUT_SEC,
     MODEL_TIERING_CONFIG,
     ROUTER_POLICY_CONFIG,
@@ -110,6 +108,14 @@ from services.agent_stream_bus import agent_stream_bus
 from services.request_cancellation_service import request_cancellation_service
 from common.utils.custom_logger import get_logger
 from common.utils.date_utils import get_agent_date_context
+from common.utils.history_compressor import (
+    HISTORY_SUMMARY_BATCH_ROUNDS,
+    HISTORY_SUMMARY_KEEP_RECENT_ROUNDS,
+    HISTORY_SUMMARY_TRIGGER_ROUNDS,
+    build_sliding_summary_messages,
+    count_dialog_rounds,
+)
+from common.utils.retry_utils import GRAPH_RETRY_POLICY
 
 log = get_logger(__name__)
 INTERRUPT_RESULT_TYPE = WORKFLOW_INTERRUPT_RESULT_TYPE
@@ -134,6 +140,24 @@ def _invoke_with_timeout(callable_fn, *, timeout_sec: float, timeout_label: str)
     )
 
 
+async def _ainvoke_with_timeout(awaitable, *, timeout_sec: float, timeout_label: str):
+    """异步超时包装，供 async 节点统一使用。"""
+    try:
+        return await asyncio.wait_for(awaitable, timeout=max(0.1, float(timeout_sec)))
+    except asyncio.TimeoutError as exc:
+        raise TimeoutError(timeout_label) from exc
+
+
+def _run_async_in_new_loop(awaitable):
+    """在隔离事件循环中阻塞等待一个 awaitable 完成。"""
+    loop = asyncio.new_event_loop()
+    try:
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(awaitable)
+    finally:
+        loop.close()
+
+
 def _normalize_interrupt_payload(val: Any) -> dict:
     """补齐默认审核文案和允许操作。"""
     return _support_normalize_interrupt_payload(
@@ -154,27 +178,13 @@ def _extract_interrupt_from_snapshot(snapshot: Any) -> Optional[dict]:
 
 class WorkerState(TypedDict):
     """Worker节点状态"""
-    task: SubTask  # 待执行任务
+    task_id: str
+    current_task: str
+    session_id: str
+    llm_config: Dict[str, Any]
     context_slots: Dict[str, Any]  # 会话结构化槽位
     context_summary: str  # 会话摘要
     messages: List[BaseMessage]  # 最近对话窗口
-
-
-class _ChatNodeStreamFailure(Exception):
-    """chat_node 首包/流式阶段失败。"""
-
-    def __init__(
-            self,
-            detail: str,
-            *,
-            partial_output_emitted: bool = False,
-            partial_content: str = "",
-            live_streamed: bool = False,
-    ) -> None:
-        super().__init__(detail)
-        self.partial_output_emitted = partial_output_emitted
-        self.partial_content = str(partial_content or "")
-        self.live_streamed = bool(live_streamed)
 
 
 def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
@@ -188,43 +198,6 @@ def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
     ):
         return "模型服务连接异常，请稍后重试。", detail
     return "底层服务执行异常，请稍后重试。", detail
-
-
-def _build_partial_reply_note(exc: Exception) -> str:
-    """为已流出部分内容的失败场景补一条简短尾注。"""
-    detail = str(exc or "").strip()
-    lower = detail.lower()
-    if isinstance(exc, TimeoutError) or any(marker in lower for marker in SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS):
-        return "\n\n> 注：本次回答因响应超时提前结束，如需我继续，请直接回复“继续”。"
-    if isinstance(exc, ConnectionError) or any(
-            marker in lower for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS
-    ):
-        return "\n\n> 注：本次回答因连接异常提前结束，如需我继续，请直接回复“继续”。"
-    return "\n\n> 注：本次回答未完整结束，如需我继续，请直接回复“继续”。"
-
-
-def _build_partial_chat_message(
-        partial_content: str,
-        exc: Exception,
-        *,
-        live_streamed: bool,
-) -> Optional[AIMessage]:
-    """把部分输出整理成可继续展示的 AIMessage，避免整轮直接报错。"""
-    content = str(partial_content or "").strip()
-    if not content:
-        return None
-    note = _build_partial_reply_note(exc)
-    if note and note not in content:
-        content = f"{content.rstrip()}{note}"
-    return AIMessage(
-        content=content,
-        name="ChatAgent",
-        response_metadata={
-            "synthetic": True,
-            "live_streamed": bool(live_streamed),
-            "partial_failure": True,
-        },
-    )
 
 
 def _looks_like_sql_request(text: str) -> bool:
@@ -617,7 +590,7 @@ def _build_worker_history_messages_for_agent(
     return selected
 
 
-def _invoke_structured_output_with_fallback(
+async def _invoke_structured_output_with_fallback(
         *,
         prompt: ChatPromptTemplate,
         model: BaseChatModel,
@@ -655,8 +628,8 @@ def _invoke_structured_output_with_fallback(
         for kwargs in ({"method": "json_mode"}, {}):
             try:
                 structured_model = llm.with_structured_output(schema, **kwargs)
-                result = _invoke_with_timeout(
-                    lambda: (prompt | structured_model).invoke(inputs, config=runtime_config),
+                result = await _ainvoke_with_timeout(
+                    (prompt | structured_model).ainvoke(inputs, config=runtime_config),
                     timeout_sec=invoke_timeout_sec,
                     timeout_label=f"{log_name}.structured",
                 )
@@ -671,8 +644,8 @@ def _invoke_structured_output_with_fallback(
                 continue
 
     # 如果当前模型不支持结构化输出则回退到传统 JSON 解析
-    response = _invoke_with_timeout(
-        lambda: (prompt | llm).invoke(inputs, config=runtime_config),
+    response = await _ainvoke_with_timeout(
+        (prompt | llm).ainvoke(inputs, config=runtime_config),
         timeout_sec=invoke_timeout_sec,
         timeout_label=f"{log_name}.json_fallback",
     )
@@ -735,7 +708,7 @@ def _run_agent_to_completion(
         fallback_messages.append(HumanMessage(content=effective_user_input))
         # 降级为通用 CHAT
         with request_cancellation_service.bind_request(request_id):
-            response = model.invoke(fallback_messages, config=config)
+            response = _run_async_in_new_loop(model.ainvoke(fallback_messages, config=config))
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Agent[CHAT_FALLBACK] 耗时: {elapsed_ms}ms")
         return response.content
@@ -832,381 +805,233 @@ def _task_sort_key(item: tuple[str, Any]) -> tuple[int, str]:
     return seq, task_id
 
 
-def _publish_chat_live_chunk(run_id: str, text: str) -> bool:
-    if not (AGENT_LIVE_STREAM_ENABLED and run_id and text.strip()):
-        return False
-    agent_stream_bus.publish(
-        run_id=run_id,
-        agent_name="ChatAgent",
-        content=text,
-    )
-    return True
-
-
 def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[Any]:
     compact_window = max(1, min(4, AGENT_LOOP_CONFIG.context_history_messages))
     compact_history = recent_messages[-compact_window:]
     return [("system", prompt), ("system", get_agent_date_context())] + compact_history
 
 
-def _retry_chat_compact_invoke(
-        *,
-        model: BaseChatModel,
-        runtime_config: RunnableConfig,
-        prompt: str,
-        recent_messages: List[Any],
-        total_timeout_sec: float,
-) -> str:
-    retry_timeout_sec = min(max(total_timeout_sec * 0.5, 10.0), 30.0)
-    response = _invoke_with_timeout(
-        lambda: model.invoke(_build_chat_retry_messages(prompt, recent_messages), config=runtime_config),
-        timeout_sec=retry_timeout_sec,
-        timeout_label="chat_node.retry_invoke",
-    )
-    return _content_to_text(getattr(response, "content", "")).strip()
-
-
-def _chat_stream_producer(
-        *,
-        model: BaseChatModel,
-        request_messages: List[Any],
-        runtime_config: RunnableConfig,
-        stop_signal: threading.Event,
-        event_queue: queue.Queue,
-) -> None:
-    try:
-        for chunk in model.stream(request_messages, config=runtime_config):
-            if stop_signal.is_set():
-                break
-            piece = _content_to_text(getattr(chunk, "content", chunk))
-            if piece:
-                event_queue.put(("chunk", piece))
-        event_queue.put(("done", None))
-    except Exception as exc:
-        event_queue.put(("error", exc))
-
-
-def _stream_chat_with_timeout(
-        *,
-        model: BaseChatModel,
-        request_messages: List[Any],
-        runtime_config: RunnableConfig,
-        run_id: str,
-        first_token_timeout_sec: float,
-        total_timeout_sec: float,
-) -> tuple[str, bool]:
-    """用队列桥接同步节点与流式模型，支持首 token/总时长双超时。"""
-    live_streamed = False
-    assembled_parts: list[str] = []
-    event_queue: queue.Queue = queue.Queue()
-    stop_signal = threading.Event()
-    producer_thread = threading.Thread(
-        target=_chat_stream_producer,
-        kwargs={
-            "model": model,
-            "request_messages": request_messages,
-            "runtime_config": runtime_config,
-            "stop_signal": stop_signal,
-            "event_queue": event_queue,
-        },
-        daemon=True,
-    )
-    producer_thread.start()
-
-    started = time.perf_counter()
-    first_deadline = started + max(0.1, first_token_timeout_sec)
-    total_deadline = started + max(0.2, total_timeout_sec)
-    first_chunk_seen = False
-
-    try:
-        while True:
-            now = time.perf_counter()
-            if now >= total_deadline:
-                stop_signal.set()
-                raise _ChatNodeStreamFailure(
-                    f"chat_node.total_timeout: {total_timeout_sec:.1f}s",
-                    partial_output_emitted=bool(assembled_parts),
-                    partial_content="".join(assembled_parts).strip(),
-                    live_streamed=live_streamed,
-                )
-
-            wait_timeout = min(0.2, max(0.01, total_deadline - now))
-            if not first_chunk_seen:
-                wait_timeout = min(wait_timeout, max(0.01, first_deadline - now))
-
-            try:
-                event_type, payload = event_queue.get(timeout=wait_timeout)
-            except queue.Empty:
-                if (not first_chunk_seen) and (time.perf_counter() >= first_deadline):
-                    stop_signal.set()
-                    raise _ChatNodeStreamFailure(
-                        f"chat_node.first_token_timeout: {first_token_timeout_sec:.1f}s",
-                        partial_output_emitted=bool(assembled_parts),
-                        partial_content="".join(assembled_parts).strip(),
-                        live_streamed=live_streamed,
-                    )
-                continue
-
-            if event_type == "chunk":
-                first_chunk_seen = True
-                chunk_text = str(payload)
-                assembled_parts.append(chunk_text)
-                if _publish_chat_live_chunk(run_id, chunk_text):
-                    live_streamed = True
-                continue
-
-            if event_type == "error":
-                raise _ChatNodeStreamFailure(
-                    str(payload),
-                    partial_output_emitted=bool(assembled_parts),
-                    partial_content="".join(assembled_parts).strip(),
-                    live_streamed=live_streamed,
-                )
-
-            if event_type == "done":
-                break
-    finally:
-        stop_signal.set()
-        producer_thread.join(timeout=0.2)
-
-    return "".join(assembled_parts).strip(), live_streamed
-
-
 # ==================== Tier-0.5: 数据域路由器 (Domain Router) ====================
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
-# ==================== Tier-2: DAG Planner & Dispatcher ====================
-def dispatcher_node(state: GraphState) -> dict:
-    """Dispatcher：提取可并发执行的无依赖任务，并标记为 dispatched。"""
-    tasks = state.get("task_list", [])
-    current_wave = state.get("current_wave", 0)
-    task_results = dict(state.get("task_results", {}) or {})
-    done_ids = {t["id"] for t in tasks if t.get("status") == TaskStatus.DONE.value}
-    status_by_id = {
-        str(t.get("id")): str(t.get("status") or "")
-        for t in tasks
-        if t.get("id")
-    }
-
-    active_tasks = []
-    new_task_list = []
-
-    for task in tasks:
-        new_task = dict(task)
-        if new_task.get("status") == TaskStatus.PENDING.value:
-            deps = [str(dep) for dep in (new_task.get("depends_on") or []) if dep]
-            blocked_deps = [
-                dep_id
-                for dep_id in deps
-                if status_by_id.get(dep_id) in {TaskStatus.ERROR.value, TaskStatus.CANCELLED.value}
-            ]
-            if blocked_deps:
-                blocked_reason = f"依赖任务失败或取消，已跳过执行: {', '.join(blocked_deps)}"
-                new_task["status"] = TaskStatus.ERROR.value
-                new_task["result"] = blocked_reason
-                task_results[str(new_task.get("id"))] = blocked_reason
-                new_task_list.append(new_task)
-                continue
-            # 检查所有依赖是否已完成
-            deps_met = all(dep_id in done_ids for dep_id in deps)
-            if deps_met:
-                new_task["wave"] = current_wave + 1
-                new_task["status"] = TaskStatus.DISPATCHED.value
-                active_tasks.append(new_task)
-        new_task_list.append(new_task)
-
-    log.info(f"Dispatcher [Wave {current_wave}]: {len(active_tasks)} tasks ready to dispatch.")
+# ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
+def dispatch_node(state: GraphState) -> dict:
+    """根据 Planner 输出构造并发扇出的任务清单。"""
+    plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
+    active_tasks = [
+        {
+            "id": f"t{index + 1}",
+            "input": task,
+            "status": TaskStatus.DISPATCHED.value,
+        }
+        for index, task in enumerate(plan)
+    ]
+    log.info(f"Dispatch: ready to fan out {len(active_tasks)} tasks")
     return {
-        "task_list": new_task_list,
-        "task_results": task_results,
+        "plan": plan,
         "active_tasks": active_tasks,
-        "current_wave": current_wave + 1,
-        "worker_results": [],  # 重置本轮 worker 结果缓冲
+        "current_task": None,
+        "worker_results": [],
+        "current_wave": 1 if active_tasks else 0,
     }
 
 
-def dispatch_router(state: GraphState):
-    """Conditional Edge：根据 active_tasks 发起扇出，若全部完成则聚合。"""
-    active = state.get("active_tasks", [])
-    if active:
-        # 把会话上下文和最近消息一并透传给 worker，避免并行子任务丢上下文
-        worker_context_slots = state.get("context_slots") or {}
-        worker_context_summary = state.get("context_summary") or ""
-        history_messages = state.get("messages", []) or []
-        fanout_payloads: List[Send] = []
-        for task_item in active:
-            task_agent = str(task_item.get("agent") or "")
-            worker_messages = _build_worker_history_messages_for_agent(
-                agent_name=task_agent,
-                history_messages=history_messages,
-                limit=AGENT_LOOP_CONFIG.context_history_messages,
-            )
-            fanout_payloads.append(
-                Send(
-                    "worker_node",
-                    {
-                        "task": task_item,
-                        "context_slots": worker_context_slots,
-                        "context_summary": worker_context_summary,
-                        "messages": worker_messages,
-                    },
-                )
-            )
-        # Fan-out 到 worker_node 进行并行执行
-        return fanout_payloads
+def _fanout_workers(state: GraphState):
+    """使用 Send API 将 plan 中的所有子任务并发扇出到 worker_node。"""
+    active = list(state.get("active_tasks") or [])
+    if not active:
+        return "aggregator_node"
 
-    # 如果没要执行的任务，查验是等待别人完成，还是全剧终，还是死锁
-    tasks = state.get("task_list", [])
-    status_values = [str(t.get("status") or "") for t in tasks]
-    if any(status in PENDING_TASK_STATUSES for status in status_values):
-        # 异常：死锁或者波次超限
-        max_waves = state.get("max_waves", 10)
-        current = state.get("current_wave", 0)
+    worker_context_slots = state.get("context_slots") or {}
+    worker_context_summary = state.get("context_summary") or ""
+    history_messages = list(state.get("messages", []) or [])[-AGENT_LOOP_CONFIG.context_history_messages:]
+    session_id = str(state.get("session_id") or "")
+    llm_config = dict(state.get("llm_config") or {})
 
-        # 波次超限：直接退出
-        if current >= max_waves:
-            log.warning("Dispatcher: DAG execution reached max waves, force quitting.")
-            return "aggregator_node"
-
-        # 死锁检测：图里有 pending，且没有 dispatched 在跑（全军覆没卡死在等待依赖上）
-        _has_dispatched = any(status == TaskStatus.DISPATCHED.value for status in status_values)
-        _has_pending = any(status == TaskStatus.PENDING.value for status in status_values)
-        _has_approval = any(status == TaskStatus.PENDING_APPROVAL.value for status in status_values)
-
-        if _has_pending and not _has_dispatched and not _has_approval:
-            log.warning("Dispatcher: 💥 Dependency deadlock detected (pending 任务无法满足依赖)，强制进入聚合收敛。")
-            return "aggregator_node"
-
-        # 否则如果是还在等待 dispatched 或审批任务完成，直接由于没有 active 返回，这里 LangGraph 会暂停 (因为没有出边可走)
-        if _has_dispatched or _has_approval:
-            log.info("Dispatcher: 当前仅剩 dispatched/pending_approval 任务，进入聚合节点做无正文收敛。")
-            return "aggregator_node"
-
-    return "aggregator_node"
+    return [
+        Send(
+            "worker_node",
+            {
+                "task_id": str(task_item.get("id") or f"t{index + 1}"),
+                "current_task": str(task_item.get("input") or "").strip(),
+                "session_id": session_id,
+                "llm_config": llm_config,
+                "context_slots": worker_context_slots,
+                "context_summary": worker_context_summary,
+                "messages": history_messages,
+            },
+        )
+        for index, task_item in enumerate(active)
+    ]
 
 
 # ==================== Worker & Reducer ====================
-def worker_node(state: WorkerState, config: RunnableConfig, model: BaseChatModel) -> dict:
-    """Worker节点：执行单个子任务并返回结果"""
+async def worker_node(
+        state: WorkerState,
+        config: RunnableConfig,
+        model: BaseChatModel,
+        router_model: BaseChatModel,
+        chat_model: BaseChatModel,
+) -> dict:
+    """Worker 节点：对单个 current_task 执行快路由，再调用具体子 Agent。"""
     started_at = time.perf_counter()
-    task = state["task"]
-    log.info(f"Worker start: task=[{task['id']}], agent=[{task['agent']}]")
+    task_id = str(state.get("task_id") or "").strip() or "t0"
+    current_task = str(state.get("current_task") or "").strip()
+    log.info(f"Worker start: task=[{task_id}] current_task=[{current_task}]")
     request_id = str(
         config.get("configurable", {}).get("run_id")
         or config.get("configurable", {}).get("thread_id")
+        or state.get("session_id")
         or ""
     ).strip()
 
     if request_id and request_cancellation_service.is_cancelled(request_id):
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-        log.info(f"Worker [{task['id']}] 命中取消信号，跳过执行。request_id={request_id}")
         return {
             "worker_results": [
                 WorkerResult(
-                    task_id=task["id"],
+                    task_id=task_id,
+                    task=current_task,
                     result=WORKER_CANCELLED_RESULT,
                     error=None,
-                    agent=task.get("agent"),
+                    agent=None,
                     elapsed_ms=elapsed_ms,
-                    wave=task.get("wave"),
                 )
             ]
         }
 
+    worker_messages = list(state.get("messages", []) or [])
+    if current_task:
+        worker_messages = worker_messages + [HumanMessage(content=current_task)]
+
+    step_state: GraphState = {
+        "messages": worker_messages,
+        "session_id": state.get("session_id") or "",
+        "llm_config": state.get("llm_config") or {},
+        "context_slots": state.get("context_slots") or {},
+        "context_summary": state.get("context_summary") or "",
+        "current_task": current_task,
+        "current_step_input": current_task,
+        "current_step_agent": None,
+        "direct_answer": "",
+        "error_message": None,
+        "error_detail": None,
+    }
+
+    domain_update = await IntentPolicy.domain_router_node(step_state, model=router_model, config=config)
+    step_state.update(domain_update)
+    intent_update = await IntentPolicy.intent_router_node(step_state, model=router_model, config=config)
+    step_state.update(intent_update)
+
+    route_target = _resolve_executor_route(step_state)
+    if step_state.get("is_complex"):
+        log.warning(f"Worker task still marked complex, forcing single execution: task={task_id}, route={route_target}")
+
     try:
-        res_text = _run_agent_to_completion(
-            agent_name=task["agent"],
-            user_input=task["input"],
-            model=model,
-            config=config,
-            history_messages=state.get("messages", []),
-            context_slots=state.get("context_slots", {}),
-            context_summary=state.get("context_summary", ""),
-        )
+        if route_target in MEMBERS:
+            history_messages = _build_worker_history_messages_for_agent(
+                agent_name=route_target,
+                history_messages=worker_messages,
+                limit=AGENT_LOOP_CONFIG.context_history_messages,
+            )
+            res_text = await asyncio.to_thread(
+                _run_agent_to_completion,
+                route_target,
+                current_task,
+                model,
+                config,
+                state.get("session_id") or "",
+                history_messages,
+                state.get("context_slots") or {},
+                state.get("context_summary") or "",
+            )
+            agent_name = route_target
+        else:
+            chat_result = await chat_node(step_state, model=chat_model, config=config)
+            if chat_result.get("error_message"):
+                raise RuntimeError(str(chat_result.get("error_detail") or chat_result.get("error_message")))
+            chat_messages = chat_result.get("messages") or []
+            chat_message = chat_messages[-1] if chat_messages else AIMessage(content="")
+            res_text = _content_to_text(getattr(chat_message, "content", "")).strip()
+            agent_name = "chat_node"
+
         if res_text == WORKER_CANCELLED_RESULT:
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-            log.info(f"⏱️ Worker[{task['id']}] 已取消，耗时: {elapsed_ms}ms")
             return {
                 "worker_results": [
                     WorkerResult(
-                        task_id=task["id"],
+                        task_id=task_id,
+                        task=current_task,
                         result=WORKER_CANCELLED_RESULT,
                         error=None,
-                        agent=task.get("agent"),
+                        agent=agent_name,
                         elapsed_ms=elapsed_ms,
-                        wave=task.get("wave"),
                     )
                 ]
             }
         if isinstance(res_text, dict) and res_text.get("type") == INTERRUPT_RESULT_TYPE:
-            log.info(f"Worker [{task['id']}] 中断挂起，等待人工审批")
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-            log.info(f"⏱️ Worker[{task['id']}] 挂起前耗时: {elapsed_ms}ms")
             payload = _normalize_interrupt_payload(res_text.get("payload"))
-            payload["agent_name"] = payload.get("agent_name") or task["agent"]
+            payload["agent_name"] = payload.get("agent_name") or agent_name
             return {
                 "worker_results": [
                     WorkerResult(
-                        task_id=task["id"],
+                        task_id=task_id,
+                        task=current_task,
                         result=WORKER_PENDING_APPROVAL_RESULT,
                         error=None,
-                        agent=task.get("agent"),
+                        agent=agent_name,
                         elapsed_ms=elapsed_ms,
-                        wave=task.get("wave"),
                     )
                 ],
-                "interrupt_payload": payload
+                "interrupt_payload": payload,
             }
     except Exception as exc:
         err_msg = str(exc)
         if "Interrupt(" in err_msg or exc.__class__.__name__ == "GraphInterrupt":
-            log.info(f"Worker [{task['id']}] 中断挂起 (通过异常捕获)，等待人工审批")
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-            log.info(f"⏱️ Worker[{task['id']}] 异常挂起前耗时: {elapsed_ms}ms")
             return {
                 "worker_results": [
                     WorkerResult(
-                        task_id=task["id"],
+                        task_id=task_id,
+                        task=current_task,
                         result=WORKER_PENDING_APPROVAL_RESULT,
                         error=None,
-                        agent=task.get("agent"),
+                        agent=route_target,
                         elapsed_ms=elapsed_ms,
-                        wave=task.get("wave"),
                     )
                 ],
                 "interrupt_payload": {
                     "message": DEFAULT_INTERRUPT_MESSAGE,
                     "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
                     "action_requests": [],
-                    "agent_name": task["agent"],
-                }
+                    "agent_name": route_target,
+                },
             }
-        log.error(f"Worker [{task['id']}] error: {exc}")
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-        log.info(f"⏱️ Worker[{task['id']}] 失败耗时: {elapsed_ms}ms")
+        log.error(f"Worker [{task_id}] error: {exc}")
         return {
             "worker_results": [
                 WorkerResult(
-                    task_id=task["id"],
+                    task_id=task_id,
+                    task=current_task,
                     result="",
                     error=str(exc),
-                    agent=task.get("agent"),
+                    agent=route_target,
                     elapsed_ms=elapsed_ms,
-                    wave=task.get("wave"),
                 )
             ]
         }
 
     elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-    log.info(f"⏱️ Worker[{task['id']}] 完成耗时: {elapsed_ms}ms")
     return {
         "worker_results": [
             WorkerResult(
-                task_id=task["id"],
-                result=res_text,
+                task_id=task_id,
+                task=current_task,
+                result=str(res_text or "").strip(),
                 error=None,
-                agent=task.get("agent"),
+                agent=agent_name,
                 elapsed_ms=elapsed_ms,
-                wave=task.get("wave"),
             )
         ]
     }
@@ -1356,7 +1181,7 @@ def _sanitize_reflection_tasks(
     return appended_tasks, sequence
 
 
-def reflection_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+async def reflection_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """执行后反思：判断当前结果是否需要自动追加下一轮任务。"""
     tasks = list(state.get("task_list") or [])
     if not tasks:
@@ -1444,7 +1269,7 @@ def reflection_node(state: GraphState, model: BaseChatModel, config: RunnableCon
     )
 
     try:
-        structured = _invoke_structured_output_with_fallback(
+        structured = await _invoke_structured_output_with_fallback(
             prompt=prompt,
             model=model,
             schema=ReflectionDecision,
@@ -1566,6 +1391,8 @@ def _build_aggregated_task_title(task_id: str, task: Optional[SubTask]) -> str:
         "medical_agent": "医疗建议",
         "code_agent": "代码处理",
         "CHAT": "综合答复",
+        "ChatAgent": "综合答复",
+        "chat_node": "综合答复",
     }.get(agent_name, agent_name or f"任务 {task_id}")
 
     raw_focus = str((task or {}).get("input") or "").strip()
@@ -1623,16 +1450,51 @@ def _build_deterministic_aggregation(
     return "暂未获得可直接展示的结果，请稍后重试。"
 
 
-def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+async def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """聚合节点：将多个子任务结果整合成最终回答"""
     started_at = time.perf_counter()
-    tasks = state.get("task_list", []) or []
-    pending_like = [t for t in tasks if str(t.get("status") or "") in PENDING_TASK_STATUSES]
-    if pending_like:
-        log.info("Aggregator: 检测到未终态任务（含 pending/pending_approval/dispatched），本轮不输出正文。")
-        return {"direct_answer": ""}
+    worker_items = list(state.get("worker_results") or [])
+    tasks_by_id: Dict[str, SubTask] = {}
+    results: Dict[str, Any] = {}
 
-    results = state.get("task_results", {}) or {}
+    if worker_items:
+        for item in worker_items:
+            if not isinstance(item, dict):
+                continue
+            task_id = str(item.get("task_id") or "")
+            if not task_id:
+                continue
+            task_input = str(item.get("task") or "").strip()
+            agent_name = str(item.get("agent") or "CHAT").strip() or "CHAT"
+            error_text = str(item.get("error") or "").strip()
+            result_text = str(item.get("result") or "").strip()
+            tasks_by_id[task_id] = {
+                "id": task_id,
+                "agent": agent_name,
+                "input": task_input,
+                "depends_on": [],
+                "status": TaskStatus.ERROR.value if error_text else TaskStatus.DONE.value,
+                "result": result_text,
+            }
+            if error_text:
+                results[task_id] = f"Error: {error_text}"
+            elif result_text:
+                results[task_id] = result_text
+
+    if not results:
+        tasks = state.get("task_list", []) or []
+        pending_like = [t for t in tasks if str(t.get("status") or "") in PENDING_TASK_STATUSES]
+        if pending_like:
+            log.info("Aggregator: 检测到未终态任务（含 pending/pending_approval/dispatched），本轮不输出正文。")
+            return {"direct_answer": ""}
+
+        results = state.get("task_results", {}) or {}
+        tasks_by_id = {
+            str(task.get("id") or ""): task
+            for task in tasks
+            if isinstance(task, dict) and task.get("id")
+        }
+
     if not results:
         msg = AIMessage(
             content="没有任何子任务结果可以聚合。",
@@ -1651,11 +1513,6 @@ def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableCon
         )
 
     user_request = _latest_human_message(state.get("messages", []))
-    tasks_by_id = {
-        str(task.get("id") or ""): task
-        for task in tasks
-        if isinstance(task, dict) and task.get("id")
-    }
     deterministic_answer = _build_deterministic_aggregation(
         user_request,
         normalized_results,
@@ -1685,7 +1542,7 @@ def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableCon
             ("human", f"用户的原始请求：\n{user_request}\n\n执行结果反馈：\n{agg_msg}")
         ])
 
-        response = (prompt | model).invoke({}, config=config)
+        response = await (prompt | model).ainvoke({}, config=config)
         parsed_content = _content_to_text(getattr(response, "content", "")).strip()
         if parsed_content:
             final_content = parsed_content
@@ -1703,11 +1560,38 @@ def aggregator_node(state: GraphState, model: BaseChatModel, config: RunnableCon
     return {"messages": [msg], "direct_answer": final_content}
 
 
-def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+async def memory_manager_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+    """结束前统一执行滑动摘要记忆收敛，控制多轮对话窗口。"""
+    messages = list(state.get("messages", []) or [])
+    round_count = count_dialog_rounds(messages)
+    if round_count <= HISTORY_SUMMARY_TRIGGER_ROUNDS:
+        return {}
+
+    compact_messages = await build_sliding_summary_messages(
+        messages,
+        model=model,
+        trigger_rounds=HISTORY_SUMMARY_TRIGGER_ROUNDS,
+        summarize_rounds=HISTORY_SUMMARY_BATCH_ROUNDS,
+        keep_recent_rounds=HISTORY_SUMMARY_KEEP_RECENT_ROUNDS,
+    )
+    if compact_messages == messages:
+        return {}
+
+    log.info(
+        "Memory Manager: summarized dialog rounds=%s -> compact_messages=%s",
+        round_count,
+        len(compact_messages),
+    )
+    return {
+        "messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES), *compact_messages],
+    }
+
+
+async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """聊天节点：处理通用对话"""
     started_at = time.perf_counter()
     direct_ans = state.get("direct_answer", "")
-    current_step_input = str(state.get("current_step_input") or "").strip()
+    current_step_input = str(state.get("current_task") or state.get("current_step_input") or "").strip()
     if direct_ans and len(direct_ans.strip()) > 3:
         msg = AIMessage(content=direct_ans, name="ChatAgent", response_metadata={"synthetic": True})
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
@@ -1728,105 +1612,47 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
         ).strip()
 
         total_timeout_sec = float(CHAT_NODE_TOTAL_TIMEOUT_SEC)
-        first_token_timeout_sec = min(float(CHAT_NODE_FIRST_TOKEN_TIMEOUT_SEC), max(1.0, total_timeout_sec - 1.0))
 
         msg: Optional[AIMessage] = None
         final_error: Optional[Exception] = None
 
-        if CHAT_NODE_STREAM_ENABLED:
-            try:
-                streamed_content, live_streamed = _stream_chat_with_timeout(
-                    model=model,
-                    request_messages=request_messages,
-                    runtime_config=runtime_config,
-                    run_id=run_id,
-                    first_token_timeout_sec=first_token_timeout_sec,
-                    total_timeout_sec=total_timeout_sec,
+        try:
+            response = await _ainvoke_with_timeout(
+                model.ainvoke(request_messages, config=runtime_config),
+                timeout_sec=max(1.0, total_timeout_sec),
+                timeout_label="chat_node.ainvoke",
+            )
+            content = _content_to_text(getattr(response, "content", "")).strip()
+            if content:
+                msg = AIMessage(
+                    content=content,
+                    name="ChatAgent",
+                    response_metadata={"synthetic": True},
                 )
-                if streamed_content:
-                    msg = AIMessage(
-                        content=streamed_content,
-                        name="ChatAgent",
-                        response_metadata={"synthetic": True, "live_streamed": live_streamed},
+            else:
+                final_error = RuntimeError("chat_node.empty_response")
+        except Exception as exc:
+            final_error = exc
+            if total_timeout_sec >= 1.0 and not request_cancellation_service.is_cancelled(run_id):
+                try:
+                    retry_response = await _ainvoke_with_timeout(
+                        model.ainvoke(
+                            _build_chat_retry_messages(prompt, recent_messages),
+                            config=runtime_config,
+                        ),
+                        timeout_sec=min(max(total_timeout_sec * 0.5, 10.0), 30.0),
+                        timeout_label="chat_node.retry_ainvoke",
                     )
-                else:
-                    final_error = RuntimeError("chat_node.empty_response")
-            except Exception as exc:
-                final_error = exc
-                partial_output_emitted = bool(getattr(exc, "partial_output_emitted", False))
-                partial_content = str(getattr(exc, "partial_content", "") or "").strip()
-                partial_live_streamed = bool(getattr(exc, "live_streamed", False))
-                if partial_content:
-                    partial_note = _build_partial_reply_note(exc)
-                    if partial_note and partial_live_streamed:
-                        _publish_chat_live_chunk(run_id, partial_note)
-                    msg = _build_partial_chat_message(
-                        partial_content,
-                        exc,
-                        live_streamed=partial_live_streamed,
-                    )
-                    final_error = None
-                    partial_output_emitted = False
-                can_retry = (
-                        (not partial_output_emitted)
-                        and msg is None
-                        and total_timeout_sec >= 1.0
-                        and (not request_cancellation_service.is_cancelled(run_id))
-                )
-                if can_retry:
-                    try:
-                        retry_content = _retry_chat_compact_invoke(
-                            model=model,
-                            runtime_config=runtime_config,
-                            prompt=prompt,
-                            recent_messages=recent_messages,
-                            total_timeout_sec=total_timeout_sec,
+                    retry_content = _content_to_text(getattr(retry_response, "content", "")).strip()
+                    if retry_content:
+                        msg = AIMessage(
+                            content=retry_content,
+                            name="ChatAgent",
+                            response_metadata={"synthetic": True},
                         )
-                        if retry_content:
-                            msg = AIMessage(
-                                content=retry_content,
-                                name="ChatAgent",
-                                response_metadata={"synthetic": True, "force_emit": True},
-                            )
-                            final_error = None
-                    except Exception as retry_exc:
-                        final_error = retry_exc
-        else:
-            try:
-                response = _invoke_with_timeout(
-                    lambda: model.invoke(request_messages, config=runtime_config),
-                    timeout_sec=max(1.0, total_timeout_sec),
-                    timeout_label="chat_node.invoke",
-                )
-                content = _content_to_text(getattr(response, "content", "")).strip()
-                if content:
-                    msg = AIMessage(
-                        content=content,
-                        name="ChatAgent",
-                        response_metadata={"synthetic": True},
-                    )
-                else:
-                    final_error = RuntimeError("chat_node.empty_response")
-            except Exception as exc:
-                final_error = exc
-                if total_timeout_sec >= 1.0 and not request_cancellation_service.is_cancelled(run_id):
-                    try:
-                        retry_content = _retry_chat_compact_invoke(
-                            model=model,
-                            runtime_config=runtime_config,
-                            prompt=prompt,
-                            recent_messages=recent_messages,
-                            total_timeout_sec=total_timeout_sec,
-                        )
-                        if retry_content:
-                            msg = AIMessage(
-                                content=retry_content,
-                                name="ChatAgent",
-                                response_metadata={"synthetic": True},
-                            )
-                            final_error = None
-                    except Exception as retry_exc:
-                        final_error = retry_exc
+                        final_error = None
+                except Exception as retry_exc:
+                    final_error = retry_exc
 
         if msg is None:
             graceful_reply = _build_graceful_chat_fallback(
@@ -1858,9 +1684,14 @@ def chat_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -
     return {"messages": [msg]}
 
 
-def single_agent_node(state: GraphState, agent_name: str, model: BaseChatModel, config: RunnableConfig) -> dict:
+async def single_agent_node(
+        state: GraphState,
+        agent_name: str,
+        model: BaseChatModel,
+        config: RunnableConfig,
+) -> dict:
     """单一Agent节点：执行单个专业Agent"""
-    planned_step_input = str(state.get("current_step_input") or "").strip()
+    planned_step_input = str(state.get("current_task") or state.get("current_step_input") or "").strip()
     user_input = planned_step_input or _latest_human_message(state.get("messages", []))
     try:
         history_messages = _build_worker_history_messages_for_agent(
@@ -1868,12 +1699,16 @@ def single_agent_node(state: GraphState, agent_name: str, model: BaseChatModel, 
             history_messages=state.get("messages", []) or [],
             limit=AGENT_LOOP_CONFIG.context_history_messages,
         )
-        content = _run_agent_to_completion(
-            agent_name, user_input, model, config,
-            session_id=state.get("session_id") or "",
-            history_messages=history_messages,
-            context_slots=state.get("context_slots") or {},
-            context_summary=state.get("context_summary") or "",
+        content = await asyncio.to_thread(
+            _run_agent_to_completion,
+            agent_name,
+            user_input,
+            model,
+            config,
+            state.get("session_id") or "",
+            history_messages,
+            state.get("context_slots") or {},
+            state.get("context_summary") or "",
         )
         if content == WORKER_CANCELLED_RESULT:
             return {"direct_answer": ""}
@@ -1935,7 +1770,7 @@ def _resolve_executor_route(step_state: GraphState) -> str:
     return "chat_node"
 
 
-def executor_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
+async def executor_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
     """
     Plan-and-Execute 执行器。
 
@@ -1980,9 +1815,9 @@ def executor_node(state: GraphState, model: BaseChatModel, config: RunnableConfi
     step_state["interrupt_payload"] = None
     step_state["direct_answer"] = ""
 
-    domain_update = IntentPolicy.domain_router_node(step_state, model=model, config=config)
+    domain_update = await IntentPolicy.domain_router_node(step_state, model=model, config=config)
     step_state.update(domain_update)
-    intent_update = IntentPolicy.intent_router_node(step_state, model=model, config=config)
+    intent_update = await IntentPolicy.intent_router_node(step_state, model=model, config=config)
     step_state.update(intent_update)
 
     route_target = _resolve_executor_route(step_state)
@@ -2064,7 +1899,7 @@ def _route_after_intent(state: GraphState) -> str:
 
 
 def create_graph(model_config: Optional[dict] = None):
-    """构建带 Planner + Executor 闭环的 Supervisor 主图。"""
+    """构建基于 Send 并发扇出的 Supervisor 主图。"""
     config_dict = model_config or {}
     model, _ = create_model_from_config(**config_dict)
 
@@ -2080,19 +1915,17 @@ def create_graph(model_config: Optional[dict] = None):
     router_model = model
     chat_model = model
 
-    if router_model_name and router_model_name != config_dict.get("model"):
-        try:
-            router_config = dict(config_dict)
+    try:
+        router_config = dict(config_dict)
+        if router_model_name:
             router_config["model"] = router_model_name
-            # 这里默认共享主模型的 service_type 和 keys
-            temp_router_model, _ = create_model_from_config(**router_config)
-            router_model = temp_router_model
-            log.info(f"Tier-1 极速路由引擎已挂载小模型: {router_model_name}")
-        except Exception as e:
-            log.warning(f"挂载小模型路由 [{router_model_name}] 失败，回退至主模型: {e}")
+        router_config["model_size"] = "fast"
+        router_model, _ = create_model_from_config(**router_config)
+        log.info("Tier-1/Tier-2 路由与规划统一挂载 fast model")
+    except Exception as e:
+        log.warning(f"挂载 fast 路由模型失败，回退至主模型: {e}")
 
     if simple_chat_model_name and simple_chat_model_name != config_dict.get("model"):
-        # 若聊天小模型和路由小模型相同，复用已加载实例，避免重复初始化。
         if simple_chat_model_name == router_model_name and router_model is not model:
             chat_model = router_model
             log.info(f"简单对话引擎复用路由小模型: {simple_chat_model_name}")
@@ -2100,24 +1933,57 @@ def create_graph(model_config: Optional[dict] = None):
             try:
                 chat_config = dict(config_dict)
                 chat_config["model"] = simple_chat_model_name
+                chat_config["model_size"] = "fast"
                 temp_chat_model, _ = create_model_from_config(**chat_config)
                 chat_model = temp_chat_model
                 log.info(f"简单对话引擎已挂载小模型: {simple_chat_model_name}")
             except Exception as e:
                 log.warning(f"挂载简单对话小模型 [{simple_chat_model_name}] 失败，回退至主模型: {e}")
+    elif router_model is not model:
+        chat_model = router_model
 
     workflow = StateGraph(GraphState)
 
     # 上层的决策分析
-    workflow.add_node("Domain_Router_Node", functools.partial(IntentPolicy.domain_router_node, model=router_model))
-    workflow.add_node("Intent_Router_Node", functools.partial(IntentPolicy.intent_router_node, model=router_model))
-    workflow.add_node("Parent_Planner_Node", functools.partial(PlannerNode.planner_node, model=model))
-    workflow.add_node("executor_node", functools.partial(executor_node, model=router_model))
+    workflow.add_node(
+        "Domain_Router_Node",
+        functools.partial(IntentPolicy.domain_router_node, model=router_model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
+    workflow.add_node(
+        "Intent_Router_Node",
+        functools.partial(IntentPolicy.intent_router_node, model=router_model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
+    workflow.add_node(
+        "Parent_Planner_Node",
+        functools.partial(PlannerNode.planner_node, model=router_model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
+    workflow.add_node("dispatch_node", dispatch_node, retry_policy=GRAPH_RETRY_POLICY)
 
-    # 单兵节点: 简单任务直达；复杂任务由 executor_node 逐步派发
-    workflow.add_node("chat_node", functools.partial(chat_node, model=chat_model))
+    workflow.add_node("chat_node", functools.partial(chat_node, model=chat_model), retry_policy=GRAPH_RETRY_POLICY)
     for name in MEMBERS:
-        workflow.add_node(name, functools.partial(single_agent_node, agent_name=name, model=chat_model))
+        workflow.add_node(
+            name,
+            functools.partial(single_agent_node, agent_name=name, model=model),
+            retry_policy=GRAPH_RETRY_POLICY,
+        )
+    workflow.add_node(
+        "worker_node",
+        functools.partial(worker_node, model=model, router_model=router_model, chat_model=chat_model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
+    workflow.add_node(
+        "aggregator_node",
+        functools.partial(aggregator_node, model=model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
+    workflow.add_node(
+        "memory_manager_node",
+        functools.partial(memory_manager_node, model=router_model),
+        retry_policy=GRAPH_RETRY_POLICY,
+    )
 
     # ================= 编织拓扑关系 =================
     workflow.add_edge(START, "Domain_Router_Node")
@@ -2127,15 +1993,19 @@ def create_graph(model_config: Optional[dict] = None):
     router_options.update({"chat_node": "chat_node", "Parent_Planner_Node": "Parent_Planner_Node"})
     workflow.add_conditional_edges("Intent_Router_Node", _route_after_intent, router_options)
 
-    # Plan-and-Execute 闭环
-    workflow.add_edge("Parent_Planner_Node", "executor_node")
-    executor_options = {name: name for name in MEMBERS}
-    executor_options.update({"chat_node": "chat_node", "__end__": END})
-    workflow.add_conditional_edges("executor_node", _route_after_executor, executor_options)
+    workflow.add_edge("Parent_Planner_Node", "dispatch_node")
+    workflow.add_conditional_edges(
+        "dispatch_node",
+        _fanout_workers,
+        {"worker_node": "worker_node", "aggregator_node": "aggregator_node"},
+    )
+    workflow.add_edge("worker_node", "aggregator_node")
+    workflow.add_edge("aggregator_node", "memory_manager_node")
 
-    # 单兵出口：简单任务直接结束；规划任务执行完一步后回到 executor_node
-    workflow.add_conditional_edges("chat_node", _route_after_step_completion, {"executor_node": "executor_node", "__end__": END})
+    workflow.add_edge("chat_node", "memory_manager_node")
     for name in MEMBERS:
-        workflow.add_conditional_edges(name, _route_after_step_completion, {"executor_node": "executor_node", "__end__": END})
+        workflow.add_edge(name, "memory_manager_node")
+
+    workflow.add_edge("memory_manager_node", END)
 
     return workflow.compile(checkpointer=get_checkpointer("supervisor"))

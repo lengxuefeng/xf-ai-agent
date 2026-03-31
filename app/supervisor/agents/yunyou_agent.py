@@ -1310,7 +1310,7 @@ class YunyouAgent(BaseAgent):
         rules = YunyouPrompt.EXECUTION_RULES.format(current_time, current_weekday)
         return (base_prompt or YunyouPrompt.DEFAULT_SYSTEM_ROLE) + rules
 
-    def _model_node(self, state: YunyouState):
+    async def _model_node(self, state: YunyouState):
         """
         模型处理节点：接收并响应最新对话
 
@@ -1363,7 +1363,7 @@ class YunyouAgent(BaseAgent):
         # 调用 LLM
         chain = self.prompt | self.model_with_tools
         try:
-            response = chain.invoke({"messages": recent_messages})
+            response = await chain.ainvoke({"messages": recent_messages})
             return {"tool_loop_count": loop_count + 1, "messages": [response]}
         except Exception as exc:
             log.exception(f"yunyou model_node 调用失败，执行降级回复: {exc}")
@@ -1531,11 +1531,11 @@ class YunyouAgent(BaseAgent):
 
         # 构建子图
         workflow = StateGraph(YunyouState)
-        workflow.add_node("agent", self._model_node)
-        workflow.add_node("human_review", self._human_review_node)
+        workflow.add_node("agent", self._model_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("human_review", self._human_review_node, retry_policy=self.RETRY_POLICY)
 
         # 关键配置：工具异常转成 ToolMessage，而不是直接抛异常中断整个子图
-        workflow.add_node("tools", ToolNode(all_tools, handle_tool_errors=True))
+        workflow.add_node("tools", ToolNode(all_tools, handle_tool_errors=True), retry_policy=self.RETRY_POLICY)
 
         workflow.add_edge(START, "agent")
 

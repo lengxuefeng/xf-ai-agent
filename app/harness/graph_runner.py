@@ -167,15 +167,18 @@ class _GraphStreamAsyncBridge:
         self.owner_thread_ids.add(threading.get_ident())
         with runtime_session_manager.bind_run(self.run_context):
             try:
-                for ev_type, ev in self.graph.stream(
-                        self.graph_inputs,
-                        config=self.graph_config,
-                        stream_mode=list(GRAPH_STREAM_MODES),
-                ):
-                    if request_cancellation_service.is_cancelled(self.run_id):
-                        log.info(f"Graph Worker 收到取消信号，停止事件采集。run_id={self.run_id}")
-                        break
-                    self.safe_enqueue((GraphQueueItemType.GRAPH.value, (ev_type, ev)))
+                async def _consume_graph_events() -> None:
+                    async for ev_type, ev in self.graph.astream(
+                            self.graph_inputs,
+                            config=self.graph_config,
+                            stream_mode=list(GRAPH_STREAM_MODES),
+                    ):
+                        if request_cancellation_service.is_cancelled(self.run_id):
+                            log.info(f"Graph Worker 收到取消信号，停止事件采集。run_id={self.run_id}")
+                            break
+                        self.safe_enqueue((GraphQueueItemType.GRAPH.value, (ev_type, ev)))
+
+                _thread_loop.run_until_complete(_consume_graph_events())
                 self.safe_enqueue((GraphQueueItemType.DONE.value, None))
             except Exception as worker_exc:
                 err_msg = str(worker_exc)
@@ -1392,7 +1395,9 @@ class GraphRunner:
             "Rule_Engine_Node",
             "Intent_Router_Node",
             "Parent_Planner_Node",
+            "memory_manager_node",
             "executor_node",
+            "dispatch_node",
             "dispatcher_node",
             "worker_node",
             "reducer_node",
@@ -1926,6 +1931,8 @@ class GraphRunner:
             # ── Agent 操作日志与 synthetic 消息 ────────────────────────
             if not isinstance(node_val, dict) or "messages" not in node_val:
                 continue
+            if node_name == "memory_manager_node":
+                continue
 
             for msg in node_val.get("messages", []):
                 from langchain_core.messages import ToolMessage
@@ -2151,10 +2158,10 @@ class GraphRunner:
             return
 
         # 规划器日志
-        if node_name == "Parent_Planner_Node" and "task_list" in node_val:
+        if node_name == "Parent_Planner_Node" and ("plan" in node_val or "task_list" in node_val):
             elapsed = node_val.get("planner_elapsed_ms")
             elapsed_text = f"，耗时: {int(elapsed)}ms" if isinstance(elapsed, (int, float)) else ""
-            tasks = node_val.get("task_list") or []
+            tasks = node_val.get("plan") or node_val.get("task_list") or []
             yield GraphRunner._fmt_workflow_event(
                 GraphRunner._build_workflow_event(
                     session_id=session_id,
@@ -2180,29 +2187,30 @@ class GraphRunner:
             return
 
         # DAG 调度器日志
-        if node_name == "dispatcher_node" and "active_tasks" in node_val:
+        if node_name == "dispatch_node" and "active_tasks" in node_val:
             count = len(node_val.get("active_tasks", []))
             wave = node_val.get("current_wave", "?")
             if count > 0:
                 for task in node_val.get("active_tasks", []):
                     if not isinstance(task, dict):
                         continue
-                    agent_name = str(task.get("agent") or "")
+                    agent_name = str(task.get("agent") or "worker_node")
+                    summary_text = str(task.get("input") or task.get("task") or "")[:120]
                     yield GraphRunner._fmt_workflow_event(
                         GraphRunner._build_workflow_event(
                             session_id=session_id,
                             run_id=run_id,
                             phase="task_dispatched",
-                            title=f"总管派发 {GraphRunner._workflow_display_name(agent_name)}",
-                            summary=str(task.get("input") or "")[:120],
+                            title="总管派发并行子任务",
+                            summary=summary_text,
                             status="active",
-                            role=GraphRunner._workflow_role_for_agent(agent_name),
+                            role="supervisor",
                             agent_name=agent_name,
                             task_id=str(task.get("id") or ""),
                             node_name=node_name,
                             meta={
                                 "wave": wave,
-                                "depends_on": task.get("depends_on") or [],
+                                "task": str(task.get("input") or task.get("task") or ""),
                             },
                         )
                     )
@@ -2255,6 +2263,7 @@ class GraphRunner:
                         node_name=node_name,
                         meta={
                             "elapsed_ms": worker_item.get("elapsed_ms"),
+                            "task": worker_item.get("task"),
                             "wave": worker_item.get("wave"),
                         },
                     )

@@ -49,6 +49,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.types import interrupt
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import Runnable
 
 from supervisor.base import BaseAgent
 from tools.gateway.federated_query_gateway import federated_query_gateway
@@ -170,7 +171,7 @@ class SqlAgent(BaseAgent):
         )
         self.graph = self._build_graph()
 
-    def _build_graph(self):
+    def _build_graph(self) -> Runnable:
         """
         构建 SQL 子图
 
@@ -188,10 +189,10 @@ class SqlAgent(BaseAgent):
         workflow = StateGraph(SqlAgentState)
 
         # 添加节点
-        workflow.add_node("get_schema", self._get_schema_node)
-        workflow.add_node("generate_sql", self._generate_sql_node)
-        workflow.add_node("execute_sql", self._execute_sql_node)
-        workflow.add_node("generate_response", self._generate_response_node)
+        workflow.add_node("get_schema", self._get_schema_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("generate_sql", self._generate_sql_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("execute_sql", self._execute_sql_node, retry_policy=self.RETRY_POLICY)
+        workflow.add_node("generate_response", self._generate_response_node, retry_policy=self.RETRY_POLICY)
 
         # 定义边：线性的执行流程
         workflow.add_edge(START, "get_schema")
@@ -235,7 +236,7 @@ class SqlAgent(BaseAgent):
         """
         for msg in reversed(messages):
             if isinstance(msg, HumanMessage):
-                return (msg.content or "").strip()
+                return BaseAgent._message_text(msg)
         return ""
 
     @staticmethod
@@ -269,7 +270,7 @@ class SqlAgent(BaseAgent):
         >>> SqlAgent._human_texts(messages)
         ["查询 Holter 数据", "按时间排序"]
         """
-        return [(m.content or "").strip() for m in messages if isinstance(m, HumanMessage)]
+        return [BaseAgent._message_text(m) for m in messages if isinstance(m, HumanMessage)]
 
     @staticmethod
     def _extract_limit(text: str, default: int = 10) -> int:
@@ -606,7 +607,7 @@ class SqlAgent(BaseAgent):
             "messages": [AIMessage(content=SQL_AGENT_SCHEMA_LOADED_MESSAGE)],
         }
 
-    def _generate_sql_node(self, state: SqlAgentState):
+    async def _generate_sql_node(self, state: SqlAgentState):
         """
         生成 SQL 语句
 
@@ -663,8 +664,8 @@ class SqlAgent(BaseAgent):
 
         # 调用 LLM 生成 SQL
         chain = prompt.partial(schema=schema_info) | self.llm
-        response = chain.invoke({"messages": messages})
-        sql = response.content.strip().replace("```sql", "").replace("```", "")
+        response = await chain.ainvoke({"messages": messages})
+        sql = self._message_text(response).replace("```sql", "").replace("```", "").strip()
 
         # 如果是 Holter 查询，SQL 守卫检测
         if holter_intent:
@@ -715,7 +716,12 @@ class SqlAgent(BaseAgent):
         - 所有 SQL 执行前必须审批
         - 防止误操作和恶意查询
         """
-        sql = state["sql_to_execute"]
+        sql = str(state.get("sql_to_execute") or "").strip()
+        if not sql:
+            return {
+                "messages": [AIMessage(content="未生成可执行 SQL，请重试。")],
+                "sql_result": "未生成可执行 SQL。",
+            }
 
         # 构建审批请求数据
         # action_requests: 审批动作列表

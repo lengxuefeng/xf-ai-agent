@@ -10,11 +10,19 @@ from __future__ import annotations
 
 from typing import Any, Iterable, List, Optional
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
+
+HISTORY_SUMMARY_MARKER = "【历史摘要记忆】"
+HISTORY_SUMMARY_TRIGGER_ROUNDS = 10
+HISTORY_SUMMARY_BATCH_ROUNDS = 8
+HISTORY_SUMMARY_KEEP_RECENT_ROUNDS = 2
+HISTORY_SUMMARY_MAX_SOURCE_CHARS = 12000
 
 
 class _ModelTokenCounter:
@@ -119,6 +127,175 @@ def _build_token_counter(model: Optional[Any]) -> Any:
     except Exception:
         return "approximate"
     return _ModelTokenCounter(get_tokens)
+
+
+def _is_summary_system_message(message: BaseMessage) -> bool:
+    return isinstance(message, SystemMessage) and HISTORY_SUMMARY_MARKER in _message_text(message)
+
+
+def _extract_summary_text(message: BaseMessage) -> str:
+    text = _message_text(message).strip()
+    return text.replace(HISTORY_SUMMARY_MARKER, "", 1).strip()
+
+
+def split_dialog_rounds(messages: Iterable[BaseMessage]) -> List[List[BaseMessage]]:
+    """按用户轮次切分对话历史。"""
+    rounds: List[List[BaseMessage]] = []
+    current_round: List[BaseMessage] = []
+
+    dialog_messages = [
+        message
+        for message in list(messages)
+        if isinstance(message, (HumanMessage, AIMessage))
+    ]
+
+    for message in dialog_messages:
+        if isinstance(message, HumanMessage):
+            if current_round:
+                rounds.append(current_round)
+            current_round = [message]
+            continue
+        if not current_round:
+            current_round = [message]
+        else:
+            current_round.append(message)
+
+    if current_round:
+        rounds.append(current_round)
+    return rounds
+
+
+def count_dialog_rounds(messages: Iterable[BaseMessage]) -> int:
+    """统计对话轮数，只计算 Human/AI 对话，不计算 system 注入。"""
+    return len(split_dialog_rounds(messages))
+
+
+def _format_rounds_for_summary(rounds: List[List[BaseMessage]], *, max_chars: int) -> str:
+    sections: List[str] = []
+    for index, round_messages in enumerate(rounds, start=1):
+        lines = [f"第{index}轮"]
+        for message in round_messages:
+            if isinstance(message, HumanMessage):
+                role = "用户"
+            elif isinstance(message, AIMessage):
+                role = "助手"
+            else:
+                role = "消息"
+            text = _message_text(message).strip()
+            if text:
+                lines.append(f"{role}：{text}")
+        block = "\n".join(lines).strip()
+        if block:
+            sections.append(block)
+
+    joined = "\n\n---\n\n".join(sections).strip()
+    if len(joined) <= max_chars:
+        return joined
+    return joined[:max_chars].rstrip() + "\n\n[内容过长，后续已截断]"
+
+
+def _build_fallback_summary(existing_summary: str, rounds: List[List[BaseMessage]]) -> str:
+    """LLM 摘要失败时的确定性降级摘要。"""
+    history_text = _format_rounds_for_summary(
+        rounds,
+        max_chars=min(3000, HISTORY_SUMMARY_MAX_SOURCE_CHARS),
+    )
+    fragments: List[str] = []
+    if existing_summary:
+        fragments.append(existing_summary.strip())
+    if history_text:
+        fragments.append(history_text)
+    merged = "\n\n".join(item for item in fragments if item).strip()
+    if not merged:
+        return ""
+    if len(merged) > 3500:
+        return merged[:3500].rstrip() + "\n\n[摘要降级截断]"
+    return merged
+
+
+async def build_sliding_summary_messages(
+    messages: List[BaseMessage],
+    *,
+    model: Optional[BaseChatModel] = None,
+    trigger_rounds: int = HISTORY_SUMMARY_TRIGGER_ROUNDS,
+    summarize_rounds: int = HISTORY_SUMMARY_BATCH_ROUNDS,
+    keep_recent_rounds: int = HISTORY_SUMMARY_KEEP_RECENT_ROUNDS,
+) -> List[BaseMessage]:
+    """
+    将较早多轮对话折叠为一条全局摘要 SystemMessage，只保留最近少量原始轮次。
+
+    设计目标：
+    1. 当原始对话轮次超过阈值时，自动执行滑动摘要；
+    2. 新摘要会融合已有摘要，形成长期记忆；
+    3. 始终保留最近 `keep_recent_rounds` 轮原始对话作为短时记忆。
+    """
+    if not messages:
+        return []
+
+    dialog_rounds = split_dialog_rounds(messages)
+    if len(dialog_rounds) <= trigger_rounds:
+        return list(messages)
+
+    rounds_to_keep = max(1, int(keep_recent_rounds))
+    rounds_to_summarize = dialog_rounds[:-rounds_to_keep]
+    recent_rounds = dialog_rounds[-rounds_to_keep:]
+    if len(rounds_to_summarize) < max(1, int(summarize_rounds)):
+        return list(messages)
+
+    existing_summary = "\n\n".join(
+        _extract_summary_text(message)
+        for message in messages
+        if _is_summary_system_message(message)
+    ).strip()
+    history_text = _format_rounds_for_summary(
+        rounds_to_summarize,
+        max_chars=HISTORY_SUMMARY_MAX_SOURCE_CHARS,
+    )
+    if not history_text:
+        return list(messages)
+
+    summary_text = ""
+    if model is not None:
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    "你是会话长期记忆整理器。你的任务是把较早多轮对话压缩为高信息密度的中文摘要，"
+                    "供后续轮次作为全局 SystemMessage 使用。"
+                    "\n要求："
+                    "\n1. 只保留对后续推理真正有用的信息。"
+                    "\n2. 明确写出用户事实、长期偏好、已确认约束、关键结论、未完成事项。"
+                    "\n3. 不要编造，不要保留寒暄废话，不要输出 Markdown 标题。"
+                    "\n4. 输出应可直接作为系统记忆注入。"
+                ),
+                (
+                    "human",
+                    "已有长期摘要：\n{existing_summary}\n\n"
+                    "请把以下较早历史轮次与已有摘要融合，生成新的长期记忆摘要：\n{history_text}",
+                ),
+            ]
+        )
+        try:
+            response = await (prompt | model).ainvoke(
+                {
+                    "existing_summary": existing_summary or "（无）",
+                    "history_text": history_text,
+                }
+            )
+            summary_text = _message_text(response).strip()
+        except Exception as exc:
+            log.warning(f"滑动摘要生成失败，启用确定性降级摘要: {exc}")
+
+    if not summary_text:
+        summary_text = _build_fallback_summary(existing_summary, rounds_to_summarize)
+    if not summary_text:
+        return list(messages)
+
+    summary_message = SystemMessage(content=f"{HISTORY_SUMMARY_MARKER}\n{summary_text}")
+    compact_messages: List[BaseMessage] = [summary_message]
+    for round_messages in recent_rounds:
+        compact_messages.extend(round_messages)
+    return compact_messages
 
 
 def compress_history_messages(

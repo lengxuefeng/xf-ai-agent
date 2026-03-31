@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any
 from tools.agent_tools.sql_tools import execute_sql
 from tools.agent_tools.yunyou_tools import YunyouDbTools
 from common.utils.custom_logger import get_logger
+from common.utils.retry_utils import execute_with_retry
 
 log = get_logger(__name__)
 
@@ -19,7 +20,10 @@ class FederatedQueryGateway:
 
     @staticmethod
     def execute_local_sql(sql: str) -> str:
-        return execute_sql(sql, domain="LOCAL_DB")
+        return execute_with_retry(
+            lambda: execute_sql(sql, domain="LOCAL_DB"),
+            label="execute_local_sql",
+        )
 
     @staticmethod
     def query_yunyou_holter_recent(
@@ -28,18 +32,23 @@ class FederatedQueryGateway:
         start_use_day: Optional[str] = None,
         end_use_day: Optional[str] = None,
     ) -> Dict[str, Any]:
-        return YunyouDbTools.query_holter_recent(
-            limit=limit,
-            order_desc=order_desc,
-            start_use_day=start_use_day,
-            end_use_day=end_use_day,
+        return execute_with_retry(
+            lambda: YunyouDbTools.query_holter_recent(
+                limit=limit,
+                order_desc=order_desc,
+                start_use_day=start_use_day,
+                end_use_day=end_use_day,
+            ),
+            label="query_yunyou_holter_recent",
         )
 
     @staticmethod
     def query_yunyou_log_info(user_id: str) -> list[dict]:
         from mcp.yunyou.yunyou_log_mcp import get_log_info
-        return get_log_info(user_id)
+        return execute_with_retry(
+            lambda: get_log_info(user_id),
+            label="query_yunyou_log_info",
+        )
 
 
 federated_query_gateway = FederatedQueryGateway()
-

@@ -27,6 +27,7 @@ class SubTask(TypedDict):
 class WorkerResult(TypedDict):
     """单个 Worker 执行返回的结果封装（支持 operator.add 并发收集）"""
     task_id: str
+    task: Optional[str]
     result: str
     error: Optional[str]
     # 执行该子任务的 Agent 名称
@@ -61,10 +62,12 @@ class GraphState(TypedDict):
         intent_elapsed_ms: Intent Router 耗时
 
         ---- 任务规划 (Parent Planner) 输出 ----
-        task_list: 子任务列表（DAG 描述）
-        task_results: 子任务执行结果映射 {task_id: result}
-        current_wave: 当前 Dispatcher 调度波次
-        max_waves: 最大调度波次（安全阀）
+        plan: 原子任务列表（Send 并发扇出输入）
+        current_task: 当前 Worker 正在处理的单个任务文本
+        task_list: 兼容旧链路保留的 DAG 描述
+        task_results: 兼容旧链路保留的执行结果映射 {task_id: result}
+        current_wave: 兼容旧链路保留的调度波次
+        max_waves: 兼容旧链路保留的安全阀
         planner_source: 任务规划来源（rule_split / llm / fallback）
         planner_elapsed_ms: Parent Planner 耗时
         reflection_round: 已执行的自动反思轮次
@@ -74,7 +77,7 @@ class GraphState(TypedDict):
         reflection_summary: 本轮反思结论摘要
 
         ---- 并发执行 (Dispatcher & Worker) ----
-        active_tasks: 当前准备 Send 派发执行的 SubTask 列表
+        active_tasks: 当前准备 Send 派发执行的子任务列表
         worker_results: 并发 Worker 执行后收集的增量结果
         
         ---- 路由元数据 ----
@@ -111,6 +114,7 @@ class GraphState(TypedDict):
 
     # Planner 长期记忆与规划
     plan: Optional[List[str]]
+    current_task: Optional[str]
     memory: Optional[Dict[str, Any]]
 
     # 任务规划输出 (Tier-2 DAG)
@@ -127,7 +131,7 @@ class GraphState(TypedDict):
     reflection_summary: Optional[str]
 
     # 并发执行输出 (Map-Reduce)
-    active_tasks: Optional[List[SubTask]]
+    active_tasks: Optional[List[Dict[str, Any]]]
     worker_results: Annotated[List[WorkerResult], operator.add]
 
     # 路由元数据

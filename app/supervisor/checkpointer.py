@@ -142,6 +142,13 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
                 retry_method: Callable[..., Any] = getattr(self._saver, method_name)
             return retry_method(*args, **kwargs)
 
+    @staticmethod
+    def _has_async_override(saver: Any, method_name: str) -> bool:
+        """判断底层 saver 是否真正重写了异步方法，而不是继承基类桩实现。"""
+        saver_method = getattr(type(saver), method_name, None)
+        base_method = getattr(BaseCheckpointSaver, method_name, None)
+        return callable(saver_method) and saver_method is not base_method
+
     async def _acall_with_retry(self, method_name: str, *args, **kwargs):
         """异步调用底层方法；连接关闭时自动重连后重试一次。"""
         with self._lock:
@@ -240,8 +247,11 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         """异步读取单条 checkpoint。"""
         with self._lock:
             saver = self._saver
-        if hasattr(saver, "aget_tuple"):
-            return await self._acall_with_retry("aget_tuple", config)
+        if self._has_async_override(saver, "aget_tuple"):
+            try:
+                return await self._acall_with_retry("aget_tuple", config)
+            except NotImplementedError:
+                pass
         return self._call_with_retry("get_tuple", config)
 
     async def alist(
@@ -255,17 +265,20 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         """异步列出 checkpoint。"""
         with self._lock:
             saver = self._saver
-        if hasattr(saver, "alist"):
-            iterator = await self._acall_with_retry(
-                "alist",
-                config,
-                filter=filter,
-                before=before,
-                limit=limit,
-            )
-            async for item in iterator:
-                yield item
-            return
+        if self._has_async_override(saver, "alist"):
+            try:
+                iterator = await self._acall_with_retry(
+                    "alist",
+                    config,
+                    filter=filter,
+                    before=before,
+                    limit=limit,
+                )
+                async for item in iterator:
+                    yield item
+                return
+            except NotImplementedError:
+                pass
 
         for item in self._call_with_retry(
             "list",
@@ -286,14 +299,17 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         """异步写入 checkpoint。"""
         with self._lock:
             saver = self._saver
-        if hasattr(saver, "aput"):
-            return await self._acall_with_retry(
-                "aput",
-                config,
-                checkpoint,
-                metadata,
-                new_versions,
-            )
+        if self._has_async_override(saver, "aput"):
+            try:
+                return await self._acall_with_retry(
+                    "aput",
+                    config,
+                    checkpoint,
+                    metadata,
+                    new_versions,
+                )
+            except NotImplementedError:
+                pass
         return self._call_with_retry(
             "put",
             config,
@@ -312,15 +328,18 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         """异步写入中间写集。"""
         with self._lock:
             saver = self._saver
-        if hasattr(saver, "aput_writes"):
-            await self._acall_with_retry(
-                "aput_writes",
-                config,
-                writes,
-                task_id,
-                task_path,
-            )
-            return
+        if self._has_async_override(saver, "aput_writes"):
+            try:
+                await self._acall_with_retry(
+                    "aput_writes",
+                    config,
+                    writes,
+                    task_id,
+                    task_path,
+                )
+                return
+            except NotImplementedError:
+                pass
         self._call_with_retry(
             "put_writes",
             config,
@@ -333,9 +352,12 @@ class ResilientCheckpointer(BaseCheckpointSaver[Any]):
         """异步删除线程下所有 checkpoint。"""
         with self._lock:
             saver = self._saver
-        if hasattr(saver, "adelete_thread"):
-            await self._acall_with_retry("adelete_thread", thread_id)
-            return
+        if self._has_async_override(saver, "adelete_thread"):
+            try:
+                await self._acall_with_retry("adelete_thread", thread_id)
+                return
+            except NotImplementedError:
+                pass
         self._call_with_retry("delete_thread", thread_id)
 
     def get_next_version(self, current: Any, channel: None) -> Any:

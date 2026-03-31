@@ -8,6 +8,7 @@ from langchain_core.tools import tool
 from langchain_tavily import TavilySearch
 
 from config.runtime_settings import SEARCH_TOOL_TIMEOUT_SECONDS
+from common.utils.retry_utils import execute_with_retry
 
 """搜索相关工具。"""
 
@@ -39,9 +40,10 @@ def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str
     )
 
     try:
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(tavily.invoke, {"query": query})
-            result = future.result(timeout=timeout_sec)
+        result = execute_with_retry(
+            lambda: _invoke_tavily_with_timeout(tavily, query=query, timeout_sec=timeout_sec),
+            label="tavily_search_tool",
+        )
         if isinstance(result, list):
             return result
         return [{"title": "搜索结果", "url": "", "content": str(result)}]
@@ -57,3 +59,9 @@ def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str
             "url": "",
             "content": f"联网检索异常：{exc}",
         }]
+
+
+def _invoke_tavily_with_timeout(tavily: TavilySearch, *, query: str, timeout_sec: int):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(tavily.invoke, {"query": query})
+        return future.result(timeout=timeout_sec)

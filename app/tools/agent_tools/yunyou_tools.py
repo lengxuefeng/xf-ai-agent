@@ -22,6 +22,7 @@ from config.runtime_settings import (
 )
 from services.request_cancellation_service import request_cancellation_service
 from common.utils.custom_logger import get_logger
+from common.utils.retry_utils import execute_with_retry
 
 log = get_logger(__name__)
 
@@ -388,7 +389,10 @@ class YunyouDbTools:
               AND lower(c.table_name) LIKE :table_pattern
             """
         )
-        rows = session.execute(sql, {"table_pattern": "%holter%"}).fetchall()
+        rows = execute_with_retry(
+            lambda: session.execute(sql, {"table_pattern": "%holter%"}).fetchall(),
+            label="yunyou_discover_holter_tables",
+        )
         if not rows:
             return []
 
@@ -519,7 +523,10 @@ class YunyouDbTools:
                     raise ValueError("请求已取消：终止云柚数据库查询。")
                 try:
                     sql = cls._build_query_sql(table_name, where_parts, order_sql)
-                    result = session.execute(text(sql), params)
+                    result = execute_with_retry(
+                        lambda: session.execute(text(sql), params),
+                        label=f"yunyou_query_holter_recent:{table_name}",
+                    )
                     rows = [dict(row._mapping) for row in result.fetchall()]
                     return {
                         "source": "yunyou_db",

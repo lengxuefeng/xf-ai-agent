@@ -1,6 +1,6 @@
 """
 【模块说明】
-定义系统内部流转的强类型请求对象。
+定义系统内部流转的强类型请求对象，以及 Supervisor 并发执行态的轻量声明。
 
 核心职责：
 - 定义 AgentRequest：单智能体请求载荷封装
@@ -29,6 +29,7 @@
 from typing import List, Optional, Dict, Any
 
 from langchain_core.language_models import BaseChatModel
+from pydantic import Field
 
 from models.schemas.base import ArbitraryTypesBaseSchema
 
@@ -105,8 +106,21 @@ class AgentRequest(ArbitraryTypesBaseSchema):
     state: Optional[Dict[str, Any]] = None  # 外部传入的初始状态（按需使用）
     session_id: str  # 用于绑定 Checkpointer 的线程 ID
     subgraph_id: str  # 子图命名空间标识
-    model: BaseChatModel  # 已经初始化好的 LLM 实例（如 GLM-4）
+    model: Any  # 已初始化模型对象，支持 BaseChatModel 或 with_fallbacks 包装后的 Runnable
     llm_config: Optional[Dict[str, Any]] = None  # 其他模型参数配置
+
+
+class SupervisorExecutionState(ArbitraryTypesBaseSchema):
+    """
+    Supervisor 并发编排阶段的最小执行态。
+
+    说明：
+    - `plan` 保存 Planner 拆出的原子任务列表；
+    - `current_task` 表示单个 Worker 当前正在处理的任务。
+    """
+
+    plan: List[str] = Field(default_factory=list)
+    current_task: str = ""
 
 
 class BatchAgentRequest(ArbitraryTypesBaseSchema):
@@ -174,4 +188,4 @@ class BatchAgentRequest(ArbitraryTypesBaseSchema):
     """
     inputs: List[AgentRequest]
     max_threads: int = 2
-    model: BaseChatModel
+    model: Any

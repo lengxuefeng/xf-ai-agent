@@ -466,7 +466,7 @@ SUPERVISOR_SEARCH_ACTION_HINTS: Tuple[str, ...] = (
     "小区",  # 位置类型
     "房价",  # 房价查询
     "景点",  # 位置类型
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 代码学习/编程提示词
@@ -488,7 +488,7 @@ SUPERVISOR_CODE_LEARNING_HINTS: Tuple[str, ...] = (
     "指南",  # 学习资源
     "实践",  # 实践项目
     "前景",  # 发展前景
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 代码动作提示词
@@ -507,7 +507,7 @@ SUPERVISOR_CODE_ACTION_HINTS: Tuple[str, ...] = (
     "接口",  # API 接口
     "类",  # 类定义
     "算法",  # 算法实现
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 代码片段识别正则：识别常见的代码片段
@@ -519,7 +519,7 @@ SUPERVISOR_CODE_SNIPPET_PATTERNS: Tuple[str, ...] = (
     # 2. Python 类定义
     # 3. 控制流语句
     r"(class\s+\w+|def\s+\w+|if\s+\w+\(|for\s+\w+\(|print\s*\()",
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 代码语言标识
@@ -537,7 +537,7 @@ SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS: Tuple[str, ...] = (
     "c#",  # C# 语言
     "php",  # PHP 语言
     "ruby",  # Ruby 语言
-),
+)
 
 # ------------------------------------------------------------------
 # Agent 失败超时标记：用于识别 Agent 执行失败的原因
@@ -549,7 +549,7 @@ SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS: Tuple[str, ...] = (
     "first_token_timeout",  # 首个 token 超时
     "total_timeout",  # 总超时
     "超时",  # 超时关键词
-),
+)
 
 # ------------------------------------------------------------------
 # Agent 失败连接标记：用于识别连接失败的原因
@@ -561,7 +561,7 @@ SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS: Tuple[str, ...] = (
     "连接失败",  # 连接错误
     "断开",  # 连接错误
     "连接断开",  # 连接错误
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 总结提示词：用于生成自然的总结文本
@@ -577,7 +577,7 @@ SUPERVISOR_SUMMARY_HINTS: Tuple[str, ...] = (
     "对比",  # 对比动作
     "方案",  # 方案建议
     "归纳",  # 归纳动作
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 顺序提示词对：用于生成自然的顺序提示
@@ -590,7 +590,7 @@ SUPERVISOR_SEQUENTIAL_HINT_PAIRS: Tuple[Tuple[str, str], ...] = (
     ("首先", "然后"),  # 顺序流程词对
     ("先做", "再做"),  # 任务流程词对
     # 扩展更多顺序词对...
-),
+)
 
 # ------------------------------------------------------------------
 # Supervisor 因果连接词：用于连接原因和结果
@@ -607,7 +607,10 @@ SUPERVISOR_CAUSE_CONNECTOR_PATTERNS: Tuple[str, ...] = (
     "以及",  # 并行请求词
     "先",  # 顺序前置词
     "再",  # 顺序后置词
-),
+)
+
+# 目录重构前后曾同时出现 CAUSE / CLAUSE 两种命名，保留兼容别名避免旧引用 ImportError。
+SUPERVISOR_CLAUSE_CONNECTOR_PATTERNS: Tuple[str, ...] = SUPERVISOR_CAUSE_CONNECTOR_PATTERNS
 
 # ------------------------------------------------------------------
 # 搜索天气关键词：用于天气 Agent 的搜索扩展
@@ -629,7 +632,7 @@ SEARCH_WEATHER_KEYWORDS: Tuple[str, ...] = (
     "户外",  # 出行场景
     "冷不冷",  # 温度询问
     "热不热",  # 温度询问
-),
+)
 
 # ------------------------------------------------------------------
 # 搜索房地产关键词：用于搜索 Agent 的房地产扩展
@@ -654,7 +657,7 @@ SEARCH_REAL_ESTATE_KEYWORDS: Tuple[str, ...] = (
     "那个小区",  # 指代关系
     "那个小区",  # 指代关系
     "后面那个小区",  # 指代关系
-),
+)
 
 # ------------------------------------------------------------------
 # 天气查询关键词：用于天气 Agent 的查询扩展
@@ -685,7 +688,7 @@ WEATHER_QUERY_KEYWORDS: Tuple[str, ...] = (
     "早上出门吗",  # 出行时间询问
     "今天出门吗",  # 出行时间询问
     "明天出门吗",  # 出行时间询问
-),
+)
 
 # ------------------------------------------------------------------
 # 天气跟进确认关键词：用于判断用户是否在确认天气问题
@@ -706,7 +709,7 @@ WEATHER_FOLLOWUP_CONFIRM_TOKENS: Tuple[str, ...] = (
     "ok",  # 确认词
     "yes",  # 确认词
     "yes, continue",  # 确认词
-),
+)
 
 # ------------------------------------------------------------------
 # 城市后缀过滤：用于匹配城市、地区等地理信息
@@ -720,7 +723,7 @@ CITY_INVALID_SUFFIXES: Tuple[str, ...] = (
     "嘛",  # 语气词
     "么",  # 语气词
     "呢",  # 语气词
-),
+)
 
 # ------------------------------------------------------------------
 # 城市停止词：这些词出现时，查询应该停止
@@ -759,210 +762,6 @@ CITY_STOPWORDS: Tuple[str, ...] = (
     "今天",  # 时间相关
     "明天",  # 时间相关
     "后天",  # 时间相关
-),
-
-SUPERVISOR_SEARCH_GENERIC_QUERY_HINTS: Tuple[str, ...] = ("查一下", "搜一下", "查一查", "搜一搜")
-
-SUPERVISOR_WEATHER_ACTION_PATTERNS: Tuple[str, ...] = (
-    r"(查|查询|看看|看下|看一下|告诉我|帮我|搜|获取).{0,8}(天气|气温|温度|下雨|降雨|风力|湿度|空气质量|体感|能见度)",
-    r"(天气|气温|温度|下雨|降雨|风力|湿度|空气质量|体感|能见度).{0,8}(如何|怎么样|多少|几度|吗|呢|建议|适合)",
-    r"(适合出门|适合外出|可以出门|会不会下雨|冷不冷|热不热|空气怎么样)",
-)
-
-SUPERVISOR_SEARCH_ACTION_HINTS: Tuple[str, ...] = (
-    "查",
-    "查询",
-    "搜",
-    "搜索",
-    "帮我",
-    "给我",
-    "推荐",
-    "看看",
-    "列出",
-    "有哪些",
-    "哪里",
-    "去哪",
-)
-
-SUPERVISOR_CODE_LEARNING_HINTS: Tuple[str, ...] = (
-    "能学吗",
-    "值得学吗",
-    "好学吗",
-    "难学吗",
-    "怎么学",
-    "学习路线",
-    "学习路径",
-    "入门",
-    "前景",
-    "就业",
-    "转行",
-    "零基础",
-)
-
-SUPERVISOR_CODE_ACTION_HINTS: Tuple[str, ...] = (
-    "写",
-    "实现",
-    "生成",
-    "代码",
-    "函数",
-    "脚本",
-    "程序",
-    "接口",
-    "类",
-    "编译",
-    "运行",
-    "执行",
-    "报错",
-    "bug",
-    "异常",
-    "修复",
-    "调试",
-    "优化",
-    "重构",
-    "算法",
-)
-
-SUPERVISOR_CODE_SNIPPET_PATTERNS: Tuple[str, ...] = (
-    r"(class\s+\w+|def\s+\w+|function\s+\w+|if\s*\(|for\s*\(|while\s*\(|print\s*\()",
-)
-
-SUPERVISOR_CODE_LANGUAGE_ONLY_MARKERS: Tuple[str, ...] = (
-    "python",
-    "java",
-    "javascript",
-    "typescript",
-    "go",
-    "rust",
-    "c++",
-    "c#",
-    "php",
-    "ruby",
-)
-
-SUPERVISOR_AGENT_FAILURE_TIMEOUT_MARKERS: Tuple[str, ...] = (
-    "timeout",
-    "timed out",
-    "readtimeout",
-    "first_token_timeout",
-    "total_timeout",
-    "超时",
-)
-
-SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS: Tuple[str, ...] = (
-    "connection",
-    "connecterror",
-    "connectionerror",
-    "apiconnectionerror",
-    "连接失败",
-    "连接断开",
-)
-
-SUPERVISOR_SUMMARY_HINTS: Tuple[str, ...] = (
-    "总结",
-    "分析",
-    "解释",
-    "建议",
-    "报告",
-    "结论",
-    "对比",
-    "方案",
-    "归纳",
-)
-
-SUPERVISOR_SEQUENTIAL_HINT_PAIRS: Tuple[Tuple[str, str], ...] = (
-    ("先", "再"),
-    ("先", "然后"),
-    ("第一步", "第二步"),
-)
-
-SUPERVISOR_CLAUSE_CONNECTOR_PATTERNS: Tuple[str, ...] = (
-    "并且",
-    "而且",
-    "同时",
-    "然后",
-    "再帮我",
-    "顺便",
-    "另外",
-    "以及",
-)
-
-SEARCH_WEATHER_KEYWORDS: Tuple[str, ...] = (
-    "天气",
-    "气温",
-    "温度",
-    "湿度",
-    "风力",
-    "风向",
-    "降雨",
-    "能见度",
-    "体感",
-    "气压",
-)
-
-SEARCH_REAL_ESTATE_KEYWORDS: Tuple[str, ...] = (
-    "小区",
-    "房价",
-    "租金",
-    "楼盘",
-    "公寓",
-    "二手房",
-    "酒店",
-    "亚朵",
-    "附近",
-    "周边",
-    "后面",
-    "前面",
-)
-
-WEATHER_QUERY_KEYWORDS: Tuple[str, ...] = (
-    "天气",
-    "气温",
-    "温度",
-    "下雨",
-    "降雨",
-    "风力",
-    "空气质量",
-    "湿度",
-    "体感",
-    "雾",
-    "霾",
-    "冷不冷",
-    "热不热",
-)
-
-CITY_INVALID_SUFFIXES: Tuple[str, ...] = ("吗", "呢", "呀", "吧", "嘛", "么")
-
-CITY_STOPWORDS: Tuple[str, ...] = (
-    "城市",
-    "这里",
-    "那里",
-    "这个",
-    "那个",
-    "附近",
-    "周边",
-    "出去",
-    "出去玩",
-    "玩",
-    "玩吗",
-    "玩吧",
-    "活动",
-    "天气",
-    "今天",
-    "明天",
-    "后天",
-)
-
-WEATHER_FOLLOWUP_CONFIRM_TOKENS: Tuple[str, ...] = (
-    "是",
-    "是的",
-    "好的",
-    "好",
-    "确认",
-    "继续",
-    "然后呢",
-    "嗯",
-    "ok",
-    "yes",
 )
 
 CODE_EXECUTE_HINTS: Tuple[str, ...] = (

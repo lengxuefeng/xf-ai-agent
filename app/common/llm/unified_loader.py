@@ -5,6 +5,7 @@
 根据模型服务类型和配置参数动态加载相应的模型实例。
 """
 
+import os
 from typing import Optional, Any
 
 from dotenv import load_dotenv
@@ -22,6 +23,90 @@ from .ollama_model import load_ollama_model, load_ollama_embeddings
 
 log = get_logger(__name__)
 load_dotenv()
+
+FAST_MODEL_CANDIDATES = {
+    "zhipu": ("glm-4-flash", "glm-4-air"),
+    "openai": ("gpt-4o-mini",),
+    "openrouter": ("openai/gpt-4o-mini", "gpt-4o-mini"),
+    "netlify-gemini": ("gpt-4o-mini",),
+    "silicon-flow": ("Qwen/Qwen2.5-7B-Instruct",),
+    "modelscope": ("Qwen/Qwen2.5-7B-Instruct",),
+    "tongyi": ("qwen-turbo",),
+    "gemini": ("gemini-2.0-flash", "gemini-1.5-flash"),
+    "ollama": (),
+}
+
+LARGE_MODEL_CANDIDATES = {
+    "zhipu": ("glm-4.7", "glm-4-plus"),
+    "openai": ("gpt-4.1", "gpt-4o"),
+    "openrouter": ("openai/gpt-4.1", "openai/gpt-4o"),
+    "netlify-gemini": ("gpt-4o",),
+    "silicon-flow": ("deepseek-ai/DeepSeek-V3",),
+    "modelscope": ("Qwen/Qwen2.5-72B-Instruct",),
+    "tongyi": ("qwen-max",),
+    "gemini": ("gemini-2.5-pro", "gemini-1.5-pro"),
+    "ollama": (),
+}
+
+
+def _normalize_model_size(model_size: str | None) -> str:
+    normalized = str(model_size or "large").strip().lower()
+    return "fast" if normalized == "fast" else "large"
+
+
+def _resolve_model_name(service_type: str, requested_model: str, model_size: str) -> str:
+    service = str(service_type or "").strip().lower()
+    requested = str(requested_model or "").strip()
+    if model_size == "fast":
+        candidates = FAST_MODEL_CANDIDATES.get(service, ())
+        return candidates[0] if candidates else requested
+    if requested:
+        return requested
+    candidates = LARGE_MODEL_CANDIDATES.get(service, ())
+    return candidates[0] if candidates else requested
+
+
+def _clone_config(config: ModelConfig, **updates) -> ModelConfig:
+    return config.model_copy(update=updates)
+
+
+def _build_fallback_configs(config: ModelConfig, *, primary_model_name: str) -> list[ModelConfig]:
+    extra = config.extra_params or {}
+    service = config.service_type.lower()
+    model_size = _normalize_model_size(getattr(config, "model_size", extra.get("model_size", "large")))
+    fallback_configs: list[ModelConfig] = []
+
+    explicit_fallback_model = str(extra.get("fallback_model") or os.getenv("LLM_FALLBACK_MODEL", "")).strip()
+    if explicit_fallback_model and explicit_fallback_model != primary_model_name:
+        fallback_configs.append(
+            _clone_config(
+                config,
+                model=explicit_fallback_model,
+                service_type=str(extra.get("fallback_service_type") or os.getenv("LLM_FALLBACK_SERVICE_TYPE", config.service_type)).strip() or config.service_type,
+                model_service=str(extra.get("fallback_model_service") or os.getenv("LLM_FALLBACK_MODEL_SERVICE", config.model_service)).strip() or config.model_service,
+                model_key=str(extra.get("fallback_model_key") or os.getenv("LLM_FALLBACK_MODEL_KEY", config.model_key)).strip() or config.model_key,
+                model_url=str(extra.get("fallback_model_url") or os.getenv("LLM_FALLBACK_MODEL_URL", config.model_url)).strip() or config.model_url,
+            )
+        )
+
+    service_fast_candidates = FAST_MODEL_CANDIDATES.get(service, ())
+    for candidate in service_fast_candidates:
+        if candidate and candidate != primary_model_name:
+            fallback_configs.append(_clone_config(config, model=candidate, model_size="fast"))
+
+    original_model = str(extra.get("requested_model") or config.model or "").strip()
+    if model_size == "fast" and original_model and original_model != primary_model_name:
+        fallback_configs.append(_clone_config(config, model=original_model, model_size="large"))
+
+    deduped: list[ModelConfig] = []
+    seen: set[tuple[str, str, str]] = set()
+    for item in fallback_configs:
+        key = (str(item.service_type).lower(), str(item.model).strip(), str(item.model_url or "").strip())
+        if not key[1] or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
 
 
 class UnifiedModelLoader:
@@ -80,6 +165,7 @@ def create_model_from_config(
         model: str,
         model_service: str,
         service_type: str,
+        model_size: str = "large",
         deep_thinking_mode: str = 'auto',
         rag_enabled: bool = False,
         similarity_threshold: float = 0.7,
@@ -93,10 +179,13 @@ def create_model_from_config(
     """
     【对外接口】封装层，提供给 Supervisor 和 Agent 实例化模型使用。
     """
+    normalized_model_size = _normalize_model_size(model_size)
+    resolved_model = _resolve_model_name(service_type, model, normalized_model_size)
     config = ModelConfig(
-        model=model,
+        model=resolved_model,
         model_service=model_service,
         service_type=service_type,
+        model_size=normalized_model_size,
         deep_thinking_mode=deep_thinking_mode,
         rag_enabled=rag_enabled,
         similarity_threshold=similarity_threshold,
@@ -104,10 +193,24 @@ def create_model_from_config(
         model_key=model_key,
         model_url=model_url,
         embedding_model_key=embedding_model_key,
+        requested_model=model,
         **kwargs
     )
 
     chat_model = UnifiedModelLoader.load_chat_model(config)
+    fallback_models = []
+    for fallback_config in _build_fallback_configs(config, primary_model_name=resolved_model):
+        try:
+            fallback_models.append(UnifiedModelLoader.load_chat_model(fallback_config))
+        except Exception as exc:
+            log.warning(
+                "跳过不可用的 fallback 模型: service=%s model=%s detail=%s",
+                fallback_config.service_type,
+                fallback_config.model,
+                exc,
+            )
+    if fallback_models:
+        chat_model = chat_model.with_fallbacks(fallback_models)
     embedding_model_instance = None
     if rag_enabled:
         try:
