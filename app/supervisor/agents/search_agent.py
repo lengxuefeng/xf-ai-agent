@@ -70,6 +70,7 @@ class SearchAgentState(TypedDict):
     """
     messages: Annotated[List[BaseMessage], add_messages]
     tool_loop_count: int  # 工具调用次数计数器
+    current_task: str
 
 
 class SearchAgent(BaseAgent):
@@ -133,7 +134,6 @@ class SearchAgent(BaseAgent):
         # 工具：绑定 Tavily 搜索工具
         # Tavily 是一个专为大语言模型优化的搜索引擎 API
         self.tools = [tavily_search_tool]
-        self.model_with_tools = self.llm.bind_tools(self.tools)
 
         # 提示词：主提示词用于正常搜索流程
         # SEARCH_SYSTEM 包含搜索 agent 的角色定义和指令
@@ -356,20 +356,27 @@ class SearchAgent(BaseAgent):
                 "messages": [AIMessage(content=SEARCH_TOOL_LOOP_EXCEEDED_MESSAGE)],
             }
 
+        source_messages = list(state.get("messages", []) or [])
+        current_task = str(state.get("current_task") or "").strip()
+        focused_messages = list(source_messages)
+        if current_task and current_task != "END_TASK":
+            focused_messages.append(HumanMessage(content=f"系统指令：请专注执行当前子任务 -> {current_task}"))
+
         # 检查最近工具是否失败
-        if self._has_recent_tool_failure(state.get("messages", [])):
+        if self._has_recent_tool_failure(source_messages):
             return {
                 "tool_loop_count": loop_count + 1,
                 "messages": [AIMessage(content=SEARCH_TOOL_FAILURE_MESSAGE)],
             }
 
         # 调用 LLM，可能返回搜索工具调用或直接回答
-        chain = self.prompt | self.model_with_tools
-        ai_msg = await chain.ainvoke(state, config=config)
+        llm_with_tools = self.llm.bind_tools(self.tools)
+        chain = self.prompt | llm_with_tools
+        ai_msg = await chain.ainvoke({"messages": focused_messages}, config=config)
 
         # 如果 LLM 直接生成回答（未调用工具），检测主题是否跑偏
         if isinstance(ai_msg, AIMessage) and not getattr(ai_msg, "tool_calls", None):
-            user_text = self._latest_human_text(state.get("messages", []))
+            user_text = current_task or self._latest_human_text(source_messages)
             answer_text = ai_msg.content if isinstance(ai_msg.content, str) else str(ai_msg.content or "")
 
             # 检测主题跑偏：房产问题误答天气
@@ -377,7 +384,7 @@ class SearchAgent(BaseAgent):
                 log.warning("SearchAgent 检测到主题跑偏（房产问题误答天气），执行一次纠偏重试。")
 
                 # 构建重试消息：在原消息列表基础上添加纠偏指令
-                retry_messages = list(state.get("messages", []))
+                retry_messages = list(focused_messages)
                 retry_messages.append(
                     HumanMessage(
                         content=(
@@ -388,7 +395,7 @@ class SearchAgent(BaseAgent):
                 )
 
                 # 使用防护提示词重试
-                retry_chain = self.guard_prompt | self.model_with_tools
+                retry_chain = self.guard_prompt | llm_with_tools
                 retry_msg = await retry_chain.ainvoke({"messages": retry_messages}, config=config)
 
                 # 检查重试结果是否仍然跑偏

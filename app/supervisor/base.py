@@ -791,7 +791,17 @@ class BaseAgent(ABC):
         if not latest_human_text or latest_human_text != current_text:
             input_messages.append(HumanMessage(content=req.user_input))
 
-        input_message = {"messages": input_messages}
+        request_state = getattr(req, "state", None) or {}
+        current_task = ""
+        if isinstance(request_state, dict):
+            current_task = str(request_state.get("current_task") or "").strip()
+        if not current_task:
+            current_task = current_text
+
+        input_message = {
+            "messages": input_messages,
+            "current_task": current_task,
+        }
 
         try:
             # 同时监听 updates/messages；updates 供状态推进，messages 用于子 Agent 实时出字。

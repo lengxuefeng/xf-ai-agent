@@ -721,6 +721,7 @@ def _run_agent_to_completion(
             "messages": history_messages or [],
             "context_slots": context_slots or {},
             "context_summary": context_summary or "",
+            "current_task": effective_user_input,
         },
     )
     agent_instance = agent_classes[agent_name].cls(req)
@@ -814,7 +815,7 @@ def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[
 # ==================== Tier-0.5: 数据域路由器 (Domain Router) ====================
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
 # ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
-def dispatch_node(state: GraphState) -> dict:
+def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
     """串行弹夹调度：先收口上一任务结果，再弹出下一任务。"""
     plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
     task_list = [dict(task) for task in list(state.get("task_list") or [])]
@@ -854,8 +855,10 @@ def dispatch_node(state: GraphState) -> dict:
             "task_list": task_list,
             "task_results": task_results,
             "active_tasks": [],
-            "current_task": None,
-            "current_task_id": None,
+            "current_task": "END_TASK",
+            "current_task_id": "",
+            "current_step_input": "",
+            "current_step_agent": "",
         }
 
     next_task = ""
@@ -873,6 +876,7 @@ def dispatch_node(state: GraphState) -> dict:
         log.info(f"Dispatch: next task [{next_task_id}] -> {next_task}")
     else:
         log.info("Dispatch: no remaining tasks, main loop will end.")
+        next_task = "END_TASK"
 
     return {
         "plan": plan,
@@ -880,10 +884,10 @@ def dispatch_node(state: GraphState) -> dict:
         "task_results": task_results,
         "active_tasks": [],
         "worker_results": [],
-        "current_task": next_task or None,
-        "current_task_id": next_task_id or None,
-        "current_step_input": next_task or None,
-        "current_step_agent": None,
+        "current_task": next_task,
+        "current_task_id": next_task_id,
+        "current_step_input": "" if next_task == "END_TASK" else next_task,
+        "current_step_agent": "",
         "error_message": None,
         "error_detail": None,
         "intent": None,
@@ -1933,7 +1937,7 @@ def _route_after_dispatch(state: GraphState) -> str:
     if state.get("interrupt_payload"):
         return "__end__"
     current_task = str(state.get("current_task") or "").strip()
-    if not current_task:
+    if (not current_task) or current_task == "END_TASK":
         return "__end__"
     return "Domain_Router_Node"
 

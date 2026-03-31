@@ -1,5 +1,6 @@
 import operator
-from typing import TypedDict, Annotated, List, Optional, Dict, Any
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
@@ -35,7 +36,7 @@ class WorkerResult(TypedDict):
     # 子任务总耗时（毫秒）
     elapsed_ms: Optional[int]
 
-class GraphState(TypedDict):
+class AgentState(TypedDict, total=False):
     """
     定义图的全局状态。
 
@@ -88,59 +89,62 @@ class GraphState(TypedDict):
         executor_active: 是否处于 Plan-and-Execute 执行闭环中
     """
     messages: Annotated[List[BaseMessage], add_messages]
-    session_id: Optional[str]
-    llm_config: Optional[dict]
+    session_id: str
+    llm_config: dict
     # 会话结构化上下文（城市/画像等）
-    context_slots: Optional[Dict[str, Any]]
+    context_slots: Dict[str, Any]
     # 会话上下文摘要（用于系统提示注入）
-    context_summary: Optional[str]
+    context_summary: str
 
     # 数据域路由输出
-    data_domain: Optional[str]
-    domain_confidence: Optional[float]
-    domain_route_source: Optional[str]
-    domain_candidates: Optional[List[str]]
-    intent_candidates: Optional[List[str]]
-    route_strategy: Optional[str]
-    route_reason: Optional[str]
-    domain_elapsed_ms: Optional[int]
+    data_domain: str
+    domain_confidence: float
+    domain_route_source: str
+    domain_candidates: List[str]
+    intent_candidates: List[str]
+    route_strategy: str
+    route_reason: str
+    domain_elapsed_ms: int
 
     # 意图识别输出
-    intent: Optional[str]
-    intent_confidence: Optional[float]
-    is_complex: Optional[bool]
-    direct_answer: Optional[str]
-    intent_elapsed_ms: Optional[int]
+    intent: str
+    intent_confidence: float
+    is_complex: bool
+    direct_answer: str
+    intent_elapsed_ms: int
 
     # Planner 长期记忆与规划
-    plan: Optional[List[str]]
-    current_task: Optional[str]
-    current_task_id: Optional[str]
-    memory: Optional[Dict[str, Any]]
+    plan: List[str]
+    current_task: str
+    current_task_id: str
+    memory: Dict[str, Any]
 
     # 任务规划输出 (Tier-2 DAG)
-    task_list: Optional[List[SubTask]]
-    task_results: Optional[Dict[str, str]]
-    current_wave: Optional[int]
-    max_waves: Optional[int]
-    planner_source: Optional[str]
-    planner_elapsed_ms: Optional[int]
-    reflection_round: Optional[int]
-    max_reflection_rounds: Optional[int]
-    next_task_sequence: Optional[int]
-    reflection_source: Optional[str]
-    reflection_summary: Optional[str]
+    task_list: List[SubTask]
+    task_results: Dict[str, str]
+    current_wave: int
+    max_waves: int
+    planner_source: str
+    planner_elapsed_ms: int
+    reflection_round: int
+    max_reflection_rounds: int
+    next_task_sequence: int
+    reflection_source: str
+    reflection_summary: str
 
     # 并发执行输出 (Map-Reduce)
-    active_tasks: Optional[List[Dict[str, Any]]]
+    active_tasks: List[Dict[str, Any]]
     worker_results: Annotated[List[WorkerResult], operator.add]
 
     # 路由元数据
-    current_node: Optional[str]
-    next: Optional[str]
-    current_step_input: Optional[str]
-    current_step_agent: Optional[str]
-    executor_active: Optional[bool]
-    interrupt_payload: Optional[Dict]
-    error_message: Optional[str]
-    error_detail: Optional[str]
+    current_node: str
+    next: str
+    current_step_input: str
+    current_step_agent: str
+    executor_active: bool
+    interrupt_payload: Dict[str, Any]
+    error_message: str
+    error_detail: str
+
+
+GraphState = AgentState

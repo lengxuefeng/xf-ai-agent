@@ -43,7 +43,7 @@
 """
 
 from typing import Annotated, TypedDict, List
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import StateGraph, START, END, add_messages
@@ -69,6 +69,7 @@ class MedicalAgentState(TypedDict):
     - 支持多轮对话
     """
     messages: Annotated[List[BaseMessage], add_messages]
+    current_task: str
 
 
 class MedicalAgent(BaseAgent):
@@ -172,8 +173,13 @@ class MedicalAgent(BaseAgent):
         >>> medical_agent._model_node(state)
         {"messages": [AIMessage(content="高血压的主要症状包括头晕、头痛、心悸等...\\n\\n注：以上内容仅供参考，不能替代专业医疗诊断。如有健康问题，请及时就医。")]}
         """
+        messages = list(state.get("messages", []) or [])
+        current_task = str(state.get("current_task") or "").strip()
+        if current_task and current_task != "END_TASK":
+            messages.append(HumanMessage(content=f"系统指令：请专注执行当前子任务 -> {current_task}"))
+
         chain = self.prompt | self.llm
-        response = await chain.ainvoke(state, config=config)
+        response = await chain.ainvoke({"messages": messages}, config=config)
 
         # 在回答后附加免责声明
         response.content = f"{self._message_text(response)}{MedicalPrompt.DISCLAIMER}"

@@ -116,16 +116,16 @@ class PlannerNode:
             for index, step in enumerate(steps)
         ]
         return {
-            "plan": steps,
+            "plan": list(steps),
             "task_list": task_list,
             "planner_source": planner_source,
             "planner_elapsed_ms": elapsed_ms,
             "memory": memory,
             "active_tasks": task_list,
-            "current_task": None,
-            "current_task_id": None,
-            "current_step_input": None,
-            "current_step_agent": None,
+            "current_task": "",
+            "current_task_id": "",
+            "current_step_input": "",
+            "current_step_agent": "",
             "executor_active": False,
             "interrupt_payload": None,
             "error_message": None,

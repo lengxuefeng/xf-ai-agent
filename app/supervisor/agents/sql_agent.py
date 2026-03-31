@@ -133,6 +133,7 @@ class SqlAgentState(TypedDict):
     sql_to_execute: str  # 待执行的 SQL
     sql_result: str  # SQL 执行结果
     schema_info: str  # schema 缓存，避免同一轮重复查询
+    current_task: str
 
 
 class SqlAgent(BaseAgent):
@@ -211,7 +212,6 @@ class SqlAgent(BaseAgent):
         self.llm = req.model
         self.subgraph_id = "sql_agent"
         self.tools = [get_schema_tool, execute_sql_tool]
-        self.model_with_tools = self.llm.bind_tools(self.tools)
 
         # 提示词模板：采用工具驱动的 ReAct 流程，让模型先读 schema，再执行 SQL。
         self.prompt = ChatPromptTemplate.from_messages(
@@ -753,11 +753,15 @@ class SqlAgent(BaseAgent):
         - 对 execute_sql 的 tool call 做 SQL 守卫修正
         - 在工具执行后继续回到模型节点收敛最终答复
         """
-        messages = list(state.get("messages", []) or [])
+        source_messages = list(state.get("messages", []) or [])
+        messages = list(source_messages)
+        current_task = str(state.get("current_task") or "").strip()
+        if current_task and current_task != "END_TASK":
+            messages.append(HumanMessage(content=f"系统指令：请专注执行当前子任务 -> {current_task}"))
         updates: Dict[str, str] = {}
         schema_info = str(state.get("schema_info") or "").strip()
 
-        last_message = messages[-1] if messages else None
+        last_message = source_messages[-1] if source_messages else None
         if isinstance(last_message, ToolMessage):
             tool_name = self._tool_message_name(last_message)
             if tool_name == SQL_SCHEMA_TOOL_NAME:
@@ -768,15 +772,16 @@ class SqlAgent(BaseAgent):
 
         prompt = self._build_react_prompt(
             schema_info=schema_info,
-            holter_intent=self._infer_holter_intent(messages),
+            holter_intent=self._infer_holter_intent(source_messages),
         )
-        response = await (prompt | self.model_with_tools).ainvoke({"messages": messages}, config=config)
+        llm_with_tools = self.llm.bind_tools(self.tools)
+        response = await (prompt | llm_with_tools).ainvoke({"messages": messages}, config=config)
         if not isinstance(response, AIMessage):
             response = AIMessage(content=self._message_text(response))
 
         response, pending_sql = self._normalize_model_response(
             response,
-            messages=messages,
+            messages=source_messages,
             schema_info=schema_info,
         )
         if pending_sql:

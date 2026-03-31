@@ -42,7 +42,7 @@
 
 import re
 from typing import Any, TypedDict, Annotated, List, Optional
-from langchain_core.messages import BaseMessage, AIMessage
+from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.types import interrupt
@@ -473,6 +473,7 @@ class CodeAgentState(TypedDict):
     requested_language: Optional[str]  # 用户要求的代码语言
     code_to_execute: Optional[str]  # 待执行的代码
     execution_result: Optional[str]  # 执行结果
+    current_task: Optional[str]  # 当前拆分出来的子任务
 
 
 class CodeAgent(BaseAgent):
@@ -611,11 +612,16 @@ class CodeAgent(BaseAgent):
         返回值：
         - dict: 更新后的状态，包含生成的代码和执行相关信息
         """
+        current_task = str(state.get("current_task") or "").strip()
+        messages = list(state.get("messages", []) or [])
+        if current_task and current_task != "END_TASK":
+            messages.append(HumanMessage(content=f"系统指令：请专注执行当前子任务 -> {current_task}"))
+
         chain = self.prompt | self.llm
-        response = await chain.ainvoke({"messages": state["messages"]}, config=config)
+        response = await chain.ainvoke({"messages": messages}, config=config)
 
         # 提取最新用户消息，用于检测语言和执行意图
-        latest_human_text = _latest_human_text(state["messages"])
+        latest_human_text = current_task or _latest_human_text(state["messages"])
 
         # 检测用户要求的代码语言
         requested_language = _detect_requested_language(latest_human_text)

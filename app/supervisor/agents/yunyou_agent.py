@@ -132,6 +132,7 @@ class YunyouState(TypedDict):
     """
     messages: Annotated[List[BaseMessage], add_messages]
     tool_loop_count: int
+    current_task: str
 
 
 class YunyouAgent(BaseAgent):
@@ -1346,7 +1347,12 @@ class YunyouAgent(BaseAgent):
                 "messages": [AIMessage(content=self.TOOL_LOOP_EXCEEDED_MESSAGE)],
             }
 
-        recent_messages = state["messages"][-12:]
+        source_messages = list(state.get("messages", []) or [])
+        recent_messages = source_messages[-12:]
+        current_task = str(state.get("current_task") or "").strip()
+        focused_messages = list(recent_messages)
+        if current_task and current_task != "END_TASK":
+            focused_messages.append(HumanMessage(content=f"系统指令：请专注执行当前子任务 -> {current_task}"))
 
         # 尝试快路径查询
         fast_path_response = self._try_direct_holter_list_query(recent_messages)
@@ -1361,9 +1367,10 @@ class YunyouAgent(BaseAgent):
             }
 
         # 调用 LLM
-        chain = self.prompt | self.model_with_tools
+        llm_with_tools = self.llm.bind_tools(self.tools)
+        chain = self.prompt | llm_with_tools
         try:
-            response = await chain.ainvoke({"messages": recent_messages}, config=config)
+            response = await chain.ainvoke({"messages": focused_messages}, config=config)
             return {"tool_loop_count": loop_count + 1, "messages": [response]}
         except Exception as exc:
             log.exception(f"yunyou model_node 调用失败，执行降级回复: {exc}")
@@ -1519,8 +1526,7 @@ class YunyouAgent(BaseAgent):
         skill_tools = skill_middleware.get_tools() if skill_middleware else []
         all_tools = base_tools + skill_tools
 
-        # 绑定工具到模型
-        self.model_with_tools = self.llm.bind_tools(all_tools)
+        self.tools = all_tools
 
         # 构建系统提示词
         sys_prompt = self._build_system_prompt(skill_middleware.get_prompt() if skill_middleware else YunyouPrompt.DEFAULT_SYSTEM_ROLE)
@@ -1535,7 +1541,7 @@ class YunyouAgent(BaseAgent):
         workflow.add_node("human_review", self._human_review_node, retry_policy=self.RETRY_POLICY)
 
         # 关键配置：工具异常转成 ToolMessage，而不是直接抛异常中断整个子图
-        workflow.add_node("tools", ToolNode(all_tools, handle_tool_errors=True), retry_policy=self.RETRY_POLICY)
+        workflow.add_node("tools", ToolNode(self.tools, handle_tool_errors=True), retry_policy=self.RETRY_POLICY)
 
         workflow.add_edge(START, "agent")
 
