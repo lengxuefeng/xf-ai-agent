@@ -2,11 +2,13 @@
 import asyncio
 import contextlib
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
+from starlette.websockets import WebSocketState
 
 from common.core.security import verify_token
 from common.utils.custom_logger import get_logger
@@ -25,6 +27,45 @@ log = get_logger(__name__)
 
 chat_router = APIRouter()
 _WS_QUEUE_CLOSE = object()
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _enrich_ws_event(
+    event: dict[str, Any],
+    *,
+    session_id: str,
+    sequence: int,
+) -> dict[str, Any]:
+    enriched = dict(event or {})
+    event_type = str(enriched.get("type") or "").strip()
+    payload = enriched.get("payload") if isinstance(enriched.get("payload"), dict) else {}
+
+    enriched["session_id"] = session_id
+    enriched.setdefault("sequence", sequence)
+    enriched.setdefault("timestamp", enriched.get("timestamp") or payload.get("timestamp") or _utc_now_iso())
+
+    if event_type == "message":
+        enriched.setdefault("status", "streaming")
+    elif event_type == "thinking":
+        enriched.setdefault("status", "thinking")
+    elif event_type == "tool_call":
+        enriched.setdefault("status", "running")
+    elif event_type == "tool_result":
+        enriched.setdefault("status", "completed")
+    elif event_type == "workflow_event":
+        if payload:
+            enriched.setdefault("node", payload.get("node") or payload.get("node_name") or payload.get("agent_name") or "")
+            enriched.setdefault("workflow_status", payload.get("status") or "info")
+        enriched.setdefault("status", "running")
+    elif event_type == "error":
+        enriched.setdefault("status", "error")
+    elif event_type == "done":
+        enriched.setdefault("status", "completed")
+
+    return enriched
 
 
 def _resolve_ws_user_id(token: str) -> int:
@@ -60,6 +101,7 @@ async def _enqueue_stream_events(
 ) -> None:
     formatter = WsEventFormatter()
     done_sent = False
+    event_sequence = 0
     request_cancellation_service.register_request(session_id)
 
     try:
@@ -70,29 +112,87 @@ async def _enqueue_stream_events(
         )
         async for chunk in stream_gen:
             for event in ws_event_formatter(chunk, formatter=formatter):
-                if str(event.get("type") or "") == "done":
+                event_sequence += 1
+                normalized_event = _enrich_ws_event(
+                    event,
+                    session_id=session_id,
+                    sequence=event_sequence,
+                )
+                if str(normalized_event.get("type") or "") == "done":
                     done_sent = True
-                await event_queue.put(event)
+                await event_queue.put(normalized_event)
     except asyncio.CancelledError:
         request_cancellation_service.cancel_request(session_id)
         raise
     except Exception as exc:
         log.exception(f"WebSocket 后台流任务异常: session_id={session_id}, error={exc}")
-        await event_queue.put({"type": "error", "message": str(exc)})
+        event_sequence += 1
+        await event_queue.put(_enrich_ws_event(
+            {"type": "error", "message": str(exc), "status": "error"},
+            session_id=session_id,
+            sequence=event_sequence,
+        ))
     finally:
         if not done_sent:
-            await event_queue.put({"type": "done"})
+            event_sequence += 1
+            await event_queue.put(_enrich_ws_event(
+                {"type": "done", "status": "completed"},
+                session_id=session_id,
+                sequence=event_sequence,
+            ))
+
+
+def _is_websocket_connected(websocket: WebSocket) -> bool:
+    return (
+        websocket.application_state == WebSocketState.CONNECTED
+        and websocket.client_state == WebSocketState.CONNECTED
+    )
+
+
+async def _cancel_stream_task(
+    stream_task: asyncio.Task | None,
+    *,
+    session_id: str,
+) -> None:
+    if stream_task is None:
+        return
+    if stream_task.done():
+        return
+
+    request_cancellation_service.cancel_request(session_id)
+    stream_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await stream_task
 
 
 async def _websocket_sender_loop(
     websocket: WebSocket,
     event_queue: asyncio.Queue,
+    *,
+    session_id: str,
+    stream_task_holder: dict[str, asyncio.Task | None],
 ) -> None:
     while True:
         event = await event_queue.get()
         if event is _WS_QUEUE_CLOSE:
             return
-        await websocket.send_json(event)
+
+        if not _is_websocket_connected(websocket):
+            await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+            stream_task_holder["stream_task"] = None
+            return
+
+        try:
+            await websocket.send_json(event)
+        except WebSocketDisconnect:
+            await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+            stream_task_holder["stream_task"] = None
+            return
+        except Exception as exc:
+            log.warning(f"WebSocket 发送事件失败，停止发送循环: session_id={session_id}, error={exc}")
+            await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+            stream_task_holder["stream_task"] = None
+            return
 
 
 async def _websocket_receiver_loop(
@@ -102,17 +202,21 @@ async def _websocket_receiver_loop(
     session_id: str,
     user_id: int | None,
     anonymous: bool,
+    stream_task_holder: dict[str, asyncio.Task | None],
 ) -> None:
-    active_stream_task: asyncio.Task | None = None
-
     try:
         while True:
             try:
                 payload = await websocket.receive_json()
             except WebSocketDisconnect:
-                request_cancellation_service.cancel_request(session_id)
+                await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+                stream_task_holder["stream_task"] = None
                 return
             except Exception as exc:
+                if not _is_websocket_connected(websocket):
+                    await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+                    stream_task_holder["stream_task"] = None
+                    return
                 await event_queue.put({"type": "error", "message": f"无效的 WebSocket JSON 消息: {exc}"})
                 continue
 
@@ -122,13 +226,11 @@ async def _websocket_receiver_loop(
 
             control_type = str(payload.get("type") or payload.get("action") or "").strip().lower()
             if control_type in {"cancel", "stop"}:
-                request_cancellation_service.cancel_request(session_id)
-                if active_stream_task is not None and not active_stream_task.done():
-                    active_stream_task.cancel()
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await active_stream_task
+                await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+                stream_task_holder["stream_task"] = None
                 continue
 
+            active_stream_task = stream_task_holder.get("stream_task")
             if active_stream_task is not None and not active_stream_task.done():
                 await event_queue.put({
                     "type": "error",
@@ -146,7 +248,7 @@ async def _websocket_receiver_loop(
                 await event_queue.put({"type": "error", "message": str(exc)})
                 continue
 
-            active_stream_task = asyncio.create_task(
+            stream_task_holder["stream_task"] = asyncio.create_task(
                 _enqueue_stream_events(
                     event_queue,
                     req=req,
@@ -155,10 +257,8 @@ async def _websocket_receiver_loop(
                 )
             )
     finally:
-        if active_stream_task is not None and not active_stream_task.done():
-            active_stream_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await active_stream_task
+        await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+        stream_task_holder["stream_task"] = None
 
 
 async def _serve_websocket_chat(
@@ -171,11 +271,19 @@ async def _serve_websocket_chat(
     event_queue: asyncio.Queue = asyncio.Queue()
     sender_task: asyncio.Task | None = None
     receiver_task: asyncio.Task | None = None
+    stream_task_holder: dict[str, asyncio.Task | None] = {"stream_task": None}
 
     await websocket.accept()
 
     try:
-        sender_task = asyncio.create_task(_websocket_sender_loop(websocket, event_queue))
+        sender_task = asyncio.create_task(
+            _websocket_sender_loop(
+                websocket,
+                event_queue,
+                session_id=session_id,
+                stream_task_holder=stream_task_holder,
+            )
+        )
         receiver_task = asyncio.create_task(
             _websocket_receiver_loop(
                 websocket,
@@ -183,6 +291,7 @@ async def _serve_websocket_chat(
                 session_id=session_id,
                 user_id=user_id,
                 anonymous=anonymous,
+                stream_task_holder=stream_task_holder,
             )
         )
 
@@ -202,12 +311,16 @@ async def _serve_websocket_chat(
             with contextlib.suppress(asyncio.CancelledError):
                 await task
     except WebSocketDisconnect:
-        request_cancellation_service.cancel_request(session_id)
+        await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+        stream_task_holder["stream_task"] = None
     except Exception as exc:
         log.exception(f"WebSocket 聊天异常: session_id={session_id}, error={exc}")
-        with contextlib.suppress(Exception):
-            await websocket.send_json({"type": "error", "message": str(exc)})
+        if _is_websocket_connected(websocket):
+            with contextlib.suppress(Exception):
+                await websocket.send_json({"type": "error", "message": str(exc)})
     finally:
+        await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+        stream_task_holder["stream_task"] = None
         request_cancellation_service.cancel_request(session_id)
         request_cancellation_service.cleanup_request(session_id)
 
@@ -218,8 +331,9 @@ async def _serve_websocket_chat(
                 with contextlib.suppress(asyncio.CancelledError):
                     await task
 
-        with contextlib.suppress(Exception):
-            await websocket.close()
+        if websocket.application_state != WebSocketState.DISCONNECTED:
+            with contextlib.suppress(Exception):
+                await websocket.close()
 
 
 @chat_router.post("/chat/stream", summary="流式聊天接口")

@@ -10,6 +10,7 @@ GraphRunner 流事件桥接层。
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Dict, List, Optional
 
 from config.constants.sse_constants import SseEventType, SsePayloadField
@@ -83,6 +84,134 @@ def _summary_from_workflow_event(workflow_payload: Dict[str, Any]) -> str:
     ).strip()
 
 
+_NODE_NAME_ALIASES = {
+    "parent_planner": "planner",
+    "planner_node": "planner",
+    "parent_planner_node": "planner",
+    "chat_agent": "chat_agent",
+    "aggregator": "aggregator",
+    "aggregator_node": "aggregator",
+    "worker_node": "worker",
+    "dispatch_node": "dispatch",
+    "dispatcher_node": "dispatch",
+    "reflection_node": "reflection",
+}
+
+_RUNNING_STATUSES = {"active", "running", "in_progress", "processing"}
+_COMPLETED_STATUSES = {"completed", "done", "success", "succeeded", "finished"}
+_WAITING_STATUSES = {"waiting", "waiting_approval", "pending"}
+_ERROR_STATUSES = {"failed", "error"}
+_CANCELLED_STATUSES = {"cancelled", "canceled"}
+
+
+def _to_snake_identifier(value: Any) -> str:
+    raw_value = str(value or "").strip()
+    if not raw_value:
+        return ""
+
+    normalized = raw_value.replace("-", "_").replace(" ", "_")
+    normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", normalized)
+    normalized = re.sub(r"[^a-zA-Z0-9_]+", "_", normalized)
+    normalized = re.sub(r"_+", "_", normalized).strip("_").lower()
+    return normalized
+
+
+def _normalize_node_name(value: Any) -> str:
+    normalized = _to_snake_identifier(value)
+    if not normalized:
+        return ""
+    return _NODE_NAME_ALIASES.get(normalized, normalized)
+
+
+def _resolve_workflow_node(workflow_payload: Dict[str, Any]) -> str:
+    meta = _coerce_dict(workflow_payload.get("meta"))
+    candidates = [
+        workflow_payload.get("node"),
+        workflow_payload.get("node_name"),
+        workflow_payload.get("agent_name"),
+        workflow_payload.get("agent_label"),
+        meta.get("node"),
+        meta.get("node_name"),
+        meta.get("agent_name"),
+        meta.get("agent"),
+    ]
+    for candidate in candidates:
+        normalized = _normalize_node_name(candidate)
+        if normalized:
+            return normalized
+    return ""
+
+
+def _resolve_trace_status(status: Any) -> str:
+    raw_status = str(status or "").strip().lower()
+    if raw_status in _RUNNING_STATUSES:
+        return "active"
+    if raw_status in _COMPLETED_STATUSES:
+        return "completed"
+    if raw_status in _WAITING_STATUSES:
+        return "waiting"
+    if raw_status in _ERROR_STATUSES:
+        return "error"
+    if raw_status in _CANCELLED_STATUSES:
+        return "cancelled"
+    return raw_status or "info"
+
+
+def _resolve_lifecycle_status(status: Any) -> str:
+    raw_status = str(status or "").strip().lower()
+    if raw_status in _RUNNING_STATUSES:
+        return "running"
+    return "completed"
+
+
+def _normalize_workflow_payload(workflow_payload: Dict[str, Any]) -> Dict[str, Any]:
+    payload = dict(workflow_payload)
+    raw_status = str(payload.get("status") or "").strip()
+    node = _resolve_workflow_node(payload)
+    normalized_status = _resolve_trace_status(raw_status)
+
+    meta = _coerce_dict(payload.get("meta"))
+    if node and not meta.get("node"):
+        meta["node"] = node
+    if raw_status and not meta.get("workflow_status"):
+        meta["workflow_status"] = raw_status
+    if payload.get("node_name") and not meta.get("node_name"):
+        meta["node_name"] = payload.get("node_name")
+    if payload.get("agent_name") and not meta.get("agent_name"):
+        meta["agent_name"] = payload.get("agent_name")
+
+    payload["node"] = node
+    payload["status"] = normalized_status
+    payload["meta"] = meta
+    return payload
+
+
+def _build_workflow_event_message(workflow_payload: Dict[str, Any]) -> Dict[str, Any]:
+    normalized_payload = _normalize_workflow_payload(workflow_payload)
+    node = str(normalized_payload.get("node") or "").strip()
+    workflow_status = str(
+        normalized_payload.get("meta", {}).get("workflow_status")
+        or normalized_payload.get("status")
+        or ""
+    ).strip()
+    return {
+        "type": "workflow_event",
+        "node": node or "workflow",
+        "phase": str(normalized_payload.get("phase") or "").strip(),
+        "status": _resolve_lifecycle_status(workflow_status),
+        "workflow_status": normalized_payload.get("status") or "info",
+        "timestamp": normalized_payload.get("timestamp"),
+        "title": str(normalized_payload.get("title") or "").strip(),
+        "summary": _summary_from_workflow_event(normalized_payload),
+        "payload": normalized_payload,
+    }
+
+
+def _is_planner_node(node_name: Any) -> bool:
+    normalized = _normalize_node_name(node_name)
+    return normalized == "planner" or "planner" in normalized
+
+
 class WsEventFormatter:
     """把 GraphRunner 的 SSE 事件归一成前端可直接消费的 WS JSON。"""
 
@@ -108,19 +237,54 @@ class WsEventFormatter:
 
         if event_type in {SseEventType.STREAM.value, "message"}:
             content = self._extract_content(parsed)
-            return [{"type": "message", "content": content}] if content else []
+            if not content:
+                return []
+
+            payload = parsed.get(SsePayloadField.PAYLOAD.value)
+            source_payload = payload if isinstance(payload, dict) else parsed
+            node = _resolve_workflow_node(source_payload)
+            if _is_planner_node(node):
+                return [{
+                    "type": "thinking",
+                    "content": content,
+                    "status": "thinking",
+                    "node": node or "planner",
+                }]
+            return [{
+                "type": "message",
+                "content": content,
+                "status": "streaming",
+                "node": node,
+            }]
 
         if event_type == SseEventType.THINKING.value:
             content = self._extract_content(parsed)
-            return [{"type": "thinking", "content": content}] if content else []
+            if not content:
+                return []
+            payload = parsed.get(SsePayloadField.PAYLOAD.value)
+            source_payload = payload if isinstance(payload, dict) else parsed
+            return [{
+                "type": "thinking",
+                "content": content,
+                "status": "thinking",
+                "node": _resolve_workflow_node(source_payload),
+            }]
 
         if event_type == SseEventType.LOG.value:
             content = str(parsed.get("message") or self._extract_content(parsed) or "").strip()
-            return [{"type": "thinking", "content": content}] if content else []
+            return [{
+                "type": "thinking",
+                "content": content,
+                "status": "thinking",
+            }] if content else []
 
         if event_type == SseEventType.INTERRUPT.value:
             content = self._extract_interrupt_content(parsed)
-            return [{"type": "thinking", "content": content}] if content else []
+            return [{
+                "type": "thinking",
+                "content": content,
+                "status": "thinking",
+            }] if content else []
 
         if event_type == SseEventType.TOOL_CALL.value:
             return self._normalize_tool_call_event(parsed.get(SsePayloadField.PAYLOAD.value) or parsed)
@@ -163,13 +327,14 @@ class WsEventFormatter:
 
     def _normalize_workflow_event(self, workflow_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         phase = str(workflow_payload.get("phase") or "").strip()
+        events: List[Dict[str, Any]] = [_build_workflow_event_message(workflow_payload)]
         if phase == "tool_called":
-            return self._normalize_tool_call_event(workflow_payload)
+            events.extend(self._normalize_tool_call_event(workflow_payload))
+            return events
         if phase == "tool_completed":
-            return self._normalize_tool_result_event(workflow_payload)
-
-        content = _summary_from_workflow_event(workflow_payload)
-        return [{"type": "thinking", "content": content}] if content else []
+            events.extend(self._normalize_tool_result_event(workflow_payload))
+            return events
+        return events
 
     def _normalize_tool_call_event(self, payload: Dict[str, Any] | Any) -> List[Dict[str, Any]]:
         tool_payload = _coerce_dict(payload)
@@ -207,7 +372,12 @@ class WsEventFormatter:
         return [{
             "type": "tool_call",
             "tool_name": tool_name or "tool_call",
+            "tool_call_id": tool_call_key,
             "args": args,
+            "status": "running",
+            "content": f"🛠 调用工具：{tool_name or 'tool_call'}",
+            "node": _resolve_workflow_node(tool_payload),
+            "timestamp": tool_payload.get("timestamp"),
         }]
 
     def _normalize_tool_result_event(self, workflow_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -234,14 +404,21 @@ class WsEventFormatter:
         return [{
             "type": "tool_result",
             "status": status,
-            "data": _stringify_data(data),
+            "tool_call_id": str(meta.get("tool_call_id") or workflow_payload.get("tool_call_id") or "").strip(),
+            "tool_name": str(meta.get("tool_name") or meta.get("name") or "").strip(),
+            "data": data,
+            "raw": data,
+            "content": _stringify_data(data),
+            "node": _resolve_workflow_node(workflow_payload),
+            "timestamp": workflow_payload.get("timestamp"),
+            "meta": meta,
         }]
 
     def _emit_done(self) -> List[Dict[str, Any]]:
         if self._done_sent:
             return []
         self._done_sent = True
-        return [{"type": "done"}]
+        return [{"type": "done", "status": "completed"}]
 
 
 class SseToWsEventBridge(WsEventFormatter):
