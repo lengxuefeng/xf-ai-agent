@@ -9,6 +9,7 @@ from models.user_info import UserInfo
 from models.user_model import UserModel
 from models.model_setting import ModelSetting
 from models.user_mcp import UserMCP
+from models.user_skill import UserSkill
 from models.chat_history import ChatSessionModel, ChatMessageModel
 from models.session_state import SessionStateModel
 
@@ -17,6 +18,7 @@ from models.schemas.user_info_schemas import UserInfoCreate, UserInfoUpdate
 from models.schemas.user_model_schemas import UserModelCreate, UserModelUpdate
 from models.schemas.model_setting_schemas import ModelServiceCreate, ModelServiceUpdate
 from models.schemas.user_mcp_schemas import UserMCPCreate, UserMCPUpdate
+from models.schemas.user_skill_schemas import UserSkillCreate, UserSkillUpdate
 from models.schemas.chat_history_schemas import ChatSessionCreate, ChatSessionUpdate, ChatMessageCreate, ChatMessageUpdate
 from models.schemas.session_state_schemas import SessionStateCreate, SessionStateUpdate
 
@@ -63,6 +65,26 @@ class CRUDUserMCP(CRUDBase[UserMCP, UserMCPCreate, UserMCPUpdate]):
     def get_by_user_id(self, db: Session, user_id: int):
         """获取用户的 MCP 配置"""
         return db.query(self.model).filter(self.model.user_id == user_id).all()
+
+    def get_active_by_user_id(self, db: Session, user_id: int):
+        """获取用户当前启用的 MCP 配置。"""
+        return db.query(self.model).filter(
+            self.model.user_id == user_id,
+            self.model.is_active == True,
+        ).all()
+
+
+class CRUDUserSkill(CRUDBase[UserSkill, UserSkillCreate, UserSkillUpdate]):
+    def get_by_user_id(self, db: Session, user_id: int):
+        """获取用户的 Skill 配置。"""
+        return db.query(self.model).filter(self.model.user_id == user_id).all()
+
+    def get_active_by_user_id(self, db: Session, user_id: int):
+        """获取用户当前启用的 Skill 配置。"""
+        return db.query(self.model).filter(
+            self.model.user_id == user_id,
+            self.model.is_active == True,
+        ).all()
 
 
 class CRUDChatSession(CRUDBase[ChatSessionModel, ChatSessionCreate, ChatSessionUpdate]):
@@ -128,6 +150,7 @@ user_info_db = CRUDUserInfo(UserInfo)
 user_model_db = CRUDUserModel(UserModel)
 model_setting_db = CRUDModelSetting(ModelSetting)
 user_mcp_db = CRUDUserMCP(UserMCP)
+user_skill_db = CRUDUserSkill(UserSkill)
 
 chat_session_db = CRUDChatSession(ChatSessionModel)
 chat_message_db = CRUDChatMessage(ChatMessageModel)

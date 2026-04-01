@@ -48,6 +48,8 @@ from common.utils.history_compressor import compress_history_messages
 from common.utils.custom_logger import get_logger
 from common.utils.date_utils import get_agent_date_context, get_current_time_context
 from common.utils.retry_utils import GRAPH_RETRY_POLICY
+from tools.runtime_tools.mcp_gateway import mcp_gateway
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 
 log = get_logger(__name__)
 
@@ -560,6 +562,25 @@ class BaseAgent(ABC):
         # 创建 checkpointer，用于状态持久化
         self.checkpointer = get_checkpointer(self.subgraph_id)
 
+    def _resolve_runtime_tools(
+        self,
+        base_tools: list,
+        *,
+        agent_name: str,
+    ) -> list:
+        resolved_tools = list(base_tools)
+        llm_config = self.req.llm_config or {}
+
+        if not runtime_tool_registry.is_agent_enabled(agent_name, llm_config):
+            log.info(f"Agent[{agent_name}] 未命中当前 Skill 的工具白名单，已跳过内置工具加载。")
+            resolved_tools = []
+
+        mcp_tools = mcp_gateway.load_langchain_tools_sync(llm_config.get("mcp_servers") or [])
+        if mcp_tools:
+            resolved_tools.extend(mcp_tools)
+
+        return resolved_tools
+
     RETRY_POLICY = GRAPH_RETRY_POLICY
 
     @abstractmethod
@@ -854,8 +875,8 @@ class BaseAgent(ABC):
                         if not stream_channel_id:
                             continue
 
-                        # 跳过工具调用
-                        if getattr(msg_chunk, "tool_calls", None):
+                        # 跳过工具调用与工具调用分片，避免中间协议噪音进入 live stream 总线
+                        if getattr(msg_chunk, "tool_calls", None) or getattr(msg_chunk, "tool_call_chunks", None):
                             continue
 
                         # 提取文本并推送到流式总线

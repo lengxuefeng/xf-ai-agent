@@ -32,6 +32,7 @@ from api.v1.user_info_api import user_router
 from api.v1.model_setting_api import router as model_setting_router
 from api.v1.user_model_api import router as user_model_router
 from api.v1.user_mcp_api import router as user_mcp_router
+from api.v1.user_skill_api import router as user_skill_router
 from api.v1.interrupt_api import interrupt_router
 from api.v1.metrics_api import metrics_router
 from api.v1.health_api import health_router
@@ -192,6 +193,7 @@ api_v1_router.include_router(chat_history_router)
 api_v1_router.include_router(model_setting_router)
 api_v1_router.include_router(user_model_router)
 api_v1_router.include_router(user_mcp_router)
+api_v1_router.include_router(user_skill_router)
 api_v1_router.include_router(interrupt_router)
 api_v1_router.include_router(metrics_router)
 api_v1_router.include_router(health_router)

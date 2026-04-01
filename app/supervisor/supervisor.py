@@ -6,7 +6,7 @@ import time
 from typing import Optional, List, Dict, Any, TypedDict, Type
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, RemoveMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage, RemoveMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END, START
@@ -117,6 +117,7 @@ from common.utils.history_compressor import (
     count_dialog_rounds,
 )
 from common.utils.retry_utils import GRAPH_RETRY_POLICY
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 
 log = get_logger(__name__)
 INTERRUPT_RESULT_TYPE = WORKFLOW_INTERRUPT_RESULT_TYPE
@@ -546,6 +547,7 @@ def _build_worker_history_messages_for_agent(
         agent_name: str,
         history_messages: List[BaseMessage],
         limit: int,
+        llm_config: Optional[Dict[str, Any]] = None,
 ) -> List[BaseMessage]:
     """
     构建按 Agent 相关性裁剪后的 Worker 历史消息窗口。
@@ -588,6 +590,11 @@ def _build_worker_history_messages_for_agent(
                 selected.append(msg)
 
     selected.reverse()
+
+    skill_prompt_blocks = [str(item or "").strip() for item in ((llm_config or {}).get("skill_prompt_blocks") or []) if str(item or "").strip()]
+    if skill_prompt_blocks:
+        selected = [SystemMessage(content="\n\n".join(skill_prompt_blocks))] + selected
+
     return selected
 
 
@@ -669,6 +676,7 @@ def _run_agent_to_completion(
         history_messages: Optional[List[BaseMessage]] = None,
         context_slots: Optional[Dict[str, Any]] = None,
         context_summary: str = "",
+        llm_config: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """共享的 Agent 执行逻辑，供 worker_node 和 single_agent_node 复用。"""
     started_at = time.perf_counter()
@@ -704,6 +712,9 @@ def _run_agent_to_completion(
             ("system", ChatFallbackPrompt.get_system_prompt()),
             ("system", get_agent_date_context()),
         ]
+        skill_prompt_blocks = [str(item or "").strip() for item in ((llm_config or {}).get("skill_prompt_blocks") or []) if str(item or "").strip()]
+        if skill_prompt_blocks:
+            fallback_messages.append(("system", "\n\n".join(skill_prompt_blocks)))
         if context_summary:
             fallback_messages.append(("system", context_summary))
         fallback_messages.append(HumanMessage(content=effective_user_input))
@@ -717,7 +728,7 @@ def _run_agent_to_completion(
     req = AgentRequest(
         user_input=effective_user_input, model=model,
         session_id=session_id or config.get("configurable", {}).get("thread_id", ""),
-        subgraph_id=agent_name, llm_config={},
+        subgraph_id=agent_name, llm_config=llm_config or {},
         state={
             "messages": history_messages or [],
             "context_slots": context_slots or {},
@@ -1050,9 +1061,10 @@ async def worker_node(
             ]
         }
 
+    # 这里只保留已有上下文，不把 current_task 预先塞进 history。
+    # 下游 Agent/chat_node 都会单独拿到 current_task/user_input；
+    # 如果这里提前追加，会把同一个子任务喂两遍，导致模型出现复读式回答。
     worker_messages = list(state.get("messages", []) or [])
-    if current_task:
-        worker_messages = worker_messages + [HumanMessage(content=current_task)]
 
     step_state: GraphState = {
         "messages": worker_messages,
@@ -1083,7 +1095,23 @@ async def worker_node(
                 agent_name=route_target,
                 history_messages=worker_messages,
                 limit=AGENT_LOOP_CONFIG.context_history_messages,
+                llm_config=state.get("llm_config") or {},
             )
+            if not runtime_tool_registry.is_agent_enabled(route_target, state.get("llm_config") or {}):
+                disabled_message = runtime_tool_registry.get_disabled_agent_message(route_target)
+                elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+                return {
+                    "worker_results": [
+                        WorkerResult(
+                            task_id=task_id,
+                            task=current_task,
+                            result=disabled_message,
+                            error=None,
+                            agent=route_target,
+                            elapsed_ms=elapsed_ms,
+                        )
+                    ]
+                }
             res_text = await asyncio.to_thread(
                 _run_agent_to_completion,
                 route_target,
@@ -1094,6 +1122,7 @@ async def worker_node(
                 history_messages,
                 state.get("context_slots") or {},
                 state.get("context_summary") or "",
+                state.get("llm_config") or {},
             )
             agent_name = route_target
         else:
@@ -1753,7 +1782,13 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
         # Chat 兜底只保留最近窗口，避免超长历史拖慢响应。
         recent_messages = state.get("messages", [])[-AGENT_LOOP_CONFIG.context_history_messages:]
         if current_step_input:
-            recent_messages = list(recent_messages) + [HumanMessage(content=current_step_input)]
+            last_message = recent_messages[-1] if recent_messages else None
+            last_is_same_human = (
+                isinstance(last_message, HumanMessage)
+                and _content_to_text(getattr(last_message, "content", "")).strip() == current_step_input
+            )
+            if not last_is_same_human:
+                recent_messages = list(recent_messages) + [HumanMessage(content=current_step_input)]
         request_messages = [("system", prompt), ("system", get_agent_date_context())] + recent_messages
         runtime_config = _build_non_streaming_config(config)
         run_id = str(
@@ -1850,18 +1885,23 @@ async def single_agent_node(
             agent_name=agent_name,
             history_messages=state.get("messages", []) or [],
             limit=AGENT_LOOP_CONFIG.context_history_messages,
+            llm_config=state.get("llm_config") or {},
         )
-        content = await asyncio.to_thread(
-            _run_agent_to_completion,
-            agent_name,
-            user_input,
-            model,
-            config,
-            state.get("session_id") or "",
-            history_messages,
-            state.get("context_slots") or {},
-            state.get("context_summary") or "",
-        )
+        if not runtime_tool_registry.is_agent_enabled(agent_name, state.get("llm_config") or {}):
+            content = runtime_tool_registry.get_disabled_agent_message(agent_name)
+        else:
+            content = await asyncio.to_thread(
+                _run_agent_to_completion,
+                agent_name,
+                user_input,
+                model,
+                config,
+                state.get("session_id") or "",
+                history_messages,
+                state.get("context_slots") or {},
+                state.get("context_summary") or "",
+                state.get("llm_config") or {},
+            )
         if content == WORKER_CANCELLED_RESULT:
             return {"direct_answer": ""}
         if isinstance(content, dict) and content.get("type") == INTERRUPT_RESULT_TYPE:

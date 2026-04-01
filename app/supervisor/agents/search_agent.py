@@ -133,7 +133,7 @@ class SearchAgent(BaseAgent):
 
         # 工具：绑定 Tavily 搜索工具
         # Tavily 是一个专为大语言模型优化的搜索引擎 API
-        self.tools = [tavily_search_tool]
+        self.tools = self._resolve_runtime_tools([tavily_search_tool], agent_name="search_agent")
 
         # 提示词：主提示词用于正常搜索流程
         # SEARCH_SYSTEM 包含搜索 agent 的角色定义和指令

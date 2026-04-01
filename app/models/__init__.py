@@ -11,6 +11,7 @@
    - UserModel: 用户模型配置
    - ModelSetting: 模型设置
    - UserMCP: 用户MCP配置
+   - UserSkill: 用户自定义技能配置
 
 2. 对话相关模型：
    - ChatSessionModel: 聊天会话
@@ -35,6 +36,7 @@ from models.model_setting import ModelSetting
 from models.session_state import SessionStateModel
 from models.user_info import UserInfo
 from models.user_mcp import UserMCP
+from models.user_skill import UserSkill
 from models.user_model import UserModel
 
 __all__ = [
@@ -42,6 +44,7 @@ __all__ = [
     "ModelSetting",
     "UserModel",
     "UserMCP",
+    "UserSkill",
     "ChatSessionModel",
     "ChatMessageModel",
     "SessionStateModel",

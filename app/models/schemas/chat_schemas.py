@@ -57,6 +57,8 @@ class StreamChatRequest(BaseSchema):
     user_input: str = Field(..., description="用户的输入文本")
     session_id: str = Field(..., description="用于追踪对话历史的会话ID")
     user_model_id: Optional[int] = Field(default=None, description="用户模型配置ID（优先使用此字段）")
+    skill_id: Optional[int] = Field(default=None, description="当前会话选择的 Skill ID")
+    skill_ids: Optional[list[int]] = Field(default=None, description="当前会话选择的 Skill ID 列表")
 
     # --- 兼容性保留字段 ---
     model: str = Field(default='glm-4', description="当前选择的模型")
@@ -97,6 +99,24 @@ class StreamChatRequest(BaseSchema):
         if not ChatUtils.validate_session_id(v):
             raise ValueError('无效的会话ID格式')
         return v
+
+    @field_validator("skill_ids", mode="before")
+    def normalize_skill_ids(cls, value):
+        if value in (None, ""):
+            return None
+        if isinstance(value, int):
+            return [value]
+        if isinstance(value, (tuple, list)):
+            result: list[int] = []
+            for item in value:
+                try:
+                    skill_id = int(item)
+                except Exception:
+                    continue
+                if skill_id > 0 and skill_id not in result:
+                    result.append(skill_id)
+            return result or None
+        return None
 
 
 class ChatResponse(BaseSchema):

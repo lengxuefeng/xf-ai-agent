@@ -1,95 +1,73 @@
 # -*- coding: utf-8 -*-
 """
-用户MCP（Model Context Protocol）配置模型。
+用户 MCP 服务端配置模型。
 
-MCP是一种用于连接AI模型和外部数据源的协议。
-用户可以配置自己的MCP服务器，让AI模型访问自定义的数据源。
-
-设计要点：
-1. 灵活的配置：支持多种MCP服务器配置
-2. 用户隔离：每个用户有独立的MCP配置
-3. JSON格式：配置以JSON字符串形式存储
-4. 时间戳：记录创建和更新时间
-
-使用场景：
-- 用户配置自定义的数据库连接
-- 用户配置API网关
-- 用户配置其他外部数据源
-
-配置格式示例：
-{
-    "servers": [
-        {
-            "name": "my_database",
-            "type": "postgres",
-            "connection_string": "postgresql://..."
-        }
-    ]
-}
+该表负责持久化用户自定义的 MCP Server 连接信息，供运行期动态加载工具时查询。
+当前仅支持两类传输方式：
+1. `sse`: 通过 URL 连接远端 MCP Server
+2. `stdio`: 通过本地命令拉起 MCP Server
 """
-from sqlalchemy import Column, String, DateTime, func, BigInteger
+from __future__ import annotations
+
+from datetime import datetime
+from enum import StrEnum
+from typing import List, Optional
+
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, String, func, text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column
 
 from db import Base
 
 
+class MCPTransport(StrEnum):
+    """MCP 传输协议枚举。"""
+
+    SSE = "sse"
+    STDIO = "stdio"
+
+
 class UserMCP(Base):
-    """
-    用户MCP设置表。
+    """用户 MCP 服务端配置。"""
 
-    核心职责：
-    1. 存储用户的MCP服务器配置
-    2. 支持多种类型的MCP服务器
-    3. 提供灵活的JSON配置格式
+    __tablename__ = "t_user_mcp"
+    __table_args__ = (
+        CheckConstraint("transport IN ('sse', 'stdio')", name="ck_t_user_mcp_transport"),
+    )
 
-    设计理由：
-    1. MCP是连接AI模型和外部数据源的标准协议
-    2. 用户可能需要访问自定义的数据源
-    3. 集中管理配置，方便维护
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True, doc="主键")
+    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True, doc="用户 ID")
 
-    字段说明：
-    - id: 主键，自增
-    - user_id: 用户ID
-    - mcp_setting_json: MCP配置JSON字符串
-    - create_time: 创建时间
-    - update_time: 更新时间
+    name: Mapped[str] = mapped_column(String(100), nullable=False, doc="MCP 服务名称")
+    transport: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        server_default=text("'sse'"),
+        doc="传输协议：sse / stdio",
+    )
 
-    MCP配置结构：
-    {
-        "servers": [
-            {
-                "name": "server_name",
-                "type": "postgres/redis/...",
-                "host": "localhost",
-                "port": 5432,
-                "database": "dbname",
-                "username": "user",
-                "password": "pass"
-            }
-        ]
-    }
-    """
-    __tablename__ = 't_user_mcp'
+    url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, doc="SSE 模式下的服务地址")
+    command: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, doc="stdio 模式下的启动命令")
+    args: Mapped[Optional[List[str]]] = mapped_column(JSONB, nullable=True, doc="stdio 模式下的命令参数")
 
-    # 主键
-    id = Column(BigInteger, primary_key=True, autoincrement=True, doc='主键')
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default=text("true"),
+        doc="是否启用",
+    )
 
-    # 用户标识
-    user_id = Column(BigInteger, nullable=False, doc='用户ID')
+    create_time: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), doc="创建时间")
+    update_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now(),
+        onupdate=func.now(),
+        doc="更新时间",
+    )
 
-    # MCP配置
-    # 使用JSON字符串存储配置信息
-    mcp_setting_json = Column(String(255), nullable=False, doc='MCP配置JSON')
-
-    # 时间戳
-    create_time = Column(DateTime, server_default=func.now(), doc='创建时间')
-    update_time = Column(DateTime, server_default=func.now(), onupdate=func.now(), doc='更新时间')
-
-    def __repr__(self):
-        """对象字符串表示，用于调试。"""
-        return (f"<UserModel("
-                f"id={self.id}, "
-                f"user_id={self.user_id}, "
-                f"mcp_setting_json={self.mcp_setting_json}, "
-                f"create_time={self.create_time}, "
-                f"update_time={self.update_time})"
-                f">")
+    def __repr__(self) -> str:
+        return (
+            f"<UserMCP(id={self.id}, user_id={self.user_id}, name='{self.name}', "
+            f"transport='{self.transport}', is_active={self.is_active})>"
+        )

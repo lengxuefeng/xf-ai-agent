@@ -42,6 +42,10 @@ class SseEventType(str, Enum):
     # 前端需要不断接收这些事件并拼接成完整的回复
     STREAM = "stream"
 
+    # 工具调用事件：用于把工具名、参数和状态从正文流中剥离出来
+    # 前端应以独立状态栏或时间线展示，而不是混入 Markdown 文本
+    TOOL_CALL = "tool_call"
+
     # 错误事件：表示执行过程中发生了错误
     # 前端需要展示错误提示，并决定是重试还是显示给用户
     ERROR = "error"

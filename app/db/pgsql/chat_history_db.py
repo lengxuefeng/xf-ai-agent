@@ -84,7 +84,7 @@ def migrate_mysql(ctx: MigrationContext):
     print("\n🚀 [1/3] 开始迁移 MySQL 核心业务数据...")
     mysql_meta = MetaData()
     mysql_meta.reflect(bind=ctx.mysql_engine)
-    tables_to_migrate = ["t_user_info", "t_model_setting", "t_user_model", "t_user_mcp"]
+    tables_to_migrate = ["t_user_info", "t_model_setting", "t_user_model", "t_user_mcp", "t_user_skill"]
 
     with ctx.pg_engine.begin() as pg_conn:
         with ctx.mysql_engine.connect() as mysql_conn:
@@ -279,4 +279,3 @@ if __name__ == "__main__":
         run_all_migrations()
     except Exception as exc:
         print(f"\n❌ 迁移发生错误: {exc}")
-

@@ -118,6 +118,7 @@ class ChatService:
         
         try:
             model_config = self._resolve_model_config(req, dynamic_model_config)
+            model_config = self._attach_runtime_overrides(model_config, req, user_id)
         except Exception as exc:
             log.exception(f"流式聊天准备阶段异常: {exc}", target=LogTarget.ALL)
             return StreamingResponse(
@@ -167,9 +168,22 @@ class ChatService:
         """统一解析模型配置：优先使用中间件预加载配置，其次从请求参数构建。"""
         if dynamic_model_config:
             log.info("使用中间件预加载的动态模型配置", target=LogTarget.LOG)
-            return dynamic_model_config
+            return dict(dynamic_model_config)
         log.info("使用请求自带的默认参数构建配置", target=LogTarget.LOG)
         return self._build_model_config_from_request(req)
+
+    @staticmethod
+    def _attach_runtime_overrides(
+        model_config: Dict[str, Any],
+        req: StreamChatRequest,
+        user_id: Optional[int],
+    ) -> Dict[str, Any]:
+        effective_config = dict(model_config or {})
+        resolved_skill_ids = req.skill_ids or ([req.skill_id] if req.skill_id else [])
+        if resolved_skill_ids:
+            effective_config["skill_ids"] = resolved_skill_ids
+        effective_config["runtime_user_id"] = user_id
+        return effective_config
 
     def _process_stream_chat_internal(
             self,
@@ -183,6 +197,7 @@ class ChatService:
                  target=LogTarget.LOG)
 
         model_config = self._resolve_model_config(req, dynamic_model_config)
+        model_config = self._attach_runtime_overrides(model_config, req, user_id)
         is_resume = req.user_input == "[RESUME]"
 
         # 核心分流：注册用户带记忆，匿名用户无记忆

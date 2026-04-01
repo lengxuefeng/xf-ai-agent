@@ -37,7 +37,7 @@ class WeatherAgent(BaseAgent):
             raise ValueError("天气模型初始化失败，请检查配置。")
         self.llm = req.model
         self.subgraph_id = "weather_agent"
-        self.tools = [get_weathers]
+        self.tools = self._resolve_runtime_tools([get_weathers], agent_name="weather_agent")
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 (

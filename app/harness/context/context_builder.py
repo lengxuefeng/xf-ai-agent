@@ -121,7 +121,9 @@ class RuntimeContextBuilder:
             session_context=session_context,
         )
         memory_block = runtime_memory_service.render_memory_block(memory_snippets)
-        system_prompt = system_prompt_registry.render_global_prompt()
+        system_prompt = system_prompt_registry.render_global_prompt(
+            skill_prompts=run_context.model_config.get("skill_prompt_blocks") or [],
+        )
         messages: List[BaseMessage] = build_context_messages(
             get_agent_date_context(),
             system_prompt,

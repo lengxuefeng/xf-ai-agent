@@ -1526,7 +1526,7 @@ class YunyouAgent(BaseAgent):
         skill_tools = skill_middleware.get_tools() if skill_middleware else []
         all_tools = base_tools + skill_tools
 
-        self.tools = all_tools
+        self.tools = self._resolve_runtime_tools(all_tools, agent_name="yunyou_agent")
 
         # 构建系统提示词
         sys_prompt = self._build_system_prompt(skill_middleware.get_prompt() if skill_middleware else YunyouPrompt.DEFAULT_SYSTEM_ROLE)

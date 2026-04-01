@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 from enum import Enum
 
 
@@ -46,6 +46,22 @@ class RuntimeToolRegistry:
     """
 
     def __init__(self) -> None:
+        self._builtin_aliases: Dict[str, set[str]] = {
+            "web_search": {"web_search", "web_search_proxy", "search", "search_tool", "tavily_search_tool"},
+            "sql_tools": {"sql_tools", "execute_sql", "execute_sql_tool", "get_schema", "get_schema_tool"},
+            "weather_tools": {"weather_tools", "weather", "get_weathers"},
+            "python_exec": {"python_exec", "execute_python_code"},
+        }
+        self._agent_builtin_requirements: Dict[str, set[str]] = {
+            "search_agent": {"web_search"},
+            "sql_agent": {"sql_tools"},
+            "weather_agent": {"weather_tools"},
+        }
+        self._disabled_agent_messages: Dict[str, str] = {
+            "search_agent": "当前会话未启用联网搜索工具，无法执行实时检索。请在 Agent Skills 中启用搜索能力后重试。",
+            "sql_agent": "当前会话未启用 SQL 工具，无法执行数据库查询。请在 Agent Skills 中启用 SQL 能力后重试。",
+            "weather_agent": "当前会话未启用天气工具，无法执行天气查询。请在 Agent Skills 中启用天气能力后重试。",
+        }
         self._tools: Dict[str, ToolDescriptor] = {
             "execute_python_code": ToolDescriptor(
                 name="execute_python_code",
@@ -176,6 +192,12 @@ class RuntimeToolRegistry:
     def list_tools(self) -> List[dict]:
         return [tool.to_dict() for tool in self._tools.values()]
 
+    def build_tool_catalog(self, dynamic_tools: Optional[List[dict]] = None) -> List[dict]:
+        catalog = self.list_tools()
+        if dynamic_tools:
+            catalog.extend(dynamic_tools)
+        return catalog
+
     def list_tools_by_type(self, tool_type: ToolType) -> List[dict]:
         return [tool.to_dict() for tool in self._tools.values() if tool.tool_type == tool_type]
 
@@ -194,6 +216,67 @@ class RuntimeToolRegistry:
             result["by_category"][cat] = result["by_category"].get(cat, 0) + 1
             result["by_type"][t_type] = result["by_type"].get(t_type, 0) + 1
         return result
+
+    def build_tool_stats(self, dynamic_tools: Optional[List[dict]] = None) -> Dict[str, Any]:
+        result = self.stats()
+        if not dynamic_tools:
+            return result
+
+        merged = {
+            "total": int(result.get("total", 0)),
+            "by_type": dict(result.get("by_type", {})),
+            "by_category": dict(result.get("by_category", {})),
+        }
+        for tool in dynamic_tools:
+            merged["total"] += 1
+            tool_type = str(tool.get("tool_type") or ToolType.MCP.value)
+            category = str(tool.get("category") or "mcp")
+            merged["by_type"][tool_type] = merged["by_type"].get(tool_type, 0) + 1
+            merged["by_category"][category] = merged["by_category"].get(category, 0) + 1
+        return merged
+
+    def normalize_bound_tools(self, tool_names: Iterable[str] | None) -> List[str]:
+        normalized: list[str] = []
+        for raw_name in tool_names or []:
+            candidate = str(raw_name or "").strip().lower()
+            if not candidate:
+                continue
+            canonical = self._canonical_builtin_name(candidate)
+            final_name = canonical or candidate
+            if final_name not in normalized:
+                normalized.append(final_name)
+        return normalized
+
+    def is_tool_restriction_enabled(self, llm_config: Optional[Dict[str, Any]]) -> bool:
+        return bool((llm_config or {}).get("tool_restriction_enabled"))
+
+    def get_allowed_builtin_tools(self, llm_config: Optional[Dict[str, Any]]) -> set[str]:
+        tool_names = (llm_config or {}).get("allowed_builtin_tools") or []
+        return set(self.normalize_bound_tools(tool_names))
+
+    def is_agent_enabled(self, agent_name: str, llm_config: Optional[Dict[str, Any]]) -> bool:
+        if not self.is_tool_restriction_enabled(llm_config):
+            return True
+        required = self._agent_builtin_requirements.get(str(agent_name or "").strip())
+        if not required:
+            return True
+        allowed = self.get_allowed_builtin_tools(llm_config)
+        return bool(required & allowed)
+
+    def get_disabled_agent_message(self, agent_name: str) -> str:
+        return self._disabled_agent_messages.get(
+            str(agent_name or "").strip(),
+            "当前会话未启用所需工具能力，请调整 Skill 配置后重试。",
+        )
+
+    def _canonical_builtin_name(self, tool_name: str) -> Optional[str]:
+        candidate = str(tool_name or "").strip().lower()
+        if not candidate:
+            return None
+        for canonical, aliases in self._builtin_aliases.items():
+            if candidate == canonical or candidate in aliases:
+                return canonical
+        return None
 
 
 runtime_tool_registry = RuntimeToolRegistry()

@@ -217,7 +217,7 @@ class SqlAgent(BaseAgent):
             raise ValueError("SQL 模型初始化失败，请检查配置。")
         self.llm = req.model
         self.subgraph_id = "sql_agent"
-        self.tools = [get_schema_tool, execute_sql_tool]
+        self.tools = self._resolve_runtime_tools([get_schema_tool, execute_sql_tool], agent_name="sql_agent")
 
         # 提示词模板：采用工具驱动的 ReAct 流程，让模型先读 schema，再执行 SQL。
         self.prompt = ChatPromptTemplate.from_messages(

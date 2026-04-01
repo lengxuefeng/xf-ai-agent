@@ -69,6 +69,7 @@ from config.constants.workflow_constants import (
     WORKER_PENDING_APPROVAL_RESULT,
 )
 from services.interrupt_service import interrupt_service
+from services.runtime_user_config_service import runtime_user_config_service
 from harness.core.run_context import build_run_context
 from harness.core.session_manager import runtime_session_manager
 from harness.core.workflow_event_bus import (
@@ -263,6 +264,95 @@ class GraphRunner:
         normalized = cls._normalize_display_text_segment(normalized)
         return stash.restore(normalized).strip()
 
+    @staticmethod
+    def _ensure_execution_state(execution_state: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """规范化本轮流式执行状态，区分顶层直答与多任务编排。"""
+        state = execution_state if isinstance(execution_state, dict) else {}
+        direct_body_agents = state.get("direct_body_agents")
+        if isinstance(direct_body_agents, set):
+            normalized_agents = direct_body_agents
+        elif isinstance(direct_body_agents, (list, tuple, set)):
+            normalized_agents = {
+                str(item).strip()
+                for item in direct_body_agents
+                if str(item or "").strip()
+            }
+        else:
+            normalized_agents = set()
+
+        state["direct_body_agents"] = normalized_agents
+        state["orchestrated"] = bool(state.get("orchestrated"))
+        return state
+
+    @classmethod
+    def _mark_orchestrated_execution(cls, execution_state: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """一旦进入 planner/worker/aggregator 链路，就不再允许子任务正文直出主消息区。"""
+        state = cls._ensure_execution_state(execution_state)
+        state["orchestrated"] = True
+        state["direct_body_agents"].clear()
+        return state
+
+    @classmethod
+    def _track_direct_body_agent(
+            cls,
+            execution_state: Optional[Dict[str, Any]],
+            agent_name: str,
+    ) -> Dict[str, Any]:
+        """记录当前允许写入主正文的顶层执行者。"""
+        state = cls._ensure_execution_state(execution_state)
+        state["direct_body_agents"].clear()
+        normalized = str(agent_name or "").strip()
+        if normalized and not state["orchestrated"]:
+            state["direct_body_agents"].add(normalized)
+        return state
+
+    @staticmethod
+    def _task_result_sort_key(task_id: str) -> Tuple[int, str]:
+        match = re.search(r"\d+", str(task_id or ""))
+        seq = int(match.group(0)) if match else 10 ** 9
+        return seq, str(task_id or "")
+
+    @classmethod
+    def _build_task_results_fallback(
+            cls,
+            task_results: Dict[str, Any],
+            task_list: List[Dict[str, Any]],
+    ) -> str:
+        """当聚合节点缺席时，基于 task_results 构造稳定的最终答复兜底。"""
+        if not isinstance(task_results, dict) or not task_results:
+            return ""
+
+        tasks_by_id = {
+            str(task.get("id") or ""): task
+            for task in (task_list or [])
+            if isinstance(task, dict) and task.get("id")
+        }
+
+        sections: List[str] = []
+        for index, (task_id, value) in enumerate(
+                sorted(task_results.items(), key=lambda item: cls._task_result_sort_key(item[0])),
+                start=1,
+        ):
+            text = cls._format_user_visible_text(value)
+            if not text or text in {WORKER_CANCELLED_RESULT, WORKER_PENDING_APPROVAL_RESULT}:
+                continue
+
+            task = tasks_by_id.get(str(task_id), {})
+            title = str(task.get("input") or task.get("task") or task_id or f"任务 {index}").strip()
+            title = re.split(r"[。！？!?；;\n]", title)[0].strip() or f"任务 {index}"
+            if len(title) > 32:
+                title = title[:32].rstrip("，,。；;：: ") + "..."
+            sections.append(f"### {index}. {title}\n{text}")
+
+        if not sections:
+            return ""
+
+        if len(sections) == 1:
+            _, _, single_body = sections[0].partition("\n")
+            return single_body.strip() or sections[0]
+
+        return "## 已整理的任务结果\n\n" + "\n\n".join(sections)
+
     @classmethod
     def _build_workflow_event(
             cls,
@@ -307,6 +397,41 @@ class GraphRunner:
         """
         stable_json = json.dumps(model_config or {}, sort_keys=True, ensure_ascii=False)
         return hashlib.md5(stable_json.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _extract_skill_ids(model_config: Dict[str, Any]) -> List[int]:
+        normalized: list[int] = []
+        for raw_id in model_config.get("skill_ids") or []:
+            try:
+                skill_id = int(raw_id)
+            except Exception:
+                continue
+            if skill_id > 0 and skill_id not in normalized:
+                normalized.append(skill_id)
+        return normalized
+
+    async def _hydrate_runtime_profile(
+        self,
+        model_config: Dict[str, Any],
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        effective_config = dict(model_config or {})
+        user_id = effective_config.get("runtime_user_id")
+        if not user_id:
+            return effective_config, {}
+
+        skill_ids = self._extract_skill_ids(effective_config)
+        try:
+            runtime_profile = await asyncio.to_thread(
+                runtime_user_config_service.build_runtime_profile,
+                user_id=int(user_id),
+                skill_ids=skill_ids,
+            )
+        except Exception as exc:
+            log.warning(f"加载用户运行时配置失败，已降级为默认工具集: {exc}")
+            return effective_config, {}
+
+        effective_config.update(runtime_profile)
+        return effective_config, runtime_profile
 
     def _get_or_create_supervisor(
             self,
@@ -432,6 +557,7 @@ class GraphRunner:
 
         # 合并默认配置和请求配置，请求级配置优先级更高
         effective_config = {**self.model_config, **(model_config or {})}
+        effective_config, runtime_profile = await self._hydrate_runtime_profile(effective_config)
         resume_message_id = str(effective_config.get("resume_message_id") or "").strip()
 
         # ── 分支一：审批恢复流程
@@ -524,8 +650,8 @@ class GraphRunner:
         runtime_session_manager.attach_meta(run_context, request_id=run_context.request_id)
 
         workspace_meta = workspace_manager.prepare_run_workspace(run_context)
-        tool_registry_stats = runtime_tool_registry.stats()
-        tool_catalog = runtime_tool_registry.list_tools()
+        tool_registry_stats = runtime_tool_registry.build_tool_stats(runtime_profile.get("dynamic_tool_catalog"))
+        tool_catalog = runtime_tool_registry.build_tool_catalog(runtime_profile.get("dynamic_tool_catalog"))
         search_capability = search_gateway.capability_snapshot()
         bootstrap_artifacts = [
             workspace_manager.write_json_artifact(
@@ -538,6 +664,8 @@ class GraphRunner:
                     "user_input": user_input,
                     "history_size": len(history_messages or []),
                     "session_context": session_context,
+                    "selected_skill_ids": effective_config.get("selected_skill_ids") or [],
+                    "selected_skill_names": effective_config.get("selected_skill_names") or [],
                 },
                 category="request",
             )
@@ -547,6 +675,12 @@ class GraphRunner:
             workspace=workspace_meta,
             tool_registry_stats=tool_registry_stats,
             search_capability=search_capability,
+            runtime_profile={
+                "selected_skill_ids": effective_config.get("selected_skill_ids") or [],
+                "selected_skill_names": effective_config.get("selected_skill_names") or [],
+                "allowed_builtin_tools": effective_config.get("allowed_builtin_tools") or [],
+                "mcp_servers": effective_config.get("mcp_servers") or [],
+            },
             artifacts=workspace_manager.list_artifacts(run_context),
         )
         yield self._fmt_workflow_event(
@@ -968,6 +1102,7 @@ class GraphRunner:
         loop = asyncio.get_running_loop()
         bridge = _AsyncSideChannelBridge(loop=loop, run_context=run_context)
         live_streamed_agents: Set[str] = set()
+        execution_state = self._ensure_execution_state({"orchestrated": False, "direct_body_agents": set()})
         # 跨 chunk 的路由 JSON 前缀过滤状态
         router_prefix_buffer = ""
         router_prefix_done = False
@@ -1104,6 +1239,7 @@ class GraphRunner:
                             for sse_chunk in self._handle_live_stream_event(
                                     payload=item_data,
                                     live_streamed_agents=live_streamed_agents,
+                                    execution_state=execution_state,
                                     session_id=session_id,
                                     run_id=run_id,
                             ):
@@ -1172,6 +1308,7 @@ class GraphRunner:
                                     session_id=session_id,
                                     effective_config=effective_config,
                                     live_streamed_agents=live_streamed_agents,
+                                    execution_state=execution_state,
                                     interrupt_emitted=interrupt_emitted,
                                     active_agent_candidates=active_agent_candidates,
                                     run_id=run_id,
@@ -1344,6 +1481,7 @@ class GraphRunner:
             cls,
             payload: Any,
             live_streamed_agents: Set[str],
+            execution_state: Optional[Dict[str, Any]],
             session_id: str,
             run_id: str,
     ) -> List[str]:
@@ -1358,6 +1496,13 @@ class GraphRunner:
         if not visible_content:
             return []
         source_agent = str(payload.get("agent_name") or "").strip()
+        stream_state = cls._ensure_execution_state(execution_state)
+        direct_body_agents = stream_state.get("direct_body_agents", set())
+        allow_direct_agent_body_stream = (
+            not bool(stream_state.get("orchestrated"))
+            and source_agent
+            and source_agent in direct_body_agents
+        )
         role = cls._workflow_role_for_agent(source_agent)
         phase = "direct_response_streaming" if role == "supervisor" else "worker_streaming"
         title = (
@@ -1389,8 +1534,117 @@ class GraphRunner:
                     )
                 )
             )
-        workflow_chunks.append(cls._fmt_sse(SseEventType.STREAM.value, visible_content))
+        # 只有 supervisor/aggregator 的直接答复允许进入主正文流；
+        # 但如果当前是“顶层直接指派给某个专业 Agent”，则允许该 Agent 正文直出。
+        if role == "supervisor" or allow_direct_agent_body_stream:
+            workflow_chunks.append(cls._fmt_sse(SseEventType.STREAM.value, visible_content))
         return workflow_chunks
+
+    @staticmethod
+    def _extract_tool_call_chunks(msg_chunk: AIMessageChunk) -> List[Dict[str, Any]]:
+        """兼容不同模型适配层，把 tool_call_chunks 统一抽成列表。"""
+        direct_chunks = getattr(msg_chunk, "tool_call_chunks", None)
+        if isinstance(direct_chunks, (list, tuple)):
+            return [item for item in direct_chunks if isinstance(item, dict)]
+
+        additional_kwargs = getattr(msg_chunk, "additional_kwargs", {}) or {}
+        fallback_chunks = additional_kwargs.get("tool_call_chunks")
+        if isinstance(fallback_chunks, (list, tuple)):
+            return [item for item in fallback_chunks if isinstance(item, dict)]
+
+        return []
+
+    @classmethod
+    def _build_tool_call_payload(
+            cls,
+            *,
+            node_name: str,
+            tool_name: str,
+            tool_call_id: str,
+            args: Optional[Dict[str, Any]] = None,
+            summary: str = "",
+            status: str = "active",
+            phase: str = "tool_called",
+    ) -> Dict[str, Any]:
+        return {
+            "tool_call_id": tool_call_id,
+            "name": tool_name or "tool_call",
+            "args": args or {},
+            "summary": summary,
+            "status": status,
+            "phase": phase,
+            "agent_name": node_name,
+            "node_name": node_name,
+            "timestamp": cls._workflow_timestamp(),
+        }
+
+    def _build_tool_call_sse_chunks(
+            self,
+            *,
+            session_id: str,
+            run_id: str,
+            node_name: str,
+            tool_calls: List[Dict[str, Any]],
+            tool_call_chunks: List[Dict[str, Any]],
+    ) -> List[str]:
+        sse_chunks: List[str] = []
+        seen_keys: Set[str] = set()
+
+        for index, raw_call in enumerate([*(tool_calls or []), *(tool_call_chunks or [])]):
+            if not isinstance(raw_call, dict):
+                continue
+
+            tool_name = str(raw_call.get("name") or raw_call.get("tool_name") or "").strip()
+            tool_call_id = str(
+                raw_call.get("id")
+                or raw_call.get("tool_call_id")
+                or raw_call.get("call_id")
+                or "",
+            ).strip()
+            args = raw_call.get("args")
+            if not isinstance(args, dict):
+                parsed_args = {}
+                if isinstance(args, str) and args.strip():
+                    with contextlib.suppress(TypeError, ValueError, json.JSONDecodeError):
+                        maybe_args = json.loads(args)
+                        if isinstance(maybe_args, dict):
+                            parsed_args = maybe_args
+                args = parsed_args
+
+            summary = str(raw_call.get("summary") or raw_call.get("args") or "").strip()
+            call_key = tool_call_id or f"{tool_name or 'tool_call'}_{index}"
+            if call_key in seen_keys:
+                continue
+            seen_keys.add(call_key)
+
+            payload = self._build_tool_call_payload(
+                node_name=node_name,
+                tool_name=tool_name or "工具调用",
+                tool_call_id=tool_call_id or call_key,
+                args=args if isinstance(args, dict) else {},
+                summary=summary,
+            )
+            sse_chunks.append(self._fmt_tool_call_event(payload))
+            sse_chunks.append(self._fmt_workflow_event(
+                self._build_workflow_event(
+                    session_id=session_id,
+                    run_id=run_id,
+                    phase="tool_called",
+                    title=f"调用工具: {payload['name']}",
+                    summary=summary or json.dumps(payload["args"], ensure_ascii=False),
+                    status="active",
+                    role=self._workflow_role_for_agent(node_name),
+                    agent_name=node_name,
+                    node_name=node_name,
+                    meta={
+                        "args": payload["args"],
+                        "tool_call_id": payload["tool_call_id"],
+                        "source": "tool_chunk",
+                    },
+                )
+            ))
+
+        return sse_chunks
 
     def _handle_message_chunk(
             self,
@@ -1405,7 +1659,7 @@ class GraphRunner:
 
         过滤逻辑：
         - 静默内部路由/规划节点的文本输出，只允许最终节点往前端推流。
-        - 过滤工具调用 chunk（工具调用通过 THINKING 事件单独展示）。
+        - 过滤工具调用 chunk，统一转成 `tool_call/workflow_event`，不混入正文流。
         - 跨 chunk 去掉路由 JSON 前缀，避免 `{"intent":...}` 泄漏到用户界面。
         """
         msg_chunk, metadata = event
@@ -1432,29 +1686,17 @@ class GraphRunner:
         if node_name in _silenced_nodes:
             return [], router_prefix_buffer, router_prefix_done
 
-        # 工具调用 chunk 展示，同时下发 WORKFLOW_EVENT 供前端详情面板展示
-        if getattr(msg_chunk, "tool_calls", None):
-            chunks = []
-            for tc in msg_chunk.tool_calls:
-                tool_name = tc.get("name", "...")
-                chunks.append(self._fmt_sse(SseEventType.THINKING.value, f"🔧 正在调度: {tool_name}"))
-                chunks.append(self._fmt_workflow_event(
-                    self._build_workflow_event(
-                        session_id=session_id,
-                        run_id=run_id,
-                        phase="tool_called",
-                        title=f"调用工具: {tool_name}",
-                        summary=json.dumps(tc.get("args", {}), ensure_ascii=False),
-                        status="active",
-                        role=self._workflow_role_for_agent(node_name),
-                        agent_name=node_name,
-                        node_name=node_name,
-                        meta={"args": tc.get("args", {}), "tool_call_id": tc.get("id")}
-                    )
-                ))
-            if chunks:
-                return chunks, router_prefix_buffer, router_prefix_done
-            return [], router_prefix_buffer, router_prefix_done
+        tool_call_chunks = self._extract_tool_call_chunks(msg_chunk)
+        tool_calls = list(getattr(msg_chunk, "tool_calls", None) or [])
+        if tool_calls or tool_call_chunks:
+            chunks = self._build_tool_call_sse_chunks(
+                session_id=session_id,
+                run_id=run_id,
+                node_name=node_name,
+                tool_calls=tool_calls,
+                tool_call_chunks=tool_call_chunks,
+            )
+            return chunks, router_prefix_buffer, router_prefix_done
 
         if not msg_chunk.content:
             return [], router_prefix_buffer, router_prefix_done
@@ -1492,7 +1734,13 @@ class GraphRunner:
         """
         visible_content = str(content or "")
         if event_type == SseEventType.STREAM.value:
-            visible_content = cls._format_user_visible_text(visible_content)
+            # 流式 chunk 不能做激进 Markdown 归一化，否则会把 token 边界放大成空行/断词。
+            visible_content = (
+                visible_content
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+                .replace("\u200b", "")
+            )
 
         payload = json.dumps(
             {SsePayloadField.TYPE.value: event_type, SsePayloadField.CONTENT.value: visible_content},
@@ -1512,6 +1760,19 @@ class GraphRunner:
             ensure_ascii=False,
         )
         return f"event: {SseEventType.WORKFLOW_EVENT.value}\ndata: {body}\n\n"
+
+    @staticmethod
+    def _fmt_tool_call_event(payload: Dict[str, Any]) -> str:
+        """将工具调用格式化为专用 SSE 事件，避免与正文流混排。"""
+        body = json.dumps(
+            {
+                SsePayloadField.TYPE.value: SseEventType.TOOL_CALL.value,
+                SsePayloadField.CONTENT.value: str(payload.get("summary") or payload.get("name") or ""),
+                SsePayloadField.PAYLOAD.value: payload,
+            },
+            ensure_ascii=False,
+        )
+        return f"event: {SseEventType.TOOL_CALL.value}\ndata: {body}\n\n"
 
     @staticmethod
     def _normalize_graph_error_message(error: Any) -> str:
@@ -1832,7 +2093,22 @@ class GraphRunner:
         try:
             config = {"configurable": {"thread_id": session_id}}
             state = await graph.aget_state(config)
-            messages = (getattr(state, "values", None) or {}).get("messages", [])
+            state_values = getattr(state, "values", None) or {}
+            messages = state_values.get("messages", [])
+            has_aggregator_message = any(
+                isinstance(msg, AIMessage)
+                and str(getattr(msg, "name", "") or "") == "Aggregator"
+                and self._format_user_visible_text(getattr(msg, "content", ""))
+                for msg in messages
+            )
+            if not has_aggregator_message:
+                task_results_fallback = self._build_task_results_fallback(
+                    state_values.get("task_results") or {},
+                    state_values.get("task_list") or [],
+                )
+                if task_results_fallback:
+                    return task_results_fallback
+
             # 从后向前找最后一条有内容的 AI 消息
             for msg in reversed(messages):
                 if not isinstance(msg, AIMessage):
@@ -1862,6 +2138,7 @@ class GraphRunner:
             session_id: str,
             effective_config: Dict[str, Any],
             live_streamed_agents: Set[str],
+            execution_state: Optional[Dict[str, Any]],
             interrupt_emitted: bool,
             active_agent_candidates: Set[str],
             run_id: str = "",
@@ -1876,7 +2153,25 @@ class GraphRunner:
         """
         from supervisor.registry import agent_classes as _agent_classes
 
+        stream_state = self._ensure_execution_state(execution_state)
+        orchestration_nodes = {"Parent_Planner_Node", "dispatch_node", "worker_node", "reducer_node", "aggregator_node"}
+
         for node_name, node_val in event.items():
+            if node_name in orchestration_nodes:
+                self._mark_orchestrated_execution(stream_state)
+
+            if node_name == "Intent_Router_Node" and isinstance(node_val, dict):
+                if bool(node_val.get("is_complex")):
+                    self._mark_orchestrated_execution(stream_state)
+                else:
+                    intent_name = str(node_val.get("intent") or "").strip()
+                    if intent_name == "CHAT":
+                        self._track_direct_body_agent(stream_state, "ChatAgent")
+                    elif intent_name in _agent_classes:
+                        self._track_direct_body_agent(stream_state, intent_name)
+                    else:
+                        stream_state["direct_body_agents"].clear()
+
             # 记录本轮参与执行的 Agent 名称
             if node_name in _agent_classes:
                 active_agent_candidates.add(node_name)
@@ -1999,11 +2294,23 @@ class GraphRunner:
                 # 从 response_metadata 提取 Agent 操作日志
                 for log_entry in metadata.get("operation_logs", []):
                     yield self._fmt_sse(SseEventType.THINKING.value, log_entry)
-                # synthetic 消息：由于未走正常 LLM stream，需直接推送给前端
-                should_emit = metadata.get("synthetic") and bool(msg.content)
+                should_emit = bool(metadata.get("synthetic") and msg.content)
                 source_agent_name = str(getattr(msg, "name", "") or node_name or "")
                 visible = self._strip_router_json_prefix_single(msg.content)
                 visible_text = visible if isinstance(visible, str) else ""
+                is_orchestrated = bool(stream_state.get("orchestrated"))
+                direct_body_agents = stream_state.get("direct_body_agents", set())
+                is_top_level_direct_chat = (
+                    not is_orchestrated
+                    and node_name == "chat_node"
+                    and source_agent_name == "ChatAgent"
+                    and source_agent_name in direct_body_agents
+                )
+                is_top_level_direct_agent = (
+                    not is_orchestrated
+                    and node_name in _agent_classes
+                    and source_agent_name in direct_body_agents
+                )
 
                 if node_name == "aggregator_node" and visible_text.strip():
                     yield self._fmt_workflow_event(
@@ -2034,19 +2341,34 @@ class GraphRunner:
                         )
                     )
                 elif node_name == "chat_node" and visible_text.strip():
-                    yield self._fmt_workflow_event(
-                        self._build_workflow_event(
-                            session_id=session_id,
-                            run_id=run_id,
-                            phase="direct_response_completed",
-                            title="掌柜直接回复老板",
-                            summary=visible_text[:160],
-                            status="completed",
-                            role="supervisor",
-                            agent_name="ChatAgent",
-                            node_name=node_name,
+                    if is_top_level_direct_chat:
+                        yield self._fmt_workflow_event(
+                            self._build_workflow_event(
+                                session_id=session_id,
+                                run_id=run_id,
+                                phase="direct_response_completed",
+                                title="掌柜直接回复老板",
+                                summary=visible_text[:160],
+                                status="completed",
+                                role="supervisor",
+                                agent_name="ChatAgent",
+                                node_name=node_name,
+                            )
                         )
-                    )
+                    else:
+                        yield self._fmt_workflow_event(
+                            self._build_workflow_event(
+                                session_id=session_id,
+                                run_id=run_id,
+                                phase="worker_completed",
+                                title="综合答复提交子任务结果",
+                                summary=visible_text[:160],
+                                status="completed",
+                                role="worker",
+                                agent_name=source_agent_name or node_name,
+                                node_name=node_name,
+                            )
+                        )
                 elif node_name in _agent_classes and visible_text.strip():
                     yield self._fmt_workflow_event(
                         self._build_workflow_event(
@@ -2062,14 +2384,18 @@ class GraphRunner:
                             meta={"live_streamed": bool(metadata.get("live_streamed"))},
                         )
                     )
-                # 仅对 ChatAgent 执行“live_stream 后抑制 synthetic”；
-                # 工具型 Agent 可能先流出过渡句，再产出最终结果，若统一抑制会导致“有前奏、无结论”。
-                if source_agent_name == "ChatAgent":
+                # 顶层执行者若已经通过 live_stream 进过正文，则抑制 synthetic，避免重复。
+                if node_name == "aggregator_node" or is_top_level_direct_chat or is_top_level_direct_agent:
                     if metadata.get("live_streamed"):
                         should_emit = False
                     elif live_streamed_agents and source_agent_name in live_streamed_agents:
                         should_emit = False
-                if should_emit and (node_name != "aggregator_node" or metadata.get("force_emit")):
+                can_emit_to_body = (
+                    (node_name == "aggregator_node" and bool(metadata.get("force_emit")))
+                    or is_top_level_direct_chat
+                    or is_top_level_direct_agent
+                )
+                if should_emit and can_emit_to_body and visible_text.strip():
                     if visible_text.strip():
                         yield self._fmt_sse(SseEventType.STREAM.value, visible_text)
 
@@ -2089,6 +2415,7 @@ class GraphRunner:
             run_id="",
             effective_config={},
             live_streamed_agents=live_streamed_agents or set(),
+            execution_state=None,
             interrupt_emitted=False,
             active_agent_candidates=set(),
         )
