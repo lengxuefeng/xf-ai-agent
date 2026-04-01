@@ -7,6 +7,7 @@
 
 import os
 from typing import Optional, Any
+from enum import Enum
 
 from dotenv import load_dotenv
 from langchain_core.language_models import BaseChatModel
@@ -47,6 +48,43 @@ LARGE_MODEL_CANDIDATES = {
     "gemini": ("gemini-2.5-pro", "gemini-1.5-pro"),
     "ollama": (),
 }
+
+
+class ProviderFamily(str, Enum):
+    ANTHROPIC = "anthropic"
+    OPENAI = "openai"
+    GENERIC = "generic"
+
+
+def resolve_provider_family(
+    *,
+    service_type: str = "",
+    model_service: str = "",
+    model_name: str = "",
+) -> ProviderFamily:
+    tokens = " ".join(
+        [
+            str(service_type or "").strip().lower(),
+            str(model_service or "").strip().lower(),
+            str(model_name or "").strip().lower(),
+        ]
+    )
+    if any(keyword in tokens for keyword in ("anthropic", "claude")):
+        return ProviderFamily.ANTHROPIC
+    if (
+        "openai" in tokens
+        or "/gpt" in tokens
+        or " gpt" in tokens
+        or tokens.startswith("gpt")
+        or "/o1" in tokens
+        or "/o3" in tokens
+        or "/o4" in tokens
+        or tokens.startswith("o1")
+        or tokens.startswith("o3")
+        or tokens.startswith("o4")
+    ):
+        return ProviderFamily.OPENAI
+    return ProviderFamily.GENERIC
 
 
 def _normalize_model_size(model_size: str | None) -> str:
@@ -181,6 +219,11 @@ def create_model_from_config(
     """
     normalized_model_size = _normalize_model_size(model_size)
     resolved_model = _resolve_model_name(service_type, model, normalized_model_size)
+    provider_family = resolve_provider_family(
+        service_type=service_type,
+        model_service=model_service,
+        model_name=resolved_model or model,
+    )
     config = ModelConfig(
         model=resolved_model,
         model_service=model_service,
@@ -194,6 +237,7 @@ def create_model_from_config(
         model_url=model_url,
         embedding_model_key=embedding_model_key,
         requested_model=model,
+        provider_family=provider_family.value,
         **kwargs
     )
 
@@ -226,3 +270,43 @@ def create_model_from_config(
             )
 
     return chat_model, embedding_model_instance
+
+
+def create_embedding_model_from_config(
+        model: str,
+        model_service: str,
+        service_type: str,
+        model_size: str = "large",
+        deep_thinking_mode: str = 'auto',
+        rag_enabled: bool = False,
+        similarity_threshold: float = 0.7,
+        embedding_model: str = 'bge-m3:latest',
+        model_key: str = '',
+        model_url: str = '',
+        embedding_model_key: str = '',
+        **kwargs
+):
+    normalized_model_size = _normalize_model_size(model_size)
+    resolved_model = _resolve_model_name(service_type, model, normalized_model_size)
+    provider_family = resolve_provider_family(
+        service_type=service_type,
+        model_service=model_service,
+        model_name=resolved_model or model,
+    )
+    config = ModelConfig(
+        model=resolved_model,
+        model_service=model_service,
+        service_type=service_type,
+        model_size=normalized_model_size,
+        deep_thinking_mode=deep_thinking_mode,
+        rag_enabled=rag_enabled,
+        similarity_threshold=similarity_threshold,
+        embedding_model=embedding_model,
+        model_key=model_key,
+        model_url=model_url,
+        embedding_model_key=embedding_model_key,
+        requested_model=model,
+        provider_family=provider_family.value,
+        **kwargs
+    )
+    return UnifiedModelLoader.load_embedding_model(config)

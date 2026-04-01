@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from enum import Enum
 from typing import Tuple
 
 
@@ -69,6 +70,58 @@ def _as_csv_tuple(name: str, default: Tuple[str, ...]) -> Tuple[str, ...]:
         return default
     # 按逗号分割并去除空白
     return tuple(x.strip() for x in raw.split(",") if x.strip())
+
+
+class RunMode(str, Enum):
+    """运行模式枚举。"""
+
+    CLOUD = "cloud"
+    LOCAL = "local"
+
+
+class RunModeDeniedError(PermissionError):
+    """当前运行模式不允许某项能力时抛出的统一异常。"""
+
+    def __init__(self, capability: str, *, run_mode: RunMode | None = None) -> None:
+        resolved_mode = run_mode or get_run_mode()
+        super().__init__(build_run_mode_denied_message(capability, resolved_mode=resolved_mode))
+
+
+def _as_run_mode(name: str, default: RunMode = RunMode.CLOUD) -> RunMode:
+    raw = str(os.getenv(name, default.value) or "").strip().lower()
+    if raw == RunMode.LOCAL.value:
+        return RunMode.LOCAL
+    return RunMode.CLOUD
+
+
+def get_run_mode() -> RunMode:
+    """读取当前运行模式，默认 cloud。"""
+    return _as_run_mode("RUN_MODE", RUN_MODE)
+
+
+def is_cloud_mode() -> bool:
+    return get_run_mode() == RunMode.CLOUD
+
+
+def is_local_mode() -> bool:
+    return get_run_mode() == RunMode.LOCAL
+
+
+def build_run_mode_denied_message(
+    capability: str,
+    *,
+    resolved_mode: RunMode | None = None,
+) -> str:
+    mode = resolved_mode or get_run_mode()
+    normalized_capability = str(capability or "该能力").strip() or "该能力"
+    return f"当前 RUN_MODE={mode.value}，已禁用{normalized_capability}。"
+
+
+def require_local_mode(capability: str) -> None:
+    """要求当前处于 local 模式，否则抛出统一拒绝异常。"""
+    if is_local_mode():
+        return
+    raise RunModeDeniedError(capability)
 
 
 @dataclass(frozen=True)
@@ -301,6 +354,9 @@ class CheckpointerPoolConfig:
 
     # 连接最大生命周期（秒）
     max_lifetime_seconds: float
+
+
+RUN_MODE = _as_run_mode("RUN_MODE", RunMode.CLOUD)
 
 
 # 图执行器调优参数配置实例

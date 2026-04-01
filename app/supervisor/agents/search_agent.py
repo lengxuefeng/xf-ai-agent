@@ -50,6 +50,7 @@ from config.constants.agent_messages import (
 )
 from config.constants.search_keywords import SEARCH_REAL_ESTATE_KEYWORDS, SEARCH_WEATHER_KEYWORDS
 from tools.agent_tools.search_tools import tavily_search_tool
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 from common.utils.custom_logger import get_logger
 from prompts.agent_prompts.tools_prompt import ToolsPrompt
 
@@ -370,7 +371,7 @@ class SearchAgent(BaseAgent):
             }
 
         # 调用 LLM，可能返回搜索工具调用或直接回答
-        llm_with_tools = self.llm.bind_tools(self.tools)
+        llm_with_tools = runtime_tool_registry.bind_tools(self.llm, self.tools)
         chain = self.prompt | llm_with_tools
         ai_msg = await chain.ainvoke({"messages": focused_messages}, config=config)
 

@@ -5,13 +5,14 @@ import subprocess
 import sys
 import tempfile
 import time
+import json
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
+from config.runtime_settings import build_run_mode_denied_message, is_local_mode
 from harness.exec.policy import ExecPolicy
 from harness.exec.result import ExecResult
 from harness.workspace.path_guard import workspace_path_guard
-import json
 
 
 class ExecRunner:
@@ -31,6 +32,14 @@ class ExecRunner:
     ) -> ExecResult:
         """执行一条受控命令，并附带工作目录边界校验。"""
         argv = [str(part) for part in command]
+        if not is_local_mode():
+            return ExecResult(
+                success=False,
+                command=argv,
+                exit_code=126,
+                stderr=build_run_mode_denied_message("本地命令执行"),
+                meta={"reason": "run_mode_denied"},
+            )
         if not self.policy.allows(argv):
             return ExecResult(
                 success=False,
@@ -107,6 +116,14 @@ class ExecRunner:
         timeout_seconds: Optional[float] = None,
     ) -> ExecResult:
         """将 Python 代码写入临时文件并在受控目录内运行。"""
+        if not is_local_mode():
+            return ExecResult(
+                success=False,
+                command=[sys.executable, "<inline-python>"],
+                exit_code=126,
+                stderr=build_run_mode_denied_message("本地 Python 执行"),
+                meta={"reason": "run_mode_denied"},
+            )
         with tempfile.NamedTemporaryFile("w", suffix=".py", encoding="utf-8", delete=False) as handle:
             handle.write(str(code or ""))
             temp_path = Path(handle.name)

@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+from config.runtime_settings import require_local_mode
 from harness.types import RunContext
 from harness.workspace.path_guard import workspace_path_guard
 from harness.workspace.models import WorkspaceArtifact
@@ -61,12 +62,14 @@ class WorkspaceManager:
 
     def bind_external_workspace(self, session_id: str, workspace_root: str) -> Dict[str, Any]:
         """绑定某个聊天会话的外部工作目录。"""
+        require_local_mode("外部工作目录绑定")
         resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
         self._bound_workspace_roots[str(session_id)] = str(resolved_root)
         return self.describe_external_workspace(session_id)
 
     def describe_external_workspace(self, session_id: str) -> Dict[str, Any]:
         """返回聊天会话当前绑定的外部工作目录信息。"""
+        require_local_mode("外部工作目录访问")
         bound_root = self._bound_workspace_roots.get(str(session_id))
         if not bound_root:
             return {
@@ -82,64 +85,30 @@ class WorkspaceManager:
 
     def get_external_workspace(self, session_id: str) -> str:
         """读取会话当前绑定的外部工作目录。"""
+        require_local_mode("外部工作目录访问")
         return str(self._bound_workspace_roots.get(str(session_id)) or "")
 
     def list_workspace_directory(self, session_id: str, relative_path: str = "") -> Dict[str, Any]:
         """列出某个已绑定工作目录下的目录内容。"""
+        require_local_mode("工作目录浏览")
         root = self._resolve_bound_root(session_id)
-        target = self._resolve_workspace_path(root, relative_path, must_exist=True)
-        if not target.is_dir():
-            raise ValueError("指定路径不是目录。")
-
-        items: List[Dict[str, Any]] = []
-        for item in sorted(target.iterdir(), key=lambda path: (not path.is_dir(), path.name.lower())):
-            stat = item.stat()
-            items.append(
-                {
-                    "name": item.name,
-                    "path": self._relative_workspace_path(root, item),
-                    "type": "directory" if item.is_dir() else "file",
-                    "size_bytes": 0 if item.is_dir() else stat.st_size,
-                    "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                }
-            )
-
-        return {
-            "workspace_root": str(root),
-            "path": self._relative_workspace_path(root, target),
-            "items": items,
-        }
+        return self._list_directory(root, relative_path)
 
     def read_workspace_file(self, session_id: str, relative_path: str) -> Dict[str, Any]:
         """读取已绑定工作目录下的文本文件。"""
+        require_local_mode("工作目录文件读取")
         root = self._resolve_bound_root(session_id)
-        target = self._resolve_workspace_path(root, relative_path, must_exist=True)
-        if not target.is_file():
-            raise ValueError("指定路径不是文件。")
-
-        content = target.read_text(encoding="utf-8", errors="replace")
-        stat = target.stat()
-        return {
-            "workspace_root": str(root),
-            "path": self._relative_workspace_path(root, target),
-            "name": target.name,
-            "content": content,
-            "size_bytes": stat.st_size,
-            "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-        }
+        return self._read_file(root, relative_path)
 
     def save_workspace_file(self, session_id: str, relative_path: str, content: str) -> Dict[str, Any]:
         """将文本内容保存到已绑定工作目录内的文件。"""
+        require_local_mode("工作目录文件写入")
         root = self._resolve_bound_root(session_id)
-        target = self._resolve_workspace_path(root, relative_path, must_exist=False)
-        if target.exists() and not target.is_file():
-            raise ValueError("只能保存到文件路径。")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(str(content or ""), encoding="utf-8")
-        return self.read_workspace_file(session_id, relative_path)
+        return self._write_file(root, relative_path, content)
 
     def create_workspace_file(self, session_id: str, relative_path: str, content: str = "") -> Dict[str, Any]:
         """创建新的工作区文本文件。"""
+        require_local_mode("工作目录文件创建")
         root = self._resolve_bound_root(session_id)
         target = self._resolve_workspace_path(root, relative_path, must_exist=False)
         if target.exists():
@@ -150,58 +119,62 @@ class WorkspaceManager:
 
     def create_workspace_directory(self, session_id: str, relative_path: str) -> Dict[str, Any]:
         """创建新的工作区目录。"""
+        require_local_mode("工作目录创建")
         root = self._resolve_bound_root(session_id)
-        target = self._resolve_workspace_path(root, relative_path, must_exist=False)
-        if target.exists():
-            raise ValueError("目标目录已存在。")
-        target.mkdir(parents=True, exist_ok=False)
-        return {
-            "workspace_root": str(root),
-            "path": self._relative_workspace_path(root, target),
-            "name": target.name,
-            "type": "directory",
-        }
+        return self._create_directory(root, relative_path)
 
     def rename_workspace_entry(self, session_id: str, relative_path: str, new_relative_path: str) -> Dict[str, Any]:
         """在工作目录内重命名或移动文件、目录。"""
+        require_local_mode("工作目录条目移动")
         root = self._resolve_bound_root(session_id)
-        source = self._resolve_workspace_path(root, relative_path, must_exist=True)
-        if source == root:
-            raise ValueError("不允许重命名工作目录根节点。")
-
-        target = self._resolve_workspace_path(root, new_relative_path, must_exist=False)
-        if target.exists():
-            raise ValueError("目标路径已存在。")
-
-        target.parent.mkdir(parents=True, exist_ok=True)
-        source.rename(target)
-        return {
-            "workspace_root": str(root),
-            "old_path": self._relative_workspace_path(root, source),
-            "path": self._relative_workspace_path(root, target),
-            "name": target.name,
-            "type": "directory" if target.is_dir() else "file",
-        }
+        return self._move_entry(root, relative_path, new_relative_path)
 
     def delete_workspace_entry(self, session_id: str, relative_path: str) -> Dict[str, Any]:
         """删除工作目录内的文件或目录。"""
+        require_local_mode("工作目录条目删除")
         root = self._resolve_bound_root(session_id)
-        target = self._resolve_workspace_path(root, relative_path, must_exist=True)
-        if target == root:
-            raise ValueError("不允许删除工作目录根节点。")
+        return self._delete_entry(root, relative_path)
 
-        target_type = "directory" if target.is_dir() else "file"
-        deleted_path = self._relative_workspace_path(root, target)
-        if target.is_dir():
-            shutil.rmtree(target)
-        else:
-            target.unlink()
+    def list_workspace_directory_by_root(self, workspace_root: str, relative_path: str = "") -> Dict[str, Any]:
+        """供 runtime tools 直接访问指定工作目录。"""
+        require_local_mode("工作目录浏览")
+        root = self._resolve_direct_root(workspace_root)
+        return self._list_directory(root, relative_path)
 
-        return {
-            "workspace_root": str(root),
-            "path": deleted_path,
-            "type": target_type,
-        }
+    def read_workspace_file_by_root(self, workspace_root: str, relative_path: str) -> Dict[str, Any]:
+        """供 runtime tools 直接读取指定工作目录中的文件。"""
+        require_local_mode("工作目录文件读取")
+        root = self._resolve_direct_root(workspace_root)
+        return self._read_file(root, relative_path)
+
+    def write_workspace_file_by_root(self, workspace_root: str, relative_path: str, content: str) -> Dict[str, Any]:
+        """供 runtime tools 直接写入指定工作目录中的文件。"""
+        require_local_mode("工作目录文件写入")
+        root = self._resolve_direct_root(workspace_root)
+        return self._write_file(root, relative_path, content)
+
+    def create_workspace_directory_by_root(self, workspace_root: str, relative_path: str) -> Dict[str, Any]:
+        """供 runtime tools 直接创建指定工作目录中的目录。"""
+        require_local_mode("工作目录创建")
+        root = self._resolve_direct_root(workspace_root)
+        return self._create_directory(root, relative_path)
+
+    def move_workspace_entry_by_root(
+        self,
+        workspace_root: str,
+        relative_path: str,
+        new_relative_path: str,
+    ) -> Dict[str, Any]:
+        """供 runtime tools 直接移动指定工作目录中的条目。"""
+        require_local_mode("工作目录条目移动")
+        root = self._resolve_direct_root(workspace_root)
+        return self._move_entry(root, relative_path, new_relative_path)
+
+    def delete_workspace_entry_by_root(self, workspace_root: str, relative_path: str) -> Dict[str, Any]:
+        """供 runtime tools 直接删除指定工作目录中的条目。"""
+        require_local_mode("工作目录条目删除")
+        root = self._resolve_direct_root(workspace_root)
+        return self._delete_entry(root, relative_path)
 
     def write_text_artifact(
         self,
@@ -286,6 +259,110 @@ class WorkspaceManager:
         if not bound_root:
             raise ValueError("当前会话尚未绑定工作目录。")
         return workspace_path_guard.resolve_workspace_root(bound_root)
+
+    @staticmethod
+    def _resolve_direct_root(workspace_root: str) -> Path:
+        normalized = str(workspace_root or "").strip()
+        if not normalized:
+            raise ValueError("当前未提供合法的 workspace_root。")
+        return workspace_path_guard.resolve_workspace_root(normalized)
+
+    def _list_directory(self, root: Path, relative_path: str = "") -> Dict[str, Any]:
+        target = self._resolve_workspace_path(root, relative_path, must_exist=True)
+        if not target.is_dir():
+            raise ValueError("指定路径不是目录。")
+
+        items: List[Dict[str, Any]] = []
+        for item in sorted(target.iterdir(), key=lambda path: (not path.is_dir(), path.name.lower())):
+            stat = item.stat()
+            items.append(
+                {
+                    "name": item.name,
+                    "path": self._relative_workspace_path(root, item),
+                    "type": "directory" if item.is_dir() else "file",
+                    "size_bytes": 0 if item.is_dir() else stat.st_size,
+                    "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                }
+            )
+
+        return {
+            "workspace_root": str(root),
+            "path": self._relative_workspace_path(root, target),
+            "items": items,
+        }
+
+    def _read_file(self, root: Path, relative_path: str) -> Dict[str, Any]:
+        target = self._resolve_workspace_path(root, relative_path, must_exist=True)
+        if not target.is_file():
+            raise ValueError("指定路径不是文件。")
+
+        content = target.read_text(encoding="utf-8", errors="replace")
+        stat = target.stat()
+        return {
+            "workspace_root": str(root),
+            "path": self._relative_workspace_path(root, target),
+            "name": target.name,
+            "content": content,
+            "size_bytes": stat.st_size,
+            "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+        }
+
+    def _write_file(self, root: Path, relative_path: str, content: str) -> Dict[str, Any]:
+        target = self._resolve_workspace_path(root, relative_path, must_exist=False)
+        if target.exists() and not target.is_file():
+            raise ValueError("只能保存到文件路径。")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(str(content or ""), encoding="utf-8")
+        return self._read_file(root, relative_path)
+
+    def _create_directory(self, root: Path, relative_path: str) -> Dict[str, Any]:
+        target = self._resolve_workspace_path(root, relative_path, must_exist=False)
+        if target.exists():
+            raise ValueError("目标目录已存在。")
+        target.mkdir(parents=True, exist_ok=False)
+        return {
+            "workspace_root": str(root),
+            "path": self._relative_workspace_path(root, target),
+            "name": target.name,
+            "type": "directory",
+        }
+
+    def _move_entry(self, root: Path, relative_path: str, new_relative_path: str) -> Dict[str, Any]:
+        source = self._resolve_workspace_path(root, relative_path, must_exist=True)
+        if source == root:
+            raise ValueError("不允许重命名工作目录根节点。")
+
+        target = self._resolve_workspace_path(root, new_relative_path, must_exist=False)
+        if target.exists():
+            raise ValueError("目标路径已存在。")
+
+        target.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(target)
+        return {
+            "workspace_root": str(root),
+            "old_path": self._relative_workspace_path(root, source),
+            "path": self._relative_workspace_path(root, target),
+            "name": target.name,
+            "type": "directory" if target.is_dir() else "file",
+        }
+
+    def _delete_entry(self, root: Path, relative_path: str) -> Dict[str, Any]:
+        target = self._resolve_workspace_path(root, relative_path, must_exist=True)
+        if target == root:
+            raise ValueError("不允许删除工作目录根节点。")
+
+        target_type = "directory" if target.is_dir() else "file"
+        deleted_path = self._relative_workspace_path(root, target)
+        if target.is_dir():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
+
+        return {
+            "workspace_root": str(root),
+            "path": deleted_path,
+            "type": target_type,
+        }
 
     def _resolve_workspace_path(self, root: Path, relative_path: str, *, must_exist: bool) -> Path:
         """在工作目录内解析目标路径，防止通过相对路径逃逸。"""

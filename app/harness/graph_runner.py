@@ -652,6 +652,8 @@ class GraphRunner:
         workspace_meta = workspace_manager.prepare_run_workspace(run_context)
         tool_registry_stats = runtime_tool_registry.build_tool_stats(runtime_profile.get("dynamic_tool_catalog"))
         tool_catalog = runtime_tool_registry.build_tool_catalog(runtime_profile.get("dynamic_tool_catalog"))
+        effective_config["resolved_tool_catalog"] = tool_catalog
+        run_context.model_config["resolved_tool_catalog"] = tool_catalog
         search_capability = search_gateway.capability_snapshot()
         bootstrap_artifacts = [
             workspace_manager.write_json_artifact(
@@ -1067,6 +1069,7 @@ class GraphRunner:
         docs = vector_store_service.search_documents(
             user_input,
             threshold=float(model_config.get("similarity_threshold", 0.7)),
+            model_config=model_config,
         )
         sources: List[str] = []
         for doc in docs:

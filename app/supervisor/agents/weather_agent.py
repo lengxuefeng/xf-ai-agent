@@ -16,6 +16,7 @@ from prompts.agent_prompts.tools_prompt import ToolsPrompt
 from supervisor.base import BaseAgent
 from supervisor.graph_state import AgentRequest
 from tools.agent_tools.weather_tools import get_weathers
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 
 log = get_logger(__name__)
 
@@ -155,6 +156,6 @@ class WeatherAgent(BaseAgent):
                 )
             )
 
-        llm_with_tools = self.llm.bind_tools(self.tools)
+        llm_with_tools = runtime_tool_registry.bind_tools(self.llm, self.tools)
         response = await (self.prompt | llm_with_tools).ainvoke({"messages": focused_messages}, config=config)
         return {"tool_loop_count": loop_count + 1, "messages": [response]}

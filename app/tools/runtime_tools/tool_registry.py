@@ -5,6 +5,13 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
 from enum import Enum
 
+from config.runtime_settings import (
+    RunMode,
+    build_run_mode_denied_message,
+    get_run_mode,
+    is_local_mode,
+)
+
 
 class ToolType(str, Enum):
     """定义工具的来源与执行环境类型"""
@@ -25,6 +32,7 @@ class ToolDescriptor:
     # 针对 MCP 和 Skill 的额外配置上下文
     mcp_config: Optional[Dict[str, Any]] = None
     skill_config: Optional[Dict[str, Any]] = None
+    allowed_modes: tuple[str, ...] = (RunMode.CLOUD.value, RunMode.LOCAL.value)
 
     def to_dict(self) -> dict:
         return {
@@ -34,6 +42,7 @@ class ToolDescriptor:
             "source": self.source,
             "tool_type": self.tool_type.value,
             "requires_approval": self.requires_approval,
+            "allowed_modes": list(self.allowed_modes),
         }
 
 
@@ -63,14 +72,6 @@ class RuntimeToolRegistry:
             "weather_agent": "当前会话未启用天气工具，无法执行天气查询。请在 Agent Skills 中启用天气能力后重试。",
         }
         self._tools: Dict[str, ToolDescriptor] = {
-            "execute_python_code": ToolDescriptor(
-                name="execute_python_code",
-                category="exec",
-                description="执行 Python 代码并返回标准输出",
-                source="runtime.exec",
-                tool_type=ToolType.NATIVE,
-                requires_approval=True,
-            ),
             "execute_sql": ToolDescriptor(
                 name="execute_sql",
                 category="database",
@@ -109,6 +110,7 @@ class RuntimeToolRegistry:
         source: str,
         requires_approval: bool = False,
         description: str = "",
+        local_only: bool = False,
     ) -> None:
         self._register(
             tool=tool,
@@ -117,6 +119,7 @@ class RuntimeToolRegistry:
             source=source,
             requires_approval=requires_approval,
             description=description,
+            local_only=local_only,
         )
 
     # 兼容老入口
@@ -131,6 +134,7 @@ class RuntimeToolRegistry:
         requires_approval: bool = True,
         mcp_config: Optional[Dict[str, Any]] = None,
         description: str = "",
+        local_only: bool = False,
     ) -> None:
         self._register(
             tool=tool,
@@ -140,6 +144,7 @@ class RuntimeToolRegistry:
             requires_approval=requires_approval,
             description=description,
             mcp_config=mcp_config,
+            local_only=local_only,
         )
 
     def register_skill_tool(
@@ -151,6 +156,7 @@ class RuntimeToolRegistry:
         requires_approval: bool = False,
         skill_config: Optional[Dict[str, Any]] = None,
         description: str = "",
+        local_only: bool = False,
     ) -> None:
         self._register(
             tool=tool,
@@ -160,6 +166,7 @@ class RuntimeToolRegistry:
             requires_approval=requires_approval,
             description=description,
             skill_config=skill_config,
+            local_only=local_only,
         )
 
     def _register(
@@ -172,10 +179,13 @@ class RuntimeToolRegistry:
         description: str,
         mcp_config: Optional[Dict[str, Any]] = None,
         skill_config: Optional[Dict[str, Any]] = None,
+        local_only: bool = False,
     ) -> None:
         tool_name = str(getattr(tool, "name", "") or "").strip()
         if not tool_name:
             return
+        if local_only and not is_local_mode():
+            raise ValueError(build_run_mode_denied_message(f"仅限 local 模式注册的工具 `{tool_name}`"))
         tool_description = str(description or getattr(tool, "description", "") or "").strip()
         self._tools[tool_name] = ToolDescriptor(
             name=tool_name,
@@ -187,19 +197,20 @@ class RuntimeToolRegistry:
             tool_ref=tool,
             mcp_config=mcp_config,
             skill_config=skill_config,
+            allowed_modes=(RunMode.LOCAL.value,) if local_only else (RunMode.CLOUD.value, RunMode.LOCAL.value),
         )
 
     def list_tools(self) -> List[dict]:
-        return [tool.to_dict() for tool in self._tools.values()]
+        return [tool.to_dict() for tool in self._iter_visible_tools()]
 
     def build_tool_catalog(self, dynamic_tools: Optional[List[dict]] = None) -> List[dict]:
         catalog = self.list_tools()
         if dynamic_tools:
             catalog.extend(dynamic_tools)
-        return catalog
+        return self.sort_tool_catalog(catalog)
 
     def list_tools_by_type(self, tool_type: ToolType) -> List[dict]:
-        return [tool.to_dict() for tool in self._tools.values() if tool.tool_type == tool_type]
+        return [tool.to_dict() for tool in self._iter_visible_tools() if tool.tool_type == tool_type]
 
     def get_tool(self, name: str) -> ToolDescriptor | None:
         return self._tools.get(str(name or "").strip())
@@ -208,9 +219,18 @@ class RuntimeToolRegistry:
         descriptor = self.get_tool(name)
         return descriptor.tool_ref if descriptor else None
 
+    def is_tool_allowed_in_current_mode(self, tool: str | ToolDescriptor | None) -> bool:
+        if tool is None:
+            return False
+        descriptor = tool if isinstance(tool, ToolDescriptor) else self.get_tool(str(tool or ""))
+        if descriptor is None:
+            return False
+        return get_run_mode().value in descriptor.allowed_modes
+
     def stats(self) -> Dict[str, Any]:
-        result: Dict[str, Any] = {"total": len(self._tools), "by_type": {}, "by_category": {}}
-        for tool in self._tools.values():
+        result: Dict[str, Any] = {"total": 0, "by_type": {}, "by_category": {}}
+        for tool in self._iter_visible_tools():
+            result["total"] += 1
             cat = tool.category
             t_type = tool.tool_type.value
             result["by_category"][cat] = result["by_category"].get(cat, 0) + 1
@@ -247,6 +267,20 @@ class RuntimeToolRegistry:
                 normalized.append(final_name)
         return normalized
 
+    def filter_bound_tools(self, tool_names: Iterable[str] | None) -> List[str]:
+        requested = set(self.normalize_bound_tools(tool_names))
+        if not requested:
+            return []
+        filtered: list[str] = []
+        for item in self.sort_tool_catalog(self.list_tools()):
+            visible_name = str(item.get("name") or "").strip()
+            if not visible_name:
+                continue
+            canonical_visible = self._canonical_builtin_name(visible_name) or visible_name
+            if visible_name in requested or canonical_visible in requested:
+                filtered.append(visible_name)
+        return filtered
+
     def is_tool_restriction_enabled(self, llm_config: Optional[Dict[str, Any]]) -> bool:
         return bool((llm_config or {}).get("tool_restriction_enabled"))
 
@@ -269,6 +303,21 @@ class RuntimeToolRegistry:
             "当前会话未启用所需工具能力，请调整 Skill 配置后重试。",
         )
 
+    @staticmethod
+    def sort_tool_catalog(catalog: Iterable[dict] | None) -> List[dict]:
+        tools = [dict(item) for item in (catalog or []) if isinstance(item, dict)]
+        return sorted(tools, key=lambda item: str(item.get("name") or "").lower())
+
+    @staticmethod
+    def sort_langchain_tools(tools: Iterable[Any] | None) -> List[Any]:
+        return sorted(
+            [tool for tool in (tools or []) if tool is not None],
+            key=lambda item: str(getattr(item, "name", "") or "").lower(),
+        )
+
+    def bind_tools(self, llm: Any, tools: Iterable[Any] | None, **kwargs: Any) -> Any:
+        return llm.bind_tools(self.sort_langchain_tools(tools), **kwargs)
+
     def _canonical_builtin_name(self, tool_name: str) -> Optional[str]:
         candidate = str(tool_name or "").strip().lower()
         if not candidate:
@@ -278,5 +327,16 @@ class RuntimeToolRegistry:
                 return canonical
         return None
 
+    def _iter_visible_tools(self) -> List[ToolDescriptor]:
+        visible = [
+            descriptor
+            for descriptor in self._tools.values()
+            if self.is_tool_allowed_in_current_mode(descriptor)
+        ]
+        return self.sort_langchain_tools(visible)
+
 
 runtime_tool_registry = RuntimeToolRegistry()
+
+if is_local_mode():
+    import tools.runtime_tools.local_workspace_tools as _local_workspace_tools  # noqa: F401

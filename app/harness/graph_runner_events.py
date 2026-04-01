@@ -1,202 +1,275 @@
 # -*- coding: utf-8 -*-
 """
-LangChain Stream Events 集成，用于捕获所有中间事件
+GraphRunner 流事件桥接层。
+
+职责：
+1. 解析现有 SSE chunk；
+2. 复用现有 workflow/tool instrumentation；
+3. 输出标准化 WebSocket JSON 事件。
 """
+from __future__ import annotations
+
 import json
-import re
-from typing import Generator, List
+from typing import Any, Dict, List, Optional
 
-from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-
-from supervisor.supervisor import create_graph
-from config.constants.sse_constants import SseEventType
+from config.constants.sse_constants import SseEventType, SsePayloadField
 
 
-def to_sse(data: dict) -> str:
-    """将字典格式化为 Server-Sent Event (SSE) 字符串。"""
-    return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+def parse_sse_chunk(chunk: str) -> Optional[Dict[str, Any]]:
+    """从 SSE chunk 中提取 JSON 负载。"""
+    raw_chunk = str(chunk or "")
+    if not raw_chunk.strip():
+        return None
 
+    event_name = ""
+    data_lines: list[str] = []
+    for line in raw_chunk.splitlines():
+        if line.startswith("event:"):
+            event_name = line[6:].strip()
+        elif line.startswith("data:"):
+            data_lines.append(line[5:].lstrip())
 
-def stream_text(text: str, delay: float = 0.0) -> Generator[str, None, None]:
-    """
-    将文本逐字符流式输出，实现打字机效果。
-    自动识别 </think> 标签内容为思考过程，其他为正常回复。
+    if not data_lines:
+        return None
 
-    Args:
-        text: 要输出的文本
-        delay: 每个字符之间的延迟（秒），默认0.0以获得最快响应速度
-
-    Yields:
-        str: SSE格式的流式文本块
-    """
-    if not text:
-        return
-
-    # 解析文本，分离 thinking 和正常内容
-    # 查找所有 </think> 块
-    think_pattern = r'</think>(.*?)</think>'
-    parts = re.split(think_pattern, text, flags=re.DOTALL)
-
-    for i, part in enumerate(parts):
-        if not part.strip():  # 跳过空白部分
-            continue
-
-        # 奇数索引是 </think> 标签内的内容（思考过程）
-        is_thinking = (i % 2 == 1)
-        content_type = SseEventType.THINKING.value if is_thinking else SseEventType.STREAM.value
-
-        # 逐字符流式输出
-        for j, char in enumerate(part):
-            yield to_sse({
-                "type": content_type,
-                "content": char
-            })
-
-
-class GraphRunnerWithEvents:
-    """
-    图运行器，支持使用 astream_events 捕获所有中间事件。
-    """
-
-    def __init__(self, model_config: dict = None, enable_events: bool = True):
-        """
-        初始化图运行器
-
-        Args:
-            model_config: 模型配置字典，包含模型相关参数
-            enable_events: 是否启用事件输出
-        """
-        self.model_config = model_config or {}
-        self.graph = None
-        self.enable_events = enable_events
-
-    async def astream_run(
-            self, user_input: str, session_id: str, model_config: dict = None, history_messages: list = []
-    ) -> Generator[str, None, None]:
-        """
-        使用 astream_events 执行图，捕获所有中间事件。
-
-        Args:
-            user_input: 用户输入
-            session_id: 会话 ID
-            model_config: 模型配置字典
-            history_messages: 历史消息列表
-        """
-        # 合并模型配置
-        final_config = {**self.model_config, **(model_config or {})}
-
-        # 创建图
-        if self.graph is None or model_config:
-            self.graph = create_graph(final_config)
-
-        # 构建消息历史
-        messages: List[BaseMessage] = []
-        for msg in history_messages:
-            if msg.get('user_content') is not None:
-                messages.append(HumanMessage(content=msg['user_content']))
-            if msg.get('model_content') is not None:
-                messages.append(AIMessage(content=msg['model_content'], name=msg.get('name')))
-        messages.append(HumanMessage(content=user_input))
-
-        initial_state = {
-            "messages": messages,
-            "session_id": session_id,
-            "llm_config": final_config
-        }
-
+    data_text = "\n".join(data_lines).strip()
+    if not data_text:
+        payload: Dict[str, Any] = {}
+    else:
         try:
-            # 使用 astream_events 捕获所有事件
-            async for event in self.graph.astream_events(initial_state, version="v1"):
-                if not self.enable_events:
-                    continue
+            parsed = json.loads(data_text)
+        except (json.JSONDecodeError, TypeError):
+            payload = {SsePayloadField.CONTENT.value: data_text}
+        else:
+            if isinstance(parsed, dict):
+                payload = dict(parsed)
+            else:
+                payload = {SsePayloadField.CONTENT.value: parsed}
 
-                event_type = event["event"]
+    if event_name and not payload.get(SsePayloadField.TYPE.value):
+        payload[SsePayloadField.TYPE.value] = event_name
+    return payload or None
 
-                # 1. LLM 相关事件
-                if "on_chat_model_start" in event_type:
-                    model_name = event.get("data", {}).get("input", {}).get("model", "unknown")
-                    yield to_sse({
-                        "type": SseEventType.LOG.value,
-                        "log_type": "info",
-                        "logger": "llm",
-                        "message": f"🤖 调用模型: {model_name}"
-                    })
 
-                elif "on_chat_model_stream" in event_type:
-                    content = event.get("data", {}).get("chunk", {}).get("content", "")
-                    if content:
-                        # 流式输出
-                        yield to_sse({
-                            "type": SseEventType.STREAM.value,
-                            "content": content
-                        })
+def _coerce_dict(value: Any) -> Dict[str, Any]:
+    if isinstance(value, dict):
+        return dict(value)
+    if isinstance(value, str) and value.strip():
+        try:
+            parsed = json.loads(value)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return {}
+        if isinstance(parsed, dict):
+            return dict(parsed)
+    return {}
 
-                elif "on_chat_model_end" in event_type:
-                    # 检查响应中的 reasoning_content（某些模型支持）
-                    response = event.get("data", {}).get("output", {})
-                    if hasattr(response, 'response_metadata'):
-                        metadata = response.response_metadata
-                        if metadata:
-                            # 检查是否有 reasoning_tokens
-                            usage = metadata.get('token_usage', {})
-                            reasoning_tokens = usage.get('reasoning_tokens', 0)
-                            if reasoning_tokens > 0:
-                                yield to_sse({
-                                    "type": SseEventType.THINKING.value,
-                                    "content": f"💭 思考了 {reasoning_tokens} 个 token"
-                                })
 
-                # 2. Chain 相关事件
-                elif "on_chain_start" in event_type:
-                    chain_name = event.get("name", "unknown")
-                    yield to_sse({
-                        "type": SseEventType.LOG.value,
-                        "log_type": "info",
-                        "logger": "chain",
-                        "message": f"🔗 执行 Chain: {chain_name}"
-                    })
+def _stringify_data(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
 
-                elif "on_chain_end" in event_type:
-                    chain_name = event.get("name", "unknown")
-                    output = event.get("data", {}).get("output", {})
-                    yield to_sse({
-                        "type": SseEventType.LOG.value,
-                        "log_type": "info",
-                        "logger": "chain",
-                        "message": f"✅ Chain 完成: {chain_name}"
-                    })
 
-                # 3. Tool 相关事件
-                elif "on_tool_start" in event_type:
-                    tool_name = event.get("name", "unknown")
-                    yield to_sse({
-                        "type": SseEventType.LOG.value,
-                        "log_type": "info",
-                        "logger": "tool",
-                        "message": f"🛠️ 调用工具: {tool_name}"
-                    })
+def _summary_from_workflow_event(workflow_payload: Dict[str, Any]) -> str:
+    return str(
+        workflow_payload.get("summary")
+        or workflow_payload.get("title")
+        or workflow_payload.get("phase")
+        or ""
+    ).strip()
 
-                elif "on_tool_end" in event_type:
-                    tool_name = event.get("name", "unknown")
-                    output = event.get("data", {}).get("output", {})
-                    yield to_sse({
-                        "type": SseEventType.LOG.value,
-                        "log_type": "info",
-                        "logger": "tool",
-                        "message": f"✅ 工具完成: {tool_name}"
-                    })
 
-                # 4. Agent 相关事件
-                elif "on_agent_action" in event_type:
-                    action = event.get("data", {}).get("action", {})
-                    tool = action.get("tool", "unknown")
-                    yield to_sse({
-                        "type": SseEventType.THINKING.value,
-                        "content": f"🤔 Agent 决定使用工具: {tool}"
-                    })
+class WsEventFormatter:
+    """把 GraphRunner 的 SSE 事件归一成前端可直接消费的 WS JSON。"""
 
-        except Exception as e:
-            yield to_sse({
-                "type": SseEventType.ERROR.value,
-                "content": f"执行错误: {str(e)}"
-            })
+    def __init__(self) -> None:
+        self._seen_tool_call_keys: set[str] = set()
+        self._seen_tool_result_keys: set[str] = set()
+        self._done_sent = False
+
+    def consume(self, chunk: str) -> List[Dict[str, Any]]:
+        parsed = parse_sse_chunk(chunk)
+        if not parsed:
+            return []
+
+        event_type = str(parsed.get(SsePayloadField.TYPE.value) or "").strip()
+        if not event_type:
+            return []
+
+        if event_type == SseEventType.RESPONSE_START.value:
+            return []
+
+        if event_type == SseEventType.RESPONSE_END.value:
+            return self._emit_done()
+
+        if event_type in {SseEventType.STREAM.value, "message"}:
+            content = self._extract_content(parsed)
+            return [{"type": "message", "content": content}] if content else []
+
+        if event_type == SseEventType.THINKING.value:
+            content = self._extract_content(parsed)
+            return [{"type": "thinking", "content": content}] if content else []
+
+        if event_type == SseEventType.LOG.value:
+            content = str(parsed.get("message") or self._extract_content(parsed) or "").strip()
+            return [{"type": "thinking", "content": content}] if content else []
+
+        if event_type == SseEventType.INTERRUPT.value:
+            content = self._extract_interrupt_content(parsed)
+            return [{"type": "thinking", "content": content}] if content else []
+
+        if event_type == SseEventType.TOOL_CALL.value:
+            return self._normalize_tool_call_event(parsed.get(SsePayloadField.PAYLOAD.value) or parsed)
+
+        if event_type == SseEventType.WORKFLOW_EVENT.value:
+            workflow_payload = parsed.get(SsePayloadField.PAYLOAD.value)
+            if isinstance(workflow_payload, dict):
+                return self._normalize_workflow_event(workflow_payload)
+            return []
+
+        if event_type == SseEventType.ERROR.value:
+            message = str(
+                parsed.get("message")
+                or parsed.get(SsePayloadField.CONTENT.value)
+                or ""
+            ).strip()
+            return [{"type": "error", "message": message}] if message else []
+
+        return []
+
+    @staticmethod
+    def _extract_content(payload: Dict[str, Any]) -> str:
+        return str(
+            payload.get(SsePayloadField.CONTENT.value)
+            or payload.get("message")
+            or ""
+        ).strip()
+
+    def _extract_interrupt_content(self, payload: Dict[str, Any]) -> str:
+        raw_content = self._extract_content(payload)
+        interrupt_payload = _coerce_dict(raw_content)
+        if interrupt_payload:
+            return str(
+                interrupt_payload.get("message")
+                or interrupt_payload.get("summary")
+                or interrupt_payload.get("title")
+                or raw_content
+            ).strip()
+        return raw_content
+
+    def _normalize_workflow_event(self, workflow_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        phase = str(workflow_payload.get("phase") or "").strip()
+        if phase == "tool_called":
+            return self._normalize_tool_call_event(workflow_payload)
+        if phase == "tool_completed":
+            return self._normalize_tool_result_event(workflow_payload)
+
+        content = _summary_from_workflow_event(workflow_payload)
+        return [{"type": "thinking", "content": content}] if content else []
+
+    def _normalize_tool_call_event(self, payload: Dict[str, Any] | Any) -> List[Dict[str, Any]]:
+        tool_payload = _coerce_dict(payload)
+        if not tool_payload:
+            return []
+
+        meta = _coerce_dict(tool_payload.get("meta"))
+        tool_name = str(
+            tool_payload.get("name")
+            or tool_payload.get("tool_name")
+            or meta.get("tool_name")
+            or tool_payload.get("title")
+            or ""
+        ).strip()
+        if tool_name.startswith("调用工具:"):
+            tool_name = tool_name.split(":", 1)[1].strip()
+        if tool_name.startswith("调用工具："):
+            tool_name = tool_name.split("：", 1)[1].strip()
+
+        args = _coerce_dict(tool_payload.get("args"))
+        if not args:
+            args = _coerce_dict(meta.get("args"))
+
+        tool_call_key = str(
+            tool_payload.get("tool_call_id")
+            or meta.get("tool_call_id")
+            or tool_payload.get("id")
+            or tool_payload.get("call_id")
+            or f"{tool_name}:{json.dumps(args, ensure_ascii=False, sort_keys=True)}"
+        ).strip()
+        if tool_call_key in self._seen_tool_call_keys:
+            return []
+        self._seen_tool_call_keys.add(tool_call_key)
+
+        return [{
+            "type": "tool_call",
+            "tool_name": tool_name or "tool_call",
+            "args": args,
+        }]
+
+    def _normalize_tool_result_event(self, workflow_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        meta = _coerce_dict(workflow_payload.get("meta"))
+        tool_result_key = str(
+            meta.get("tool_call_id")
+            or workflow_payload.get("id")
+            or workflow_payload.get("timestamp")
+            or ""
+        ).strip()
+        if tool_result_key and tool_result_key in self._seen_tool_result_keys:
+            return []
+        if tool_result_key:
+            self._seen_tool_result_keys.add(tool_result_key)
+
+        raw_status = str(workflow_payload.get("status") or "").strip().lower()
+        status = "error" if raw_status in {"failed", "error"} or meta.get("error") else "success"
+        data = meta.get("error")
+        if not data:
+            data = meta.get("result")
+        if not data:
+            data = workflow_payload.get("summary") or workflow_payload.get("title") or ""
+
+        return [{
+            "type": "tool_result",
+            "status": status,
+            "data": _stringify_data(data),
+        }]
+
+    def _emit_done(self) -> List[Dict[str, Any]]:
+        if self._done_sent:
+            return []
+        self._done_sent = True
+        return [{"type": "done"}]
+
+
+class SseToWsEventBridge(WsEventFormatter):
+    """兼容旧调用方名称。"""
+
+
+def ws_event_formatter(
+    chunk: str,
+    formatter: Optional[WsEventFormatter] = None,
+) -> List[Dict[str, Any]]:
+    """把单个 SSE chunk 格式化为前端可直接消费的 WS JSON 事件。"""
+    active_formatter = formatter or WsEventFormatter()
+    return active_formatter.consume(chunk)
+
+
+def bridge_sse_chunk_to_ws_events(
+    chunk: str,
+    bridge: Optional[SseToWsEventBridge] = None,
+) -> List[Dict[str, Any]]:
+    """兼容旧入口。"""
+    active_bridge = bridge or SseToWsEventBridge()
+    return active_bridge.consume(chunk)
+
+
+__all__ = [
+    "WsEventFormatter",
+    "SseToWsEventBridge",
+    "bridge_sse_chunk_to_ws_events",
+    "parse_sse_chunk",
+    "ws_event_formatter",
+]

@@ -1,7 +1,9 @@
 """代码执行工具统一封装。"""
 from langchain_core.tools import tool
 
+from config.runtime_settings import is_local_mode
 from harness.exec.runner import exec_runner
+from models.schemas.tool_input_schemas import ExecutePythonCodeToolInput
 from tools.runtime_tools.tool_executor import tool_executor
 from tools.runtime_tools.tool_registry import runtime_tool_registry
 from common.utils.retry_utils import execute_with_retry
@@ -29,6 +31,7 @@ def execute_python_code(
     *,
     cwd: str | None = None,
     workspace_root: str | None = None,
+    timeout_seconds: float | None = None,
 ) -> str:
     """
     执行 Python 代码并返回标准输出。
@@ -40,6 +43,7 @@ def execute_python_code(
             code=code,
             cwd=cwd,
             workspace_root=workspace_root,
+            timeout_seconds=timeout_seconds,
         ),
         label="execute_python_code",
     )
@@ -58,10 +62,15 @@ def execute_python_code(
     return f"代码执行出错(exit_code={exit_code}): {message}"
 
 
-execute_python_code_tool = tool("execute_python_code")(execute_python_code)
-runtime_tool_registry.register_langchain_tool(
-    execute_python_code_tool,
-    category="exec",
-    source="runtime.exec",
-    requires_approval=True,
-)
+execute_python_code_tool = tool(
+    "execute_python_code",
+    args_schema=ExecutePythonCodeToolInput,
+)(execute_python_code)
+if is_local_mode():
+    runtime_tool_registry.register_langchain_tool(
+        execute_python_code_tool,
+        category="exec",
+        source="runtime.exec",
+        requires_approval=True,
+        local_only=True,
+    )

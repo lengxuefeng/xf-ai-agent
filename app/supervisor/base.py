@@ -579,7 +579,7 @@ class BaseAgent(ABC):
         if mcp_tools:
             resolved_tools.extend(mcp_tools)
 
-        return resolved_tools
+        return runtime_tool_registry.sort_langchain_tools(resolved_tools)
 
     RETRY_POLICY = GRAPH_RETRY_POLICY
 

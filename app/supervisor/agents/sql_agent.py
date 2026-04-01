@@ -59,6 +59,7 @@ from supervisor.base import BaseAgent
 from tools.gateway.federated_query_gateway import federated_query_gateway
 from supervisor.graph_state import AgentRequest
 from tools.agent_tools.sql_tools import get_schema, format_sql_result_for_user
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 from config.constants.approval_constants import ApprovalDecision, DEFAULT_ALLOWED_DECISIONS, SQL_APPROVAL_ACTION_NAME
 from config.constants.sql_agent_constants import (
     SQL_AGENT_APPROVAL_DESC_TEMPLATE,
@@ -780,7 +781,7 @@ class SqlAgent(BaseAgent):
             schema_info=schema_info,
             holter_intent=self._infer_holter_intent(source_messages),
         )
-        llm_with_tools = self.llm.bind_tools(self.tools)
+        llm_with_tools = runtime_tool_registry.bind_tools(self.llm, self.tools)
         response = await (prompt | llm_with_tools).ainvoke({"messages": messages}, config=config)
         if not isinstance(response, AIMessage):
             response = AIMessage(content=self._message_text(response))

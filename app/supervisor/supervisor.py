@@ -104,6 +104,7 @@ from models.schemas.supervisor_schemas import (
     ReflectionDecision,
     RequestAnalysisDecision,
 )
+from prompts.runtime_prompts.system_prompt_registry import system_prompt_registry
 from services.route_metrics_service import route_metrics_service
 from services.agent_stream_bus import agent_stream_bus
 from services.request_cancellation_service import request_cancellation_service
@@ -598,6 +599,23 @@ def _build_worker_history_messages_for_agent(
     return selected
 
 
+def _build_runtime_prefix_messages(
+    *,
+    llm_config: Optional[Dict[str, Any]] = None,
+    dynamic_blocks: Optional[List[str]] = None,
+    extra_static_blocks: Optional[List[str]] = None,
+) -> List[BaseMessage]:
+    config = llm_config or {}
+    return list(system_prompt_registry.build_runtime_messages(
+        model_config=config,
+        tool_catalog=config.get("resolved_tool_catalog") or [],
+        skill_prompts=config.get("skill_prompt_blocks") or [],
+        skill_names=config.get("selected_skill_names") or [],
+        dynamic_blocks=dynamic_blocks or [],
+        extra_static_blocks=extra_static_blocks or [],
+    ))
+
+
 async def _invoke_structured_output_with_fallback(
         *,
         prompt: ChatPromptTemplate,
@@ -708,15 +726,11 @@ def _run_agent_to_completion(
 
     if agent_name not in MEMBERS:
         # 通用兜底分支也接入会话摘要，避免丢失城市/画像上下文
-        fallback_messages: List[Any] = [
-            ("system", ChatFallbackPrompt.get_system_prompt()),
-            ("system", get_agent_date_context()),
-        ]
-        skill_prompt_blocks = [str(item or "").strip() for item in ((llm_config or {}).get("skill_prompt_blocks") or []) if str(item or "").strip()]
-        if skill_prompt_blocks:
-            fallback_messages.append(("system", "\n\n".join(skill_prompt_blocks)))
-        if context_summary:
-            fallback_messages.append(("system", context_summary))
+        fallback_messages: List[Any] = _build_runtime_prefix_messages(
+            llm_config=llm_config,
+            dynamic_blocks=[get_agent_date_context(), context_summary],
+            extra_static_blocks=[ChatFallbackPrompt.get_system_prompt()],
+        )
         fallback_messages.append(HumanMessage(content=effective_user_input))
         # 降级为通用 CHAT
         with request_cancellation_service.bind_request(request_id):
@@ -818,10 +832,20 @@ def _task_sort_key(item: tuple[str, Any]) -> tuple[int, str]:
     return seq, task_id
 
 
-def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[Any]:
+def _build_chat_retry_messages(
+    prompt: str,
+    recent_messages: List[Any],
+    *,
+    llm_config: Optional[Dict[str, Any]] = None,
+    context_summary: str = "",
+) -> list[Any]:
     compact_window = max(1, min(4, AGENT_LOOP_CONFIG.context_history_messages))
     compact_history = recent_messages[-compact_window:]
-    return [("system", prompt), ("system", get_agent_date_context())] + compact_history
+    return _build_runtime_prefix_messages(
+        llm_config=llm_config,
+        dynamic_blocks=[get_agent_date_context(), context_summary],
+        extra_static_blocks=[prompt],
+    ) + compact_history
 
 
 # ==================== Tier-0.5: 数据域路由器 (Domain Router) ====================
@@ -1789,7 +1813,11 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
             )
             if not last_is_same_human:
                 recent_messages = list(recent_messages) + [HumanMessage(content=current_step_input)]
-        request_messages = [("system", prompt), ("system", get_agent_date_context())] + recent_messages
+        request_messages = _build_runtime_prefix_messages(
+            llm_config=state.get("llm_config") or {},
+            dynamic_blocks=[get_agent_date_context(), str(state.get("context_summary") or "").strip()],
+            extra_static_blocks=[ChatFallbackPrompt.get_system_prompt()],
+        ) + recent_messages
         runtime_config = _build_non_streaming_config(config)
         run_id = str(
             config.get("configurable", {}).get("run_id")
@@ -1824,7 +1852,12 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
                 try:
                     retry_response = await _ainvoke_with_timeout(
                         model.ainvoke(
-                            _build_chat_retry_messages(prompt, recent_messages),
+                            _build_chat_retry_messages(
+                                prompt,
+                                recent_messages,
+                                llm_config=state.get("llm_config") or {},
+                                context_summary=str(state.get("context_summary") or "").strip(),
+                            ),
                             config=runtime_config,
                         ),
                         timeout_sec=min(max(total_timeout_sec * 0.5, 10.0), 30.0),

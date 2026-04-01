@@ -117,40 +117,23 @@ class ChatService:
         dynamic_model_config = getattr(request.state, "model_config", None)
         
         try:
-            model_config = self._resolve_model_config(req, dynamic_model_config)
-            model_config = self._attach_runtime_overrides(model_config, req, user_id)
+            request_id = str(
+                getattr(request.state, "request_id", "")
+                or getattr(request.state, "req_id", "")
+                or ""
+            ).strip()
+            stream_gen = self.build_stream_generator(
+                req=req,
+                user_id=user_id,
+                dynamic_model_config=dynamic_model_config,
+                request_id=request_id,
+            )
         except Exception as exc:
             log.exception(f"流式聊天准备阶段异常: {exc}", target=LogTarget.ALL)
             return StreamingResponse(
                 _single_error_stream(str(exc)),
                 media_type="text/event-stream",
                 headers=self._get_stream_headers(),
-            )
-
-        is_resume = req.user_input == "[RESUME]"
-        request_id = str(
-            getattr(request.state, "request_id", "")
-            or getattr(request.state, "req_id", "")
-            or ""
-        ).strip()
-        if user_id:
-            stream_gen = self.stream_chat_with_history_async(
-                user_input=req.user_input,
-                session_id=req.session_id,
-                model_config=model_config,
-                user_id=user_id,
-                is_resume=is_resume,
-                history_limit=CHAT_STREAM_HISTORY_LIMIT,
-                request_id=request_id,
-            )
-        else:
-            stream_gen = self.stream_chat_anonymous_async(
-                user_input=req.user_input,
-                session_id=req.session_id,
-                model_config=model_config,
-                history_messages=[],
-                runtime_context={},
-                request_id=request_id,
             )
 
         response = StreamingResponse(
@@ -164,13 +147,51 @@ class ChatService:
             self,
             req: StreamChatRequest,
             dynamic_model_config: Optional[Dict[str, Any]],
+            user_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """统一解析模型配置：优先使用中间件预加载配置，其次从请求参数构建。"""
         if dynamic_model_config:
             log.info("使用中间件预加载的动态模型配置", target=LogTarget.LOG)
             return dict(dynamic_model_config)
+        if req.user_model_id and user_id is not None:
+            resolved = self._build_model_config_from_user_model(req.user_model_id, user_id)
+            if resolved:
+                log.info("使用 user_model_id 动态装载模型配置", target=LogTarget.LOG)
+                return dict(resolved)
         log.info("使用请求自带的默认参数构建配置", target=LogTarget.LOG)
         return self._build_model_config_from_request(req)
+
+    def build_stream_generator(
+        self,
+        *,
+        req: StreamChatRequest,
+        user_id: Optional[int],
+        dynamic_model_config: Optional[Dict[str, Any]] = None,
+        request_id: str = "",
+    ) -> AsyncGenerator[str, None]:
+        model_config = self._resolve_model_config(req, dynamic_model_config, user_id=user_id)
+        model_config = self._attach_runtime_overrides(model_config, req, user_id)
+        is_resume = req.user_input == "[RESUME]"
+
+        if user_id:
+            return self.stream_chat_with_history_async(
+                user_input=req.user_input,
+                session_id=req.session_id,
+                model_config=model_config,
+                user_id=user_id,
+                is_resume=is_resume,
+                history_limit=CHAT_STREAM_HISTORY_LIMIT,
+                request_id=request_id,
+            )
+
+        return self.stream_chat_anonymous_async(
+            user_input=req.user_input,
+            session_id=req.session_id,
+            model_config=model_config,
+            history_messages=[],
+            runtime_context={},
+            request_id=request_id,
+        )
 
     @staticmethod
     def _attach_runtime_overrides(
@@ -196,7 +217,7 @@ class ChatService:
         log.info(f"请求参数: model={req.model}, user_model_id={req.user_model_id}, service_type={req.service_type}",
                  target=LogTarget.LOG)
 
-        model_config = self._resolve_model_config(req, dynamic_model_config)
+        model_config = self._resolve_model_config(req, dynamic_model_config, user_id=user_id)
         model_config = self._attach_runtime_overrides(model_config, req, user_id)
         is_resume = req.user_input == "[RESUME]"
 

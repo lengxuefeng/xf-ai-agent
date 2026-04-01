@@ -6,15 +6,15 @@ from typing import Any, Dict, List, Tuple
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
-from config.runtime_settings import AGENT_LOOP_CONFIG
-from harness.context.context_budget import ContextBudget
-from harness.context.context_injectors import build_context_messages
-from harness.memory.memory_models import MemorySnippet
-from harness.memory.memory_service import runtime_memory_service
-from prompts.runtime_prompts.system_prompt_registry import system_prompt_registry
-from harness.types import RunContext
 from common.utils.date_utils import get_agent_date_context
 from common.utils.history_compressor import compress_history_messages
+from config.runtime_settings import AGENT_LOOP_CONFIG
+from harness.context.context_budget import ContextBudget
+from harness.memory.memory_models import MemorySnippet
+from harness.memory.memory_service import runtime_memory_service
+from harness.types import RunContext
+from prompts.runtime_prompts.system_prompt_registry import system_prompt_registry
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 
 
 class RuntimeContextBuilder:
@@ -51,6 +51,50 @@ class RuntimeContextBuilder:
         zh_tokens = re.findall(rf"[\u4e00-\u9fa5]{{{min_chars},}}", text)
         en_tokens = re.findall(rf"[A-Za-z0-9_]{{{min_chars},}}", text.lower())
         return set(zh_tokens + en_tokens)
+
+    @staticmethod
+    def _collect_bound_tool_names(model_config: Dict[str, Any]) -> List[str]:
+        requested: list[str] = []
+        runtime_skills = model_config.get("runtime_skills") or []
+        for skill in runtime_skills:
+            if not isinstance(skill, dict):
+                continue
+            if skill.get("is_active") is False:
+                continue
+            for raw_tool_name in skill.get("bound_tools") or []:
+                normalized = str(raw_tool_name or "").strip()
+                if normalized:
+                    requested.append(normalized)
+
+        if requested:
+            return runtime_tool_registry.normalize_bound_tools(requested)
+
+        fallback_tools = model_config.get("allowed_builtin_tools") or []
+        return runtime_tool_registry.normalize_bound_tools(fallback_tools)
+
+    def _filter_prompt_tool_catalog(self, model_config: Dict[str, Any]) -> List[Dict[str, Any]]:
+        tool_catalog = [
+            dict(item)
+            for item in (model_config.get("resolved_tool_catalog") or [])
+            if isinstance(item, dict)
+        ]
+        requested_tools = self._collect_bound_tool_names(model_config)
+        if not requested_tools:
+            return tool_catalog
+
+        requested_set = set(requested_tools)
+        filtered_catalog: list[dict] = []
+        for item in tool_catalog:
+            visible_name = str(item.get("name") or "").strip()
+            if not visible_name:
+                continue
+            candidate_names = {visible_name}
+            normalized_visible = runtime_tool_registry.normalize_bound_tools([visible_name])
+            if normalized_visible:
+                candidate_names.add(normalized_visible[0])
+            if candidate_names & requested_set:
+                filtered_catalog.append(item)
+        return filtered_catalog
 
     def _filter_relevant_history(
         self,
@@ -121,14 +165,24 @@ class RuntimeContextBuilder:
             session_context=session_context,
         )
         memory_block = runtime_memory_service.render_memory_block(memory_snippets)
-        system_prompt = system_prompt_registry.render_global_prompt(
+        prompt_tool_catalog = self._filter_prompt_tool_catalog(run_context.model_config)
+
+        messages: List[BaseMessage] = list(system_prompt_registry.build_runtime_messages(
+            model_config=run_context.model_config,
+            tool_catalog=prompt_tool_catalog,
             skill_prompts=run_context.model_config.get("skill_prompt_blocks") or [],
-        )
-        messages: List[BaseMessage] = build_context_messages(
-            get_agent_date_context(),
-            system_prompt,
-            memory_block,
-        )
+            skill_names=run_context.model_config.get("selected_skill_names") or [],
+            dynamic_blocks=[
+                get_agent_date_context(),
+                run_context.context_summary,
+                memory_block,
+                (
+                    f"当前绑定工作目录: {run_context.model_config.get('workspace_root')}"
+                    if str(run_context.model_config.get("workspace_root") or "").strip()
+                    else ""
+                ),
+            ],
+        ))
 
         filtered_history, total_raw_count = self._filter_relevant_history(
             history_messages=history_messages,
@@ -149,7 +203,10 @@ class RuntimeContextBuilder:
             "filtered_history_count": len(filtered_history),
             "compressed_history_count": len(compressed_history),
             "memory_count": len(memory_snippets),
-            "estimated_tokens": sum(ContextBudget.estimate_token_budget(getattr(message, "content", "")) for message in messages),
+            "estimated_tokens": sum(
+                ContextBudget.estimate_token_budget(getattr(message, "content", ""))
+                for message in messages
+            ),
         }
         return messages, memory_snippets, context_meta
 

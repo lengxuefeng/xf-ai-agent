@@ -15,6 +15,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from config.runtime_settings import require_local_mode
 from harness.exec.policy import ExecPolicy
 from harness.workspace.path_guard import workspace_path_guard
 
@@ -90,6 +91,7 @@ class CommandSessionService:
         cwd: str | None = None,
     ) -> Dict[str, object]:
         """启动一条新的受控命令。"""
+        require_local_mode("页面终端命令会话")
         argv = self._policy.parse_command_text(command_text)
         resolved_root = workspace_path_guard.resolve_workspace_root(workspace_root)
         resolved_cwd = workspace_path_guard.resolve_execution_cwd(resolved_root, cwd)

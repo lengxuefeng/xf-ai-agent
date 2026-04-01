@@ -27,6 +27,7 @@ from typing import Any, Callable, Dict
 
 from pydantic import ValidationError
 
+from config.runtime_settings import build_run_mode_denied_message
 from common.utils.tool_validation import format_tool_validation_error
 from tools.runtime_tools.tool_registry import runtime_tool_registry
 
@@ -109,6 +110,12 @@ class ToolExecutor:
         descriptor = runtime_tool_registry.get_tool(name)
         if descriptor is None:
             return {"ok": False, "error": f"未注册工具: {name}"}
+        if not runtime_tool_registry.is_tool_allowed_in_current_mode(descriptor):
+            return {
+                "ok": False,
+                "tool": descriptor.to_dict(),
+                "error": build_run_mode_denied_message(f"工具 `{descriptor.name}`"),
+            }
 
         # 查找执行器
         handler = self._handlers.get(str(name or "").strip())

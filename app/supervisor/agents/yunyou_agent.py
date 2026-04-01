@@ -104,6 +104,7 @@ from tools.agent_tools.yunyou_tools import (
     holter_type_count,
     holter_log_info,
 )
+from tools.runtime_tools.tool_registry import runtime_tool_registry
 from config.runtime_settings import AGENT_LOOP_CONFIG, YUNYOU_DB_POOL_CONFIG
 from models.schemas.base_skill import ConfigurableSkillMiddleware
 from common.utils.custom_logger import get_logger
@@ -1367,7 +1368,7 @@ class YunyouAgent(BaseAgent):
             }
 
         # 调用 LLM
-        llm_with_tools = self.llm.bind_tools(self.tools)
+        llm_with_tools = runtime_tool_registry.bind_tools(self.llm, self.tools)
         chain = self.prompt | llm_with_tools
         try:
             response = await chain.ainvoke({"messages": focused_messages}, config=config)

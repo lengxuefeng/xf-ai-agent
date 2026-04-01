@@ -56,6 +56,52 @@ class ExecuteSqlToolInput(BaseSchema):
     sql: str = Field(default="", description="需要审批并执行的只读 SQL 语句。")
 
 
+class WorkspaceListDirectoryToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    path: str = Field(default="", description="相对工作目录的目录路径，留空表示根目录。")
+
+
+class WorkspaceReadFileToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    path: str = Field(default="", description="相对工作目录的文件路径。")
+
+
+class WorkspaceWriteFileToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    path: str = Field(default="", description="相对工作目录的文件路径。")
+    content: str = Field(default="", description="要写入文件的完整文本内容。")
+
+
+class WorkspaceCreateDirectoryToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    path: str = Field(default="", description="相对工作目录的新目录路径。")
+
+
+class WorkspaceMoveEntryToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    path: str = Field(default="", description="当前条目的相对路径。")
+    new_path: str = Field(default="", description="新的相对路径。")
+
+
+class WorkspaceDeleteEntryToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    path: str = Field(default="", description="要删除条目的相对路径。")
+
+
+class WorkspaceRunCommandToolInput(BaseSchema):
+    workspace_root: str = Field(default="", description="当前绑定的工作目录绝对路径。")
+    command: str = Field(default="", description="要执行的命令文本。")
+    cwd: Optional[str] = Field(default=None, description="相对工作目录的子路径，可选。")
+    timeout_seconds: Optional[float] = Field(default=None, ge=1.0, description="命令超时时间（秒），可选。")
+
+
+class ExecutePythonCodeToolInput(BaseSchema):
+    code: str = Field(default="", description="要执行的 Python 代码。")
+    cwd: Optional[str] = Field(default=None, description="相对工作目录的子路径，可选。")
+    workspace_root: Optional[str] = Field(default=None, description="当前绑定的工作目录绝对路径。")
+    timeout_seconds: Optional[float] = Field(default=None, ge=1.0, description="执行超时时间（秒），可选。")
+
+
 class EmptyToolInput(BaseSchema):
     """无入参工具的占位 Schema。"""
 
@@ -63,10 +109,18 @@ class EmptyToolInput(BaseSchema):
 __all__ = [
     "EmptyToolInput",
     "ExecuteSqlToolInput",
+    "ExecutePythonCodeToolInput",
     "GetWeathersToolInput",
     "HolterDateRangeToolInput",
     "HolterListToolInput",
     "HolterLogInfoToolInput",
     "HolterRecentDbToolInput",
     "TavilySearchToolInput",
+    "WorkspaceCreateDirectoryToolInput",
+    "WorkspaceDeleteEntryToolInput",
+    "WorkspaceListDirectoryToolInput",
+    "WorkspaceMoveEntryToolInput",
+    "WorkspaceReadFileToolInput",
+    "WorkspaceRunCommandToolInput",
+    "WorkspaceWriteFileToolInput",
 ]

@@ -6,6 +6,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from common.core.security import verify_token
+from config.runtime_settings import RunModeDeniedError, require_local_mode
 from harness.exec.command_session_service import command_session_service
 from harness.workspace.manager import workspace_manager
 from models.schemas.terminal_schemas import (
@@ -22,14 +23,24 @@ from models.schemas.terminal_schemas import (
 terminal_router = APIRouter(prefix="/terminal", tags=["页面终端"])
 
 
+def _ensure_terminal_available() -> None:
+    try:
+        require_local_mode("页面终端与工作区能力")
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
 @terminal_router.post("/workspace/bind", summary="绑定聊天会话工作目录")
 async def bind_workspace(
     req: TerminalWorkspaceBindRequest,
     _user_id: int = Depends(verify_token),
 ):
     """绑定并校验某个聊天会话的工作目录。"""
+    _ensure_terminal_available()
     try:
         return {"code": 200, "message": "工作目录绑定成功", "data": workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -40,7 +51,11 @@ async def get_workspace(
     _user_id: int = Depends(verify_token),
 ):
     """返回页面终端当前绑定的工作目录信息。"""
-    return {"code": 200, "message": "获取成功", "data": workspace_manager.describe_external_workspace(session_id)}
+    _ensure_terminal_available()
+    try:
+        return {"code": 200, "message": "获取成功", "data": workspace_manager.describe_external_workspace(session_id)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @terminal_router.get("/fs/tree/{session_id}", summary="列出工作目录内容")
@@ -50,8 +65,11 @@ async def list_workspace_tree(
     _user_id: int = Depends(verify_token),
 ):
     """返回已绑定工作目录下某个目录的子项列表。"""
+    _ensure_terminal_available()
     try:
         return {"code": 200, "message": "获取成功", "data": workspace_manager.list_workspace_directory(session_id, path)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -63,8 +81,11 @@ async def read_workspace_file(
     _user_id: int = Depends(verify_token),
 ):
     """读取工作目录内的文本文件内容。"""
+    _ensure_terminal_available()
     try:
         return {"code": 200, "message": "读取成功", "data": workspace_manager.read_workspace_file(session_id, path)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -75,8 +96,11 @@ async def save_workspace_file(
     _user_id: int = Depends(verify_token),
 ):
     """保存工作目录内的文本文件内容。"""
+    _ensure_terminal_available()
     try:
         return {"code": 200, "message": "保存成功", "data": workspace_manager.save_workspace_file(req.session_id, req.path, req.content)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -87,8 +111,11 @@ async def create_workspace_file(
     _user_id: int = Depends(verify_token),
 ):
     """在工作目录内创建文本文件。"""
+    _ensure_terminal_available()
     try:
         return {"code": 200, "message": "创建成功", "data": workspace_manager.create_workspace_file(req.session_id, req.path, req.content)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -99,8 +126,11 @@ async def create_workspace_directory(
     _user_id: int = Depends(verify_token),
 ):
     """在工作目录内创建目录。"""
+    _ensure_terminal_available()
     try:
         return {"code": 200, "message": "创建成功", "data": workspace_manager.create_workspace_directory(req.session_id, req.path)}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -111,12 +141,15 @@ async def rename_workspace_entry(
     _user_id: int = Depends(verify_token),
 ):
     """在工作目录内重命名或移动文件、目录。"""
+    _ensure_terminal_available()
     try:
         return {
             "code": 200,
             "message": "重命名成功",
             "data": workspace_manager.rename_workspace_entry(req.session_id, req.path, req.new_path),
         }
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -127,12 +160,15 @@ async def delete_workspace_entry(
     _user_id: int = Depends(verify_token),
 ):
     """在工作目录内删除文件或目录。"""
+    _ensure_terminal_available()
     try:
         return {
             "code": 200,
             "message": "删除成功",
             "data": workspace_manager.delete_workspace_entry(req.session_id, req.path),
         }
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -143,6 +179,7 @@ async def start_command(
     _user_id: int = Depends(verify_token),
 ):
     """启动一条受控命令执行。"""
+    _ensure_terminal_available()
     try:
         workspace_manager.bind_external_workspace(req.session_id, req.workspace_root)
         snapshot = command_session_service.start_command(
@@ -152,6 +189,8 @@ async def start_command(
             cwd=req.cwd,
         )
         return {"code": 200, "message": "命令已启动", "data": snapshot}
+    except RunModeDeniedError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -162,6 +201,7 @@ async def get_command_session(
     _user_id: int = Depends(verify_token),
 ):
     """返回单条命令执行状态。"""
+    _ensure_terminal_available()
     session = command_session_service.get_session(command_id)
     if not session:
         raise HTTPException(status_code=404, detail="命令会话不存在")
@@ -174,6 +214,7 @@ async def get_latest_command_session(
     _user_id: int = Depends(verify_token),
 ):
     """返回某个聊天会话最近一次命令执行状态。"""
+    _ensure_terminal_available()
     session = command_session_service.get_latest_session(session_id)
     return {"code": 200, "message": "获取成功", "data": session}
 
@@ -185,6 +226,7 @@ async def stop_command_session(
     _user_id: int = Depends(verify_token),
 ):
     """停止正在运行的命令。"""
+    _ensure_terminal_available()
     session = command_session_service.stop_session(command_id)
     if not session:
         raise HTTPException(status_code=404, detail="命令会话不存在")
