@@ -91,6 +91,7 @@ from config.runtime_settings import (
     MODEL_TIERING_CONFIG,
     ROUTER_POLICY_CONFIG,
     WORKFLOW_REFLECTION_CONFIG,
+    WORKFLOW_MAX_REPLANS,
 )
 from common.enums.agent_enum import AgentTypeEnum
 from supervisor.policy.intent_policy import IntentPolicy
@@ -785,7 +786,7 @@ def _run_agent_to_completion(
         root_thread_id = session_id or config.get("configurable", {}).get("thread_id", "")
         if root_thread_id:
             subgraph_config = {"configurable": {"thread_id": f"{root_thread_id}_{agent_name}"}}
-            snapshot = agent_instance.graph.get_state(subgraph_config)
+            snapshot = _run_async_in_new_loop(agent_instance.graph.aget_state(subgraph_config))
             snapshot_interrupt = _extract_interrupt_from_snapshot(snapshot)
             if snapshot_interrupt:
                 snapshot_interrupt["agent_name"] = snapshot_interrupt.get("agent_name") or agent_name
@@ -816,50 +817,10 @@ def _build_chat_retry_messages(prompt: str, recent_messages: List[Any]) -> list[
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
 # ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
 def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
-    """串行弹夹调度：先收口上一任务结果，再弹出下一任务。"""
+    """串行弹夹调度：只弹出下一任务，不再在此节点结算上一轮执行结果。"""
     plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
     task_list = [dict(task) for task in list(state.get("task_list") or [])]
     task_results = dict(state.get("task_results") or {})
-    current_task_id = str(state.get("current_task_id") or "").strip()
-    current_task = str(state.get("current_task") or "").strip()
-    interrupt_payload = state.get("interrupt_payload")
-    error_message = str(state.get("error_message") or "").strip()
-    last_agent = str(state.get("current_step_agent") or state.get("intent") or "").strip()
-
-    if current_task_id:
-        for task in task_list:
-            if str(task.get("id") or "") != current_task_id:
-                continue
-            status = str(task.get("status") or "").strip()
-            if status != TaskStatus.DISPATCHED.value:
-                break
-            task["agent"] = last_agent or str(task.get("agent") or "")
-            if interrupt_payload:
-                task["status"] = TaskStatus.PENDING_APPROVAL.value
-                task["result"] = WORKER_PENDING_APPROVAL_RESULT
-            elif error_message:
-                task["status"] = TaskStatus.ERROR.value
-                task["result"] = error_message
-                task_results[current_task_id] = error_message
-            else:
-                result_text = _extract_last_step_result(state)
-                task["status"] = TaskStatus.DONE.value
-                task["result"] = result_text
-                task_results[current_task_id] = result_text
-            break
-
-    if interrupt_payload:
-        log.info(f"Dispatch: task [{current_task_id or current_task}] pending approval, stop main loop.")
-        return {
-            "plan": plan,
-            "task_list": task_list,
-            "task_results": task_results,
-            "active_tasks": [],
-            "current_task": "END_TASK",
-            "current_task_id": "",
-            "current_step_input": "",
-            "current_step_agent": "",
-        }
 
     next_task = ""
     next_task_id = ""
@@ -888,6 +849,11 @@ def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
         "current_task_id": next_task_id,
         "current_step_input": "" if next_task == "END_TASK" else next_task,
         "current_step_agent": "",
+        "interrupt_payload": None,
+        "last_step_result": "",
+        "last_step_status": "",
+        "last_step_error": "",
+        "replan_reason": "",
         "error_message": None,
         "error_detail": None,
         "intent": None,
@@ -895,6 +861,158 @@ def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
         "is_complex": False,
         "direct_answer": "",
     }
+
+
+def _is_replan_worthy_failure(result_text: str, error_message: str) -> bool:
+    """识别需要回退到 planner 的失败结果。"""
+    normalized_error = str(error_message or "").strip()
+    normalized_result = str(result_text or "").strip()
+    if normalized_error:
+        return True
+    if not normalized_result:
+        return True
+    lower_text = normalized_result.lower()
+    if normalized_result in {WORKER_CANCELLED_RESULT, WORKER_PENDING_APPROVAL_RESULT}:
+        return True
+    failure_markers = (
+        "执行失败",
+        "error:",
+        "exception",
+        "timed out",
+        "超时",
+        "连接异常",
+        "服务暂时不可用",
+        "未生成可展示",
+    )
+    return any(marker in lower_text for marker in failure_markers)
+
+
+def _append_step_result_entry(
+    memory: Dict[str, Any],
+    *,
+    step: str,
+    agent: str,
+    result: str,
+    status: str,
+) -> Dict[str, Any]:
+    """把最近一步的执行结果沉淀到 memory.step_results。"""
+    updated_memory = dict(memory or {})
+    step_results = list(updated_memory.get("step_results") or [])
+    entry = {
+        "step": str(step or "").strip(),
+        "agent": str(agent or "").strip(),
+        "result": str(result or "").strip(),
+        "status": str(status or "").strip(),
+    }
+    if step_results and isinstance(step_results[-1], dict):
+        last_step = str(step_results[-1].get("step") or "").strip()
+        if last_step == entry["step"]:
+            step_results[-1] = entry
+        else:
+            step_results.append(entry)
+    else:
+        step_results.append(entry)
+    updated_memory["step_results"] = step_results
+    return updated_memory
+
+
+def evaluator_node(state: GraphState) -> dict:
+    """统一结算当前步骤结果，并决定继续 dispatch 还是回退 re-plan。"""
+    current_task_id = str(state.get("current_task_id") or "").strip()
+    current_task = str(state.get("current_task") or state.get("current_step_input") or "").strip()
+    current_agent = str(state.get("current_step_agent") or state.get("intent") or "").strip()
+    interrupt_payload = state.get("interrupt_payload")
+    error_message = str(state.get("error_message") or "").strip()
+    result_text = _extract_last_step_result(state)
+    task_list = [dict(task) for task in list(state.get("task_list") or [])]
+    task_results = dict(state.get("task_results") or {})
+    memory = dict(state.get("memory") or {})
+    current_replan_count = int(state.get("replan_count") or 0)
+    max_replans = int(state.get("max_replans") or WORKFLOW_MAX_REPLANS)
+
+    if not current_task_id:
+        return {
+            "last_step_result": "",
+            "last_step_status": "",
+            "last_step_error": "",
+            "replan_reason": "",
+        }
+
+    for task in task_list:
+        if str(task.get("id") or "") != current_task_id:
+            continue
+        if current_agent:
+            task["agent"] = current_agent
+        if interrupt_payload:
+            task["status"] = TaskStatus.PENDING_APPROVAL.value
+            task["result"] = WORKER_PENDING_APPROVAL_RESULT
+            memory = _append_step_result_entry(
+                memory,
+                step=current_task,
+                agent=current_agent,
+                result=WORKER_PENDING_APPROVAL_RESULT,
+                status=TaskStatus.PENDING_APPROVAL.value,
+            )
+            return {
+                "task_list": task_list,
+                "task_results": task_results,
+                "memory": memory,
+                "last_step_result": WORKER_PENDING_APPROVAL_RESULT,
+                "last_step_status": TaskStatus.PENDING_APPROVAL.value,
+                "last_step_error": "",
+                "replan_reason": "",
+            }
+
+        if _is_replan_worthy_failure(result_text, error_message):
+            reason = error_message or result_text or "步骤未返回有效结果"
+            next_replan_count = current_replan_count + 1
+            task["status"] = TaskStatus.ERROR.value
+            task["result"] = reason
+            task_results[current_task_id] = reason
+            memory = _append_step_result_entry(
+                memory,
+                step=current_task,
+                agent=current_agent,
+                result=reason,
+                status=TaskStatus.ERROR.value,
+            )
+            return {
+                "task_list": task_list,
+                "task_results": task_results,
+                "memory": memory,
+                "last_step_result": reason,
+                "last_step_status": TaskStatus.ERROR.value,
+                "last_step_error": reason,
+                "replan_reason": reason,
+                "replan_count": next_replan_count,
+                "max_replans": max_replans,
+                "error_message": reason if next_replan_count >= max_replans else None,
+                "error_detail": None,
+            }
+
+        task["status"] = TaskStatus.DONE.value
+        task["result"] = result_text
+        task_results[current_task_id] = result_text
+        memory = _append_step_result_entry(
+            memory,
+            step=current_task,
+            agent=current_agent,
+            result=result_text,
+            status=TaskStatus.DONE.value,
+        )
+        return {
+            "task_list": task_list,
+            "task_results": task_results,
+            "memory": memory,
+            "last_step_result": result_text,
+            "last_step_status": TaskStatus.DONE.value,
+            "last_step_error": "",
+            "replan_reason": "",
+            "error_message": None,
+            "error_detail": None,
+        }
+
+    return {}
 
 
 # ==================== Worker & Reducer ====================
@@ -1291,7 +1409,7 @@ async def reflection_node(state: GraphState, model: BaseChatModel, config: Runna
     latest_user_text = _latest_human_message(state.get("messages", []))
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", ReflectionPrompt.SYSTEM),
+            ("system", ReflectionPrompt.get_system_prompt()),
             (
                 "human",
                 "用户原始请求：\n{user_request}\n\n"
@@ -1571,7 +1689,7 @@ async def aggregator_node(state: GraphState, model: BaseChatModel, config: Runna
         agg_msg = "\n\n---\n\n".join(res_list)
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", AggregatorPrompt.SYSTEM),
+            ("system", AggregatorPrompt.get_system_prompt()),
             ("human", f"用户的原始请求：\n{user_request}\n\n执行结果反馈：\n{agg_msg}")
         ])
 
@@ -1953,6 +2071,25 @@ def _route_current_task_after_intent(state: GraphState) -> str:
     return "chat_node"
 
 
+def _route_after_evaluator(state: GraphState) -> str:
+    """根据 evaluator 结论决定是继续 dispatch、回到 planner，还是终止。"""
+    if state.get("interrupt_payload"):
+        return "__end__"
+
+    last_status = str(state.get("last_step_status") or "").strip()
+    if last_status == TaskStatus.ERROR.value:
+        replan_count = int(state.get("replan_count") or 0)
+        max_replans = int(state.get("max_replans") or WORKFLOW_MAX_REPLANS)
+        if replan_count >= max_replans:
+            return "__end__"
+        return "Parent_Planner_Node"
+
+    if last_status == TaskStatus.DONE.value:
+        return "dispatch_node"
+
+    return "__end__"
+
+
 def create_graph(model_config: Optional[dict] = None):
     """构建统一入口 + 串行弹夹循环的 Supervisor 主图。"""
     config_dict = model_config or {}
@@ -2016,6 +2153,7 @@ def create_graph(model_config: Optional[dict] = None):
         retry_policy=GRAPH_RETRY_POLICY,
     )
     workflow.add_node("dispatch_node", dispatch_node, retry_policy=GRAPH_RETRY_POLICY)
+    workflow.add_node("evaluator_node", evaluator_node, retry_policy=GRAPH_RETRY_POLICY)
 
     workflow.add_node("chat_node", functools.partial(chat_node, model=chat_model), retry_policy=GRAPH_RETRY_POLICY)
     for name in MEMBERS:
@@ -2038,8 +2176,17 @@ def create_graph(model_config: Optional[dict] = None):
     router_options.update({"chat_node": "chat_node"})
     workflow.add_conditional_edges("Intent_Router_Node", _route_current_task_after_intent, router_options)
 
-    workflow.add_edge("chat_node", "dispatch_node")
+    workflow.add_edge("chat_node", "evaluator_node")
     for name in MEMBERS:
-        workflow.add_edge(name, "dispatch_node")
+        workflow.add_edge(name, "evaluator_node")
+    workflow.add_conditional_edges(
+        "evaluator_node",
+        _route_after_evaluator,
+        {
+            "dispatch_node": "dispatch_node",
+            "Parent_Planner_Node": "Parent_Planner_Node",
+            "__end__": END,
+        },
+    )
 
     return workflow.compile(checkpointer=get_checkpointer("supervisor"))

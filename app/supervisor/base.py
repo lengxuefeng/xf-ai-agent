@@ -34,6 +34,7 @@ import asyncio
 import functools
 import inspect
 import re
+import threading
 from typing import Generator, Any, Dict, Optional
 from langchain_core.messages import AIMessageChunk, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import Runnable, RunnableConfig
@@ -898,6 +899,15 @@ class BaseAgent(ABC):
             log.error(f"Agent {self.subgraph_id} 运行出错: {err_msg}")
             yield {"error": err_msg}
 
+    async def aget_state(self) -> Any:
+        """异步查询当前子图运行状态。"""
+        config = {
+            "configurable": {
+                "thread_id": f"{self.session_id}_{self.subgraph_id}"
+            }
+        }
+        return await self.graph.aget_state(config)
+
     def get_state(self) -> Any:
         """
         查询当前子图运行状态
@@ -933,4 +943,28 @@ class BaseAgent(ABC):
                 "thread_id": f"{self.session_id}_{self.subgraph_id}"
             }
         }
-        return self.graph.get_state(config)
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(self.graph.aget_state(config))
+
+        result_box: Dict[str, Any] = {}
+        done = threading.Event()
+
+        def _runner() -> None:
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                result_box["value"] = loop.run_until_complete(self.graph.aget_state(config))
+            except Exception as exc:  # pragma: no cover - 仅同步兜底路径进入
+                result_box["error"] = exc
+            finally:
+                loop.close()
+                done.set()
+
+        worker = threading.Thread(target=_runner, daemon=True, name=f"agent-state-{self.subgraph_id}")
+        worker.start()
+        done.wait()
+        if "error" in result_box:
+            raise result_box["error"]
+        return result_box.get("value")

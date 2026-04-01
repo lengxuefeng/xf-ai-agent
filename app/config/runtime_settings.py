@@ -283,6 +283,26 @@ class WorkflowReflectionConfig:
     result_preview_max_chars: int
 
 
+@dataclass(frozen=True)
+class CheckpointerPoolConfig:
+    """Checkpointer 异步连接池配置。"""
+
+    # 连接池最小连接数
+    min_size: int
+
+    # 连接池最大连接数
+    max_size: int
+
+    # 借连接超时时间（秒）
+    timeout_seconds: float
+
+    # 连接最大空闲时间（秒）
+    max_idle_seconds: float
+
+    # 连接最大生命周期（秒）
+    max_lifetime_seconds: float
+
+
 # 图执行器调优参数配置实例
 GRAPH_RUNNER_TUNING = GraphRunnerTuning(
     # 规则扫描最大长度（环境变量：ROUTER_RULE_SCAN_MAX_LEN，默认 60，范围 1-500）
@@ -485,6 +505,26 @@ WORKFLOW_REFLECTION_CONFIG = WorkflowReflectionConfig(
         max_value=10000,
     ),
 )
+
+# Checkpointer 异步连接池配置
+CHECKPOINTER_POOL_CONFIG = CheckpointerPoolConfig(
+    min_size=_as_int("CHECKPOINTER_POOL_MIN_SIZE", 2, min_value=1, max_value=50),
+    max_size=_as_int("CHECKPOINTER_POOL_MAX_SIZE", 20, min_value=1, max_value=100),
+    timeout_seconds=_as_float("CHECKPOINTER_POOL_TIMEOUT_SECONDS", 10.0, min_value=1.0, max_value=120.0),
+    max_idle_seconds=_as_float("CHECKPOINTER_POOL_MAX_IDLE_SECONDS", 300.0, min_value=30.0, max_value=3600.0),
+    max_lifetime_seconds=_as_float(
+        "CHECKPOINTER_POOL_MAX_LIFETIME_SECONDS",
+        3600.0,
+        min_value=60.0,
+        max_value=86400.0,
+    ),
+)
+
+# LangGraph 主图递归上限（环境变量：GRAPH_RECURSION_LIMIT，默认 60）
+GRAPH_RECURSION_LIMIT = _as_int("GRAPH_RECURSION_LIMIT", 60, min_value=10, max_value=500)
+
+# 增量重规划最大轮次（环境变量：WORKFLOW_MAX_REPLANS，默认 2）
+WORKFLOW_MAX_REPLANS = _as_int("WORKFLOW_MAX_REPLANS", 2, min_value=0, max_value=10)
 
 # Chat 兜底节点流式开关（环境变量：CHAT_NODE_STREAM_ENABLED，默认 true）
 CHAT_NODE_STREAM_ENABLED = _as_bool("CHAT_NODE_STREAM_ENABLED", True)

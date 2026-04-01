@@ -53,6 +53,8 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_core.tools import tool
 
+from common.utils.tool_validation import handle_tool_validation_error
+from models.schemas.tool_input_schemas import EmptyToolInput, ExecuteSqlToolInput
 from supervisor.base import BaseAgent
 from tools.gateway.federated_query_gateway import federated_query_gateway
 from supervisor.graph_state import AgentRequest
@@ -81,13 +83,13 @@ log = get_logger(__name__)
 SQL_SCHEMA_TOOL_NAME = "get_schema"
 
 
-@tool(SQL_SCHEMA_TOOL_NAME)
+@tool(SQL_SCHEMA_TOOL_NAME, args_schema=EmptyToolInput)
 def get_schema_tool() -> str:
     """读取当前数据库 schema，供 SQL 生成使用。"""
     return get_schema()
 
 
-@tool(SQL_APPROVAL_ACTION_NAME)
+@tool(SQL_APPROVAL_ACTION_NAME, args_schema=ExecuteSqlToolInput)
 def execute_sql_tool(sql: str) -> str:
     """执行只读 SQL 查询；真正执行前先走 LangGraph 审批中断。"""
     normalized_sql = str(sql or "").strip()
@@ -113,6 +115,10 @@ def execute_sql_tool(sql: str) -> str:
 
     raw_result = federated_query_gateway.execute_local_sql(normalized_sql)
     return format_sql_result_for_user(normalized_sql, raw_result)
+
+
+get_schema_tool.handle_validation_error = handle_tool_validation_error
+execute_sql_tool.handle_validation_error = handle_tool_validation_error
 
 
 class SqlAgentState(TypedDict):

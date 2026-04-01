@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from prompts.runtime_prompts.templates.defaults import GLOBAL_RUNTIME_PROMPT
+from prompts.prompt_loader import render_prompt_template
 
 
 class SystemPromptRegistry:
     """统一系统提示词注册表。"""
 
     def __init__(self) -> None:
-        self._prompts = {
-            "global_runtime": GLOBAL_RUNTIME_PROMPT,
+        self._prompt_paths = {
+            "global_runtime": "runtime_prompts/templates/global_runtime.txt",
         }
 
     def render_global_prompt(self) -> str:
-        return self._prompts["global_runtime"]
+        return render_prompt_template(self._prompt_paths["global_runtime"])
 
 
 system_prompt_registry = SystemPromptRegistry()

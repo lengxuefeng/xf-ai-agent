@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Tuple
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
+from config.runtime_settings import AGENT_LOOP_CONFIG
 from harness.context.context_budget import ContextBudget
 from harness.context.context_injectors import build_context_messages
 from harness.memory.memory_models import MemorySnippet
@@ -17,6 +19,93 @@ from common.utils.history_compressor import compress_history_messages
 
 class RuntimeContextBuilder:
     """统一上下文构建器。"""
+
+    @staticmethod
+    def _message_text(msg: BaseMessage) -> str:
+        """提取消息文本内容，兼容字符串和多模态结构。"""
+        content = getattr(msg, "content", "")
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts: list[str] = []
+            for item in content:
+                if isinstance(item, str):
+                    parts.append(item)
+                elif isinstance(item, dict):
+                    text = item.get("text") or item.get("content") or ""
+                    if isinstance(text, str):
+                        parts.append(text)
+            return "\n".join(part for part in parts if part)
+        if isinstance(content, dict):
+            text = content.get("text") or content.get("content") or ""
+            if isinstance(text, str):
+                return text
+        return str(content or "")
+
+    @staticmethod
+    def _extract_text_tokens(text: str) -> set[str]:
+        """提取轻量关键词用于相关性筛选。"""
+        if not text:
+            return set()
+        min_chars = AGENT_LOOP_CONFIG.context_relevance_min_token_chars
+        zh_tokens = re.findall(rf"[\u4e00-\u9fa5]{{{min_chars},}}", text)
+        en_tokens = re.findall(rf"[A-Za-z0-9_]{{{min_chars},}}", text.lower())
+        return set(zh_tokens + en_tokens)
+
+    def _filter_relevant_history(
+        self,
+        history_messages: List[Dict[str, Any]],
+        user_input: str,
+    ) -> Tuple[List[BaseMessage], int]:
+        """按“最近窗口 + 相关性”筛选历史，降低无关上下文 token。"""
+        raw_history: List[BaseMessage] = []
+        for msg in history_messages or []:
+            if msg.get("user_content"):
+                raw_history.append(HumanMessage(content=msg["user_content"]))
+            if msg.get("model_content"):
+                raw_history.append(AIMessage(content=msg["model_content"], name=msg.get("name")))
+
+        total_raw_count = len(raw_history)
+        if not raw_history:
+            return raw_history, total_raw_count
+
+        max_window = max(1, AGENT_LOOP_CONFIG.context_history_messages)
+        recent_history = raw_history[-max_window:]
+
+        current_tokens = self._extract_text_tokens((user_input or "").strip())
+        tail_window = max(
+            1,
+            min(
+                AGENT_LOOP_CONFIG.context_relevance_tail_messages,
+                max_window,
+            ),
+        )
+
+        tail_part = recent_history[-tail_window:]
+        head_part = recent_history[:-tail_window]
+        filtered_history: list[BaseMessage] = []
+
+        if current_tokens:
+            for message in head_part:
+                message_tokens = self._extract_text_tokens(self._message_text(message))
+                if message_tokens & current_tokens:
+                    filtered_history.append(message)
+
+        for message in tail_part:
+            if isinstance(message, HumanMessage):
+                filtered_history.append(message)
+                continue
+            message_tokens = self._extract_text_tokens(self._message_text(message))
+            if (not current_tokens) or (message_tokens & current_tokens):
+                filtered_history.append(message)
+
+        if not any(isinstance(message, HumanMessage) for message in filtered_history):
+            for message in reversed(recent_history):
+                if isinstance(message, HumanMessage):
+                    filtered_history.append(message)
+                    break
+
+        return filtered_history, total_raw_count
 
     def build_messages(
         self,
@@ -39,15 +128,13 @@ class RuntimeContextBuilder:
             memory_block,
         )
 
-        raw_history: List[BaseMessage] = []
-        for msg in history_messages or []:
-            if msg.get("user_content"):
-                raw_history.append(HumanMessage(content=msg["user_content"]))
-            if msg.get("model_content"):
-                raw_history.append(AIMessage(content=msg["model_content"], name=msg.get("name")))
+        filtered_history, total_raw_count = self._filter_relevant_history(
+            history_messages=history_messages,
+            user_input=run_context.user_input,
+        )
 
         compressed_history = compress_history_messages(
-            raw_history,
+            filtered_history,
             model=None,
             max_tokens=max_tokens,
             max_chars=max_chars,
@@ -56,7 +143,8 @@ class RuntimeContextBuilder:
         messages.append(HumanMessage(content=run_context.user_input))
 
         context_meta = {
-            "history_message_count": len(raw_history),
+            "history_message_count": total_raw_count,
+            "filtered_history_count": len(filtered_history),
             "compressed_history_count": len(compressed_history),
             "memory_count": len(memory_snippets),
             "estimated_tokens": sum(ContextBudget.estimate_token_budget(getattr(message, "content", "")) for message in messages),
@@ -65,4 +153,3 @@ class RuntimeContextBuilder:
 
 
 runtime_context_builder = RuntimeContextBuilder()
-

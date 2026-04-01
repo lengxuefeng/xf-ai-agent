@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict
 
+from config.runtime_settings import GRAPH_RECURSION_LIMIT
 
 def utc_now_iso() -> str:
     """
@@ -124,6 +125,7 @@ class RunContext:
     # 输入和配置
     user_input: str  # 用户输入
     model_config: Dict[str, Any] = field(default_factory=dict)  # 模型配置
+    request_id: str = ""  # HTTP 请求链路追踪 ID
 
     # 上下文信息
     history_size: int = 0        # 历史消息数量
@@ -134,7 +136,7 @@ class RunContext:
     created_at: str = field(default_factory=utc_now_iso)  # 创建时间
     meta: Dict[str, Any] = field(default_factory=dict)    # 元数据
 
-    def graph_config(self) -> Dict[str, Dict[str, str]]:
+    def graph_config(self) -> Dict[str, Any]:
         """
         构造 LangGraph 使用的 configurable 配置。
 
@@ -154,7 +156,10 @@ class RunContext:
             "configurable": {
                 "thread_id": self.session_id,
                 "run_id": self.run_id,
-            }
+                "request_id": self.request_id,
+            },
+            "tags": [f"req_id:{self.request_id}"] if self.request_id else [],
+            "recursion_limit": GRAPH_RECURSION_LIMIT,
         }
 
 
@@ -213,4 +218,3 @@ class RunStateSnapshot:
     # 时间戳和元数据
     updated_at: str = field(default_factory=utc_now_iso)  # 更新时间
     meta: Dict[str, Any] = field(default_factory=dict)    # 元数据
-

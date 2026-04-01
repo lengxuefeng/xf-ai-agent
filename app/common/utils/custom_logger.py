@@ -213,13 +213,21 @@ class CustomLogger:
         if target in [LogTarget.AI, LogTarget.ALL]:
             icon, log_type = self.LOG_LEVEL_CONFIG.get(level, ('📋', 'info'))
             logger_name = self.name.split('.')[-1] if '.' in self.name else self.name
+            current_run_id = ""
+            try:
+                from harness.core.cancel_manager import runtime_cancel_manager
+                current_run_id = runtime_cancel_manager.current_request_id()
+            except Exception:
+                current_run_id = ""
 
             sse_data = {
                 "type": SseEventType.LOG.value,
                 "log_type": log_type,
                 "logger": logger_name,
-                "message": f"{icon} {msg}"
+                "message": f"{icon} {msg}",
             }
+            if current_run_id:
+                sse_data["run_id"] = current_run_id
 
             sse_message = f"data: {json.dumps(sse_data, ensure_ascii=False)}\n\n"
 
@@ -270,13 +278,21 @@ class CustomLogger:
         if target in [LogTarget.AI, LogTarget.ALL]:
             icon, log_type = self.LOG_LEVEL_CONFIG.get(logging.ERROR, ('❌', 'error'))
             logger_name = self.name.split('.')[-1] if '.' in self.name else self.name
+            current_run_id = ""
+            try:
+                from harness.core.cancel_manager import runtime_cancel_manager
+                current_run_id = runtime_cancel_manager.current_request_id()
+            except Exception:
+                current_run_id = ""
 
             sse_data = {
                 "type": SseEventType.LOG.value,
                 "log_type": log_type,
                 "logger": logger_name,
-                "message": f"{icon} {msg}"
+                "message": f"{icon} {msg}",
             }
+            if current_run_id:
+                sse_data["run_id"] = current_run_id
 
             sse_message = f"data: {json.dumps(sse_data, ensure_ascii=False)}\n\n"
 

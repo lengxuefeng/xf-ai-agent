@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
+"""运行时 Prompt 默认导出。"""
+from prompts.prompt_loader import load_prompt_template
 
-GLOBAL_RUNTIME_PROMPT = """
-你是 XF AI Agent 的运行时中枢，需要遵守以下规则：
-1. 优先给出对用户有帮助、可执行、清晰的结果。
-2. 需要调用工具、外部系统、代码执行或审批时，必须显式走运行时能力。
-3. 当上下文不足时，优先依赖会话记忆、项目记忆和知识增强，而不是臆测。
-4. 输出要兼顾结构化流程可观测性，便于前端卷轴展示。
-""".strip()
-
+GLOBAL_RUNTIME_PROMPT = load_prompt_template("runtime_prompts/templates/global_runtime.txt")

@@ -21,13 +21,14 @@ from services.session_pool import session_pool
 """
 
 import asyncio
+import contextlib
 import hashlib
 import json
-import queue
 import re
 import threading
 import time
 import uuid
+from collections import deque
 from typing import Any, AsyncGenerator, Dict, Generator, List, Optional, Set, Tuple
 
 from langchain_core.messages import (
@@ -64,7 +65,6 @@ from config.constants.approval_constants import (
 from config.constants.sse_constants import SseEventType, SseMessage, SsePayloadField
 from config.constants.workflow_constants import (
     GRAPH_STREAM_MODES,
-    GraphQueueItemType,
     WORKER_CANCELLED_RESULT,
     WORKER_PENDING_APPROVAL_RESULT,
 )
@@ -117,87 +117,66 @@ class _CodeBlockStash:
         return normalized
 
 
-class _GraphStreamAsyncBridge:
+class _AsyncSideChannelBridge:
     def __init__(
             self,
-            *,
-            runner: "GraphRunner",
             loop: asyncio.AbstractEventLoop,
-            event_queue: asyncio.Queue,
             run_context,
-            graph: Any,
-            graph_inputs: Dict[str, Any],
-            graph_config: Dict[str, Any],
     ) -> None:
-        self.runner = runner
         self.loop = loop
-        self.event_queue = event_queue
-        self.run_context = run_context
-        self.graph = graph
-        self.graph_inputs = graph_inputs
-        self.graph_config = graph_config
-        self.run_id = run_context.run_id
-        self.owner_thread_ids: Set[int] = {threading.get_ident()}
+        self.run_id = str(getattr(run_context, "run_id", "") or "").strip()
         self.last_log_sse = ""
+        self._pending_items: deque[Tuple[str, Any]] = deque()
+        self._pending_event = asyncio.Event()
 
-    def _enqueue_nowait(self, item: Tuple[str, Any], drop_on_full: bool) -> None:
-        try:
-            self.event_queue.put_nowait(item)
-        except asyncio.QueueFull:
-            if not drop_on_full:
-                asyncio.ensure_future(self.event_queue.put(item), loop=self.loop)
-
-    def safe_enqueue(self, item: Tuple[str, Any], *, drop_on_full: bool = False) -> None:
-        self.loop.call_soon_threadsafe(self._enqueue_nowait, item, drop_on_full)
+    def _enqueue_on_loop(self, item_type: str, payload: Any) -> None:
+        self._pending_items.append((item_type, payload))
+        self._pending_event.set()
 
     def log_interceptor(self, sse_message: str) -> None:
-        if threading.get_ident() not in self.owner_thread_ids:
+        payload = self._parse_sse_payload(sse_message)
+        payload_run_id = str(payload.get("run_id") or "").strip()
+        if payload_run_id and payload_run_id != self.run_id:
             return
         if sse_message == self.last_log_sse:
             return
         self.last_log_sse = sse_message
-        self.safe_enqueue((GraphQueueItemType.LOG.value, sse_message), drop_on_full=True)
+        self.loop.call_soon_threadsafe(self._enqueue_on_loop, "log", sse_message)
 
     def live_stream_interceptor(self, payload: Dict[str, Any]) -> None:
-        self.safe_enqueue((GraphQueueItemType.LIVE_STREAM.value, payload), drop_on_full=True)
+        if str(payload.get("run_id") or "").strip() != self.run_id:
+            return
+        self.loop.call_soon_threadsafe(self._enqueue_on_loop, "live_stream", payload)
 
-    def graph_worker(self) -> None:
-        _thread_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(_thread_loop)
-        self.owner_thread_ids.add(threading.get_ident())
-        with runtime_session_manager.bind_run(self.run_context):
-            try:
-                async def _consume_graph_events() -> None:
-                    async for ev_type, ev in self.graph.astream(
-                            self.graph_inputs,
-                            config=self.graph_config,
-                            stream_mode=list(GRAPH_STREAM_MODES),
-                    ):
-                        if request_cancellation_service.is_cancelled(self.run_id):
-                            log.info(f"Graph Worker 收到取消信号，停止事件采集。run_id={self.run_id}")
-                            break
-                        self.safe_enqueue((GraphQueueItemType.GRAPH.value, (ev_type, ev)))
+    async def wait_for_item(self) -> Tuple[str, Any]:
+        while True:
+            if self._pending_items:
+                item = self._pending_items.popleft()
+                if not self._pending_items:
+                    self._pending_event.clear()
+                return item
+            self._pending_event.clear()
+            await self._pending_event.wait()
 
-                _thread_loop.run_until_complete(_consume_graph_events())
-                self.safe_enqueue((GraphQueueItemType.DONE.value, None))
-            except Exception as worker_exc:
-                err_msg = str(worker_exc)
-                if "Interrupt(" in err_msg or worker_exc.__class__.__name__ == "GraphInterrupt":
-                    log.info(f"Graph Worker 检测到 Interrupt 挂起: {err_msg[:200]}")
-                    self.safe_enqueue((GraphQueueItemType.DONE.value, None))
-                else:
-                    log.exception(f"Graph Worker 执行异常: {worker_exc}")
-                    self.safe_enqueue(
-                        (
-                            GraphQueueItemType.ERROR.value,
-                            self.runner._normalize_graph_error_message(worker_exc),
-                        )
-                    )
-            finally:
-                try:
-                    _thread_loop.close()
-                except Exception:
-                    pass
+    def drain_pending(self) -> List[Tuple[str, Any]]:
+        drained: List[Tuple[str, Any]] = []
+        while self._pending_items:
+            drained.append(self._pending_items.popleft())
+        if not self._pending_items:
+            self._pending_event.clear()
+        return drained
+
+    @staticmethod
+    def _parse_sse_payload(sse_message: str) -> Dict[str, Any]:
+        try:
+            for line in str(sse_message or "").splitlines():
+                if line.startswith("data: "):
+                    payload = json.loads(line[6:])
+                    if isinstance(payload, dict):
+                        return payload
+        except Exception:
+            return {}
+        return {}
 
 
 class GraphRunner:
@@ -417,6 +396,7 @@ class GraphRunner:
             history_messages: Optional[List[Dict[str, Any]]] = None,
             session_context: Optional[Dict[str, Any]] = None,
             emit_response_start: bool = True,
+            request_id: str = "",
     ) -> AsyncGenerator[str, None]:
         """
         核心流式执行器，所有用户请求都会经过这个方法
@@ -467,6 +447,7 @@ class GraphRunner:
                 history_messages=history_messages,
                 session_context=session_context,
                 is_resume=True,
+                request_id=request_id,
             )
             runtime_session_manager.register_run(resume_context)
 
@@ -498,6 +479,7 @@ class GraphRunner:
             model_config=effective_config,
             history_messages=history_messages,
             session_context=session_context,
+            request_id=request_id,
         )
         run_id = run_context.run_id
 
@@ -506,6 +488,7 @@ class GraphRunner:
         if rule_result is not None:
             # 规则命中，直接返回结果，不进入图执行
             runtime_session_manager.register_run(run_context)
+            runtime_session_manager.attach_meta(run_context, request_id=run_context.request_id)
             for chunk in rule_handle(
                 self,
                 user_input=user_input,
@@ -530,11 +513,15 @@ class GraphRunner:
                 summary=user_input,
                 status="completed",
                 role="boss",
-                meta={"input_length": len(user_input or "")},
+                meta={
+                    "input_length": len(user_input or ""),
+                    "request_id": run_context.request_id,
+                },
             )
         )
 
         runtime_session_manager.register_run(run_context)
+        runtime_session_manager.attach_meta(run_context, request_id=run_context.request_id)
 
         workspace_meta = workspace_manager.prepare_run_workspace(run_context)
         tool_registry_stats = runtime_tool_registry.stats()
@@ -547,6 +534,7 @@ class GraphRunner:
                 payload={
                     "session_id": session_id,
                     "run_id": run_id,
+                    "request_id": run_context.request_id,
                     "user_input": user_input,
                     "history_size": len(history_messages or []),
                     "session_context": session_context,
@@ -638,7 +626,12 @@ class GraphRunner:
                 run_id=run_id,
                 phase="context_ready",
                 title="上下文卷宗整理完成",
-                summary=f"压缩历史 {context_meta.get('compressed_history_count', 0)} 条，估算 {context_meta.get('estimated_tokens', 0)} tokens",
+                summary=(
+                    f"原始历史 {context_meta.get('history_message_count', 0)} 条，"
+                    f"相关筛选后 {context_meta.get('filtered_history_count', 0)} 条，"
+                    f"压缩后 {context_meta.get('compressed_history_count', 0)} 条，"
+                    f"估算 {context_meta.get('estimated_tokens', 0)} tokens"
+                ),
                 status="completed",
                 role="system",
                 meta=context_meta,
@@ -963,37 +956,23 @@ class GraphRunner:
             effective_config: Dict[str, Any],
     ) -> AsyncGenerator[str, None]:
         """
-        启动后台图执行线程，通过 asyncio.Queue 异步消费事件，将所有事件转为 SSE 推送。
+        直接消费 LangGraph 的异步流，并穿插处理日志/实时流旁路事件。
 
-        【异步设计要点】
-        - event_queue 使用 asyncio.Queue，生产者线程通过 loop.call_soon_threadsafe 写入，
-          消费者协程用 await queue.get() 非阻塞取数，全程不占用事件循环线程。
-        - owner_thread_ids 追踪参与执行的线程 ID，日志拦截器用它过滤跨会话串流。
-        - 所有 finally 清理动作（取消注册回调、join worker）均在协程退出时执行。
+        设计要点：
+        1. 图主流完全走 `async for graph.astream(...)`，不再引入线程桥接。
+        2. 非图侧日志与 live stream 通过轻量异步旁路桥接，避免跨会话串流。
+        3. 保留心跳、空闲超时、硬超时、interrupt/error/final fallback 等既有行为。
         """
         session_id = run_context.session_id
         run_id = run_context.run_id
-        loop = asyncio.get_event_loop()
-        # asyncio.Queue：生产者线程通过 call_soon_threadsafe 写入，消费协程 await get()
-        event_queue: asyncio.Queue = asyncio.Queue(maxsize=2000)
-        # 记录本轮已实时推流的 Agent，用于抑制 synthetic 重复输出
+        loop = asyncio.get_running_loop()
+        bridge = _AsyncSideChannelBridge(loop=loop, run_context=run_context)
         live_streamed_agents: Set[str] = set()
         # 跨 chunk 的路由 JSON 前缀过滤状态
         router_prefix_buffer = ""
         router_prefix_done = False
-        bridge = _GraphStreamAsyncBridge(
-            runner=self,
-            loop=loop,
-            event_queue=event_queue,
-            run_context=run_context,
-            graph=graph,
-            graph_inputs=graph_inputs,
-            graph_config=graph_config,
-        )
 
-        # 注册日志拦截回调
         CustomLogger.add_global_sse_callback(bridge.log_interceptor)
-        # 注册子 Agent 实时流回调（可配置开关）
         runtime_session_manager.register_live_stream_callback(
             run_context,
             bridge.live_stream_interceptor,
@@ -1006,24 +985,224 @@ class GraphRunner:
             title="总管开始调度流程",
         )
 
-        # 启动后台图执行线程
-        worker_thread = threading.Thread(target=bridge.graph_worker, daemon=True, name=f"graph-worker-{run_id[:8]}")
-        worker_thread.start()
-        if worker_thread.ident is not None:
-            bridge.owner_thread_ids.add(worker_thread.ident)
+        start_ts = time.time()
+        last_event_ts = start_ts
+        last_heartbeat_ts = 0.0
+
+        interrupt_emitted = False
+        error_emitted = False
+        cancelled_emitted = False
+        stream_content_emitted = False
+        progress_emitted = False
+
+        metrics: Dict[str, Any] = {
+            "queue_timeouts": 0,
+            "heartbeat_count": 0,
+            "events_consumed": 0,
+            "first_event_latency_ms": None,
+            "first_stream_latency_ms": None,
+        }
+
+        active_agent_candidates: Set[str] = set()
+
+        idle_heartbeat_sec = GRAPH_RUNNER_TUNING.idle_heartbeat_sec
+        idle_timeout_sec = GRAPH_RUNNER_TUNING.idle_timeout_sec
+        idle_timeout_enabled = GRAPH_RUNNER_TUNING.idle_timeout_enabled
+        hard_timeout_sec = GRAPH_RUNNER_TUNING.hard_timeout_sec
+        poll_timeout_sec = GRAPH_RUNNER_TUNING.queue_poll_timeout_sec
+
+        graph_stream = graph.astream(
+            graph_inputs,
+            config=graph_config,
+            stream_mode=list(GRAPH_STREAM_MODES),
+        )
+        graph_task: Optional[asyncio.Task] = None
+        side_task: Optional[asyncio.Task] = None
 
         try:
-            async for chunk in self._consume_event_queue_async(
-                    event_queue=event_queue,
-                    worker_thread=worker_thread,
-                    run_context=run_context,
-                    effective_config=effective_config,
-                    graph=graph,
-                    live_streamed_agents=live_streamed_agents,
-                    router_prefix_buffer=router_prefix_buffer,
-                    router_prefix_done=router_prefix_done,
-            ):
-                yield chunk
+            with runtime_session_manager.bind_run(run_context):
+                graph_task = asyncio.create_task(
+                    graph_stream.__anext__(),
+                    name=f"graph-astream-{run_id[:8]}",
+                )
+                side_task = asyncio.create_task(
+                    bridge.wait_for_item(),
+                    name=f"graph-side-{run_id[:8]}",
+                )
+
+                while True:
+                    now = time.time()
+
+                    if request_cancellation_service.is_cancelled(run_id):
+                        cancelled_emitted = True
+                        runtime_session_manager.cancel_run(run_context, summary="运行已取消")
+                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
+                        break
+
+                    if (now - start_ts > hard_timeout_sec) and (now - last_event_ts >= idle_timeout_sec):
+                        error_emitted = True
+                        request_cancellation_service.cancel_request(run_id)
+                        runtime_session_manager.mark_failed(
+                            run_context,
+                            phase="runtime_timeout",
+                            summary=SseMessage.ERROR_TIMEOUT,
+                            title="运行超时",
+                            error=SseMessage.ERROR_TIMEOUT,
+                        )
+                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TIMEOUT)
+                        break
+
+                    pending_tasks = {task for task in (graph_task, side_task) if task is not None}
+                    if not pending_tasks:
+                        break
+
+                    done, _ = await asyncio.wait(
+                        pending_tasks,
+                        timeout=poll_timeout_sec,
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+
+                    if not done:
+                        metrics["queue_timeouts"] = int(metrics.get("queue_timeouts", 0)) + 1
+                        now = time.time()
+                        if idle_timeout_enabled and (now - last_event_ts >= idle_timeout_sec):
+                            error_emitted = True
+                            request_cancellation_service.cancel_request(run_id)
+                            runtime_session_manager.mark_failed(
+                                run_context,
+                                phase="runtime_idle_timeout",
+                                summary=SseMessage.ERROR_IDLE_TIMEOUT,
+                                title="运行空闲超时",
+                                error=SseMessage.ERROR_IDLE_TIMEOUT,
+                            )
+                            yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_IDLE_TIMEOUT)
+                            break
+                        waiting_first_output = (
+                                not stream_content_emitted
+                                and not interrupt_emitted
+                                and not error_emitted
+                        )
+                        if waiting_first_output and (now - last_heartbeat_ts >= idle_heartbeat_sec):
+                            metrics["heartbeat_count"] = int(metrics.get("heartbeat_count", 0)) + 1
+                            yield self._fmt_sse(
+                                SseEventType.THINKING.value,
+                                f"⏱️ 正在等待模型首包返回（已等待 {int(now - start_ts)}s）",
+                            )
+                            last_heartbeat_ts = now
+                        continue
+
+                    if side_task in done and side_task is not None:
+                        try:
+                            item_type, item_data = side_task.result()
+                        except asyncio.CancelledError:
+                            item_type, item_data = "", None
+
+                        if item_type == "log":
+                            progress_emitted = True
+                            yield item_data
+                        elif item_type == "live_stream":
+                            for sse_chunk in self._handle_live_stream_event(
+                                    payload=item_data,
+                                    live_streamed_agents=live_streamed_agents,
+                                    session_id=session_id,
+                                    run_id=run_id,
+                            ):
+                                if not sse_chunk:
+                                    continue
+                                progress_emitted = True
+                                if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
+                                    stream_content_emitted = True
+                                    if metrics.get("first_stream_latency_ms") is None:
+                                        metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
+                                runtime_session_manager.record_workflow_event_chunk(run_context, sse_chunk)
+                                yield sse_chunk
+                        side_task = asyncio.create_task(
+                            bridge.wait_for_item(),
+                            name=f"graph-side-{run_id[:8]}",
+                        )
+
+                    if graph_task in done and graph_task is not None:
+                        try:
+                            ev_type, ev = graph_task.result()
+                        except StopAsyncIteration:
+                            graph_task = None
+                            break
+                        except Exception as stream_exc:
+                            err_msg = str(stream_exc)
+                            if "Interrupt(" in err_msg or stream_exc.__class__.__name__ == "GraphInterrupt":
+                                log.info(f"Graph astream 检测到 Interrupt 挂起: {err_msg[:200]}")
+                                graph_task = None
+                                break
+                            error_emitted = True
+                            request_cancellation_service.cancel_request(run_id)
+                            runtime_session_manager.mark_failed(
+                                run_context,
+                                phase="graph_worker_error",
+                                summary=self._normalize_graph_error_message(stream_exc),
+                                title="运行失败",
+                                error=self._normalize_graph_error_message(stream_exc),
+                            )
+                            yield self._fmt_sse(
+                                SseEventType.ERROR.value,
+                                self._normalize_graph_error_message(stream_exc),
+                            )
+                            graph_task = None
+                            break
+
+                        last_event_ts = time.time()
+                        metrics["events_consumed"] = int(metrics.get("events_consumed", 0)) + 1
+                        if metrics.get("first_event_latency_ms") is None:
+                            metrics["first_event_latency_ms"] = int((last_event_ts - start_ts) * 1000)
+
+                        if ev_type == "messages":
+                            sse_chunks, router_prefix_buffer, router_prefix_done = self._handle_message_chunk(
+                                ev, router_prefix_buffer, router_prefix_done, session_id, run_id
+                            )
+                            for sse_chunk in sse_chunks:
+                                if sse_chunk:
+                                    progress_emitted = True
+                                    stream_content_emitted = True
+                                    if metrics.get("first_stream_latency_ms") is None:
+                                        metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
+                                    yield sse_chunk
+
+                        elif ev_type == "updates":
+                            for sse_chunk in self._handle_updates_event(
+                                    ev,
+                                    session_id=session_id,
+                                    effective_config=effective_config,
+                                    live_streamed_agents=live_streamed_agents,
+                                    interrupt_emitted=interrupt_emitted,
+                                    active_agent_candidates=active_agent_candidates,
+                                    run_id=run_id,
+                            ):
+                                progress_emitted = True
+                                if sse_chunk.startswith(f"event: {SseEventType.INTERRUPT.value}"):
+                                    interrupt_emitted = True
+                                    runtime_session_manager.mark_interrupted(
+                                        run_context,
+                                        phase="approval_pending",
+                                        summary="运行等待审批结果",
+                                        title="运行等待审批",
+                                    )
+                                if sse_chunk.startswith(f"event: {SseEventType.ERROR.value}"):
+                                    error_emitted = True
+                                if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
+                                    stream_content_emitted = True
+                                    if metrics.get("first_stream_latency_ms") is None:
+                                        metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
+                                runtime_session_manager.record_workflow_event_chunk(run_context, sse_chunk)
+                                yield sse_chunk
+                            if error_emitted:
+                                request_cancellation_service.cancel_request(run_id)
+                                graph_task = None
+                                break
+
+                        if graph_task is not None:
+                            graph_task = asyncio.create_task(
+                                graph_stream.__anext__(),
+                                name=f"graph-astream-{run_id[:8]}",
+                            )
         except GeneratorExit:
             runtime_session_manager.cancel_run(run_context, summary="客户端断开，运行已取消")
             log.warning(f"客户端断开连接，已触发取消。session_id={session_id}, run_id={run_id}")
@@ -1034,244 +1213,22 @@ class GraphRunner:
                 enabled=AGENT_LIVE_STREAM_ENABLED,
             )
             CustomLogger.remove_global_sse_callback(bridge.log_interceptor)
-            if worker_thread.is_alive():
-                request_cancellation_service.cancel_request(run_id)
-                worker_thread.join(timeout=1.0)
-            if worker_thread.is_alive():
-                log.warning("Graph Worker 线程未能在超时内退出，主流程继续。")
+            for task in (graph_task, side_task):
+                if task is None:
+                    continue
+                task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
+            with contextlib.suppress(Exception):
+                await graph_stream.aclose()
             runtime_session_manager.cleanup_run(run_context)
 
-    # ------------------------------------------------------------------ #
-    #  事件队列消费器                                                        #
-    # ------------------------------------------------------------------ #
-
-    async def _consume_event_queue_async(
-            self,
-            event_queue: asyncio.Queue,
-            worker_thread: threading.Thread,
-            run_context,
-            effective_config: Dict[str, Any],
-            graph: Any,
-            live_streamed_agents: Set[str],
-            router_prefix_buffer: str,
-            router_prefix_done: bool,
-    ) -> AsyncGenerator[str, None]:
-        """
-        从 asyncio.Queue 中异步消费所有事件并转换为 SSE 字符串。
-
-        超时保护机制：
-        - 空闲超时（idle_timeout）：长时间无事件时触发，可配置开关。
-        - 硬超时（hard_timeout）：整体执行时长上限，防止无限等待。
-        - 心跳（heartbeat）：在无正文输出时定期发送，避免前端误以为卡住。
-        """
-        session_id = run_context.session_id
-        run_id = run_context.run_id
-        start_ts = time.time()
-        last_event_ts = start_ts
-        last_heartbeat_ts = 0.0
-
-        # 流程状态标志
-        interrupt_emitted = False
-        error_emitted = False
-        cancelled_emitted = False
-        stream_content_emitted = False
-        progress_emitted = False
-
-        # 观测指标：首包/心跳/队列消费统计
-        metrics: Dict[str, Any] = {
-            "queue_timeouts": 0,
-            "heartbeat_count": 0,
-            "events_consumed": 0,
-            "first_event_latency_ms": None,
-            "first_stream_latency_ms": None,
-        }
-
-        # 记录本轮真正参与执行的 Agent，用于定向中断扫描
-        active_agent_candidates: Set[str] = set()
-
-        # 从配置读取超时参数，便于运行时调参
-        idle_heartbeat_sec = GRAPH_RUNNER_TUNING.idle_heartbeat_sec
-        idle_timeout_sec = GRAPH_RUNNER_TUNING.idle_timeout_sec
-        idle_timeout_enabled = GRAPH_RUNNER_TUNING.idle_timeout_enabled
-        hard_timeout_sec = GRAPH_RUNNER_TUNING.hard_timeout_sec
-        poll_timeout_sec = GRAPH_RUNNER_TUNING.queue_poll_timeout_sec
-
-        while True:
-            now = time.time()
-
-            # ── 取消信号优先处理：统一 cancelled 终态 ─────────────────────
-            if request_cancellation_service.is_cancelled(run_id):
-                cancelled_emitted = True
-                runtime_session_manager.cancel_run(run_context, summary="运行已取消")
-                yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
-                break
-
-            # ── 总执行硬超时保护 ────────────────────────────────────────
-            if (now - start_ts > hard_timeout_sec) and (now - last_event_ts >= idle_timeout_sec):
-                error_emitted = True
-                request_cancellation_service.cancel_request(run_id)
-                runtime_session_manager.mark_failed(
-                    run_context,
-                    phase="runtime_timeout",
-                    summary=SseMessage.ERROR_TIMEOUT,
-                    title="运行超时",
-                    error=SseMessage.ERROR_TIMEOUT,
-                )
-                yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TIMEOUT)
-                break
-
-            # ── 从异步队列获取事件（非阻塞，带超时） ────────────────────
-            try:
-                item_type, item_data = await asyncio.wait_for(
-                    event_queue.get(), timeout=poll_timeout_sec
-                )
-            except asyncio.TimeoutError:
-                metrics["queue_timeouts"] = int(metrics.get("queue_timeouts", 0)) + 1
-                now = time.time()
-                if worker_thread.is_alive():
-                    # 可配置的空闲超时
-                    if idle_timeout_enabled and (now - last_event_ts >= idle_timeout_sec):
-                        error_emitted = True
-                        request_cancellation_service.cancel_request(run_id)
-                        runtime_session_manager.mark_failed(
-                            run_context,
-                            phase="runtime_idle_timeout",
-                            summary=SseMessage.ERROR_IDLE_TIMEOUT,
-                            title="运行空闲超时",
-                            error=SseMessage.ERROR_IDLE_TIMEOUT,
-                        )
-                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_IDLE_TIMEOUT)
-                        break
-                    # 在等待首包期间定期发送心跳，避免前端误判为服务无响应
-                    waiting_first_output = (
-                            not stream_content_emitted
-                            and not interrupt_emitted
-                            and not error_emitted
-                    )
-                    if waiting_first_output and (now - last_heartbeat_ts >= idle_heartbeat_sec):
-                        metrics["heartbeat_count"] = int(metrics.get("heartbeat_count", 0)) + 1
-                        yield self._fmt_sse(
-                            SseEventType.THINKING.value,
-                            f"⏱️ 正在等待模型首包返回（已等待 {int(now - start_ts)}s）",
-                        )
-                        last_heartbeat_ts = now
-                    continue
-
-                # Worker 已退出但没有发送 DONE/ERROR，兜底防止协程永久阻塞
-                if not error_emitted and not cancelled_emitted:
-                    if request_cancellation_service.is_cancelled(run_id):
-                        cancelled_emitted = True
-                        runtime_session_manager.cancel_run(run_context, summary="运行已取消")
-                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
-                    else:
-                        error_emitted = True
-                        yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
-                break
-
-            # 更新最后事件时间戳
-            last_event_ts = time.time()
-            metrics["events_consumed"] = int(metrics.get("events_consumed", 0)) + 1
-            if metrics.get("first_event_latency_ms") is None:
-                metrics["first_event_latency_ms"] = int((last_event_ts - start_ts) * 1000)
-
-            # ── 处理各类事件 ────────────────────────────────────────────
-            if item_type == GraphQueueItemType.DONE.value:
-                break
-
-            elif item_type == GraphQueueItemType.ERROR.value:
-                if request_cancellation_service.is_cancelled(run_id):
-                    cancelled_emitted = True
-                    runtime_session_manager.cancel_run(run_context, summary="运行已取消")
-                    yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_TASK_INTERRUPTED)
-                else:
-                    error_emitted = True
-                    request_cancellation_service.cancel_request(run_id)
-                    runtime_session_manager.mark_failed(
-                        run_context,
-                        phase="graph_worker_error",
-                        summary=str(item_data or "运行失败"),
-                        title="运行失败",
-                        error=str(item_data or "运行失败"),
-                    )
-                    yield self._fmt_sse(SseEventType.ERROR.value, item_data)
-                break
-
-            elif item_type == GraphQueueItemType.LOG.value:
-                progress_emitted = True
-                yield item_data
-
-            elif item_type == GraphQueueItemType.LIVE_STREAM.value:
-                for sse_chunk in self._handle_live_stream_event(
-                        payload=item_data,
-                        live_streamed_agents=live_streamed_agents,
-                        session_id=session_id,
-                        run_id=run_id,
-                ):
-                    if not sse_chunk:
-                        continue
-                    progress_emitted = True
-                    if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
-                        stream_content_emitted = True
-                        if metrics.get("first_stream_latency_ms") is None:
-                            metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
-                    runtime_session_manager.record_workflow_event_chunk(run_context, sse_chunk)
-                    yield sse_chunk
-
-            elif item_type == GraphQueueItemType.GRAPH.value:
-                ev_type, ev = item_data
-
-                if ev_type == "messages":
-                    sse_chunks, router_prefix_buffer, router_prefix_done = self._handle_message_chunk(
-                        ev, router_prefix_buffer, router_prefix_done, session_id, run_id
-                    )
-                    for sse_chunk in sse_chunks:
-                        if sse_chunk:
-                            progress_emitted = True
-                            stream_content_emitted = True
-                            if metrics.get("first_stream_latency_ms") is None:
-                                metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
-                            yield sse_chunk
-
-                elif ev_type == "updates":
-                    for sse_chunk in self._handle_updates_event(
-                            ev,
-                            session_id=session_id,
-                            effective_config=effective_config,
-                            live_streamed_agents=live_streamed_agents,
-                            interrupt_emitted=interrupt_emitted,
-                            active_agent_candidates=active_agent_candidates,
-                            run_id=run_id,
-                    ):
-                        progress_emitted = True
-                        if sse_chunk.startswith(f"event: {SseEventType.INTERRUPT.value}"):
-                            interrupt_emitted = True
-                            runtime_session_manager.mark_interrupted(
-                                run_context,
-                                phase="approval_pending",
-                                summary="运行等待审批结果",
-                                title="运行等待审批",
-                            )
-                        if sse_chunk.startswith(f"event: {SseEventType.ERROR.value}"):
-                            error_emitted = True
-                        if sse_chunk.startswith(f"event: {SseEventType.STREAM.value}"):
-                            stream_content_emitted = True
-                            if metrics.get("first_stream_latency_ms") is None:
-                                metrics["first_stream_latency_ms"] = int((time.time() - start_ts) * 1000)
-                        runtime_session_manager.record_workflow_event_chunk(run_context, sse_chunk)
-                        yield sse_chunk
-                    if error_emitted:
-                        request_cancellation_service.cancel_request(run_id)
-                        break
-
-        # ── 循环结束后的兜底处理 ─────────────────────────────────────────
-
-        # 可选：流结束后定向扫描子图中断（默认关闭）
         if (
                 not interrupt_emitted
                 and GRAPH_RUNNER_TUNING.post_run_interrupt_scan_enabled
                 and active_agent_candidates
         ):
-            for chunk in self._try_post_run_interrupt_scan(
+            async for chunk in self._try_post_run_interrupt_scan(
                     session_id=session_id,
                     effective_config=effective_config,
                     candidate_names=list(active_agent_candidates),
@@ -1279,9 +1236,8 @@ class GraphRunner:
             ):
                 yield chunk
 
-        # 若图执行结束但没有任何正文输出，尝试从最终状态回捞答案
         if not interrupt_emitted and not stream_content_emitted and not error_emitted:
-            fallback_text = self._extract_final_answer_from_state(graph, session_id)
+            fallback_text = await self._extract_final_answer_from_state(graph, session_id)
             if fallback_text:
                 stream_content_emitted = True
                 if metrics.get("first_stream_latency_ms") is None:
@@ -1300,7 +1256,7 @@ class GraphRunner:
 
         final_answer = ""
         if not interrupt_emitted and not error_emitted and not cancelled_emitted:
-            final_answer = self._extract_final_answer_from_state(graph, session_id)
+            final_answer = await self._extract_final_answer_from_state(graph, session_id)
 
         if cancelled_emitted:
             runtime_session_manager.cancel_run(run_context, summary="运行已取消")
@@ -1328,6 +1284,8 @@ class GraphRunner:
                 "error_emitted": bool(error_emitted),
                 "cancelled_emitted": bool(cancelled_emitted),
                 "stream_content_emitted": bool(stream_content_emitted),
+                "progress_emitted": bool(progress_emitted),
+                "request_id": run_context.request_id,
             },
         )
 
@@ -1356,7 +1314,7 @@ class GraphRunner:
                     summary=hook_payload["summary"],
                     status=hook_payload["status"],
                     role="system",
-                    meta={"hook": hook_payload},
+                    meta={"hook": hook_payload, "request_id": run_context.request_id},
                 )
             )
         yield self._fmt_workflow_event(
@@ -1368,7 +1326,10 @@ class GraphRunner:
                 summary=f"共归档 {len(workspace_manager.list_artifacts(run_context))} 份运行材料",
                 status="completed" if not error_emitted else "info",
                 role="system",
-                meta={"artifacts": workspace_manager.list_artifacts(run_context)},
+                meta={
+                    "artifacts": workspace_manager.list_artifacts(run_context),
+                    "request_id": run_context.request_id,
+                },
             )
         )
 
@@ -1743,7 +1704,7 @@ class GraphRunner:
         except Exception as exc:
             log.warning(f"注册 interrupt 失败，已降级跳过: {exc}")
 
-    def _scan_subgraph_interrupts(
+    async def _scan_subgraph_interrupts(
             self,
             session_id: str,
             effective_config: Dict[str, Any],
@@ -1782,7 +1743,7 @@ class GraphRunner:
                         subgraph_id=name,
                     )
                 )
-                snap = self._safe_get_agent_state(ag, name, "post-run 扫描")
+                snap = await self._safe_get_agent_state(ag, name, "post-run 扫描")
                 if snap and self._snapshot_has_interrupt(snap):
                     raw = self._extract_interrupt_from_snapshot(snap)
                     if raw:
@@ -1826,14 +1787,14 @@ class GraphRunner:
         return None
 
     @staticmethod
-    def _safe_get_agent_state(
-            agent: Any,
-            agent_name: str,
-            context: str,
-            *,
-            thread_id: str = "",
-            checkpoint_id: Any = None,
-            checkpoint_ns: Any = None,
+    async def _safe_get_agent_state(
+        agent: Any,
+        agent_name: str,
+        context: str,
+        *,
+        thread_id: str = "",
+        checkpoint_id: Any = None,
+        checkpoint_ns: Any = None,
     ) -> Optional[Any]:
         """安全地获取 Agent 图快照，失败时返回 None 而不抛出异常。"""
         try:
@@ -1847,8 +1808,8 @@ class GraphRunner:
                     config["configurable"]["checkpoint_id"] = checkpoint_id
                 if checkpoint_ns:
                     config["configurable"]["checkpoint_ns"] = checkpoint_ns
-                return agent.graph.get_state(config)
-            return agent.get_state()
+                return await agent.graph.aget_state(config)
+            return await agent.aget_state()
         except Exception as exc:
             log.debug(f"获取 Agent [{agent_name}] 快照失败 ({context}): {exc}")
             return None
@@ -1857,7 +1818,7 @@ class GraphRunner:
     #  最终答案回捞                                                         #
     # ------------------------------------------------------------------ #
 
-    def _extract_final_answer_from_state(
+    async def _extract_final_answer_from_state(
             self,
             graph: Any,
             session_id: str,
@@ -1870,7 +1831,7 @@ class GraphRunner:
         """
         try:
             config = {"configurable": {"thread_id": session_id}}
-            state = graph.get_state(config)
+            state = await graph.aget_state(config)
             messages = (getattr(state, "values", None) or {}).get("messages", [])
             # 从后向前找最后一条有内容的 AI 消息
             for msg in reversed(messages):
@@ -1961,7 +1922,20 @@ class GraphRunner:
             # ── 节点显式错误 ────────────────────────────────────────────
             node_error_message = self._extract_node_error_message(node_val)
             if node_error_message:
-                if node_name == "chat_node":
+                if node_name == "evaluator_node":
+                    yield self._fmt_workflow_event(
+                        self._build_workflow_event(
+                            session_id=session_id,
+                            run_id=run_id,
+                            phase="replan_exhausted",
+                            title="掌柜重规划未能收敛",
+                            summary=node_error_message,
+                            status="error",
+                            role="supervisor",
+                            node_name=node_name,
+                        )
+                    )
+                elif node_name == "chat_node":
                     yield self._fmt_workflow_event(
                         self._build_workflow_event(
                             session_id=session_id,
@@ -1975,6 +1949,7 @@ class GraphRunner:
                             node_name=node_name,
                         )
                     )
+                    continue
                 elif node_name in _agent_classes:
                     yield self._fmt_workflow_event(
                         self._build_workflow_event(
@@ -1989,6 +1964,7 @@ class GraphRunner:
                             node_name=node_name,
                         )
                     )
+                    continue
                 yield self._fmt_sse(SseEventType.ERROR.value, node_error_message)
                 continue
 
@@ -2400,16 +2376,16 @@ class GraphRunner:
     #  后置中断扫描                                                          #
     # ------------------------------------------------------------------ #
 
-    def _try_post_run_interrupt_scan(
+    async def _try_post_run_interrupt_scan(
             self,
             session_id: str,
             effective_config: Dict[str, Any],
             candidate_names: List[str],
             run_id: str = "",
-    ) -> Generator[str, None, None]:
+    ) -> AsyncGenerator[str, None]:
         """流结束后定向扫描子图快照是否存在未处理的 Interrupt（默认关闭）。"""
         try:
-            interrupt_event = self._scan_subgraph_interrupts(
+            interrupt_event = await self._scan_subgraph_interrupts(
                 session_id,
                 effective_config=effective_config,
                 candidate_agent_names=candidate_names,
@@ -2485,7 +2461,7 @@ class GraphRunner:
                 )
             )
             yield self._fmt_sse(SseEventType.THINKING.value, SseMessage.RESUME_DETECTED)
-            for chunk in self._handle_resume(
+            async for chunk in self._handle_resume_async(
                     session_id=session_id,
                     resume_meta=resume_meta,
                     supervisor_graph=graph,
@@ -2535,14 +2511,14 @@ class GraphRunner:
             "command": Command(resume=decision),
         }
 
-    def _handle_resume(
+    async def _handle_resume_async(
             self,
             session_id: str,
             resume_meta: Dict[str, Any],
             supervisor_graph: Any,
             effective_config: Dict[str, Any],
             run_id: str = "",
-    ) -> Generator[str, None, None]:
+    ) -> AsyncGenerator[str, None]:
         """
         恢复被 Interrupt 挂起的子 Agent 执行。
 
@@ -2571,7 +2547,7 @@ class GraphRunner:
             if preferred_ckpt_id:
                 target_agent = candidate
             else:
-                snap = self._safe_get_agent_state(
+                snap = await self._safe_get_agent_state(
                     candidate,
                     preferred_agent,
                     "恢复前定位",
@@ -2586,7 +2562,7 @@ class GraphRunner:
         if not target_agent:
             for name, info in agent_classes.items():
                 ag = info.cls(AgentRequest(user_input="", model=model, session_id=session_id, subgraph_id=name))
-                snap = self._safe_get_agent_state(ag, name, "恢复前扫描")
+                snap = await self._safe_get_agent_state(ag, name, "恢复前扫描")
                 if snap and self._snapshot_has_interrupt(snap):
                     target_agent = ag
                     break
@@ -2639,7 +2615,7 @@ class GraphRunner:
 
         final_msgs: List[AIMessage] = []
         try:
-            for event in target_agent.graph.stream(command, config=subgraph_config, stream_mode="updates"):
+            async for event in target_agent.graph.astream(command, config=subgraph_config, stream_mode="updates"):
                 for _, val in event.items():
                     if "messages" in val:
                         for msg in val["messages"]:
@@ -2647,23 +2623,25 @@ class GraphRunner:
                                 final_msgs.append(msg)
                                 yield self._fmt_sse(SseEventType.STREAM.value, msg.content)
         except Exception as resume_exc:
-            yield from self._handle_resume_exception(
+            async for chunk in self._handle_resume_exception_async(
                 session_id=session_id, resume_meta=resume_meta, resume_exc=resume_exc,
                 target_agent=target_agent, effective_config=effective_config,
                 message_id=message_id, decision=decision,
-            )
+            ):
+                yield chunk
             return
 
         if not final_msgs:
-            yield from self._handle_resume_empty_result(
+            async for chunk in self._handle_resume_empty_result_async(
                 session_id=session_id, decision=decision, message_id=message_id,
                 target_agent=target_agent, effective_config=effective_config,
-            )
+            ):
+                yield chunk
             return
 
         if message_id:
             interrupt_service.mark_approval_consumed(session_id, message_id)
-        self._backfill_supervisor_state(supervisor_graph, session_id, final_msgs)
+        await self._backfill_supervisor_state(supervisor_graph, session_id, final_msgs)
         final_text = next(
             (
                 str(msg.content or "").strip()
@@ -2686,7 +2664,7 @@ class GraphRunner:
                 )
             )
 
-    def _handle_resume_exception(
+    async def _handle_resume_exception_async(
             self,
             session_id: str,
             resume_meta: Dict[str, Any],
@@ -2695,11 +2673,11 @@ class GraphRunner:
             effective_config: Dict[str, Any],
             message_id: Optional[str],
             decision: Optional[str],
-    ) -> Generator[str, None, None]:
+    ) -> AsyncGenerator[str, None]:
         """处理恢复执行时抛出的异常，区分 Interrupt 挂起和真实错误。"""
         err_msg = str(resume_exc)
         if "Interrupt(" in err_msg or resume_exc.__class__.__name__ == "GraphInterrupt":
-            interrupt_event = self._scan_subgraph_interrupts(
+            interrupt_event = await self._scan_subgraph_interrupts(
                 session_id, effective_config=effective_config,
                 candidate_agent_names=[target_agent.subgraph_id],
             )
@@ -2735,21 +2713,21 @@ class GraphRunner:
                     return
         yield self._fmt_sse(SseEventType.ERROR.value, f"任务恢复失败: {err_msg}")
 
-    def _handle_resume_empty_result(
+    async def _handle_resume_empty_result_async(
             self,
             session_id: str,
             decision: Optional[str],
             message_id: Optional[str],
             target_agent: Any,
             effective_config: Dict[str, Any],
-    ) -> Generator[str, None, None]:
+    ) -> AsyncGenerator[str, None]:
         """处理恢复执行后无 AI 消息输出的情况。"""
         if decision == ApprovalDecision.REJECT.value:
             if message_id:
                 interrupt_service.mark_approval_consumed(session_id, message_id)
             yield self._fmt_sse(SseEventType.STREAM.value, GRAPH_RUNNER_REJECTED_MESSAGE)
             return
-        interrupt_event = self._scan_subgraph_interrupts(
+        interrupt_event = await self._scan_subgraph_interrupts(
             session_id, effective_config=effective_config,
             candidate_agent_names=[target_agent.subgraph_id],
         )
@@ -2762,7 +2740,7 @@ class GraphRunner:
         else:
             yield self._fmt_sse(SseEventType.ERROR.value, SseMessage.ERROR_RESUME_EMPTY_RESULT)
 
-    def _backfill_supervisor_state(
+    async def _backfill_supervisor_state(
             self,
             supervisor_graph: Any,
             session_id: str,
@@ -2773,8 +2751,8 @@ class GraphRunner:
             return
         sup_config = {"configurable": {"thread_id": session_id}}
         try:
-            sup_state = supervisor_graph.get_state(sup_config)
+            sup_state = await supervisor_graph.aget_state(sup_config)
             if getattr(sup_state, "values", None):
-                supervisor_graph.update_state(sup_config, {"messages": final_msgs})
+                await supervisor_graph.aupdate_state(sup_config, {"messages": final_msgs})
         except Exception as exc:
             log.warning(f"恢复后回填 Supervisor 状态失败，已降级跳过: {exc}")

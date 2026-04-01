@@ -25,6 +25,9 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict
 
+from pydantic import ValidationError
+
+from common.utils.tool_validation import format_tool_validation_error
 from tools.runtime_tools.tool_registry import runtime_tool_registry
 
 
@@ -109,9 +112,20 @@ class ToolExecutor:
 
         # 查找执行器
         handler = self._handlers.get(str(name or "").strip())
+        tool_ref = runtime_tool_registry.get_langchain_tool(name)
+        payload = dict(kwargs)
+        args_schema = getattr(tool_ref, "args_schema", None)
+        if args_schema is not None:
+            try:
+                payload = args_schema(**payload).model_dump()
+            except ValidationError as exc:
+                return {
+                    "ok": False,
+                    "tool": descriptor.to_dict(),
+                    "error": format_tool_validation_error(exc),
+                }
         if handler is None:
             # 没有自定义执行器，尝试自动适配LangChain工具
-            tool_ref = runtime_tool_registry.get_langchain_tool(name)
             if tool_ref is None or not hasattr(tool_ref, "invoke"):
                 # 无法适配，返回错误
                 return {
@@ -124,8 +138,14 @@ class ToolExecutor:
 
         # 执行工具调用
         try:
-            result = handler(**kwargs)
+            result = handler(**payload)
             return {"ok": True, "tool": descriptor.to_dict(), "result": result}
+        except ValidationError as exc:
+            return {
+                "ok": False,
+                "tool": descriptor.to_dict(),
+                "error": format_tool_validation_error(exc),
+            }
         except Exception as exc:
             # 捕获异常，返回错误
             return {"ok": False, "tool": descriptor.to_dict(), "error": str(exc)}

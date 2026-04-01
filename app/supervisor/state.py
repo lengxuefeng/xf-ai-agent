@@ -145,6 +145,12 @@ class AgentState(TypedDict, total=False):
     interrupt_payload: Dict[str, Any]
     error_message: str
     error_detail: str
+    last_step_result: str
+    last_step_status: str
+    last_step_error: str
+    replan_count: int
+    max_replans: int
+    replan_reason: str
 
 
 GraphState = AgentState

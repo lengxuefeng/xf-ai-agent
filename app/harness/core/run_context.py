@@ -65,6 +65,7 @@ def build_run_context(
     session_context: Optional[Dict[str, Any]] = None,
     is_resume: bool = False,
     run_id: str = "",
+    request_id: str = "",
 ) -> RunContext:
     """
     根据当前请求构造统一 RunContext。
@@ -93,6 +94,7 @@ def build_run_context(
         session_context: 会话级上下文（城市、用户画像等）
         is_resume: 是否为恢复运行（如审批后恢复）
         run_id: 可选的run_id，为空则自动生成
+        request_id: 贯穿 HTTP -> LangGraph 的链路追踪 ID
 
     Returns:
         构造好的RunContext对象，包含所有必要信息
@@ -138,6 +140,7 @@ def build_run_context(
 
         # 模型和上下文配置
         model_config=dict(model_config or {}),  # 深拷贝避免污染原始配置
+        request_id=str(request_id or "").strip(),
         history_size=len(effective_history),
         is_resume=is_resume,
 
@@ -149,6 +152,6 @@ def build_run_context(
             "input_length": len(str(user_input or "")),          # 输入长度
             "has_context_slots": bool(effective_context.get("context_slots")),  # 是否有槽位
             "history_size": len(effective_history),             # 历史消息数
+            "request_id": str(request_id or "").strip(),
         },
     )
-

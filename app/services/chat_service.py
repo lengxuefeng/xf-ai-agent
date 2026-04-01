@@ -127,6 +127,11 @@ class ChatService:
             )
 
         is_resume = req.user_input == "[RESUME]"
+        request_id = str(
+            getattr(request.state, "request_id", "")
+            or getattr(request.state, "req_id", "")
+            or ""
+        ).strip()
         if user_id:
             stream_gen = self.stream_chat_with_history_async(
                 user_input=req.user_input,
@@ -135,6 +140,7 @@ class ChatService:
                 user_id=user_id,
                 is_resume=is_resume,
                 history_limit=CHAT_STREAM_HISTORY_LIMIT,
+                request_id=request_id,
             )
         else:
             stream_gen = self.stream_chat_anonymous_async(
@@ -143,6 +149,7 @@ class ChatService:
                 model_config=model_config,
                 history_messages=[],
                 runtime_context={},
+                request_id=request_id,
             )
 
         response = StreamingResponse(
@@ -275,6 +282,7 @@ class ChatService:
             is_resume: bool = False,
             history_limit: int = CHAT_STREAM_HISTORY_LIMIT,
             emit_response_start: bool = True,
+            request_id: str = "",
     ) -> AsyncGenerator[str, None]:
         """
         【异步核心】带历史记录保存的流式聊天。
@@ -316,6 +324,7 @@ class ChatService:
                 history_messages=history_messages,
                 session_context=runtime_context,
                 emit_response_start=False,
+                request_id=request_id,
             ):
                 yield chunk
                 collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
@@ -461,6 +470,7 @@ class ChatService:
             model_config: Dict[str, Any],
             history_messages: Optional[list] = None,
             runtime_context: Optional[Dict[str, Any]] = None,
+            request_id: str = "",
     ) -> AsyncGenerator[str, None]:
         """匿名异步流式聊天，不触碰数据库，纯粹的管道转发"""
         log.info(f"匿名异步流式聊天，会话ID: {session_id}", target=LogTarget.LOG)
@@ -471,6 +481,7 @@ class ChatService:
                 model_config=model_config,
                 history_messages=history_messages or [],
                 session_context=runtime_context or {},
+                request_id=request_id,
             ):
                 yield chunk
         except GeneratorExit:

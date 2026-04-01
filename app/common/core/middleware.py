@@ -25,7 +25,12 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
     同时为每个请求生成全局唯一的 request_id，便于追踪。
     """
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        req_id = request.headers.get("X-Request-Id", str(uuid.uuid4()))
+        req_id = (
+            request.headers.get("X-Request-ID")
+            or request.headers.get("X-Request-Id")
+            or str(uuid.uuid4())
+        )
+        request.state.request_id = req_id
         request.state.req_id = req_id
         
         start_time = time.time()
@@ -41,7 +46,7 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
             
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(process_time)
-        response.headers["X-Request-Id"] = req_id
+        response.headers["X-Request-ID"] = req_id
         
         log.info(f"[{req_id}] HTTP Request END: {request.method} {request.url.path} (耗时: {process_time:.4f}s) - {response.status_code}")
         

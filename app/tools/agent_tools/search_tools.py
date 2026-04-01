@@ -7,15 +7,17 @@ from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_tavily import TavilySearch
 
+from common.utils.tool_validation import handle_tool_validation_error
 from config.runtime_settings import SEARCH_TOOL_TIMEOUT_SECONDS
 from common.utils.retry_utils import execute_with_retry
+from models.schemas.tool_input_schemas import TavilySearchToolInput
 
 """搜索相关工具。"""
 
 load_dotenv()
 
 
-@tool
+@tool(args_schema=TavilySearchToolInput)
 def tavily_search_tool(query: str, topic: str = "general") -> List[Dict[str, str]]:
     """
     使用 Tavily API 执行实时网页搜索（同步版）。
@@ -65,3 +67,6 @@ def _invoke_tavily_with_timeout(tavily: TavilySearch, *, query: str, timeout_sec
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(tavily.invoke, {"query": query})
         return future.result(timeout=timeout_sec)
+
+
+tavily_search_tool.handle_validation_error = handle_tool_validation_error

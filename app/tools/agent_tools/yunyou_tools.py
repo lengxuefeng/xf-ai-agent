@@ -23,6 +23,13 @@ from config.runtime_settings import (
 from services.request_cancellation_service import request_cancellation_service
 from common.utils.custom_logger import get_logger
 from common.utils.retry_utils import execute_with_retry
+from common.utils.tool_validation import handle_tool_validation_error
+from models.schemas.tool_input_schemas import (
+    HolterDateRangeToolInput,
+    HolterListToolInput,
+    HolterLogInfoToolInput,
+    HolterRecentDbToolInput,
+)
 
 log = get_logger(__name__)
 
@@ -555,7 +562,7 @@ class YunyouDbTools:
             )
 
 
-@tool
+@tool(args_schema=HolterListToolInput)
 def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = None, reportStatus: Optional[int] = None,
                 holterType: Optional[int] = None) -> Dict:
     """
@@ -578,7 +585,7 @@ def holter_list(startUseDay: str, endUseDay: str, isUploaded: Optional[int] = No
     return YunYouTools().common_post("holter/list", params)
 
 
-@tool
+@tool(args_schema=HolterDateRangeToolInput)
 def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter类型统计，根据时间范围查询holter类型统计
@@ -596,7 +603,7 @@ def holter_type_count(startUseDay: str, endUseDay: str) -> Dict:
     return YunYouTools().common_post("/holter/holterTypeCount", params)
 
 
-@tool
+@tool(args_schema=HolterDateRangeToolInput)
 def holter_report_count(startUseDay: str, endUseDay: str) -> Dict:
     """
     云柚 获取holter报告状态统计，根据时间范围查询holter报告状态统计
@@ -613,7 +620,7 @@ def holter_report_count(startUseDay: str, endUseDay: str) -> Dict:
     return YunYouTools().common_post("/holter/holterReportCount", params)
 
 
-@tool
+@tool(args_schema=HolterRecentDbToolInput)
 def holter_recent_db(limit: int = 5, order: str = "desc", startUseDay: Optional[str] = None, endUseDay: Optional[str] = None) -> Dict:
     """
     直接从云柚业务数据库查询 holter 最近记录（t_holter_use_record）。
@@ -633,7 +640,7 @@ def holter_recent_db(limit: int = 5, order: str = "desc", startUseDay: Optional[
         end_use_day=endUseDay,
     )
 
-@tool
+@tool(args_schema=HolterLogInfoToolInput)
 def holter_log_info(user_id: str) -> List[dict]:
     """
     云柚 获取用户日志信息，根据用户ID检索用户操作日志。
@@ -644,3 +651,10 @@ def holter_log_info(user_id: str) -> List[dict]:
     """
     from tools.gateway.federated_query_gateway import federated_query_gateway
     return federated_query_gateway.query_yunyou_log_info(user_id)
+
+
+holter_list.handle_validation_error = handle_tool_validation_error
+holter_type_count.handle_validation_error = handle_tool_validation_error
+holter_report_count.handle_validation_error = handle_tool_validation_error
+holter_recent_db.handle_validation_error = handle_tool_validation_error
+holter_log_info.handle_validation_error = handle_tool_validation_error

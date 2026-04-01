@@ -33,6 +33,10 @@ async def stream_chat(
     本接口会实时返回 Agent 的思考过程和最终结果，采用 Server-Sent Events (SSE) 格式。
     支持用户认证，认证用户的聊天记录会自动保存到聊天历史中。
     """
+    log.info(
+        f"流式聊天请求进入路由: session_id={req.session_id}, "
+        f"request_id={getattr(request.state, 'request_id', '') or getattr(request.state, 'req_id', '')}"
+    )
     return await chat_service.process_stream_chat_async(
         req=req,
         request=request,
@@ -49,6 +53,10 @@ async def stream_chat_anonymous(
     """
     匿名用户的流式聊天接口，不需要认证，不保存聊天历史。
     """
+    log.info(
+        f"匿名流式聊天请求进入路由: session_id={req.session_id}, "
+        f"request_id={getattr(request.state, 'request_id', '') or getattr(request.state, 'req_id', '')}"
+    )
     if req.user_model_id is not None:
         raise HTTPException(status_code=400, detail="匿名接口不支持 user_model_id")
         

@@ -62,6 +62,7 @@ class RuntimeSessionManager:
         session_context: Optional[Dict[str, Any]] = None,
         is_resume: bool = False,
         run_id: str = "",
+        request_id: str = "",
     ) -> RunContext:
         """
         创建运行上下文对象。
@@ -90,6 +91,7 @@ class RuntimeSessionManager:
             session_context=session_context,
             is_resume=is_resume,
             run_id=run_id,
+            request_id=request_id,
         )
 
     def register_run(self, run_context: RunContext) -> None:

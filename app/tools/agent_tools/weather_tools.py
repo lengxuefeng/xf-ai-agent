@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from langchain_core.tools import tool
 
 from common.http import HttpRequestError, common_http_client
+from common.utils.tool_validation import handle_tool_validation_error
 from config.runtime_settings import WEATHER_TOOL_TIMEOUT_SECONDS
 from config.constants.weather_tool_constants import (
     WEATHER_CITY_NOT_FOUND_MESSAGE,
@@ -15,6 +16,7 @@ from config.constants.weather_tool_constants import (
 from common.utils.custom_logger import get_logger
 from common.utils.location_parser import extract_valid_city_candidate, normalize_city_candidate
 from common.utils.retry_utils import execute_with_retry
+from models.schemas.tool_input_schemas import GetWeathersToolInput
 
 """
 定义天气查询相关的工具。
@@ -184,7 +186,7 @@ def location_search(city_or_location: str) -> str:
         return "天气服务暂时不可用，请稍后重试。"
 
 
-@tool
+@tool(args_schema=GetWeathersToolInput)
 async def get_weathers(city_names: List[str], max_threads: int = 4) -> List[str]:
     """
     根据指定城市名称查询实时天气（异步并发版）。
@@ -218,3 +220,6 @@ if __name__ == "__main__":
     results = get_weathers(city_names=cities, max_threads=3)
     for city, result in zip(cities, results):
         print(f"\n{city} 的天气：\n{result}")
+
+
+get_weathers.handle_validation_error = handle_tool_validation_error
