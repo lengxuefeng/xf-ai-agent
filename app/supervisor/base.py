@@ -48,6 +48,7 @@ from common.utils.history_compressor import compress_history_messages
 from common.utils.custom_logger import get_logger
 from common.utils.date_utils import get_agent_date_context, get_current_time_context
 from common.utils.retry_utils import GRAPH_RETRY_POLICY
+from common.utils.stream_delta import resolve_stream_delta
 from tools.runtime_tools.mcp_gateway import mcp_gateway
 from tools.runtime_tools.tool_registry import runtime_tool_registry
 
@@ -829,6 +830,7 @@ class BaseAgent(ABC):
             # 同时监听 updates/messages；updates 供状态推进，messages 用于子 Agent 实时出字。
             stream_channel_id = str(configurable.get("run_id") or "").strip()
             stream_mode = ["updates", "messages"] if AGENT_LIVE_STREAM_ENABLED else ["updates"]
+            streamed_live_text = ""
 
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -882,10 +884,13 @@ class BaseAgent(ABC):
                         # 提取文本并推送到流式总线
                         chunk_text = self._message_text(msg_chunk)
                         if chunk_text:
+                            delta_text, streamed_live_text = resolve_stream_delta(streamed_live_text, chunk_text)
+                            if not delta_text:
+                                continue
                             agent_stream_bus.publish(
                                 run_id=stream_channel_id,
                                 agent_name=self.subgraph_id,
-                                content=chunk_text,
+                                content=delta_text,
                             )
             finally:
                 try:

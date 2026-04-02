@@ -7,6 +7,7 @@ from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 
+from common.utils.stream_delta import resolve_stream_delta
 from models.schemas.agent_runtime_schemas import AgentRequest
 from prompts.agent_prompts.code_prompt import CodePrompt
 from runtime.workers.base import RuntimeWorker
@@ -18,6 +19,31 @@ from supervisor.agents.code_agent import (
     _should_execute_request,
     _strip_markdown_fences,
 )
+
+
+def _normalize_stream_chunk_content(content) -> str:
+    """保留流式 chunk 原始空白，避免代码缩进与换行被吃掉。"""
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+                continue
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("content") or ""
+                if isinstance(text, str):
+                    parts.append(text)
+        return "".join(parts)
+
+    if isinstance(content, dict):
+        text = content.get("text") or content.get("content") or ""
+        if isinstance(text, str):
+            return text
+
+    return str(content or "")
 
 
 class CodeWorker(RuntimeWorker):
@@ -58,9 +84,10 @@ class CodeWorker(RuntimeWorker):
         if execution_requested and not execution_supported:
             return (
                 f"按你的要求，我先给你整理一个 {display_name} 示例。"
-                f"当前内置自动执行链路主要支持 Python，所以这段 {display_name} 代码先不直接运行。\n\n"
+                f"当前内置自动执行链路主要支持 Python，所以这段 {display_name} 代码先不直接运行：\n\n"
+                f"```{language}\n"
             )
-        return f"按你的要求，我先给你整理一个 {display_name} 示例：\n\n"
+        return f"按你的要求，我先给你整理一个 {display_name} 示例：\n\n```{language}\n"
 
     async def run(self, req: AgentRequest, *, config: RunnableConfig) -> Dict[str, object]:
         llm = req.model
@@ -79,31 +106,44 @@ class CodeWorker(RuntimeWorker):
         execution_supported = requested_language in {"python"}
         prompt_value = prompt.invoke({"messages": self._normalize_messages(req)})
 
-        streamed_code_parts: list[str] = []
+        streamed_code = ""
         streamed_response_metadata: dict = {}
         did_stream = False
         try:
-            preface = self._build_streaming_preface(
-                language=requested_language,
-                execution_requested=execution_requested,
-                execution_supported=execution_supported,
-            )
-            await self._publish_stream_text(req=req, config=config, text=preface, chunk_size=20)
             async for chunk in llm.astream(prompt_value.messages, config=config):
-                chunk_text = _normalize_model_content(getattr(chunk, "content", chunk))
+                chunk_text = _normalize_stream_chunk_content(getattr(chunk, "content", chunk))
                 if not chunk_text:
                     continue
-                did_stream = True
-                streamed_code_parts.append(chunk_text)
-                await self._publish_stream_text(req=req, config=config, text=chunk_text, chunk_size=20)
+                delta_text, streamed_code = resolve_stream_delta(streamed_code, chunk_text)
+                if not delta_text:
+                    streamed_response_metadata.update(dict(getattr(chunk, "response_metadata", {}) or {}))
+                    continue
+                if not did_stream:
+                    did_stream = True
+                    await self._publish_stream_text(
+                        req=req,
+                        config=config,
+                        text=self._build_streaming_preface(
+                            language=requested_language,
+                            execution_requested=execution_requested,
+                            execution_supported=execution_supported,
+                        ),
+                        chunk_size=32,
+                    )
+                await self._publish_stream_text(req=req, config=config, text=delta_text, chunk_size=32)
                 streamed_response_metadata.update(dict(getattr(chunk, "response_metadata", {}) or {}))
         except Exception:
-            did_stream = False
-            streamed_code_parts = []
-            streamed_response_metadata = {}
+            if did_stream:
+                await self._publish_stream_text(req=req, config=config, text="\n```", chunk_size=32)
+            else:
+                streamed_code_parts = []
+                streamed_response_metadata = {}
+        else:
+            if did_stream:
+                await self._publish_stream_text(req=req, config=config, text="\n```", chunk_size=32)
 
         if did_stream:
-            code = _strip_markdown_fences("".join(streamed_code_parts))
+            code = _strip_markdown_fences(streamed_code)
             response_metadata = streamed_response_metadata
         else:
             response = await (prompt | llm).ainvoke({"messages": self._normalize_messages(req)}, config=config)

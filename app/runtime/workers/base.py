@@ -63,6 +63,7 @@ class RuntimeWorker(ABC):
         config: RunnableConfig,
         text: str,
         chunk_size: int = 24,
+        body_stream: bool = False,
     ) -> None:
         run_id = self._resolve_run_id(config)
         if not run_id:
@@ -74,6 +75,6 @@ class RuntimeWorker(ABC):
                 agent_name=self.agent_name or self.worker_name,
                 content=chunk,
                 task_id=task_id,
-                body_stream=True,
+                body_stream=bool(body_stream),
             )
             await asyncio.sleep(0)

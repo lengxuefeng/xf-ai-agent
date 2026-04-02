@@ -722,6 +722,12 @@ def is_explicit_request_clause(text: str, *, request_action_hints: Sequence[str]
     )
     if any(re.search(pattern, normalized_text) for pattern in factoid_patterns):
         return True
+    imperative_patterns = (
+        r"^(?:请)?(?:告诉我|告知我|说一下|说说|介绍一下|提供|给出|写一个|写个|查一下|查下|搜一下|搜下)",
+        r"(?:告诉我|告知我|说一下|说说|介绍一下|提供|给出).{0,18}(?:路线|自驾|驾车|导航|方案|代码|示例|信息|资料)",
+    )
+    if any(re.search(pattern, normalized_text) for pattern in imperative_patterns):
+        return True
     return any(hint in normalized_text for hint in request_action_hints)
 
 
@@ -922,5 +928,8 @@ def looks_like_compound_request(
     if len(re.findall(r"[?？]", normalized_text)) >= 2:
         return True
     if any(token in normalized_text for token in complex_connector_hints):
-        return len(normalized_text) >= 30
+        return len(normalized_text) >= 18
+    for first_hint, second_hint in SUPERVISOR_SEQUENTIAL_HINT_PAIRS:
+        if first_hint in normalized_text and second_hint in normalized_text:
+            return True
     return False

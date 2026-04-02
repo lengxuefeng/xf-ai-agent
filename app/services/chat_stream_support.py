@@ -3,6 +3,7 @@ import asyncio
 import json
 from typing import Any, Dict, Generator, Optional
 
+from common.utils.stream_delta import resolve_stream_delta
 from config.constants.chat_service_constants import (
     CHAT_AI_CONTENT_TYPES,
     CHAT_SERVICE_INTERRUPTED_APPEND_TEMPLATE,
@@ -270,6 +271,14 @@ def extract_ai_content_from_chunk(chunk: str) -> Optional[str]:
     except (json.JSONDecodeError, KeyError, TypeError):
         return None
     return None
+
+
+def merge_ai_response_from_chunk(accumulated_response: str, chunk: str) -> tuple[str, str]:
+    """把单个 SSE chunk 归一化成正文增量，并合并进累计正文。"""
+    ai_content = extract_ai_content_from_chunk(chunk)
+    if not ai_content:
+        return "", str(accumulated_response or "")
+    return resolve_stream_delta(str(accumulated_response or ""), ai_content)
 
 
 def normalize_history_messages(history_data: Any) -> list[dict]:

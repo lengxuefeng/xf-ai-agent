@@ -66,6 +66,12 @@ def _enrich_ws_event(
 
     if event_type == "message":
         enriched.setdefault("status", "streaming")
+    elif event_type == "response_start":
+        enriched.setdefault("status", "thinking")
+    elif event_type == "response_delta":
+        enriched.setdefault("status", "streaming")
+    elif event_type == "response_end":
+        enriched.setdefault("status", "completed")
     elif event_type == "thinking":
         enriched.setdefault("status", "thinking")
     elif event_type == "tool_call":
@@ -161,7 +167,7 @@ async def _enqueue_stream_events(
                     session_id=session_id,
                     sequence=event_sequence,
                 )
-                if str(normalized_event.get("type") or "") == "done":
+                if str(normalized_event.get("type") or "") in {"response_end", "done"}:
                     done_sent = True
                 await event_queue.put(normalized_event)
     except asyncio.CancelledError:
@@ -179,7 +185,7 @@ async def _enqueue_stream_events(
         if not done_sent:
             event_sequence += 1
             await event_queue.put(_enrich_ws_event(
-                {"type": "done", "status": "completed"},
+                {"type": "response_end", "status": "completed"},
                 session_id=session_id,
                 sequence=event_sequence,
             ))

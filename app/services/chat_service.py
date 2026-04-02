@@ -28,9 +28,9 @@ from services.chat_stream_support import (
     build_final_response,
     close_stream_safely,
     collect_trace_from_chunk,
-    extract_ai_content_from_chunk,
     format_error_event,
     iterate_stream_sync,
+    merge_ai_response_from_chunk,
     normalize_history_messages,
 )
 from services.exception_service import exception_handler
@@ -419,9 +419,7 @@ class ChatService:
             ):
                 yield chunk
                 collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
-                ai_content = extract_ai_content_from_chunk(chunk)
-                if ai_content:
-                    ai_response += ai_content
+                _, ai_response = merge_ai_response_from_chunk(ai_response, chunk)
 
         except GeneratorExit:
             log.warning(f"客户端主动断开连接，会话ID: {session_id}。保留已有记录。", target=LogTarget.LOG)
@@ -656,10 +654,8 @@ class ChatService:
             for chunk in iterate_stream_sync(runner_stream):
                 yield chunk
                 collect_trace_from_chunk(chunk, thinking_entries, workflow_trace)
-                # 2. 只有当事件包含大模型的正文时，才拼接到 ai_response 里准备落库
-                ai_content = extract_ai_content_from_chunk(chunk)
-                if ai_content:
-                    ai_response += ai_content
+                # 2. 只落库真实增量正文，兼容部分模型返回“累计 chunk”的情况
+                _, ai_response = merge_ai_response_from_chunk(ai_response, chunk)
 
         except GeneratorExit:
             # 前端主动断开连接 (比如关掉网页/点击停止生成)

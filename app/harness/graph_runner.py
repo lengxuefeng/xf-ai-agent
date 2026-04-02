@@ -43,6 +43,7 @@ from harness.graph_runner_core import rule_handle
 from runtime.langgraph import checkpoint_bridge, langgraph_supervisor_shell, resume_bridge
 from supervisor.graph_state import AgentRequest
 from common.llm.unified_loader import create_model_from_config
+from common.utils.stream_delta import resolve_stream_delta
 from tools.rag.vector_store import vector_store_service
 from supervisor.registry import agent_classes
 from supervisor.rules.actions import handle_action
@@ -303,22 +304,8 @@ class GraphRunner:
         else:
             normalized_agents = set()
 
-        streamed_task_result_ids = state.get("streamed_task_result_ids")
-        if isinstance(streamed_task_result_ids, set):
-            normalized_task_ids = streamed_task_result_ids
-        elif isinstance(streamed_task_result_ids, (list, tuple, set)):
-            normalized_task_ids = {
-                str(item).strip()
-                for item in streamed_task_result_ids
-                if str(item or "").strip()
-            }
-        else:
-            normalized_task_ids = set()
-
         state["direct_body_agents"] = normalized_agents
-        state["streamed_task_result_ids"] = normalized_task_ids
         state["orchestrated"] = bool(state.get("orchestrated"))
-        state["partial_task_body_emitted"] = bool(state.get("partial_task_body_emitted"))
         return state
 
     @classmethod
@@ -500,42 +487,6 @@ class GraphRunner:
             return single_body.strip() or sections[0]
 
         return "## 已完成的任务结果\n\n" + "\n\n".join(sections)
-
-    @classmethod
-    def _build_incremental_task_result_block(
-            cls,
-            *,
-            task_id: str,
-            task_title: str,
-            task_result: str,
-            execution_state: Optional[Dict[str, Any]],
-    ) -> str:
-        """把单个子任务结果格式化成可直接追加到主消息区的正文块。"""
-        stream_state = cls._ensure_execution_state(execution_state)
-        emitted_task_ids = stream_state.get("streamed_task_result_ids", set())
-        dedupe_key = str(task_id or task_title or "").strip()
-        if dedupe_key and dedupe_key in emitted_task_ids:
-            return ""
-
-        visible_text = cls._format_user_visible_text(task_result)
-        if not visible_text or visible_text in {WORKER_CANCELLED_RESULT, WORKER_PENDING_APPROVAL_RESULT}:
-            return ""
-
-        title = re.split(r"[。！？!?；;\n]", str(task_title or "").strip())[0].strip()
-        title = title or "子任务结果"
-        if len(title) > 36:
-            title = title[:36].rstrip("，,。；;：: ") + "..."
-
-        next_index = len(emitted_task_ids) + 1
-        block_prefix = ""
-        if not stream_state.get("partial_task_body_emitted"):
-            block_prefix = "## 已完成的任务结果\n\n"
-            stream_state["partial_task_body_emitted"] = True
-
-        if dedupe_key:
-            emitted_task_ids.add(dedupe_key)
-
-        return f"{block_prefix}### {next_index}. {title}\n{visible_text}".strip()
 
     @classmethod
     def _build_workflow_event(
@@ -1401,6 +1352,7 @@ class GraphRunner:
         }
 
         active_agent_candidates: Set[str] = set()
+        message_stream_state: Dict[str, str] = {}
 
         idle_heartbeat_sec = GRAPH_RUNNER_TUNING.idle_heartbeat_sec
         idle_timeout_sec = GRAPH_RUNNER_TUNING.idle_timeout_sec
@@ -1554,7 +1506,12 @@ class GraphRunner:
 
                         if ev_type == "messages":
                             sse_chunks, router_prefix_buffer, router_prefix_done = self._handle_message_chunk(
-                                ev, router_prefix_buffer, router_prefix_done, session_id, run_id
+                                ev,
+                                router_prefix_buffer,
+                                router_prefix_done,
+                                message_stream_state,
+                                session_id,
+                                run_id,
                             )
                             for sse_chunk in sse_chunks:
                                 if sse_chunk:
@@ -1778,14 +1735,14 @@ class GraphRunner:
         """
         if not isinstance(payload, dict):
             return []
-        visible_content = str(payload.get("content") or "").strip()
-        visible_content = strip_internal_execution_noise(
-            visible_content,
+        raw_content = str(payload.get("content") or "")
+        if raw_content == "":
+            return []
+        preview_content = strip_internal_execution_noise(
+            raw_content,
             trim=True,
             collapse_blank_lines=False,
         )
-        if not visible_content:
-            return []
         source_agent = str(payload.get("agent_name") or "").strip()
         source_task_id = str(payload.get("task_id") or "").strip()
         explicit_body_stream = bool(payload.get("body_stream"))
@@ -1796,9 +1753,6 @@ class GraphRunner:
             and source_agent
             and source_agent in direct_body_agents
         )
-        if explicit_body_stream and source_task_id:
-            stream_state["streamed_task_result_ids"].add(source_task_id)
-            stream_state["partial_task_body_emitted"] = True
         role = cls._workflow_role_for_agent(source_agent)
         phase = "direct_response_streaming" if role == "supervisor" else "worker_streaming"
         title = (
@@ -1818,13 +1772,13 @@ class GraphRunner:
                         run_id=run_id,
                         phase=phase,
                         title=title,
-                        summary=visible_content[:80],
+                        summary=(preview_content or raw_content.strip())[:80],
                         status="active",
                         role=role,
                         agent_name=source_agent,
                         task_id=source_task_id,
                         meta={
-                            "preview": visible_content[:160],
+                            "preview": (preview_content or raw_content.strip())[:160],
                             "first_stream": first_stream,
                             "body_stream": explicit_body_stream,
                         },
@@ -1837,7 +1791,7 @@ class GraphRunner:
             workflow_chunks.append(
                 cls._fmt_sse(
                     SseEventType.STREAM.value,
-                    visible_content,
+                    raw_content,
                     extra_payload={
                         "node": source_agent,
                         "agent_name": source_agent,
@@ -1959,6 +1913,7 @@ class GraphRunner:
             event: Tuple[Any, Any],
             router_prefix_buffer: str,
             router_prefix_done: bool,
+            message_stream_state: Optional[Dict[str, str]] = None,
             session_id: str = "",
             run_id: str = "",
     ) -> Tuple[List[str], str, bool]:
@@ -2021,22 +1976,25 @@ class GraphRunner:
         visible, router_prefix_buffer, router_prefix_done = self._strip_router_json_prefix_cross_chunk(
             visible, router_prefix_buffer, router_prefix_done
         )
-        visible = strip_internal_execution_noise(
-            visible,
-            trim=False,
-            collapse_blank_lines=False,
-        )
-
-        if not isinstance(visible, str) or not visible.strip():
+        if not isinstance(visible, str) or visible == "":
             return [], router_prefix_buffer, router_prefix_done
 
         source_name = str(getattr(msg_chunk, "name", "") or "").strip()
+        stream_key = f"{node_name}:{source_name or node_name or 'unknown'}"
+        delta_visible, next_visible = resolve_stream_delta(
+            (message_stream_state or {}).get(stream_key, ""),
+            visible,
+        )
+        if message_stream_state is not None:
+            message_stream_state[stream_key] = next_visible
+        if not delta_visible:
+            return [], router_prefix_buffer, router_prefix_done
         is_body_stream = node_name in {"chat_node", "aggregator_node"} or source_name in {"ChatAgent", "Aggregator"}
 
         return [
             self._fmt_sse(
                 SseEventType.STREAM.value,
-                visible,
+                delta_visible,
                 extra_payload={
                     "node": node_name,
                     "agent_name": source_name or node_name,
@@ -2681,7 +2639,6 @@ class GraphRunner:
                     trim=True,
                 )
                 is_orchestrated = bool(stream_state.get("orchestrated"))
-                partial_task_body_emitted = bool(stream_state.get("partial_task_body_emitted"))
                 direct_body_agents = stream_state.get("direct_body_agents", set())
                 is_top_level_direct_chat = (
                     not is_orchestrated
@@ -2783,7 +2740,7 @@ class GraphRunner:
                     elif live_streamed_agents and source_agent_name in live_streamed_agents:
                         should_emit = False
                 can_emit_to_body = (
-                    (node_name == "aggregator_node" and bool(metadata.get("force_emit")) and not partial_task_body_emitted)
+                    (node_name == "aggregator_node" and bool(metadata.get("force_emit")))
                     or is_top_level_direct_chat
                     or is_top_level_direct_agent
                 )
@@ -3058,26 +3015,6 @@ class GraphRunner:
                         "usage": worker_item.get("usage"),
                     },
                 )
-                if (error_text or result_text) and result_text not in {WORKER_PENDING_APPROVAL_RESULT, WORKER_CANCELLED_RESULT}:
-                    body_block = GraphRunner._build_incremental_task_result_block(
-                        task_id=task_id,
-                        task_title=str(worker_item.get("task") or agent_name or task_id or "子任务结果"),
-                        task_result=error_text or result_text,
-                        execution_state=execution_state,
-                    )
-                    if body_block:
-                        yield GraphRunner._fmt_sse(
-                            SseEventType.STREAM.value,
-                            body_block,
-                            extra_payload={
-                                "node": str(agent_name or "worker"),
-                                "agent_name": agent_name,
-                                "task_id": task_id,
-                                "body_stream": True,
-                                "partial_task_result": True,
-                                "usage": worker_item.get("usage"),
-                            },
-                        )
             return
 
         if node_name == "reflection_node" and "reflection_source" in node_val:

@@ -22,15 +22,21 @@ from runtime.tools import runtime_tool_orchestrator, tool_permission_resolver
 from runtime.tools.models import ToolExecutionRequest, ToolExecutionReport, ToolPermissionDecision
 from runtime.workers.search_worker import SearchWorker
 from runtime.workers.weather_worker import WeatherWorker
+from common.llm.unified_loader import _clear_model_loader_caches, create_model_from_config
+from common.utils.stream_delta import resolve_stream_delta
+from services.agent_stream_bus import agent_stream_bus
 from services.chat_service import ChatService
-from services.chat_stream_support import extract_ai_content_from_chunk
+from services.chat_stream_support import extract_ai_content_from_chunk, merge_ai_response_from_chunk
+from supervisor.agents.code_agent import _format_generated_code_reply
 from supervisor.agents.search_agent import SearchAgent
 from supervisor.agents.weather_agent import WeatherAgent
 from supervisor.supervisor import (
+    _analyze_request,
     _looks_like_holter_request,
     _looks_like_search_request,
     _resolve_forced_specialist_agent,
     _run_agent_to_completion,
+    chat_node,
     dispatch_node,
 )
 from tools.runtime_tools.search_gateway import search_gateway
@@ -53,6 +59,20 @@ class WebSocketRequestContractsTest(unittest.TestCase):
 
 
 class WsEventFormatterContractsTest(unittest.TestCase):
+    def test_body_stream_message_is_normalized_to_response_delta_without_trimming(self):
+        chunk = (
+            'event: stream\n'
+            'data: {"type":"stream","content":"```java\\n    int x = 1;\\n","payload":{"node":"chat_node","body_stream":true}}\n\n'
+        )
+
+        events = WsEventFormatter().consume(chunk)
+
+        self.assertEqual(len(events), 1)
+        event = events[0]
+        self.assertEqual(event["type"], "response_delta")
+        self.assertEqual(event["content"], "```java\n    int x = 1;\n")
+        self.assertTrue(event["body_stream"])
+
     def test_interrupt_event_is_preserved_as_structured_approval(self):
         chunk = (
             'event: interrupt\n'
@@ -155,6 +175,45 @@ class ChatServiceContractsTest(unittest.TestCase):
 
         self.assertEqual(extracted, "上海今天多云")
 
+    def test_ai_content_extraction_strips_orphan_tool_lines_and_query_json(self):
+        chunk = (
+            'event: stream\n'
+            'data: {"type":"stream","content":"接下来我帮你查一下。\\nweb_search_search_proxy_proxy\\n{\\"query\\":\\"北京到上海自驾路线\\"}\\n路线如下"}\n\n'
+        )
+
+        extracted = extract_ai_content_from_chunk(chunk)
+
+        self.assertIn("接下来我帮你查一下。", extracted)
+        self.assertIn("路线如下", extracted)
+        self.assertNotIn("web_search", extracted)
+        self.assertNotIn('"query"', extracted)
+
+    def test_resolve_stream_delta_supports_cumulative_and_overlap_chunks(self):
+        delta, accumulated = resolve_stream_delta("", "明天南京")
+        self.assertEqual((delta, accumulated), ("明天南京", "明天南京"))
+
+        delta, accumulated = resolve_stream_delta(accumulated, "明天南京天气")
+        self.assertEqual((delta, accumulated), ("天气", "明天南京天气"))
+
+        delta, accumulated = resolve_stream_delta(accumulated, "天气预报")
+        self.assertEqual((delta, accumulated), ("预报", "明天南京天气预报"))
+
+    def test_merge_ai_response_from_chunk_normalizes_cumulative_stream(self):
+        first_chunk = (
+            'event: stream\n'
+            'data: {"type":"stream","content":"好的，这是用 Python"}\n\n'
+        )
+        second_chunk = (
+            'event: stream\n'
+            'data: {"type":"stream","content":"好的，这是用 Python 编写的简单示例："}\n\n'
+        )
+
+        delta, accumulated = merge_ai_response_from_chunk("", first_chunk)
+        self.assertEqual((delta, accumulated), ("好的，这是用 Python", "好的，这是用 Python"))
+
+        delta, accumulated = merge_ai_response_from_chunk(accumulated, second_chunk)
+        self.assertEqual((delta, accumulated), (" 编写的简单示例：", "好的，这是用 Python 编写的简单示例："))
+
 
 class PlannerContractsTest(unittest.IsolatedAsyncioTestCase):
     async def test_multi_domain_request_is_split_instead_of_passthrough(self):
@@ -183,6 +242,13 @@ class PlannerContractsTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(SearchAgent._requires_live_search("帮我查询南京云佑公司的企业信息和公开资料"))
         self.assertTrue(_looks_like_holter_request("请告诉我今天浩特有人使用吗"))
         self.assertEqual(_resolve_forced_specialist_agent("请告诉我今天浩特有人使用吗"), "yunyou_agent")
+
+    async def test_mixed_code_and_route_query_is_classified_as_multi_intent(self):
+        analysis = _analyze_request("帮我写一个Java的 Hello World，再写一个Python的，再告诉我北京到上海自驾路线")
+
+        self.assertTrue(_looks_like_search_request("北京到上海自驾路线"))
+        self.assertEqual(analysis.route_strategy, "multi_domain_split")
+        self.assertEqual(analysis.candidate_agents, ["code_agent", "search_agent"])
 
     async def test_company_relation_query_stays_passthrough_single(self):
         result = await PlannerNode.planner_node(
@@ -328,6 +394,62 @@ class QueryRuntimeContractsTest(unittest.TestCase):
         self.assertEqual(query_state.status, "initialized")
         self.assertEqual(query_state.budget.max_model_turns, 4)
         self.assertEqual(query_state.meta["request_id"], "req_runtime_contract")
+
+
+class ModelLoaderContractsTest(unittest.TestCase):
+    def setUp(self):
+        _clear_model_loader_caches()
+
+    def tearDown(self):
+        _clear_model_loader_caches()
+
+    def test_create_model_from_config_reuses_chat_model_instance(self):
+        class DummyChatModel:
+            def with_fallbacks(self, fallback_models):
+                return self
+
+        with patch("common.llm.unified_loader.load_ollama_model", side_effect=lambda model_name: DummyChatModel()) as mocked_loader:
+            first_model, _ = create_model_from_config(
+                model="llama3.1",
+                model_service="ollama",
+                service_type="ollama",
+            )
+            second_model, _ = create_model_from_config(
+                model="llama3.1",
+                model_service="ollama",
+                service_type="ollama",
+            )
+
+        self.assertIs(first_model, second_model)
+        self.assertEqual(mocked_loader.call_count, 1)
+
+    def test_create_model_from_config_reuses_embedding_instance(self):
+        class DummyChatModel:
+            def with_fallbacks(self, fallback_models):
+                return self
+
+        dummy_embedding = object()
+        with patch("common.llm.unified_loader.load_ollama_model", side_effect=lambda model_name: DummyChatModel()), patch(
+            "common.llm.unified_loader.load_ollama_embeddings",
+            side_effect=lambda model_name: dummy_embedding,
+        ) as mocked_embedding_loader:
+            _, first_embedding = create_model_from_config(
+                model="llama3.1",
+                model_service="ollama",
+                service_type="ollama",
+                rag_enabled=True,
+                embedding_model="nomic-embed-text",
+            )
+            _, second_embedding = create_model_from_config(
+                model="llama3.1",
+                model_service="ollama",
+                service_type="ollama",
+                rag_enabled=True,
+                embedding_model="nomic-embed-text",
+            )
+
+        self.assertIs(first_embedding, second_embedding)
+        self.assertEqual(mocked_embedding_loader.call_count, 1)
 
 
 class LangGraphShellContractsTest(unittest.TestCase):
@@ -508,6 +630,41 @@ class ContextGovernanceContractsTest(unittest.TestCase):
 
 
 class RuntimeWorkerContractsTest(unittest.IsolatedAsyncioTestCase):
+    async def test_chat_node_streams_and_marks_live_streamed(self):
+        published = []
+        run_id = "run_worker_chat_stream_contract"
+        agent_stream_bus.register_callback(run_id, lambda payload: published.append(dict(payload)))
+
+        class FakeChunk:
+            def __init__(self, content, response_metadata=None):
+                self.content = content
+                self.response_metadata = response_metadata or {}
+
+        class FakeModel:
+            async def astream(self, messages, config=None):
+                yield FakeChunk("你好", {"token_usage": {"input_tokens": 1, "output_tokens": 1, "total_tokens": 2}})
+                yield FakeChunk("你好，世界", {})
+
+            async def ainvoke(self, messages, config=None):
+                raise AssertionError("ainvoke should not be called after successful streaming")
+
+        try:
+            result = await chat_node(
+                {
+                    "messages": [HumanMessage(content="测试流式输出")],
+                    "llm_config": {},
+                    "context_summary": "",
+                },
+                FakeModel(),
+                {"configurable": {"run_id": run_id}},
+            )
+        finally:
+            agent_stream_bus.unregister_callback(run_id)
+
+        self.assertEqual(result["messages"][0].content, "你好，世界")
+        self.assertTrue(result["messages"][0].response_metadata["live_streamed"])
+        self.assertEqual([item["content"] for item in published], ["你好", "，世界"])
+
     async def test_search_worker_uses_single_runtime_search(self):
         worker = SearchWorker()
         req = AgentRequest(
@@ -554,6 +711,17 @@ class RuntimeWorkerContractsTest(unittest.IsolatedAsyncioTestCase):
 
 
 class RuntimeWorkerSupervisorContractsTest(unittest.TestCase):
+    def test_format_generated_code_reply_wraps_fenced_code_block(self):
+        formatted = _format_generated_code_reply(
+            "print('hello')",
+            language="python",
+            execution_requested=False,
+            execution_supported=True,
+        )
+
+        self.assertIn("```python", formatted)
+        self.assertTrue(formatted.strip().endswith("```"))
+
     def test_run_agent_to_completion_prefers_runtime_worker(self):
         class FakeWorker:
             worker_name = "fake_search_worker"
@@ -671,7 +839,24 @@ class GraphRunnerContractsTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(formatted, "南京云佑公司的公开资料显示其主营方向与智能医疗有关。")
 
-    async def test_worker_result_emits_incremental_body_stream_for_orchestrated_run(self):
+    async def test_orchestrated_worker_live_stream_does_not_emit_body_stream(self):
+        chunks = GraphRunner._handle_live_stream_event(
+            payload={
+                "agent_name": "code_agent",
+                "content": "```java\n    int x = 1;\n```",
+                "task_id": "t1",
+                "body_stream": False,
+            },
+            live_streamed_agents=set(),
+            execution_state={"orchestrated": True, "direct_body_agents": set()},
+            session_id="session_stream_contract",
+            run_id="run_stream_contract",
+        )
+
+        self.assertFalse(any(chunk.startswith("event: stream") for chunk in chunks))
+        self.assertTrue(any(chunk.startswith("event: workflow_event") for chunk in chunks))
+
+    async def test_worker_result_does_not_emit_body_stream_for_orchestrated_run(self):
         runner = GraphRunner()
         execution_state = {"orchestrated": True, "direct_body_agents": set()}
 
@@ -703,25 +888,14 @@ class GraphRunnerContractsTest(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        stream_payloads = [
-            parse_sse_chunk(chunk)
-            for chunk in chunks
-            if chunk.startswith("event: stream")
-        ]
+        self.assertFalse(any(chunk.startswith("event: stream") for chunk in chunks))
+        self.assertTrue(any(chunk.startswith("event: workflow_event") for chunk in chunks))
 
-        self.assertEqual(len(stream_payloads), 1)
-        self.assertIn("## 已完成的任务结果", stream_payloads[0]["content"])
-        self.assertIn("### 1. 帮我写一个Java的slow方法", stream_payloads[0]["content"])
-        self.assertIn("```java", stream_payloads[0]["content"])
-        self.assertTrue(execution_state["partial_task_body_emitted"])
-
-    async def test_aggregator_body_stream_is_suppressed_after_partial_task_streams(self):
+    async def test_aggregator_force_emit_emits_single_body_stream_for_orchestrated_run(self):
         runner = GraphRunner()
         execution_state = {
             "orchestrated": True,
             "direct_body_agents": set(),
-            "partial_task_body_emitted": True,
-            "streamed_task_result_ids": {"t1"},
         }
 
         chunks = list(
@@ -730,7 +904,7 @@ class GraphRunnerContractsTest(unittest.IsolatedAsyncioTestCase):
                     "aggregator_node": {
                         "messages": [
                             AIMessage(
-                                content="## 已并行完成 2 个子任务\n\n### 1. 代码处理\n示例结果",
+                                content="我按你的问题顺序整理如下：\n\n### 代码处理\n```java\nclass Demo {}\n```",
                                 name="Aggregator",
                                 response_metadata={"synthetic": True, "force_emit": True},
                             )
@@ -747,7 +921,15 @@ class GraphRunnerContractsTest(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        self.assertFalse(any(chunk.startswith("event: stream") for chunk in chunks))
+        stream_payloads = [
+            parse_sse_chunk(chunk)
+            for chunk in chunks
+            if chunk.startswith("event: stream")
+        ]
+
+        self.assertEqual(len(stream_payloads), 1)
+        self.assertIn("我按你的问题顺序整理如下", stream_payloads[0]["content"])
+        self.assertIn("```java", stream_payloads[0]["content"])
         self.assertTrue(any(chunk.startswith("event: workflow_event") for chunk in chunks))
 
 

@@ -96,6 +96,7 @@ from config.runtime_settings import (
 from common.enums.agent_enum import AgentTypeEnum
 from supervisor.policy.intent_policy import IntentPolicy
 from planner.planner import PlannerNode
+from common.utils.stream_delta import resolve_stream_delta
 from models.schemas.supervisor_schemas import (
     DomainDecision,
     IntentDecision,
@@ -151,6 +152,31 @@ async def _ainvoke_with_timeout(awaitable, *, timeout_sec: float, timeout_label:
         return await asyncio.wait_for(awaitable, timeout=max(0.1, float(timeout_sec)))
     except asyncio.TimeoutError as exc:
         raise TimeoutError(timeout_label) from exc
+
+
+def _normalize_stream_chunk_text(content: Any) -> str:
+    """提取流式 chunk 文本，但不主动 strip，避免空白与缩进丢失。"""
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+                continue
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("content") or ""
+                if isinstance(text, str):
+                    parts.append(text)
+        return "".join(parts)
+
+    if isinstance(content, dict):
+        text = content.get("text") or content.get("content") or ""
+        if isinstance(text, str):
+            return text
+
+    return str(content or "")
 
 
 def _run_async_in_new_loop(awaitable):
@@ -401,6 +427,30 @@ def _looks_like_search_request(text: str) -> bool:
     t = (text or "").strip().lower()
     if not t:
         return False
+
+    route_search_hints = (
+        "自驾",
+        "驾车",
+        "路线",
+        "路书",
+        "导航",
+        "怎么去",
+        "怎么走",
+        "怎么开",
+        "开车去",
+        "路程",
+        "沿途",
+    )
+    route_search_patterns = (
+        r"(?:从)?[^，。！？,;；\s]{1,12}到[^，。！？,;；\s]{1,12}.{0,12}(?:自驾|驾车|路线|路书|导航|怎么去|怎么走|怎么开|开车|路程)",
+        r"(?:自驾|驾车|路线|路书|导航|怎么去|怎么走|怎么开|开车|路程).{0,12}(?:从)?[^，。！？,;；\s]{1,12}到[^，。！？,;；\s]{1,12}",
+    )
+    if "学习路线" not in t and (
+            any(hint in t for hint in route_search_hints) and any(token in t for token in ("到", "从", "去"))
+            or any(re.search(pattern, t) for pattern in route_search_patterns)
+    ):
+        return True
+
     company_info_markers = (
         "企业信息",
         "公司信息",
@@ -462,6 +512,14 @@ def _is_search_actionable_clause(text: str) -> bool:
     t = (text or "").strip().lower()
     if not t or (not _looks_like_search_request(t)):
         return False
+    if any(
+            re.search(pattern, t)
+            for pattern in (
+                r"(?:从)?[^，。！？,;；\s]{1,12}到[^，。！？,;；\s]{1,12}.{0,12}(?:自驾|驾车|路线|路书|导航|怎么去|怎么走|怎么开|开车|路程)",
+                r"(?:自驾|驾车|路线|路书|导航|怎么去|怎么走|怎么开|开车|路程)",
+            )
+    ):
+        return True
     if any(mark in t for mark in ("?", "？")):
         return True
     return any(hint in t for hint in SUPERVISOR_SEARCH_ACTION_HINTS)
@@ -1876,7 +1934,13 @@ def _build_aggregated_task_title(task_id: str, task: Optional[SubTask]) -> str:
         "chat_node": "综合答复",
     }.get(agent_name, agent_name or f"任务 {task_id}")
 
-    raw_focus = str((task or {}).get("input") or "").strip()
+    raw_focus = str((task or {}).get("display_input") or (task or {}).get("input") or "").strip()
+    if re.search(r"(?i)\bt\d+\b", raw_focus):
+        raw_focus = re.sub(r"(?i)\bt\d+\b", "", raw_focus)
+        raw_focus = re.sub(r"^基于[^：:，,]*[：:，,]\s*", "", raw_focus)
+        raw_focus = raw_focus.strip()
+        if "：" in raw_focus and raw_focus.startswith("给出用户需要的最终建议与结论"):
+            raw_focus = raw_focus.split("：", 1)[1].strip()
     focus = re.split(r"[。！？!?；;\n]", raw_focus)[0].strip()
     focus = re.sub(r"^(请|帮我|帮忙|查询|检索|回答|说明|判断|告诉我)\s*", "", focus)
     focus = focus.strip("，,。；;：: ")
@@ -1905,7 +1969,7 @@ def _build_deterministic_aggregation(
 
     success_parts: List[str] = []
     failure_parts: List[str] = []
-    for index, (task_id, text) in enumerate(normalized_results, start=1):
+    for task_id, text in normalized_results:
         task = (tasks_by_id or {}).get(task_id)
         normalized_text = _clean_aggregated_task_text(task, text)
         if not normalized_text:
@@ -1914,12 +1978,11 @@ def _build_deterministic_aggregation(
             failure_parts.append(normalized_text)
             continue
         section_title = _build_aggregated_task_title(task_id, task)
-        success_parts.append(f"### {index}. {section_title}\n{normalized_text}")
+        success_parts.append(f"### {section_title}\n{normalized_text}")
 
     if success_parts:
         merged_parts = [
-            f"## 已并行完成 {len(normalized_results)} 个子任务",
-            "> 系统已按可并行部分同时执行，并整理为以下合并结果。",
+            "我按你的问题顺序整理如下：",
             *success_parts,
         ]
         if failure_parts:
@@ -2115,31 +2178,90 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
 
         msg: Optional[AIMessage] = None
         final_error: Optional[Exception] = None
+        streamed_text = ""
+        streamed_response_metadata: Dict[str, Any] = {}
+        did_stream = False
 
         try:
-            response = await _ainvoke_with_timeout(
-                model.ainvoke(request_messages, config=runtime_config),
-                timeout_sec=max(1.0, total_timeout_sec),
-                timeout_label="chat_node.ainvoke",
-            )
-            content = _content_to_text(getattr(response, "content", "")).strip()
-            if content:
-                msg = AIMessage(
-                    content=content,
-                    name="ChatAgent",
-                    response_metadata={
-                        **dict(getattr(response, "response_metadata", {}) or {}),
-                        "usage": _extract_usage_from_response_metadata(
-                            getattr(response, "response_metadata", {}) or {},
-                        ),
-                        "synthetic": True,
-                    },
+            if callable(getattr(model, "astream", None)):
+                async def _consume_chat_stream() -> None:
+                    nonlocal did_stream, streamed_text
+                    async for chunk in model.astream(request_messages, config=runtime_config):
+                        chunk_text = _normalize_stream_chunk_text(getattr(chunk, "content", chunk))
+                        if not chunk_text:
+                            continue
+                        delta_text, streamed_text = resolve_stream_delta(streamed_text, chunk_text)
+                        if delta_text:
+                            did_stream = True
+                            agent_stream_bus.publish(
+                                run_id=run_id,
+                                agent_name="ChatAgent",
+                                content=delta_text,
+                            )
+                        streamed_response_metadata.update(
+                            dict(getattr(chunk, "response_metadata", {}) or {})
+                        )
+
+                await _ainvoke_with_timeout(
+                    _consume_chat_stream(),
+                    timeout_sec=max(1.0, total_timeout_sec),
+                    timeout_label="chat_node.astream",
                 )
-            else:
-                final_error = RuntimeError("chat_node.empty_response")
+
+            if streamed_text:
+                content = streamed_text.strip()
+                if content:
+                    msg = AIMessage(
+                        content=content,
+                        name="ChatAgent",
+                        response_metadata={
+                            **streamed_response_metadata,
+                            "usage": _extract_usage_from_response_metadata(streamed_response_metadata),
+                            "synthetic": True,
+                            "live_streamed": True,
+                        },
+                    )
+
+            if msg is None:
+                response = await _ainvoke_with_timeout(
+                    model.ainvoke(request_messages, config=runtime_config),
+                    timeout_sec=max(1.0, total_timeout_sec),
+                    timeout_label="chat_node.ainvoke",
+                )
+                content = _content_to_text(getattr(response, "content", "")).strip()
+                if content:
+                    msg = AIMessage(
+                        content=content,
+                        name="ChatAgent",
+                        response_metadata={
+                            **dict(getattr(response, "response_metadata", {}) or {}),
+                            "usage": _extract_usage_from_response_metadata(
+                                getattr(response, "response_metadata", {}) or {},
+                            ),
+                            "synthetic": True,
+                            "live_streamed": did_stream,
+                        },
+                    )
+                else:
+                    final_error = RuntimeError("chat_node.empty_response")
         except Exception as exc:
             final_error = exc
-            if total_timeout_sec >= 1.0 and not request_cancellation_service.is_cancelled(run_id):
+            if streamed_text:
+                content = streamed_text.strip()
+                if content:
+                    msg = AIMessage(
+                        content=content,
+                        name="ChatAgent",
+                        response_metadata={
+                            **streamed_response_metadata,
+                            "usage": _extract_usage_from_response_metadata(streamed_response_metadata),
+                            "synthetic": True,
+                            "live_streamed": True,
+                            "partial_stream": True,
+                        },
+                    )
+                    final_error = None
+            if msg is None and total_timeout_sec >= 1.0 and not request_cancellation_service.is_cancelled(run_id):
                 try:
                     retry_response = await _ainvoke_with_timeout(
                         model.ainvoke(
@@ -2165,6 +2287,7 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
                                     getattr(retry_response, "response_metadata", {}) or {},
                                 ),
                                 "synthetic": True,
+                                "live_streamed": did_stream,
                             },
                         )
                         final_error = None

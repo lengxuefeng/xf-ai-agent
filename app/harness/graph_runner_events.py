@@ -288,6 +288,18 @@ FINAL_MESSAGE_NODES = {
     "supervisor_final",
     "aggregator",
 }
+_TRACE_INTERNAL_KEYS = {
+    "plan",
+    "steps",
+    "task_list",
+    "tasks",
+    "route",
+    "intent",
+    "args",
+    "output",
+    "result",
+    "data",
+}
 
 _RUNNING_STATUSES = {"active", "running", "in_progress", "processing"}
 _COMPLETED_STATUSES = {"completed", "done", "success", "succeeded", "finished"}
@@ -568,6 +580,67 @@ def _rewrite_frontend_event_type(event_payload: Dict[str, Any], fallback_type: s
     return payload
 
 
+def _looks_like_internal_structured_message(raw_content: str) -> bool:
+    trimmed = str(raw_content or "").strip()
+    if not trimmed or (not trimmed.startswith("{") and not trimmed.startswith("[")):
+        return False
+    try:
+        parsed = json.loads(trimmed)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return False
+
+    if isinstance(parsed, list):
+        return False
+    if isinstance(parsed, dict):
+        return any(str(key or "").strip().lower() in _TRACE_INTERNAL_KEYS for key in parsed.keys())
+    return False
+
+
+def _trace_role_for_node(node_name: str) -> str:
+    normalized = _normalize_node_name(node_name)
+    if normalized in FINAL_MESSAGE_NODES or _is_planner_node(normalized):
+        return "supervisor"
+    return "worker" if normalized else "system"
+
+
+def _build_trace_message(
+    *,
+    node_name: str,
+    content: str,
+    usage: Optional[Dict[str, int]],
+    source_type: str,
+    status: str = "running",
+) -> Dict[str, Any]:
+    normalized_node = _normalize_node_name(node_name) or "thinking"
+    payload = {
+        "phase": "thinking",
+        "title": "思考步骤",
+        "summary": str(content or "").strip(),
+        "content": str(content or ""),
+        "status": "active" if status == "running" else status,
+        "role": _trace_role_for_node(normalized_node),
+        "node": normalized_node,
+        "node_name": normalized_node,
+        "agent_name": normalized_node,
+        "meta": {
+            "source_type": source_type,
+        },
+    }
+    if usage:
+        payload["usage"] = usage
+        payload["meta"]["usage"] = usage
+    return {
+        "type": "workflow_event",
+        "node": normalized_node,
+        "phase": "thinking",
+        "status": status,
+        "workflow_status": "active" if status == "running" else status,
+        "summary": payload["summary"],
+        "usage": usage,
+        "payload": payload,
+    }
+
+
 class WsEventFormatter:
     """把 GraphRunner 的 SSE 事件归一成前端可直接消费的 WS JSON。"""
 
@@ -586,7 +659,7 @@ class WsEventFormatter:
             return []
 
         if event_type == SseEventType.RESPONSE_START.value:
-            return []
+            return [{"type": "response_start", "status": "thinking"}]
 
         if event_type == SseEventType.RESPONSE_END.value:
             return self._emit_done()
@@ -599,16 +672,36 @@ class WsEventFormatter:
             payload = parsed.get(SsePayloadField.PAYLOAD.value)
             source_payload = payload if isinstance(payload, dict) else parsed
             node = _resolve_workflow_node(source_payload)
-            frontend_event = _rewrite_frontend_event_type({
-                "content": content,
-                "status": "thinking" if _is_planner_node(node) else "streaming",
-                "node": node,
-                "node_name": node,
-                "usage": _resolve_usage(source_payload) or _resolve_usage(parsed),
-            }, "message")
-            if frontend_event.get("type") == "thinking" and not frontend_event.get("status"):
-                frontend_event["status"] = "thinking"
-            return [frontend_event]
+            usage = _resolve_usage(source_payload) or _resolve_usage(parsed)
+            explicit_body_stream = bool(
+                source_payload.get("body_stream")
+                or parsed.get("body_stream")
+                or _coerce_dict(source_payload.get("meta")).get("body_stream")
+            )
+            if _looks_like_internal_structured_message(content):
+                return [_build_trace_message(
+                    node_name=node,
+                    content=content,
+                    usage=usage,
+                    source_type="message_json_leak",
+                )]
+            if explicit_body_stream or node in FINAL_MESSAGE_NODES:
+                return [{
+                    "type": "response_delta",
+                    "status": "streaming",
+                    "delta": content,
+                    "content": content,
+                    "node": node,
+                    "node_name": node,
+                    "body_stream": True,
+                    "usage": usage,
+                }]
+            return [_build_trace_message(
+                node_name=node,
+                content=content,
+                usage=usage,
+                source_type="message",
+            )]
 
         if event_type == SseEventType.THINKING.value:
             content = self._extract_content(parsed)
@@ -616,22 +709,21 @@ class WsEventFormatter:
                 return []
             payload = parsed.get(SsePayloadField.PAYLOAD.value)
             source_payload = payload if isinstance(payload, dict) else parsed
-            return [_rewrite_frontend_event_type({
-                "content": content,
-                "status": "thinking",
-                "node": _resolve_workflow_node(source_payload),
-                "node_name": _resolve_workflow_node(source_payload),
-                "usage": _resolve_usage(source_payload) or _resolve_usage(parsed),
-            }, "thinking")]
+            return [_build_trace_message(
+                node_name=_resolve_workflow_node(source_payload),
+                content=content,
+                usage=_resolve_usage(source_payload) or _resolve_usage(parsed),
+                source_type="thinking",
+            )]
 
         if event_type == SseEventType.LOG.value:
             content = str(parsed.get("message") or self._extract_content(parsed) or "").strip()
-            return [{
-                "type": "thinking",
-                "content": content,
-                "status": "thinking",
-                "usage": _resolve_usage(parsed),
-            }] if content else []
+            return [_build_trace_message(
+                node_name=_resolve_workflow_node(parsed),
+                content=content,
+                usage=_resolve_usage(parsed),
+                source_type="log",
+            )] if content else []
 
         if event_type == SseEventType.INTERRUPT.value:
             interrupt_source = (
@@ -683,7 +775,7 @@ class WsEventFormatter:
             payload.get(SsePayloadField.CONTENT.value)
             or payload.get("message")
             or ""
-        ).strip()
+        )
 
     def _extract_interrupt_content(self, payload: Dict[str, Any]) -> str:
         raw_content = self._extract_content(payload)
@@ -792,7 +884,7 @@ class WsEventFormatter:
         if self._done_sent:
             return []
         self._done_sent = True
-        return [{"type": "done", "status": "completed"}]
+        return [{"type": "response_end", "status": "completed"}]
 
 
 class SseToWsEventBridge(WsEventFormatter):

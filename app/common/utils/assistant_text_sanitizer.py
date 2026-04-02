@@ -12,12 +12,20 @@ _INLINE_TOOL_INVOCATION_PATTERNS = (
         r"[\"']source[\"']\s*:\s*[\"']external_(?:search|weather)[\"'][^{}\n]*\}",
         flags=re.IGNORECASE,
     ),
+    re.compile(
+        r"\{[^{}\n]*[\"'](?:query|queryquery)[\"']\s*:\s*[\"'][^\"']+[\"'][^{}\n]*\}",
+        flags=re.IGNORECASE,
+    ),
 )
 
 _LINE_TOOL_NOISE_PATTERNS = (
     re.compile(r"(^|\n)\s*🛠\s*调用工具[:：][^\n]*", flags=re.IGNORECASE),
     re.compile(r"(^|\n)\s*正在调用工具[^\n]*", flags=re.IGNORECASE),
     re.compile(r"(^|\n)\s*tool_(?:call|result)\s*[:：][^\n]*", flags=re.IGNORECASE),
+    re.compile(
+        r"(^|\n)\s*[a-z_]{8,}(?:tool|proxy|gateway)(?:_[a-z_]+)*\s*(?=\n|$)",
+        flags=re.IGNORECASE,
+    ),
 )
 
 

@@ -6,6 +6,8 @@
 """
 
 import os
+import json
+import threading
 from typing import Optional, Any
 from enum import Enum
 
@@ -48,6 +50,10 @@ LARGE_MODEL_CANDIDATES = {
     "gemini": ("gemini-2.5-pro", "gemini-1.5-pro"),
     "ollama": (),
 }
+
+_MODEL_INSTANCE_CACHE: dict[str, BaseChatModel] = {}
+_EMBEDDING_INSTANCE_CACHE: dict[str, Any] = {}
+_MODEL_LOADER_LOCK = threading.RLock()
 
 
 class ProviderFamily(str, Enum):
@@ -160,6 +166,40 @@ def _is_missing_api_key_error(exc: Exception) -> bool:
     )
 
 
+def _freeze_cache_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _freeze_cache_value(item) for key, item in sorted(value.items(), key=lambda item: str(item[0]))}
+    if isinstance(value, (list, tuple, set)):
+        return [_freeze_cache_value(item) for item in value]
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    return str(value)
+
+
+def _config_cache_key(config: ModelConfig, *, embedding: bool = False) -> str:
+    cache_payload = {
+        "service_type": str(config.service_type or "").strip().lower(),
+        "model_service": str(config.model_service or "").strip().lower(),
+        "model_url": str(config.model_url or "").strip(),
+        "model_size": str(getattr(config, "model_size", "") or "").strip().lower(),
+        "deep_thinking_mode": str(getattr(config, "deep_thinking_mode", "") or "").strip().lower(),
+        "model_key": str(config.model_key or "").strip(),
+        "embedding_model_key": str(config.embedding_model_key or "").strip(),
+        "extra_params": _freeze_cache_value(config.extra_params or {}),
+    }
+    if embedding:
+        cache_payload["embedding_model"] = str(config.embedding_model or "").strip()
+    else:
+        cache_payload["model"] = str(config.model or "").strip()
+    return json.dumps(cache_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _clear_model_loader_caches() -> None:
+    with _MODEL_LOADER_LOCK:
+        _MODEL_INSTANCE_CACHE.clear()
+        _EMBEDDING_INSTANCE_CACHE.clear()
+
+
 class UnifiedModelLoader:
     """
     模型加载的“中央调度室”
@@ -169,6 +209,12 @@ class UnifiedModelLoader:
     @classmethod
     def load_chat_model(cls, config: ModelConfig) -> BaseChatModel:
         """根据配置加载对应的聊天模型"""
+        cache_key = _config_cache_key(config)
+        with _MODEL_LOADER_LOCK:
+            cached_model = _MODEL_INSTANCE_CACHE.get(cache_key)
+        if cached_model is not None:
+            return cached_model
+
         service = config.service_type.lower()
         model_name = config.model
 
@@ -188,7 +234,13 @@ class UnifiedModelLoader:
         try:
             # 去路由表里找对应的加载函数，找不到则回退到 openai_compatible
             loader_func = service_router.get(service, load_openai_compatible_model)
-            return loader_func(config)
+            loaded_model = loader_func(config)
+            with _MODEL_LOADER_LOCK:
+                existing_model = _MODEL_INSTANCE_CACHE.get(cache_key)
+                if existing_model is not None:
+                    return existing_model
+                _MODEL_INSTANCE_CACHE[cache_key] = loaded_model
+            return loaded_model
         except Exception as e:
             if _is_missing_api_key_error(e):
                 log.warning(f"⚠️ 预热跳过: 模型 {model_name} 对应的 API Key 未配置。")
@@ -199,6 +251,12 @@ class UnifiedModelLoader:
     @classmethod
     def load_embedding_model(cls, config: ModelConfig):
         """加载向量嵌入模型"""
+        cache_key = _config_cache_key(config, embedding=True)
+        with _MODEL_LOADER_LOCK:
+            cached_model = _EMBEDDING_INSTANCE_CACHE.get(cache_key)
+        if cached_model is not None:
+            return cached_model
+
         service = config.service_type.lower()
         embedding_model = config.embedding_model
         
@@ -209,7 +267,13 @@ class UnifiedModelLoader:
         try:
             # 默认使用 OpenAI 兼容的加载方式
             loader_func = service_router.get(service, load_openai_embeddings)
-            return loader_func(config)
+            loaded_model = loader_func(config)
+            with _MODEL_LOADER_LOCK:
+                existing_model = _EMBEDDING_INSTANCE_CACHE.get(cache_key)
+                if existing_model is not None:
+                    return existing_model
+                _EMBEDDING_INSTANCE_CACHE[cache_key] = loaded_model
+            return loaded_model
         except Exception as e:
             if _is_missing_api_key_error(e):
                 log.warning(f"⚠️ 预热跳过: Embedding 模型 {embedding_model} 对应的 API Key 未配置。")
