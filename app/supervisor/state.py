@@ -31,10 +31,13 @@ class WorkerResult(TypedDict):
     task: Optional[str]
     result: str
     error: Optional[str]
+    error_payload: Optional[Dict[str, Any]]
     # 执行该子任务的 Agent 名称
     agent: Optional[str]
     # 子任务总耗时（毫秒）
     elapsed_ms: Optional[int]
+    # 该步骤关联的 token 消耗
+    usage: Optional[Dict[str, int]]
 
 class AgentState(TypedDict, total=False):
     """
@@ -126,6 +129,7 @@ class AgentState(TypedDict, total=False):
     max_waves: int
     planner_source: str
     planner_elapsed_ms: int
+    planner_usage: Dict[str, int]
     reflection_round: int
     max_reflection_rounds: int
     next_task_sequence: int
@@ -144,7 +148,7 @@ class AgentState(TypedDict, total=False):
     executor_active: bool
     interrupt_payload: Dict[str, Any]
     error_message: str
-    error_detail: str
+    error_detail: Any
     last_step_result: str
     last_step_status: str
     last_step_error: str

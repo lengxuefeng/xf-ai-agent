@@ -190,6 +190,30 @@ class WorkerState(TypedDict):
     messages: List[BaseMessage]  # 最近对话窗口
 
 
+def _sanitize_error_message_text(raw_text: Any) -> str:
+    """将底层异常规整为可对外展示的安全描述。"""
+    detail = str(raw_text or "").strip()
+    lowered = detail.lower()
+    if not detail:
+        return "服务暂时不可用。"
+    if "timeout" in lowered or "超时" in detail:
+        return "服务请求超时，请稍后再试。"
+    if any(marker in lowered for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS):
+        return "外部服务连接异常，请稍后再试。"
+    return "服务暂时不可用。"
+
+
+def _build_tool_failure_message(agent_name: str) -> str:
+    normalized_agent = str(agent_name or "").strip() or "unknown_agent"
+    return f"工具 [{normalized_agent}] 暂时不可用，请稍后再试。"
+
+
+def _exc_info_tuple(exc: Optional[BaseException]) -> Any:
+    if exc is None:
+        return None
+    return (type(exc), exc, exc.__traceback__)
+
+
 def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
     """统一归类 Agent 执行失败，避免将内部异常直接暴露为正文。"""
     detail = str(exc or "").strip()
@@ -201,6 +225,131 @@ def _classify_agent_failure(exc: Exception) -> tuple[str, str]:
     ):
         return "模型服务连接异常，请稍后重试。", detail
     return "底层服务执行异常，请稍后重试。", detail
+
+
+def _normalize_usage_payload(usage_payload: Any) -> Dict[str, int]:
+    """将各模型返回的 token 用量结构归一成前端统一格式。"""
+
+    def _to_int(value: Any) -> int:
+        try:
+            return max(0, int(value))
+        except (TypeError, ValueError):
+            return 0
+
+    if not isinstance(usage_payload, dict):
+        return {}
+
+    input_tokens = _to_int(
+        usage_payload.get("input_tokens")
+        or usage_payload.get("prompt_tokens")
+    )
+    output_tokens = _to_int(
+        usage_payload.get("output_tokens")
+        or usage_payload.get("completion_tokens")
+    )
+    total_tokens = _to_int(
+        usage_payload.get("total_tokens")
+        or usage_payload.get("total")
+    )
+    if total_tokens <= 0:
+        total_tokens = input_tokens + output_tokens
+
+    if input_tokens <= 0 and output_tokens <= 0 and total_tokens <= 0:
+        return {}
+
+    return {
+        "input": input_tokens,
+        "output": output_tokens,
+        "total": total_tokens,
+    }
+
+
+def _extract_usage_from_response_metadata(response_metadata: Any) -> Dict[str, int]:
+    """从 LLM response_metadata 中提取 token 用量。"""
+    if not isinstance(response_metadata, dict):
+        return {}
+
+    for key in ("token_usage", "usage", "usage_metadata"):
+        normalized = _normalize_usage_payload(response_metadata.get(key))
+        if normalized:
+            return normalized
+    return {}
+
+
+def _build_agent_error_payload(
+        *,
+        agent_name: str,
+        exc: Exception,
+        step_input: str = "",
+) -> Dict[str, Any]:
+    """构造稳定的结构化 Agent 错误载荷，避免 DB/网络故障拖垮链路。"""
+    user_message, error_detail = _classify_agent_failure(exc)
+    detail_text = str(error_detail or "").strip()
+    lowered = detail_text.lower()
+    error_type = "execution_error"
+    retryable = False
+    if isinstance(exc, TimeoutError) or "timeout" in lowered or "超时" in detail_text:
+        error_type = "timeout_error"
+        retryable = True
+    elif isinstance(exc, ConnectionError) or any(
+            marker in lowered for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS):
+        error_type = "connection_error"
+        retryable = True
+
+    return {
+        "type": "agent_error",
+        "agent": str(agent_name or "").strip() or "unknown_agent",
+        "error_type": error_type,
+        "message": user_message,
+        "retryable": retryable,
+        "safe_detail": _sanitize_error_message_text(detail_text),
+    }
+
+
+def _serialize_agent_error_payload(error_payload: Dict[str, Any]) -> str:
+    try:
+        return json.dumps(error_payload, ensure_ascii=False)
+    except Exception:
+        return str(error_payload)
+
+
+def _compact_step_result_text(result: Any, *, max_chars: int = 360) -> str:
+    """压缩写入 memory 的步骤结果，只保留对子任务复盘有用的核心结论。"""
+    text = str(result or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not text:
+        return ""
+    normalized = re.sub(r"\n{3,}", "\n\n", text)
+    if len(normalized) <= max_chars:
+        return normalized
+    head = normalized[:max_chars].rstrip()
+    cutoff = max(head.rfind("\n"), head.rfind("。"), head.rfind("；"), head.rfind(". "))
+    compact = head[:cutoff].rstrip() if cutoff >= max_chars // 2 else head
+    return f"{compact}..."
+
+
+def _should_fail_fast_on_agent_error(
+        error_detail: Any,
+        *,
+        agent_name: str = "",
+) -> Optional[Dict[str, Any]]:
+    """识别需要立即结束而非继续 replan 的结构化 Agent 错误。"""
+    if not isinstance(error_detail, dict):
+        return None
+
+    if str(error_detail.get("type") or "").strip() != "agent_error":
+        return None
+
+    resolved_agent = str(error_detail.get("agent") or agent_name or "").strip()
+    error_type = str(error_detail.get("error_type") or "").strip()
+    retryable = bool(error_detail.get("retryable"))
+
+    if (
+            resolved_agent in {"sql_agent", "yunyou_agent"}
+            or error_type in {"connection_error", "timeout_error"}
+            or retryable
+    ):
+        return dict(error_detail)
+    return None
 
 
 def _looks_like_sql_request(text: str) -> bool:
@@ -241,6 +390,26 @@ def _looks_like_search_request(text: str) -> bool:
     t = (text or "").strip().lower()
     if not t:
         return False
+    company_info_markers = (
+        "企业信息",
+        "公司信息",
+        "工商信息",
+        "公开信息",
+        "股东",
+        "法人",
+        "官网",
+        "注册资本",
+        "成立时间",
+        "企业关系",
+        "公司关系",
+        "关联关系",
+    )
+    if any(marker in t for marker in company_info_markers):
+        return True
+    if any(entity in t for entity in ("公司", "企业")) and any(
+        hint in t for hint in ("关系", "背景", "信息", "公开", "工商", "法人", "股东", "官网", "注册资本", "成立时间")
+    ):
+        return True
     keywords = SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.SEARCH_DOMAIN]
     if any(k in t for k in keywords):
         return True
@@ -737,7 +906,10 @@ def _run_agent_to_completion(
             response = _run_async_in_new_loop(model.ainvoke(fallback_messages, config=config))
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Agent[CHAT_FALLBACK] 耗时: {elapsed_ms}ms")
-        return response.content
+        return {
+            "content": _content_to_text(getattr(response, "content", "")).strip(),
+            "response_metadata": dict(getattr(response, "response_metadata", {}) or {}),
+        }
 
     req = AgentRequest(
         user_input=effective_user_input, model=model,
@@ -800,7 +972,10 @@ def _run_agent_to_completion(
         normalized = _content_to_text(final_response.content).strip()
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ Agent[{agent_name}] 完成，耗时: {elapsed_ms}ms")
-        return normalized or "已完成处理，但未生成可展示文本。请重试或更换提问方式。"
+        return {
+            "content": normalized or "已完成处理，但未生成可展示文本。请重试或更换提问方式。",
+            "response_metadata": dict(getattr(final_response, "response_metadata", {}) or {}),
+        }
 
     if request_id and request_cancellation_service.is_cancelled(request_id):
         log.info(f"Agent[{agent_name}] 结束前检测到取消信号，返回取消结果。request_id={request_id}")
@@ -848,6 +1023,22 @@ def _build_chat_retry_messages(
     ) + compact_history
 
 
+def _build_failure_summary_prompt(
+        *,
+        current_task: str,
+        current_agent: str,
+        reason: str,
+) -> str:
+    normalized_task = str(current_task or "").strip() or "当前工具任务"
+    normalized_agent = str(current_agent or "").strip() or "unknown_agent"
+    return (
+        f"内部诊断：在执行 [{normalized_task}] 时，工具 [{normalized_agent}] 暂时不可用。\n"
+        f"原因概括：{_sanitize_error_message_text(reason)}\n\n"
+        "请作为 AI 助手，用极简、委婉的语言向用户道歉，并说明该服务暂时不可用。"
+        "绝对不要复述任何底层网络、数据库、端口、堆栈或代码错误信息。"
+    )
+
+
 # ==================== Tier-0.5: 数据域路由器 (Domain Router) ====================
 # ==================== Tier-1: 意图路由器 (Intent Router) ====================
 # ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
@@ -859,17 +1050,20 @@ def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
 
     next_task = ""
     next_task_id = ""
+    next_task_agent = ""
     if plan:
         next_task = plan.pop(0)
         for task in task_list:
             if str(task.get("status") or "").strip() == TaskStatus.PENDING.value:
                 next_task_id = str(task.get("id") or "").strip()
                 task["status"] = TaskStatus.DISPATCHED.value
-                task["agent"] = ""
+                next_task_agent = str(task.get("agent") or "").strip() or _resolve_forced_specialist_agent(next_task)
+                if next_task_agent:
+                    task["agent"] = next_task_agent
                 break
 
     if next_task_id:
-        log.info(f"Dispatch: next task [{next_task_id}] -> {next_task}")
+        log.info(f"Dispatch: next task [{next_task_id}] -> {next_task} (agent={next_task_agent or 'pending_route'})")
     else:
         log.info("Dispatch: no remaining tasks, main loop will end.")
         next_task = "END_TASK"
@@ -883,7 +1077,7 @@ def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
         "current_task": next_task,
         "current_task_id": next_task_id,
         "current_step_input": "" if next_task == "END_TASK" else next_task,
-        "current_step_agent": "",
+        "current_step_agent": "" if next_task == "END_TASK" else next_task_agent,
         "interrupt_payload": None,
         "last_step_result": "",
         "last_step_status": "",
@@ -936,7 +1130,7 @@ def _append_step_result_entry(
     entry = {
         "step": str(step or "").strip(),
         "agent": str(agent or "").strip(),
-        "result": str(result or "").strip(),
+        "result": _compact_step_result_text(result),
         "status": str(status or "").strip(),
     }
     if step_results and isinstance(step_results[-1], dict):
@@ -951,6 +1145,16 @@ def _append_step_result_entry(
     return updated_memory
 
 
+def _normalize_execution_result(result: Any) -> Dict[str, Any]:
+    """把 Agent 执行返回统一规整为 content/response_metadata 结构。"""
+    if isinstance(result, dict):
+        return {
+            "content": str(result.get("content") or "").strip(),
+            "response_metadata": dict(result.get("response_metadata") or {}),
+        }
+    return {"content": str(result or "").strip(), "response_metadata": {}}
+
+
 def evaluator_node(state: GraphState) -> dict:
     """统一结算当前步骤结果，并决定继续 dispatch 还是回退 re-plan。"""
     current_task_id = str(state.get("current_task_id") or "").strip()
@@ -958,6 +1162,7 @@ def evaluator_node(state: GraphState) -> dict:
     current_agent = str(state.get("current_step_agent") or state.get("intent") or "").strip()
     interrupt_payload = state.get("interrupt_payload")
     error_message = str(state.get("error_message") or "").strip()
+    error_detail = state.get("error_detail")
     result_text = _extract_last_step_result(state)
     task_list = [dict(task) for task in list(state.get("task_list") or [])]
     task_results = dict(state.get("task_results") or {})
@@ -998,31 +1203,57 @@ def evaluator_node(state: GraphState) -> dict:
                 "replan_reason": "",
             }
 
-        if _is_replan_worthy_failure(result_text, error_message):
-            reason = error_message or result_text or "步骤未返回有效结果"
-            next_replan_count = current_replan_count + 1
+        fail_fast_error = _should_fail_fast_on_agent_error(error_detail, agent_name=current_agent)
+        if fail_fast_error:
+            safe_result = "由于网络或服务原因，该任务执行失败。"
             task["status"] = TaskStatus.ERROR.value
-            task["result"] = reason
-            task_results[current_task_id] = reason
+            task["result"] = safe_result
+            task_results[current_task_id] = safe_result
             memory = _append_step_result_entry(
                 memory,
                 step=current_task,
-                agent=current_agent,
-                result=reason,
+                agent=str(fail_fast_error.get("agent") or current_agent or "").strip(),
+                result=safe_result,
                 status=TaskStatus.ERROR.value,
             )
             return {
                 "task_list": task_list,
                 "task_results": task_results,
                 "memory": memory,
-                "last_step_result": reason,
+                "last_step_result": safe_result,
                 "last_step_status": TaskStatus.ERROR.value,
-                "last_step_error": reason,
-                "replan_reason": reason,
-                "replan_count": next_replan_count,
-                "max_replans": max_replans,
-                "error_message": reason if next_replan_count >= max_replans else None,
+                "last_step_error": "服务调用失败",
+                "replan_reason": "",
+                "error_message": None,
                 "error_detail": None,
+                "current_step_agent": str(fail_fast_error.get("agent") or current_agent or "").strip(),
+            }
+
+        if _is_replan_worthy_failure(result_text, error_message):
+            safe_result = "服务不可用"
+            task["status"] = TaskStatus.ERROR.value
+            task["result"] = safe_result
+            task_results[current_task_id] = safe_result
+            memory = _append_step_result_entry(
+                memory,
+                step=current_task,
+                agent=current_agent,
+                result=safe_result,
+                status=TaskStatus.ERROR.value,
+            )
+            return {
+                "task_list": task_list,
+                "task_results": task_results,
+                "memory": memory,
+                "last_step_result": safe_result,
+                "last_step_status": TaskStatus.ERROR.value,
+                "last_step_error": "服务调用失败",
+                "replan_reason": "",
+                "replan_count": current_replan_count,
+                "max_replans": max_replans,
+                "error_message": None,
+                "error_detail": None,
+                "current_step_agent": current_agent,
             }
 
         task["status"] = TaskStatus.DONE.value
@@ -1079,8 +1310,10 @@ async def worker_node(
                     task=current_task,
                     result=WORKER_CANCELLED_RESULT,
                     error=None,
+                    error_payload=None,
                     agent=None,
                     elapsed_ms=elapsed_ms,
+                    usage=None,
                 )
             ]
         }
@@ -1131,12 +1364,14 @@ async def worker_node(
                             task=current_task,
                             result=disabled_message,
                             error=None,
+                            error_payload=None,
                             agent=route_target,
                             elapsed_ms=elapsed_ms,
+                            usage=None,
                         )
                     ]
                 }
-            res_text = await asyncio.to_thread(
+            execution_result = await asyncio.to_thread(
                 _run_agent_to_completion,
                 route_target,
                 current_task,
@@ -1152,11 +1387,41 @@ async def worker_node(
         else:
             chat_result = await chat_node(step_state, model=chat_model, config=config)
             if chat_result.get("error_message"):
-                raise RuntimeError(str(chat_result.get("error_detail") or chat_result.get("error_message")))
+                error_detail = chat_result.get("error_detail")
+                if isinstance(error_detail, dict):
+                    raise RuntimeError(_serialize_agent_error_payload(error_detail))
+                raise RuntimeError(str(error_detail or chat_result.get("error_message")))
             chat_messages = chat_result.get("messages") or []
             chat_message = chat_messages[-1] if chat_messages else AIMessage(content="")
-            res_text = _content_to_text(getattr(chat_message, "content", "")).strip()
+            execution_result = {
+                "content": _content_to_text(getattr(chat_message, "content", "")).strip(),
+                "response_metadata": dict(getattr(chat_message, "response_metadata", {}) or {}),
+            }
             agent_name = "chat_node"
+
+        if isinstance(execution_result, dict) and execution_result.get("type") == INTERRUPT_RESULT_TYPE:
+            elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+            payload = _normalize_interrupt_payload(execution_result.get("payload"))
+            payload["agent_name"] = payload.get("agent_name") or agent_name
+            return {
+                "worker_results": [
+                    WorkerResult(
+                        task_id=task_id,
+                        task=current_task,
+                        result=WORKER_PENDING_APPROVAL_RESULT,
+                        error=None,
+                        error_payload=None,
+                        agent=agent_name,
+                        elapsed_ms=elapsed_ms,
+                        usage=None,
+                    )
+                ],
+                "interrupt_payload": payload,
+            }
+
+        normalized_execution = _normalize_execution_result(execution_result)
+        res_text = normalized_execution["content"]
+        usage = _extract_usage_from_response_metadata(normalized_execution["response_metadata"]) or None
 
         if res_text == WORKER_CANCELLED_RESULT:
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
@@ -1167,27 +1432,12 @@ async def worker_node(
                         task=current_task,
                         result=WORKER_CANCELLED_RESULT,
                         error=None,
+                        error_payload=None,
                         agent=agent_name,
                         elapsed_ms=elapsed_ms,
+                        usage=usage,
                     )
                 ]
-            }
-        if isinstance(res_text, dict) and res_text.get("type") == INTERRUPT_RESULT_TYPE:
-            elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-            payload = _normalize_interrupt_payload(res_text.get("payload"))
-            payload["agent_name"] = payload.get("agent_name") or agent_name
-            return {
-                "worker_results": [
-                    WorkerResult(
-                        task_id=task_id,
-                        task=current_task,
-                        result=WORKER_PENDING_APPROVAL_RESULT,
-                        error=None,
-                        agent=agent_name,
-                        elapsed_ms=elapsed_ms,
-                    )
-                ],
-                "interrupt_payload": payload,
             }
     except Exception as exc:
         err_msg = str(exc)
@@ -1200,8 +1450,10 @@ async def worker_node(
                         task=current_task,
                         result=WORKER_PENDING_APPROVAL_RESULT,
                         error=None,
+                        error_payload=None,
                         agent=route_target,
                         elapsed_ms=elapsed_ms,
+                        usage=None,
                     )
                 ],
                 "interrupt_payload": {
@@ -1212,16 +1464,23 @@ async def worker_node(
                 },
             }
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+        error_payload = _build_agent_error_payload(
+            agent_name=route_target or "worker_node",
+            exc=exc,
+            step_input=current_task,
+        )
         log.error(f"Worker [{task_id}] error: {exc}")
         return {
             "worker_results": [
                 WorkerResult(
                     task_id=task_id,
                     task=current_task,
-                    result="",
-                    error=str(exc),
+                    result=_serialize_agent_error_payload(error_payload),
+                    error=error_payload["message"],
+                    error_payload=error_payload,
                     agent=route_target,
                     elapsed_ms=elapsed_ms,
+                    usage=None,
                 )
             ]
         }
@@ -1234,8 +1493,10 @@ async def worker_node(
                 task=current_task,
                 result=str(res_text or "").strip(),
                 error=None,
+                error_payload=None,
                 agent=agent_name,
                 elapsed_ms=elapsed_ms,
+                usage=usage,
             )
         ]
     }
@@ -1737,6 +1998,7 @@ async def aggregator_node(state: GraphState, model: BaseChatModel, config: Runna
     # 可选：启用 LLM 聚合时，失败自动回退确定性聚合，保证链路可收敛。
     final_content = deterministic_answer
     agg_mode = "deterministic_fallback"
+    aggregation_usage: Dict[str, int] = {}
     try:
         res_list = [f"【任务 {task_id} 的反馈】:\n{text}" for task_id, text in normalized_results]
         agg_msg = "\n\n---\n\n".join(res_list)
@@ -1751,13 +2013,20 @@ async def aggregator_node(state: GraphState, model: BaseChatModel, config: Runna
         if parsed_content:
             final_content = parsed_content
             agg_mode = "llm"
+            aggregation_usage = _extract_usage_from_response_metadata(
+                getattr(response, "response_metadata", {}) or {},
+            )
     except Exception as exc:
         log.warning(f"Aggregator LLM 聚合失败，已回退确定性聚合: {exc}")
 
     msg = AIMessage(
         content=final_content,
         name="Aggregator",
-        response_metadata={"synthetic": True, "force_emit": True},
+        response_metadata={
+            "synthetic": True,
+            "force_emit": True,
+            "usage": aggregation_usage,
+        },
     )
     elapsed_ms = int((time.perf_counter() - started_at) * 1000)
     log.info(f"⏱️ Aggregator [{agg_mode}] 耗时: {elapsed_ms}ms")
@@ -1842,7 +2111,13 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
                 msg = AIMessage(
                     content=content,
                     name="ChatAgent",
-                    response_metadata={"synthetic": True},
+                    response_metadata={
+                        **dict(getattr(response, "response_metadata", {}) or {}),
+                        "usage": _extract_usage_from_response_metadata(
+                            getattr(response, "response_metadata", {}) or {},
+                        ),
+                        "synthetic": True,
+                    },
                 )
             else:
                 final_error = RuntimeError("chat_node.empty_response")
@@ -1868,7 +2143,13 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
                         msg = AIMessage(
                             content=retry_content,
                             name="ChatAgent",
-                            response_metadata={"synthetic": True},
+                            response_metadata={
+                                **dict(getattr(retry_response, "response_metadata", {}) or {}),
+                                "usage": _extract_usage_from_response_metadata(
+                                    getattr(retry_response, "response_metadata", {}) or {},
+                                ),
+                                "synthetic": True,
+                            },
                         )
                         final_error = None
                 except Exception as retry_exc:
@@ -1880,8 +2161,9 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
             )
             if graceful_reply:
                 elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-                log.warning(
-                    f"chat_node 调用失败，已走友好降级回复。detail={final_error}, elapsed={elapsed_ms}ms"
+                log.error(
+                    "⚠️ [底层报错] ChatAgent 调用失败，已走友好降级回复。",
+                    exc_info=_exc_info_tuple(final_error),
                 )
                 return {
                     "messages": [
@@ -1890,18 +2172,36 @@ async def chat_node(state: GraphState, model: BaseChatModel, config: RunnableCon
                             name="ChatAgent",
                             response_metadata={"synthetic": True, "force_emit": True, "fallback": True},
                         )
-                    ]
+                    ],
+                    "current_step_agent": "chat_node",
+                    "error_message": None,
+                    "error_detail": None,
+                    "error_payload": None,
                 }
-            user_message, error_detail = _classify_agent_failure(
-                final_error or RuntimeError("chat_node.empty_response"))
-            log.warning(f"chat_node 调用失败，返回 error 事件。detail={error_detail}")
+            error_payload = _build_agent_error_payload(
+                agent_name="ChatAgent",
+                exc=final_error or RuntimeError("chat_node.empty_response"),
+                step_input=current_step_input or _latest_human_message(state.get("messages", [])),
+            )
+            log.error("⚠️ [底层报错] ChatAgent 执行失败。", exc_info=_exc_info_tuple(final_error))
             elapsed_ms = int((time.perf_counter() - started_at) * 1000)
             log.info(f"⏱️ chat_node 模型耗时: {elapsed_ms}ms")
-            return {"error_message": user_message, "error_detail": error_detail}
+            return {
+                "error_message": error_payload["message"],
+                "error_detail": error_payload,
+                "error_payload": error_payload,
+                "current_step_agent": "chat_node",
+            }
 
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         log.info(f"⏱️ chat_node 模型耗时: {elapsed_ms}ms")
-    return {"messages": [msg]}
+    return {
+        "messages": [msg],
+        "current_step_agent": "chat_node",
+        "error_message": None,
+        "error_detail": None,
+        "error_payload": None,
+    }
 
 
 async def single_agent_node(
@@ -1936,11 +2236,17 @@ async def single_agent_node(
                 state.get("llm_config") or {},
             )
         if content == WORKER_CANCELLED_RESULT:
-            return {"direct_answer": ""}
+            return {"direct_answer": "", "current_step_agent": agent_name}
         if isinstance(content, dict) and content.get("type") == INTERRUPT_RESULT_TYPE:
             payload = _normalize_interrupt_payload(content.get("payload"))
             payload["agent_name"] = payload.get("agent_name") or agent_name
-            return {"interrupt_payload": payload}
+            return {"interrupt_payload": payload, "current_step_agent": agent_name}
+        normalized_execution = _normalize_execution_result(content)
+        normalized_content = normalized_execution["content"]
+        response_metadata = {
+            **normalized_execution["response_metadata"],
+            "usage": _extract_usage_from_response_metadata(normalized_execution["response_metadata"]),
+        }
         run_id = str(
             config.get("configurable", {}).get("run_id")
             or state.get("session_id")
@@ -1949,9 +2255,13 @@ async def single_agent_node(
         ).strip()
         live_streamed = AGENT_LIVE_STREAM_ENABLED and agent_stream_bus.has_streamed(run_id, agent_name)
         res_msg = AIMessage(
-            content=content,
+            content=normalized_content,
             name=agent_name,
-            response_metadata={"synthetic": True, "live_streamed": live_streamed},
+            response_metadata={
+                **response_metadata,
+                "synthetic": True,
+                "live_streamed": live_streamed,
+            },
         )
     except Exception as exc:
         err_msg = str(exc)
@@ -1963,12 +2273,50 @@ async def single_agent_node(
                     "allowed_decisions": list(DEFAULT_ALLOWED_DECISIONS),
                     "action_requests": [],
                     "agent_name": agent_name,
-                }
+                },
+                "current_step_agent": agent_name,
             }
-        user_message, error_detail = _classify_agent_failure(exc)
-        log.warning(f"Single Agent [{agent_name}] 执行失败，返回 error 事件。detail={error_detail}")
-        return {"error_message": user_message, "error_detail": error_detail}
-    return {"messages": [res_msg]}
+        lowered_err = err_msg.lower()
+        if agent_name in {
+            "weather_agent",
+            "sql_agent",
+            "yunyou_agent",
+            "search_agent",
+            "medical_agent",
+            "code_agent",
+        }:
+            error_payload = _build_agent_error_payload(
+                agent_name=agent_name,
+                exc=exc,
+                step_input=user_input,
+            )
+            error_payload["message"] = _build_tool_failure_message(agent_name)
+            error_payload["retryable"] = bool(
+                error_payload.get("retryable")
+                or isinstance(exc, ConnectionError)
+                or "host is down" in lowered_err
+                or any(marker in lowered_err for marker in SUPERVISOR_AGENT_FAILURE_CONNECTION_MARKERS)
+            )
+            log.error(f"⚠️ [底层报错] Agent {agent_name} 执行失败: {err_msg}", exc_info=True)
+            return {
+                "error_message": error_payload["message"],
+                "error_detail": error_payload,
+                "error_payload": error_payload,
+                "current_step_agent": agent_name,
+            }
+        error_payload = _build_agent_error_payload(
+            agent_name=agent_name,
+            exc=exc,
+            step_input=user_input,
+        )
+        log.error(f"⚠️ [底层报错] Agent {agent_name} 执行失败: {err_msg}", exc_info=True)
+        return {
+            "error_message": error_payload["message"],
+            "error_detail": error_payload,
+            "error_payload": error_payload,
+            "current_step_agent": agent_name,
+        }
+    return {"messages": [res_msg], "current_step_agent": agent_name}
 
 
 # ==================== 路由与编排逻辑 ====================
@@ -1987,8 +2335,32 @@ def _extract_last_step_result(state: GraphState) -> str:
     return ""
 
 
+def _resolve_forced_specialist_agent(step_text: str, planned_agent: str = "") -> str:
+    """对 SQL / 云柚步骤做硬路由，避免路由器误判导致子 Agent 失活。"""
+    normalized_planned_agent = str(planned_agent or "").strip()
+    if normalized_planned_agent in {"sql_agent", "yunyou_agent"}:
+        return normalized_planned_agent
+
+    normalized_step = str(step_text or "").strip()
+    if not normalized_step:
+        return ""
+
+    if _looks_like_sql_request(normalized_step):
+        return "sql_agent"
+    if _looks_like_holter_request(normalized_step):
+        return "yunyou_agent"
+    return ""
+
+
 def _resolve_executor_route(step_state: GraphState) -> str:
     """根据当前原子步骤的意图结果决定下一跳节点。"""
+    forced_agent = _resolve_forced_specialist_agent(
+        str(step_state.get("current_task") or step_state.get("current_step_input") or "").strip(),
+        str(step_state.get("current_step_agent") or "").strip(),
+    )
+    if forced_agent:
+        return forced_agent
+
     intent = str(step_state.get("intent") or "").strip()
     if intent in MEMBERS:
         return intent
@@ -2015,7 +2387,7 @@ async def executor_node(state: GraphState, model: BaseChatModel, config: Runnabl
                 {
                     "step": previous_step,
                     "agent": str(state.get("current_step_agent") or "").strip(),
-                    "result": _extract_last_step_result(state),
+                    "result": _compact_step_result_text(_extract_last_step_result(state)),
                 }
             )
         memory["step_results"] = step_results
@@ -2135,6 +2507,14 @@ def _route_after_dispatch(state: GraphState) -> str:
 
 def _route_current_task_after_intent(state: GraphState) -> str:
     """当前原子任务只允许落到单兵 Agent 或 chat_node，不再二次进入 planner。"""
+    forced_agent = _resolve_forced_specialist_agent(
+        str(state.get("current_task") or state.get("current_step_input") or "").strip(),
+        str(state.get("current_step_agent") or "").strip(),
+    )
+    if forced_agent:
+        log.info(f"当前任务硬路由: {forced_agent}")
+        return forced_agent
+
     conf = float(state.get("intent_confidence") or 0.0)
     intent = str(state.get("intent") or "CHAT").strip() or "CHAT"
     if conf >= 0.7 and intent in MEMBERS:
@@ -2151,11 +2531,16 @@ def _route_after_evaluator(state: GraphState) -> str:
 
     last_status = str(state.get("last_step_status") or "").strip()
     if last_status == TaskStatus.ERROR.value:
-        replan_count = int(state.get("replan_count") or 0)
-        max_replans = int(state.get("max_replans") or WORKFLOW_MAX_REPLANS)
-        if replan_count >= max_replans:
-            return "__end__"
-        return "Parent_Planner_Node"
+        remaining_plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
+        if remaining_plan:
+            return "dispatch_node"
+        pending_tasks = [
+            task for task in list(state.get("task_list") or [])
+            if str(task.get("status") or "").strip() in PENDING_TASK_STATUSES
+        ]
+        if pending_tasks:
+            return "dispatch_node"
+        return "__end__"
 
     if last_status == TaskStatus.DONE.value:
         return "dispatch_node"
@@ -2257,7 +2642,7 @@ def create_graph(model_config: Optional[dict] = None):
         _route_after_evaluator,
         {
             "dispatch_node": "dispatch_node",
-            "Parent_Planner_Node": "Parent_Planner_Node",
+            "chat_node": "chat_node",
             "__end__": END,
         },
     )

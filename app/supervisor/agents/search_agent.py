@@ -33,6 +33,7 @@
 - 支持多轮搜索：根据第一次搜索结果判断是否需要进一步搜索
 """
 
+import time
 from typing import Annotated, List, TypedDict
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -302,6 +303,46 @@ class SearchAgent(BaseAgent):
                 return True
         return False
 
+    @staticmethod
+    def _requires_live_search(user_text: str) -> bool:
+        normalized = str(user_text or "").strip().lower()
+        if not normalized:
+            return False
+
+        hard_markers = (
+            "企业信息",
+            "公司信息",
+            "工商信息",
+            "公开信息",
+            "公开资料",
+            "股东",
+            "法人",
+            "官网",
+            "注册资本",
+            "成立时间",
+            "最新",
+            "最近",
+            "新闻",
+            "资讯",
+        )
+        if any(marker in normalized for marker in hard_markers):
+            return True
+
+        return any(entity in normalized for entity in ("公司", "企业")) and any(
+            marker in normalized
+            for marker in ("信息", "公开", "工商", "股东", "法人", "官网", "关系", "背景", "资料")
+        )
+
+    def _build_forced_tool_call(self, query: str) -> AIMessage:
+        tool_name = str(getattr(self.tools[0], "name", "") or "tavily_search_tool").strip()
+        synthesized_tool_call = {
+            "name": tool_name,
+            "args": {"query": query, "topic": "general"},
+            "id": f"{tool_name}_auto_{int(time.time() * 1000)}",
+            "type": "tool_call",
+        }
+        return AIMessage(content="", tool_calls=[synthesized_tool_call])
+
     async def _model_node(self, state: SearchAgentState, config: RunnableConfig):
         """
         搜索子图的模型节点：执行推理和搜索
@@ -411,6 +452,15 @@ class SearchAgent(BaseAgent):
                 else:
                     # 重试失败，返回拦截消息
                     ai_msg = AIMessage(content=SEARCH_TOPIC_DRIFT_BLOCK_MESSAGE)
+
+            should_force_tool_call = (
+                not getattr(ai_msg, "tool_calls", None)
+                and self._requires_live_search(user_text)
+                and not any(isinstance(msg, ToolMessage) for msg in source_messages[-4:])
+            )
+            if should_force_tool_call:
+                log.info("SearchAgent 命中实时检索强制规则，补发 tavily_search_tool 调用。")
+                ai_msg = self._build_forced_tool_call(user_text)
 
         # 更新工具调用次数，返回 AI 消息
         return {"tool_loop_count": loop_count + 1, "messages": [ai_msg]}

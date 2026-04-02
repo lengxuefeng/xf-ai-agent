@@ -20,6 +20,40 @@ from common.utils.custom_logger import get_logger
 log = get_logger(__name__)
 load_dotenv(verbose=True)
 
+OPENAI_COMPATIBLE_SERVICE_ENV_KEYS: dict[str, tuple[str, ...]] = {
+    "zhipu": ("ZHIPU_API_KEY", "OPENAI_API_KEY"),
+    "openai": ("OPENAI_API_KEY",),
+    "openrouter": ("OPENROUTER_API_KEY", "OPENAI_API_KEY"),
+    "netlify-gemini": ("OPENAI_API_KEY",),
+    "silicon-flow": ("SILICONFLOW_API_KEY", "OPENAI_API_KEY"),
+    "modelscope": ("MODELSCOPE_API_KEY", "OPENAI_API_KEY"),
+}
+
+
+def resolve_service_api_key(service_type: str, configured_key: str = "") -> str:
+    """按服务类型解析有效 API Key，优先显式配置，其次回退环境变量。"""
+    normalized_key = str(configured_key or "").strip()
+    if normalized_key:
+        return normalized_key
+
+    service = str(service_type or "").strip().lower()
+    for env_name in OPENAI_COMPATIBLE_SERVICE_ENV_KEYS.get(service, ()):
+        env_value = str(os.getenv(env_name) or "").strip()
+        if env_value:
+            return env_value
+    return ""
+
+
+def _resolve_model_api_key(config: ModelConfig, *, embedding: bool = False) -> str:
+    configured_key = (
+        str(config.embedding_model_key or "").strip()
+        if embedding
+        else str(config.model_key or "").strip()
+    )
+    if embedding and not configured_key:
+        configured_key = str(config.model_key or "").strip()
+    return resolve_service_api_key(config.service_type, configured_key)
+
 
 def _default_transport_timeout_sec() -> float:
     """
@@ -73,10 +107,13 @@ def load_openai_compatible_model(config: ModelConfig) -> ChatOpenAI:
     (包含：OpenAI, OpenRouter, 硅基流动, 智谱GLM, 魔塔社区等)
     这些厂商底层的 SDK 调用方式完全一致，只要换 Base_URL 和 Key 即可，无需重复写函数。
     """
-    if not config.model_key:
-        log.warning(f"⚠️ 模型 {config.model} 未提供 API Key")
+    resolved_api_key = _resolve_model_api_key(config)
+    if not resolved_api_key:
+        message = f"模型 {config.model} 未配置可用 API Key"
+        log.warning(f"⚠️ {message}")
+        raise RuntimeError(message)
 
-    api_key = SecretStr(config.model_key) if config.model_key else None
+    api_key = SecretStr(resolved_api_key)
 
     # 针对 OpenRouter 的特殊请求头处理
     model_kwargs = {}
@@ -103,7 +140,13 @@ def load_openai_compatible_model(config: ModelConfig) -> ChatOpenAI:
 
 def load_openai_embeddings(config: ModelConfig) -> OpenAIEmbeddings:
     """加载兼容 OpenAI 接口协议的嵌入模型 (Embeddings)"""
-    api_key = SecretStr(config.embedding_model_key) if config.embedding_model_key else None
+    resolved_api_key = _resolve_model_api_key(config, embedding=True)
+    if not resolved_api_key:
+        message = f"Embedding 模型 {config.embedding_model} 未配置可用 API Key"
+        log.warning(f"⚠️ {message}")
+        raise RuntimeError(message)
+
+    api_key = SecretStr(resolved_api_key)
     transport_kwargs = _common_transport_kwargs(config)
     
     log.info(f"初始化 OpenAI 兼容 Embedding 模型: {config.embedding_model} | BaseURL: {config.model_url}")

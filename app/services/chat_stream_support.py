@@ -12,6 +12,7 @@ from config.constants.sse_constants import SseEventType, SsePayloadField
 from harness.core.run_context import build_run_context
 from harness.core.run_state_store import run_state_store
 from harness.workspace.manager import workspace_manager
+from common.utils.assistant_text_sanitizer import strip_internal_execution_noise
 from common.utils.chat_utils import ChatUtils
 
 
@@ -245,7 +246,7 @@ def build_chat_extra_data(
 
 def build_final_response(ai_response: str, error_occurred: bool, error_message: str) -> str:
     """把正常输出和异常补充语拼成最终落库正文。"""
-    final_content = ai_response
+    final_content = strip_internal_execution_noise(ai_response)
     if error_occurred:
         if not ai_response:
             final_content = CHAT_SERVICE_INTERRUPTED_TEMPLATE.format(error=error_message)
@@ -261,7 +262,11 @@ def extract_ai_content_from_chunk(chunk: str) -> Optional[str]:
         if not payload:
             return None
         if payload.get(SsePayloadField.TYPE.value) in CHAT_AI_CONTENT_TYPES:
-            return payload.get(SsePayloadField.CONTENT.value, "")
+            return strip_internal_execution_noise(
+                payload.get(SsePayloadField.CONTENT.value, ""),
+                trim=False,
+                collapse_blank_lines=False,
+            )
     except (json.JSONDecodeError, KeyError, TypeError):
         return None
     return None

@@ -37,10 +37,22 @@ from services.exception_service import exception_handler
 from services.route_metrics_service import route_metrics_service
 from services.session_state_service import session_state_service
 from services.user_model_service import user_model_service
+from common.llm.loader_llm_multi import resolve_service_api_key
 from common.utils.chat_utils import ChatUtils
 from common.utils.custom_logger import get_logger, LogTarget
 
 log = get_logger(__name__)
+
+_OPENAI_COMPATIBLE_KEYED_SERVICES = {
+    "zhipu",
+    "openai",
+    "openrouter",
+    "netlify-gemini",
+    "silicon-flow",
+    "modelscope",
+}
+_OPENAI_COMPATIBLE_URL_REQUIRED_SERVICES = _OPENAI_COMPATIBLE_KEYED_SERVICES - {"openai"}
+_DIRECT_KEYED_SERVICES = {"tongyi", "gemini"}
 
 
 async def _single_error_stream(detail: str):
@@ -152,14 +164,55 @@ class ChatService:
         """统一解析模型配置：优先使用中间件预加载配置，其次从请求参数构建。"""
         if dynamic_model_config:
             log.info("使用中间件预加载的动态模型配置", target=LogTarget.LOG)
-            return dict(dynamic_model_config)
-        if req.user_model_id and user_id is not None:
+            return self._ensure_runnable_model_config(dict(dynamic_model_config))
+        if user_id is not None:
+            if not req.user_model_id:
+                raise ValueError("当前未绑定可用模型，请先在设置中配置并激活模型。")
             resolved = self._build_model_config_from_user_model(req.user_model_id, user_id)
-            if resolved:
-                log.info("使用 user_model_id 动态装载模型配置", target=LogTarget.LOG)
-                return dict(resolved)
+            if not resolved:
+                raise ValueError("当前选择的模型配置不存在或已失效，请在设置中重新配置。")
+            log.info("使用 user_model_id 动态装载模型配置", target=LogTarget.LOG)
+            return self._ensure_runnable_model_config(dict(resolved))
         log.info("使用请求自带的默认参数构建配置", target=LogTarget.LOG)
-        return self._build_model_config_from_request(req)
+        return self._ensure_runnable_model_config(self._build_model_config_from_request(req))
+
+    @staticmethod
+    def _ensure_runnable_model_config(model_config: Dict[str, Any]) -> Dict[str, Any]:
+        validated_config = dict(model_config or {})
+        model_name = str(validated_config.get("model") or "").strip()
+        service_type = str(
+            validated_config.get("service_type")
+            or validated_config.get("model_service")
+            or ""
+        ).strip().lower()
+        model_url = str(validated_config.get("model_url") or "").strip()
+
+        if not model_name:
+            raise ValueError("当前模型配置缺少模型名称，请先在设置中重新配置。")
+
+        if service_type in _OPENAI_COMPATIBLE_KEYED_SERVICES:
+            resolved_model_key = resolve_service_api_key(
+                service_type,
+                str(validated_config.get("model_key") or "").strip(),
+            )
+            if not resolved_model_key:
+                raise ValueError("当前模型配置缺少可用 API Key，请先在设置中补全并激活。")
+            validated_config["model_key"] = resolved_model_key
+
+            if service_type in _OPENAI_COMPATIBLE_URL_REQUIRED_SERVICES and not model_url:
+                raise ValueError("当前模型配置缺少服务地址，请先在设置中补全并激活。")
+
+            if not str(validated_config.get("embedding_model_key") or "").strip():
+                validated_config["embedding_model_key"] = resolved_model_key
+
+        if service_type in _DIRECT_KEYED_SERVICES:
+            direct_model_key = str(validated_config.get("model_key") or "").strip()
+            if not direct_model_key:
+                raise ValueError("当前模型配置缺少可用 API Key，请先在设置中补全并激活。")
+            if not str(validated_config.get("embedding_model_key") or "").strip():
+                validated_config["embedding_model_key"] = direct_model_key
+
+        return validated_config
 
     def build_stream_generator(
         self,
@@ -204,6 +257,8 @@ class ChatService:
         if resolved_skill_ids:
             effective_config["skill_ids"] = resolved_skill_ids
         effective_config["runtime_user_id"] = user_id
+        effective_config["workspace_root"] = str(req.workspace_root or "").strip()
+        effective_config["resume_message_id"] = str(req.resume_message_id or "").strip()
         return effective_config
 
     def _process_stream_chat_internal(
@@ -726,7 +781,9 @@ class ChatService:
             top_p=req.top_p,
             max_tokens=req.max_tokens,
             model_key=req.model_key,
+            model_url=req.model_url,
             workspace_root=req.workspace_root,
+            resume_message_id=req.resume_message_id,
         )
 
     def build_model_config(

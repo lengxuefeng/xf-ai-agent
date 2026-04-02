@@ -70,6 +70,8 @@ class SessionPool:
         self._configs: Dict[str, Dict[str, Any]] = {}
         # 正在后台预热的配置，避免重复触发并发 refill
         self._inflight_refills: set[str] = set()
+        # 缺失 API Key 的配置只告警一次，避免 refill 线程刷屏
+        self._missing_key_skips: set[str] = set()
         # 后台 refill 线程
         self._refill_thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
@@ -248,6 +250,41 @@ class SessionPool:
                 return None
             return entry
 
+    def _should_skip_prefill_due_to_missing_api_key(
+        self,
+        model_config: Dict[str, Any],
+        *,
+        config_key: str,
+    ) -> bool:
+        service = str(model_config.get("service_type") or "").strip().lower()
+        if service not in {"zhipu", "openai", "openrouter", "netlify-gemini", "silicon-flow", "modelscope"}:
+            with self._lock:
+                self._missing_key_skips.discard(config_key)
+            return False
+
+        try:
+            from common.llm.loader_llm_multi import resolve_service_api_key
+        except Exception as import_exc:
+            log.warning(f"SessionPool API Key 检查失败，继续尝试预热: {import_exc}")
+            return False
+
+        resolved_api_key = resolve_service_api_key(
+            service,
+            str(model_config.get("model_key") or "").strip(),
+        )
+        if resolved_api_key:
+            with self._lock:
+                self._missing_key_skips.discard(config_key)
+            return False
+
+        model_name = str(model_config.get("model") or "").strip() or "<unknown>"
+        with self._lock:
+            first_skip = config_key not in self._missing_key_skips
+            self._missing_key_skips.add(config_key)
+        if first_skip:
+            log.warning(f"⚠️ 跳过预热: 模型 {model_name} 对应的 API Key 未配置。")
+        return True
+
     def _refill_once(self, model_config: Dict[str, Any]) -> None:
         """
         为指定配置补充预热实例至 pool_size。
@@ -262,6 +299,8 @@ class SessionPool:
             current = len(self._pools.get(config_key, []))
         missing = target - current
         if missing <= 0:
+            return
+        if self._should_skip_prefill_due_to_missing_api_key(model_config, config_key=config_key):
             return
 
         # 延迟导入，避免循环依赖

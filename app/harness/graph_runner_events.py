@@ -75,6 +75,179 @@ def _stringify_data(value: Any) -> str:
     return str(value)
 
 
+def _normalize_usage_payload(value: Any) -> Optional[Dict[str, int]]:
+    if not isinstance(value, dict):
+        return None
+
+    def _to_int(raw: Any) -> int:
+        try:
+            return max(0, int(raw))
+        except (TypeError, ValueError):
+            return 0
+
+    input_tokens = _to_int(value.get("input_tokens") or value.get("prompt_tokens"))
+    output_tokens = _to_int(value.get("output_tokens") or value.get("completion_tokens"))
+    total_tokens = _to_int(value.get("total_tokens") or value.get("total"))
+    if total_tokens <= 0:
+        total_tokens = input_tokens + output_tokens
+
+    if input_tokens <= 0 and output_tokens <= 0 and total_tokens <= 0:
+        return None
+
+    return {
+        "input": input_tokens,
+        "output": output_tokens,
+        "total": total_tokens,
+    }
+
+
+def _extract_usage_from_nested_payload(value: Any, *, depth: int = 0) -> Optional[Dict[str, int]]:
+    if depth > 5 or value is None:
+        return None
+
+    normalized = _normalize_usage_payload(value)
+    if normalized:
+        return normalized
+
+    if isinstance(value, dict):
+        priority_keys = (
+            "token_usage",
+            "usage",
+            "usage_metadata",
+            "response_metadata",
+            "llm_output",
+            "data",
+            "payload",
+            "chunk",
+            "message",
+            "delta",
+            "choices",
+        )
+        for key in priority_keys:
+            if key in value:
+                nested = _extract_usage_from_nested_payload(value.get(key), depth=depth + 1)
+                if nested:
+                    return nested
+
+        for nested_value in value.values():
+            nested = _extract_usage_from_nested_payload(nested_value, depth=depth + 1)
+            if nested:
+                return nested
+
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            nested = _extract_usage_from_nested_payload(item, depth=depth + 1)
+            if nested:
+                return nested
+
+    return None
+
+
+def _extract_usage_from_response_metadata(response_metadata: Any) -> Optional[Dict[str, int]]:
+    if not isinstance(response_metadata, dict):
+        return None
+    for key in ("token_usage", "usage", "usage_metadata"):
+        normalized = _normalize_usage_payload(response_metadata.get(key))
+        if normalized:
+            return normalized
+    return _extract_usage_from_nested_payload(response_metadata)
+
+
+def _resolve_usage_from_chunk_metadata(payload: Any) -> Optional[Dict[str, int]]:
+    if not isinstance(payload, dict):
+        return None
+
+    chunk = payload.get("chunk")
+    if chunk is None:
+        return None
+
+    usage_metadata = None
+    response_metadata = None
+    if isinstance(chunk, dict):
+        usage_metadata = chunk.get("usage_metadata")
+        response_metadata = chunk.get("response_metadata")
+    else:
+        usage_metadata = getattr(chunk, "usage_metadata", None)
+        response_metadata = getattr(chunk, "response_metadata", None)
+
+    normalized = _normalize_usage_payload(usage_metadata)
+    if normalized:
+        return normalized
+
+    response_metadata_dict = _coerce_dict(response_metadata)
+    if response_metadata_dict:
+        normalized = _normalize_usage_payload(response_metadata_dict.get("token_usage"))
+        if normalized:
+            return normalized
+        normalized = _extract_usage_from_response_metadata(response_metadata_dict)
+        if normalized:
+            return normalized
+    return None
+
+
+def _resolve_usage(payload: Any) -> Optional[Dict[str, int]]:
+    if not isinstance(payload, dict):
+        return None
+
+    chunk_usage = _resolve_usage_from_chunk_metadata(payload)
+    if chunk_usage:
+        return chunk_usage
+
+    meta = _coerce_dict(payload.get("meta"))
+    raw_event = _coerce_dict(payload.get("raw_event"))
+    raw_meta_event = _coerce_dict(meta.get("raw_event"))
+
+    usage_candidates = (
+        payload.get("usage"),
+        payload.get("usage_metadata"),
+        payload.get("token_usage"),
+        meta.get("usage"),
+        meta.get("usage_metadata"),
+        meta.get("token_usage"),
+        raw_event.get("usage"),
+        raw_event.get("usage_metadata"),
+        raw_event.get("token_usage"),
+        raw_meta_event.get("usage"),
+        raw_meta_event.get("usage_metadata"),
+        raw_meta_event.get("token_usage"),
+    )
+    for candidate in usage_candidates:
+        normalized = _normalize_usage_payload(candidate)
+        if normalized:
+            return normalized
+
+    response_metadata_candidates = (
+        payload.get("response_metadata"),
+        meta.get("response_metadata"),
+        payload.get("llm_response_metadata"),
+        raw_event.get("response_metadata"),
+        raw_meta_event.get("response_metadata"),
+    )
+    for candidate in response_metadata_candidates:
+        normalized = _extract_usage_from_response_metadata(candidate)
+        if normalized:
+            return normalized
+
+    for candidate in usage_candidates + response_metadata_candidates:
+        normalized = _extract_usage_from_nested_payload(candidate)
+        if normalized:
+            return normalized
+
+    return None
+
+
+def _first_non_empty_value(*candidates: Any) -> Any:
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        if isinstance(candidate, str) and not candidate.strip():
+            continue
+        if isinstance(candidate, (dict, list)) and not candidate:
+            continue
+        return candidate
+    return None
+
+
 def _summary_from_workflow_event(workflow_payload: Dict[str, Any]) -> str:
     return str(
         workflow_payload.get("summary")
@@ -89,12 +262,31 @@ _NODE_NAME_ALIASES = {
     "planner_node": "planner",
     "parent_planner_node": "planner",
     "chat_agent": "chat_agent",
+    "chat_node": "chat_node",
     "aggregator": "aggregator",
     "aggregator_node": "aggregator",
+    "supervisor_final": "supervisor_final",
     "worker_node": "worker",
     "dispatch_node": "dispatch",
     "dispatcher_node": "dispatch",
     "reflection_node": "reflection",
+}
+
+INTERMEDIATE_NODES = {
+    "planner",
+    "weather_agent",
+    "sql_agent",
+    "yunyou_agent",
+    "search_agent",
+    "medical_agent",
+    "code_agent",
+    "tool_node",
+}
+FINAL_MESSAGE_NODES = {
+    "chat_node",
+    "chat_agent",
+    "supervisor_final",
+    "aggregator",
 }
 
 _RUNNING_STATUSES = {"active", "running", "in_progress", "processing"}
@@ -164,11 +356,117 @@ def _resolve_lifecycle_status(status: Any) -> str:
     return "completed"
 
 
+def _normalize_allowed_decisions(value: Any) -> List[str]:
+    if not isinstance(value, list):
+        return ["approve", "reject"]
+
+    normalized = [
+        str(item or "").strip().lower()
+        for item in value
+        if str(item or "").strip()
+    ]
+    return normalized or ["approve", "reject"]
+
+
+def _normalize_action_request(action_request: Any, *, fallback_message_id: str = "") -> Dict[str, Any]:
+    action_payload = _coerce_dict(action_request)
+    if not action_payload:
+        return {}
+
+    action_name = str(
+        action_payload.get("action_name")
+        or action_payload.get("name")
+        or action_payload.get("tool_name")
+        or action_payload.get("title")
+        or ""
+    ).strip()
+    action_args = _coerce_dict(
+        action_payload.get("action_args")
+        or action_payload.get("args")
+    )
+    action_id = str(
+        action_payload.get("id")
+        or action_payload.get("message_id")
+        or fallback_message_id
+        or ""
+    ).strip()
+
+    normalized = dict(action_payload)
+    normalized["id"] = action_id
+    normalized["name"] = action_name or "tool_call"
+    normalized["args"] = action_args
+    normalized["action_name"] = action_name or "tool_call"
+    normalized["action_args"] = action_args
+    return normalized
+
+
+def _normalize_interrupt_payload(raw_payload: Any, parsed_payload: Dict[str, Any]) -> Dict[str, Any]:
+    payload = _coerce_dict(raw_payload)
+    if not payload:
+        payload = dict(parsed_payload)
+        payload.pop("type", None)
+
+    raw_content = str(
+        payload.get("content")
+        or parsed_payload.get("content")
+        or payload.get("message")
+        or ""
+    ).strip()
+    if not payload and raw_content:
+        payload = {"message": raw_content}
+
+    nested_payload = _coerce_dict(payload.get("payload"))
+    if nested_payload:
+        payload = {**nested_payload, **payload}
+
+    message_id = str(payload.get("message_id") or "").strip()
+    action_requests = []
+    raw_action_requests = payload.get("action_requests")
+    if isinstance(raw_action_requests, list):
+        for raw_action in raw_action_requests:
+            normalized_action = _normalize_action_request(raw_action, fallback_message_id=message_id)
+            if normalized_action:
+                action_requests.append(normalized_action)
+
+    if not message_id and action_requests:
+        message_id = str(action_requests[0].get("id") or "").strip()
+
+    agent_name = str(
+        payload.get("agent_name")
+        or payload.get("node")
+        or payload.get("node_name")
+        or parsed_payload.get("agent_name")
+        or ""
+    ).strip()
+    normalized_node = _resolve_workflow_node({
+        **parsed_payload,
+        **payload,
+        "agent_name": agent_name,
+    })
+
+    normalized = dict(payload)
+    normalized["message_id"] = message_id
+    normalized["message"] = str(
+        payload.get("message")
+        or payload.get("summary")
+        or payload.get("title")
+        or raw_content
+        or "需要人工审核"
+    ).strip()
+    normalized["allowed_decisions"] = _normalize_allowed_decisions(payload.get("allowed_decisions"))
+    normalized["action_requests"] = action_requests
+    normalized["agent_name"] = agent_name or normalized_node
+    normalized["node"] = normalized_node
+    normalized["node_name"] = normalized_node
+    return normalized
+
+
 def _normalize_workflow_payload(workflow_payload: Dict[str, Any]) -> Dict[str, Any]:
     payload = dict(workflow_payload)
     raw_status = str(payload.get("status") or "").strip()
     node = _resolve_workflow_node(payload)
     normalized_status = _resolve_trace_status(raw_status)
+    usage = _resolve_usage(payload)
 
     meta = _coerce_dict(payload.get("meta"))
     if node and not meta.get("node"):
@@ -179,10 +477,32 @@ def _normalize_workflow_payload(workflow_payload: Dict[str, Any]) -> Dict[str, A
         meta["node_name"] = payload.get("node_name")
     if payload.get("agent_name") and not meta.get("agent_name"):
         meta["agent_name"] = payload.get("agent_name")
+    if usage and not meta.get("usage"):
+        meta["usage"] = usage
+
+    payload["input"] = _first_non_empty_value(
+        payload.get("input"),
+        meta.get("input"),
+        meta.get("args"),
+        meta.get("task"),
+        meta.get("tasks"),
+        meta.get("request"),
+        _coerce_dict(payload.get("raw_event")).get("input"),
+    )
+    payload["output"] = _first_non_empty_value(
+        payload.get("output"),
+        meta.get("output"),
+        meta.get("result"),
+        meta.get("error"),
+        meta.get("error_payload"),
+        _coerce_dict(payload.get("raw_event")).get("output"),
+    )
 
     payload["node"] = node
     payload["status"] = normalized_status
     payload["meta"] = meta
+    if usage:
+        payload["usage"] = usage
     return payload
 
 
@@ -203,6 +523,7 @@ def _build_workflow_event_message(workflow_payload: Dict[str, Any]) -> Dict[str,
         "timestamp": normalized_payload.get("timestamp"),
         "title": str(normalized_payload.get("title") or "").strip(),
         "summary": _summary_from_workflow_event(normalized_payload),
+        "usage": normalized_payload.get("usage"),
         "payload": normalized_payload,
     }
 
@@ -210,6 +531,41 @@ def _build_workflow_event_message(workflow_payload: Dict[str, Any]) -> Dict[str,
 def _is_planner_node(node_name: Any) -> bool:
     normalized = _normalize_node_name(node_name)
     return normalized == "planner" or "planner" in normalized
+
+
+def _rewrite_frontend_event_type(event_payload: Dict[str, Any], fallback_type: str) -> Dict[str, Any]:
+    payload = dict(event_payload or {})
+    source_node = _normalize_node_name(
+        payload.get("node_name")
+        or payload.get("node")
+        or payload.get("name")
+        or payload.get("agent_name")
+    )
+    payload["node"] = source_node
+    payload["node_name"] = source_node
+    content_str = str(payload.get("content", ""))
+
+    # 核心防火墙：LangGraph 底层消息对象绝不能作为普通正文透传到前端。
+    is_graph_state_dump = (
+        "AIMessage(" in content_str
+        or "HumanMessage(" in content_str
+        or "SystemMessage(" in content_str
+    )
+
+    if source_node in FINAL_MESSAGE_NODES:
+        if is_graph_state_dump:
+            payload["type"] = "workflow_event"
+            payload["status"] = "completed"
+            return payload
+        payload["type"] = "message"
+        return payload
+
+    if source_node in INTERMEDIATE_NODES:
+        payload["type"] = "thinking"
+        return payload
+
+    payload["type"] = fallback_type
+    return payload
 
 
 class WsEventFormatter:
@@ -243,19 +599,16 @@ class WsEventFormatter:
             payload = parsed.get(SsePayloadField.PAYLOAD.value)
             source_payload = payload if isinstance(payload, dict) else parsed
             node = _resolve_workflow_node(source_payload)
-            if _is_planner_node(node):
-                return [{
-                    "type": "thinking",
-                    "content": content,
-                    "status": "thinking",
-                    "node": node or "planner",
-                }]
-            return [{
-                "type": "message",
+            frontend_event = _rewrite_frontend_event_type({
                 "content": content,
-                "status": "streaming",
+                "status": "thinking" if _is_planner_node(node) else "streaming",
                 "node": node,
-            }]
+                "node_name": node,
+                "usage": _resolve_usage(source_payload) or _resolve_usage(parsed),
+            }, "message")
+            if frontend_event.get("type") == "thinking" and not frontend_event.get("status"):
+                frontend_event["status"] = "thinking"
+            return [frontend_event]
 
         if event_type == SseEventType.THINKING.value:
             content = self._extract_content(parsed)
@@ -263,12 +616,13 @@ class WsEventFormatter:
                 return []
             payload = parsed.get(SsePayloadField.PAYLOAD.value)
             source_payload = payload if isinstance(payload, dict) else parsed
-            return [{
-                "type": "thinking",
+            return [_rewrite_frontend_event_type({
                 "content": content,
                 "status": "thinking",
                 "node": _resolve_workflow_node(source_payload),
-            }]
+                "node_name": _resolve_workflow_node(source_payload),
+                "usage": _resolve_usage(source_payload) or _resolve_usage(parsed),
+            }, "thinking")]
 
         if event_type == SseEventType.LOG.value:
             content = str(parsed.get("message") or self._extract_content(parsed) or "").strip()
@@ -276,15 +630,33 @@ class WsEventFormatter:
                 "type": "thinking",
                 "content": content,
                 "status": "thinking",
+                "usage": _resolve_usage(parsed),
             }] if content else []
 
         if event_type == SseEventType.INTERRUPT.value:
-            content = self._extract_interrupt_content(parsed)
+            interrupt_source = (
+                parsed.get(SsePayloadField.PAYLOAD.value)
+                or parsed.get(SsePayloadField.CONTENT.value)
+                or parsed
+            )
+            interrupt_payload = _normalize_interrupt_payload(interrupt_source, parsed)
+            content = self._extract_interrupt_content(interrupt_payload)
+            if not content:
+                return []
             return [{
-                "type": "thinking",
+                "type": "approval_required",
                 "content": content,
-                "status": "thinking",
-            }] if content else []
+                "message": content,
+                "status": "waiting_approval",
+                "message_id": str(interrupt_payload.get("message_id") or "").strip(),
+                "allowed_decisions": interrupt_payload.get("allowed_decisions") or ["approve", "reject"],
+                "action_requests": interrupt_payload.get("action_requests") or [],
+                "agent_name": str(interrupt_payload.get("agent_name") or "").strip(),
+                "node": str(interrupt_payload.get("node") or "").strip(),
+                "node_name": str(interrupt_payload.get("node_name") or "").strip(),
+                "payload": interrupt_payload,
+                "usage": _resolve_usage(parsed) or _resolve_usage(interrupt_payload),
+            }]
 
         if event_type == SseEventType.TOOL_CALL.value:
             return self._normalize_tool_call_event(parsed.get(SsePayloadField.PAYLOAD.value) or parsed)
@@ -315,7 +687,7 @@ class WsEventFormatter:
 
     def _extract_interrupt_content(self, payload: Dict[str, Any]) -> str:
         raw_content = self._extract_content(payload)
-        interrupt_payload = _coerce_dict(raw_content)
+        interrupt_payload = _normalize_interrupt_payload(payload, payload)
         if interrupt_payload:
             return str(
                 interrupt_payload.get("message")
@@ -378,6 +750,7 @@ class WsEventFormatter:
             "content": f"🛠 调用工具：{tool_name or 'tool_call'}",
             "node": _resolve_workflow_node(tool_payload),
             "timestamp": tool_payload.get("timestamp"),
+            "usage": _resolve_usage(tool_payload),
         }]
 
     def _normalize_tool_result_event(self, workflow_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -412,6 +785,7 @@ class WsEventFormatter:
             "node": _resolve_workflow_node(workflow_payload),
             "timestamp": workflow_payload.get("timestamp"),
             "meta": meta,
+            "usage": _resolve_usage(workflow_payload),
         }]
 
     def _emit_done(self) -> List[Dict[str, Any]]:

@@ -84,6 +84,7 @@ from tools.runtime_tools.search_gateway import search_gateway
 from tools.runtime_tools.tool_registry import runtime_tool_registry
 from harness.workspace.manager import workspace_manager
 from services.request_cancellation_service import request_cancellation_service
+from common.utils.assistant_text_sanitizer import strip_internal_execution_noise
 from common.utils.custom_logger import CustomLogger, get_logger
 from common.utils.date_utils import get_agent_date_context
 from common.utils.history_compressor import compress_history_messages
@@ -261,6 +262,7 @@ class GraphRunner:
 
         stash = _CodeBlockStash()
         normalized = _DISPLAY_CODE_BLOCK_RE.sub(stash, raw_text)
+        normalized = strip_internal_execution_noise(normalized, trim=False)
         normalized = cls._normalize_display_text_segment(normalized)
         return stash.restore(normalized).strip()
 
@@ -311,6 +313,117 @@ class GraphRunner:
         match = re.search(r"\d+", str(task_id or ""))
         seq = int(match.group(0)) if match else 10 ** 9
         return seq, str(task_id or "")
+
+    @staticmethod
+    def _extract_usage_from_response_metadata(response_metadata: Any) -> Dict[str, int]:
+        """从 response_metadata 中抽取 token_usage，供前端思考过程展示。"""
+
+        def _to_int(value: Any) -> int:
+            try:
+                return max(0, int(value))
+            except (TypeError, ValueError):
+                return 0
+
+        def _extract_usage_from_nested_payload(value: Any, *, depth: int = 0) -> Dict[str, int]:
+            if depth > 5 or value is None:
+                return {}
+
+            if isinstance(value, dict):
+                input_tokens = _to_int(
+                    value.get("input_tokens")
+                    or value.get("prompt_tokens")
+                )
+                output_tokens = _to_int(
+                    value.get("output_tokens")
+                    or value.get("completion_tokens")
+                )
+                total_tokens = _to_int(
+                    value.get("total_tokens")
+                    or value.get("total")
+                )
+                if total_tokens <= 0:
+                    total_tokens = input_tokens + output_tokens
+
+                normalized_direct = (
+                    {
+                        "input": input_tokens,
+                        "output": output_tokens,
+                        "total": total_tokens,
+                    }
+                    if (input_tokens > 0 or output_tokens > 0 or total_tokens > 0)
+                    else {}
+                )
+                if normalized_direct:
+                    return normalized_direct
+
+                priority_keys = (
+                    "token_usage",
+                    "usage",
+                    "usage_metadata",
+                    "response_metadata",
+                    "llm_output",
+                    "data",
+                    "payload",
+                    "chunk",
+                    "message",
+                    "delta",
+                    "choices",
+                )
+                for key in priority_keys:
+                    if key in value:
+                        nested = _extract_usage_from_nested_payload(value.get(key), depth=depth + 1)
+                        if nested:
+                            return nested
+
+                for nested_value in value.values():
+                    nested = _extract_usage_from_nested_payload(nested_value, depth=depth + 1)
+                    if nested:
+                        return nested
+
+            if isinstance(value, (list, tuple)):
+                for item in value:
+                    nested = _extract_usage_from_nested_payload(item, depth=depth + 1)
+                    if nested:
+                        return nested
+
+            return {}
+
+        if not isinstance(response_metadata, dict):
+            return {}
+
+        usage_payload = None
+        for key in ("token_usage", "usage", "usage_metadata"):
+            candidate = response_metadata.get(key)
+            if isinstance(candidate, dict):
+                usage_payload = candidate
+                break
+
+        if not isinstance(usage_payload, dict):
+            return _extract_usage_from_nested_payload(response_metadata)
+
+        input_tokens = _to_int(
+            usage_payload.get("input_tokens")
+            or usage_payload.get("prompt_tokens")
+        )
+        output_tokens = _to_int(
+            usage_payload.get("output_tokens")
+            or usage_payload.get("completion_tokens")
+        )
+        total_tokens = _to_int(
+            usage_payload.get("total_tokens")
+            or usage_payload.get("total")
+        )
+        if total_tokens <= 0:
+            total_tokens = input_tokens + output_tokens
+
+        if input_tokens <= 0 and output_tokens <= 0 and total_tokens <= 0:
+            return _extract_usage_from_nested_payload(response_metadata)
+
+        return {
+            "input": input_tokens,
+            "output": output_tokens,
+            "total": total_tokens,
+        }
 
     @classmethod
     def _build_task_results_fallback(
@@ -383,6 +496,22 @@ class GraphRunner:
             node_name=node_name,
             meta=meta,
         )
+
+    @staticmethod
+    def _sanitize_error_payload_for_workflow_meta(error_payload: Any) -> Optional[Dict[str, Any]]:
+        """仅保留前端可展示的安全错误字段。"""
+        if not isinstance(error_payload, dict):
+            return None
+
+        safe_payload = {
+            "type": str(error_payload.get("type") or "agent_error").strip() or "agent_error",
+            "agent": str(error_payload.get("agent") or "").strip(),
+            "error_type": str(error_payload.get("error_type") or "execution_error").strip() or "execution_error",
+            "message": str(error_payload.get("message") or "服务暂时不可用。").strip() or "服务暂时不可用。",
+            "safe_detail": str(error_payload.get("safe_detail") or "").strip(),
+            "retryable": bool(error_payload.get("retryable")),
+        }
+        return {key: value for key, value in safe_payload.items() if value not in {"", None}}
 
     # ------------------------------------------------------------------ #
     #  Supervisor 缓存管理                                                  #
@@ -1377,7 +1506,11 @@ class GraphRunner:
                 yield chunk
 
         if not interrupt_emitted and not stream_content_emitted and not error_emitted:
-            fallback_text = await self._extract_final_answer_from_state(graph, session_id)
+            fallback_text = await self._extract_final_answer_from_state(
+                graph,
+                session_id,
+                run_id=run_id,
+            )
             if fallback_text:
                 stream_content_emitted = True
                 if metrics.get("first_stream_latency_ms") is None:
@@ -1396,7 +1529,11 @@ class GraphRunner:
 
         final_answer = ""
         if not interrupt_emitted and not error_emitted and not cancelled_emitted:
-            final_answer = await self._extract_final_answer_from_state(graph, session_id)
+            final_answer = await self._extract_final_answer_from_state(
+                graph,
+                session_id,
+                run_id=run_id,
+            )
 
         if cancelled_emitted:
             runtime_session_manager.cancel_run(run_context, summary="运行已取消")
@@ -1496,6 +1633,11 @@ class GraphRunner:
         if not isinstance(payload, dict):
             return []
         visible_content = str(payload.get("content") or "").strip()
+        visible_content = strip_internal_execution_noise(
+            visible_content,
+            trim=True,
+            collapse_blank_lines=False,
+        )
         if not visible_content:
             return []
         source_agent = str(payload.get("agent_name") or "").strip()
@@ -1540,7 +1682,17 @@ class GraphRunner:
         # 只有 supervisor/aggregator 的直接答复允许进入主正文流；
         # 但如果当前是“顶层直接指派给某个专业 Agent”，则允许该 Agent 正文直出。
         if role == "supervisor" or allow_direct_agent_body_stream:
-            workflow_chunks.append(cls._fmt_sse(SseEventType.STREAM.value, visible_content))
+            workflow_chunks.append(
+                cls._fmt_sse(
+                    SseEventType.STREAM.value,
+                    visible_content,
+                    extra_payload={
+                        "node": source_agent,
+                        "agent_name": source_agent,
+                        "body_stream": True,
+                    },
+                )
+            )
         return workflow_chunks
 
     @staticmethod
@@ -1716,18 +1868,44 @@ class GraphRunner:
         visible, router_prefix_buffer, router_prefix_done = self._strip_router_json_prefix_cross_chunk(
             visible, router_prefix_buffer, router_prefix_done
         )
+        visible = strip_internal_execution_noise(
+            visible,
+            trim=False,
+            collapse_blank_lines=False,
+        )
 
-        if not isinstance(visible, str) or not visible:
+        if not isinstance(visible, str) or not visible.strip():
             return [], router_prefix_buffer, router_prefix_done
 
-        return [self._fmt_sse(SseEventType.STREAM.value, visible)], router_prefix_buffer, router_prefix_done
+        source_name = str(getattr(msg_chunk, "name", "") or "").strip()
+        is_body_stream = node_name in {"chat_node", "aggregator_node"} or source_name in {"ChatAgent", "Aggregator"}
+
+        return [
+            self._fmt_sse(
+                SseEventType.STREAM.value,
+                visible,
+                extra_payload={
+                    "node": node_name,
+                    "agent_name": source_name or node_name,
+                    "body_stream": is_body_stream,
+                    "usage": self._extract_usage_from_response_metadata(
+                        getattr(msg_chunk, "response_metadata", {}) or {},
+                    ) or None,
+                },
+            )
+        ], router_prefix_buffer, router_prefix_done
 
     # ------------------------------------------------------------------ #
     #  SSE 格式化工具                                                       #
     # ------------------------------------------------------------------ #
 
     @classmethod
-    def _fmt_sse(cls, event_type: str, content: str) -> str:
+    def _fmt_sse(
+            cls,
+            event_type: str,
+            content: str,
+            extra_payload: Optional[Dict[str, Any]] = None,
+    ) -> str:
         """
         将事件类型和内容格式化为标准 SSE 字符串。
 
@@ -1739,16 +1917,27 @@ class GraphRunner:
         if event_type == SseEventType.STREAM.value:
             # 流式 chunk 不能做激进 Markdown 归一化，否则会把 token 边界放大成空行/断词。
             visible_content = (
-                visible_content
+                strip_internal_execution_noise(
+                    visible_content,
+                    trim=False,
+                    collapse_blank_lines=False,
+                )
                 .replace("\r\n", "\n")
                 .replace("\r", "\n")
                 .replace("\u200b", "")
             )
 
-        payload = json.dumps(
-            {SsePayloadField.TYPE.value: event_type, SsePayloadField.CONTENT.value: visible_content},
-            ensure_ascii=False,
-        )
+        payload_dict = {
+            SsePayloadField.TYPE.value: event_type,
+            SsePayloadField.CONTENT.value: visible_content,
+        }
+        if isinstance(extra_payload, dict):
+            for key, value in extra_payload.items():
+                if value is None:
+                    continue
+                payload_dict[key] = value
+
+        payload = json.dumps(payload_dict, ensure_ascii=False)
         return f"event: {event_type}\ndata: {payload}\n\n"
 
     @staticmethod
@@ -2086,6 +2275,8 @@ class GraphRunner:
             self,
             graph: Any,
             session_id: str,
+            *,
+            run_id: str = "",
     ) -> str:
         """
         从 Supervisor 图最终状态中回捞最后一条 AI 消息作为兜底答案。
@@ -2096,6 +2287,22 @@ class GraphRunner:
         try:
             config = {"configurable": {"thread_id": session_id}}
             state = await graph.aget_state(config)
+            snapshot_config = getattr(state, "config", None) or {}
+            snapshot_metadata = getattr(state, "metadata", None) or {}
+            snapshot_run_id = str(
+                (snapshot_config.get("configurable") or {}).get("run_id")
+                or snapshot_metadata.get("run_id")
+                or ""
+            ).strip()
+            normalized_run_id = str(run_id or "").strip()
+            if normalized_run_id and snapshot_run_id != normalized_run_id:
+                log.warning(
+                    "跳过跨运行兜底回捞: session_id=%s, expected_run_id=%s, snapshot_run_id=%s",
+                    session_id,
+                    normalized_run_id,
+                    snapshot_run_id or "<missing>",
+                )
+                return ""
             state_values = getattr(state, "values", None) or {}
             messages = state_values.get("messages", [])
             has_aggregator_message = any(
@@ -2245,6 +2452,11 @@ class GraphRunner:
                             role="supervisor",
                             agent_name="ChatAgent",
                             node_name=node_name,
+                            meta={
+                                "error_payload": self._sanitize_error_payload_for_workflow_meta(
+                                    node_val.get("error_payload")
+                                )
+                            },
                         )
                     )
                     continue
@@ -2260,6 +2472,11 @@ class GraphRunner:
                             role="worker",
                             agent_name=node_name,
                             node_name=node_name,
+                            meta={
+                                "error_payload": self._sanitize_error_payload_for_workflow_meta(
+                                    node_val.get("error_payload")
+                                )
+                            },
                         )
                     )
                     continue
@@ -2294,13 +2511,21 @@ class GraphRunner:
                 if not isinstance(msg, AIMessage):
                     continue
                 metadata = getattr(msg, "response_metadata", {}) or {}
+                usage = self._extract_usage_from_response_metadata(metadata)
                 # 从 response_metadata 提取 Agent 操作日志
                 for log_entry in metadata.get("operation_logs", []):
-                    yield self._fmt_sse(SseEventType.THINKING.value, log_entry)
+                    yield self._fmt_sse(
+                        SseEventType.THINKING.value,
+                        log_entry,
+                        extra_payload={"node": node_name, "usage": usage or None},
+                    )
                 should_emit = bool(metadata.get("synthetic") and msg.content)
                 source_agent_name = str(getattr(msg, "name", "") or node_name or "")
                 visible = self._strip_router_json_prefix_single(msg.content)
-                visible_text = visible if isinstance(visible, str) else ""
+                visible_text = strip_internal_execution_noise(
+                    visible if isinstance(visible, str) else "",
+                    trim=True,
+                )
                 is_orchestrated = bool(stream_state.get("orchestrated"))
                 direct_body_agents = stream_state.get("direct_body_agents", set())
                 is_top_level_direct_chat = (
@@ -2327,7 +2552,10 @@ class GraphRunner:
                             role="supervisor",
                             agent_name="Aggregator",
                             node_name=node_name,
-                            meta={"force_emit": bool(metadata.get("force_emit"))},
+                            meta={
+                                "force_emit": bool(metadata.get("force_emit")),
+                                "usage": usage,
+                            },
                         )
                     )
                     yield self._fmt_workflow_event(
@@ -2341,6 +2569,7 @@ class GraphRunner:
                             role="supervisor",
                             agent_name="Aggregator",
                             node_name=node_name,
+                            meta={"usage": usage},
                         )
                     )
                 elif node_name == "chat_node" and visible_text.strip():
@@ -2356,6 +2585,7 @@ class GraphRunner:
                                 role="supervisor",
                                 agent_name="ChatAgent",
                                 node_name=node_name,
+                                meta={"usage": usage},
                             )
                         )
                     else:
@@ -2370,6 +2600,7 @@ class GraphRunner:
                                 role="worker",
                                 agent_name=source_agent_name or node_name,
                                 node_name=node_name,
+                                meta={"usage": usage},
                             )
                         )
                 elif node_name in _agent_classes and visible_text.strip():
@@ -2384,7 +2615,10 @@ class GraphRunner:
                             role="worker",
                             agent_name=node_name,
                             node_name=node_name,
-                            meta={"live_streamed": bool(metadata.get("live_streamed"))},
+                            meta={
+                                "live_streamed": bool(metadata.get("live_streamed")),
+                                "usage": usage,
+                            },
                         )
                     )
                 # 顶层执行者若已经通过 live_stream 进过正文，则抑制 synthetic，避免重复。
@@ -2400,7 +2634,16 @@ class GraphRunner:
                 )
                 if should_emit and can_emit_to_body and visible_text.strip():
                     if visible_text.strip():
-                        yield self._fmt_sse(SseEventType.STREAM.value, visible_text)
+                        yield self._fmt_sse(
+                            SseEventType.STREAM.value,
+                            visible_text,
+                            extra_payload={
+                                "node": node_name,
+                                "agent_name": source_agent_name or node_name,
+                                "body_stream": True,
+                                "usage": usage or None,
+                            },
+                        )
 
     def _process_supervisor_event(
             self,
@@ -2478,6 +2721,7 @@ class GraphRunner:
                 f"(置信度: {float(node_val.get('domain_confidence', 0)):.2f}, "
                 f"来源: {node_val.get('domain_route_source', 'unknown')}, "
                 f"策略: {node_val.get('route_strategy', 'single_domain')}{elapsed_text})",
+                extra_payload={"node": "domain_router"},
             )
             return
 
@@ -2524,6 +2768,7 @@ class GraphRunner:
                 SseEventType.THINKING.value,
                 f"智能路由指派: {intent_name} "
                 f"(置信度: {node_val.get('intent_confidence', 0):.2f}{elapsed_text})",
+                extra_payload={"node": "intent_router"},
             )
             return
 
@@ -2532,6 +2777,7 @@ class GraphRunner:
             elapsed = node_val.get("planner_elapsed_ms")
             elapsed_text = f"，耗时: {int(elapsed)}ms" if isinstance(elapsed, (int, float)) else ""
             tasks = node_val.get("plan") or node_val.get("task_list") or []
+            planner_usage = node_val.get("planner_usage")
             yield GraphRunner._fmt_workflow_event(
                 GraphRunner._build_workflow_event(
                     session_id=session_id,
@@ -2546,6 +2792,7 @@ class GraphRunner:
                     meta={
                         "planner_source": node_val.get("planner_source", "unknown"),
                         "tasks": tasks,
+                        "usage": planner_usage,
                     },
                 )
             )
@@ -2553,6 +2800,7 @@ class GraphRunner:
                 SseEventType.THINKING.value,
                 f"任务拆解完成: {len(tasks)} 个子任务 "
                 f"(来源: {node_val.get('planner_source', 'unknown')}{elapsed_text})",
+                extra_payload={"node": "planner", "usage": planner_usage},
             )
             return
 
@@ -2635,6 +2883,10 @@ class GraphRunner:
                             "elapsed_ms": worker_item.get("elapsed_ms"),
                             "task": worker_item.get("task"),
                             "wave": worker_item.get("wave"),
+                            "usage": worker_item.get("usage"),
+                            "error_payload": GraphRunner._sanitize_error_payload_for_workflow_meta(
+                                worker_item.get("error_payload")
+                            ),
                         },
                     )
                 )
@@ -2645,6 +2897,10 @@ class GraphRunner:
                 yield GraphRunner._fmt_sse(
                     SseEventType.THINKING.value,
                     f"⏱️ 子任务[{label}]执行耗时: {int(elapsed)}ms",
+                    extra_payload={
+                        "node": str(agent_name or "worker"),
+                        "usage": worker_item.get("usage"),
+                    },
                 )
             return
 

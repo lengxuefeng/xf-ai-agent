@@ -200,8 +200,17 @@ class RuntimeToolRegistry:
             allowed_modes=(RunMode.LOCAL.value,) if local_only else (RunMode.CLOUD.value, RunMode.LOCAL.value),
         )
 
+    def get_all_tools(self) -> List[ToolDescriptor]:
+        tools_list = [
+            descriptor
+            for descriptor in self._tools.values()
+            if self.is_tool_allowed_in_current_mode(descriptor)
+        ]
+        # 强制工具按名称排序，确保工具 schema 前缀稳定，最大化 Prompt Cache 命中。
+        return sorted(tools_list, key=lambda item: str(getattr(item, "name", "") or "").lower())
+
     def list_tools(self) -> List[dict]:
-        return [tool.to_dict() for tool in self._iter_visible_tools()]
+        return [tool.to_dict() for tool in self.get_all_tools()]
 
     def build_tool_catalog(self, dynamic_tools: Optional[List[dict]] = None) -> List[dict]:
         catalog = self.list_tools()
@@ -210,7 +219,7 @@ class RuntimeToolRegistry:
         return self.sort_tool_catalog(catalog)
 
     def list_tools_by_type(self, tool_type: ToolType) -> List[dict]:
-        return [tool.to_dict() for tool in self._iter_visible_tools() if tool.tool_type == tool_type]
+        return [tool.to_dict() for tool in self.get_all_tools() if tool.tool_type == tool_type]
 
     def get_tool(self, name: str) -> ToolDescriptor | None:
         return self._tools.get(str(name or "").strip())
@@ -229,7 +238,7 @@ class RuntimeToolRegistry:
 
     def stats(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {"total": 0, "by_type": {}, "by_category": {}}
-        for tool in self._iter_visible_tools():
+        for tool in self.get_all_tools():
             result["total"] += 1
             cat = tool.category
             t_type = tool.tool_type.value
@@ -328,12 +337,7 @@ class RuntimeToolRegistry:
         return None
 
     def _iter_visible_tools(self) -> List[ToolDescriptor]:
-        visible = [
-            descriptor
-            for descriptor in self._tools.values()
-            if self.is_tool_allowed_in_current_mode(descriptor)
-        ]
-        return self.sort_langchain_tools(visible)
+        return self.get_all_tools()
 
 
 runtime_tool_registry = RuntimeToolRegistry()

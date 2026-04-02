@@ -39,6 +39,88 @@ class IntentPolicy:
         r"(?:\b(?:and|then)\b|然后|接着|并且|以及|同时|顺便|后面|随后|先[^。！？\n]{0,80}?再)",
         flags=re.IGNORECASE,
     )
+    _TOOL_INTENT_PRIORITY = (
+        "yunyou_agent",
+        "sql_agent",
+        "weather_agent",
+        "search_agent",
+        "medical_agent",
+        "code_agent",
+    )
+    _TOOL_INTENT_CONFIDENCE = {
+        "yunyou_agent": 0.97,
+        "sql_agent": 0.96,
+        "weather_agent": 0.94,
+        "search_agent": 0.91,
+        "medical_agent": 0.9,
+        "code_agent": 0.9,
+    }
+    _CHAT_BLOCKED_TOOL_INTENTS = frozenset({
+        "yunyou_agent",
+        "sql_agent",
+        "weather_agent",
+    })
+
+    @staticmethod
+    def _select_priority_tool_intent(
+            *,
+            latest_user_text: str,
+            data_domain: str,
+            intent_candidates: List[str],
+            looks_like_holter_request,
+            looks_like_sql_request,
+            looks_like_weather_request,
+            is_weather_actionable_clause,
+            looks_like_search_request,
+            is_search_actionable_clause,
+            looks_like_medical_request,
+            looks_like_code_request,
+    ) -> str:
+        lowered_text = str(latest_user_text or "").lower()
+        # 最高优先级硬拦截，防止闲聊兜底误判。
+        if "天气" in lowered_text and any(token in lowered_text for token in ["查", "预报", "南京", "北京", "上海"]):
+            return "weather_agent"
+        if "holter" in lowered_text or "云柚" in lowered_text:
+            return "yunyou_agent"
+        if "数据库" in lowered_text or "sql" in lowered_text:
+            return "sql_agent"
+
+        ordered_candidates: List[str] = []
+
+        def _prepend(candidate_name: str) -> None:
+            normalized_name = str(candidate_name or "").strip()
+            if not normalized_name or normalized_name == "CHAT":
+                return
+            if normalized_name in ordered_candidates:
+                ordered_candidates.remove(normalized_name)
+            ordered_candidates.insert(0, normalized_name)
+
+        def _append(candidate_name: str) -> None:
+            normalized_name = str(candidate_name or "").strip()
+            if not normalized_name or normalized_name == "CHAT" or normalized_name in ordered_candidates:
+                return
+            ordered_candidates.append(normalized_name)
+
+        for candidate in intent_candidates or []:
+            _append(candidate)
+
+        if looks_like_holter_request(latest_user_text) or data_domain == "YUNYOU_DB":
+            _prepend("yunyou_agent")
+        if looks_like_sql_request(latest_user_text) or data_domain == "LOCAL_DB":
+            _prepend("sql_agent")
+        if looks_like_weather_request(latest_user_text) and is_weather_actionable_clause(latest_user_text):
+            _prepend("weather_agent")
+        if looks_like_search_request(latest_user_text) and is_search_actionable_clause(latest_user_text):
+            _prepend("search_agent")
+        if looks_like_medical_request(latest_user_text) and "medical_agent" in MEMBERS:
+            _prepend("medical_agent")
+        if looks_like_code_request(latest_user_text) and "code_agent" in MEMBERS:
+            _prepend("code_agent")
+
+        for candidate_name in IntentPolicy._TOOL_INTENT_PRIORITY:
+            if candidate_name in ordered_candidates:
+                return candidate_name
+        return ""
 
     @staticmethod
     def _extract_location_entities(text: str) -> List[str]:
@@ -352,6 +434,19 @@ class IntentPolicy:
         )
         location_entities = IntentPolicy._extract_location_entities(latest_user_text)
         multi_location_signal = len(location_entities) >= 2
+        strict_tool_intent = IntentPolicy._select_priority_tool_intent(
+            latest_user_text=latest_user_text,
+            data_domain=data_domain,
+            intent_candidates=intent_candidates,
+            looks_like_holter_request=_looks_like_holter_request,
+            looks_like_sql_request=_looks_like_sql_request,
+            looks_like_weather_request=_looks_like_weather_request,
+            is_weather_actionable_clause=_is_weather_actionable_clause,
+            looks_like_search_request=_looks_like_search_request,
+            is_search_actionable_clause=_is_search_actionable_clause,
+            looks_like_medical_request=_looks_like_medical_request,
+            looks_like_code_request=_looks_like_code_request,
+        )
 
         # 根因修复：多意图输入在 Intent 层直接标记复杂任务，强制走 Parent Planner。
         if route_strategy == RouteStrategy.MULTI_DOMAIN_SPLIT.value and len(intent_candidates) >= 2:
@@ -426,7 +521,10 @@ class IntentPolicy:
             )
 
         # 天气追问优化：若上轮已给出天气事实，优先复用上下文做建议，不再重复调 weather_agent。
-        if _can_reuse_weather_context(trimmed_messages, latest_user_text):
+        if (
+                _can_reuse_weather_context(trimmed_messages, latest_user_text)
+                and strict_tool_intent not in IntentPolicy._CHAT_BLOCKED_TOOL_INTENTS
+        ):
             log.info("Intent weather reuse: 复用最近天气上下文，直接路由 CHAT")
             return IntentPolicy._finalize_intent_decision(
                 intent="CHAT",
@@ -489,6 +587,22 @@ class IntentPolicy:
                 confidence=max(domain_conf, 0.9),
                 is_complex=False,
                 source=f"domain_{domain_source}",
+                direct_answer="",
+                session_id=session_id,
+                latest_user_text=latest_user_text,
+                started_at=started_at,
+            )
+
+        prioritized_tool_intent = strict_tool_intent
+        if prioritized_tool_intent:
+            return IntentPolicy._finalize_intent_decision(
+                intent=prioritized_tool_intent,
+                confidence=max(
+                    domain_conf,
+                    IntentPolicy._TOOL_INTENT_CONFIDENCE.get(prioritized_tool_intent, 0.9),
+                ),
+                is_complex=False,
+                source="priority_tool_intent",
                 direct_answer="",
                 session_id=session_id,
                 latest_user_text=latest_user_text,
@@ -654,6 +768,20 @@ class IntentPolicy:
         if decision.intent == "CHAT" and decision.is_complex and not _looks_like_compound_request(latest_user_text):
             log.info("Intent anti-overplanning: simple CHAT question downgraded to non-complex")
             decision.is_complex = False
+
+        if decision.intent == "CHAT" and strict_tool_intent in IntentPolicy._CHAT_BLOCKED_TOOL_INTENTS:
+            log.info(
+                "Intent chat override: 命中强工具意图，覆盖 CHAT "
+                f"(tool={strict_tool_intent}, original_source={decision_source})"
+            )
+            decision.intent = strict_tool_intent
+            decision.confidence = max(
+                float(decision.confidence or 0.0),
+                IntentPolicy._TOOL_INTENT_CONFIDENCE.get(strict_tool_intent, 0.94),
+            )
+            decision.is_complex = False
+            decision.direct_answer = ""
+            decision_source = f"{decision_source}_tool_override"
 
         return IntentPolicy._finalize_intent_decision(
             intent=decision.intent,

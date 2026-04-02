@@ -17,7 +17,7 @@ from .loader_llm_multi import (
     load_openai_compatible_model,
     load_openai_embeddings,
     load_tongyi_model,
-    load_gemini_model
+    load_gemini_model,
 )
 from .model_config import ModelConfig
 from .ollama_model import load_ollama_model, load_ollama_embeddings
@@ -147,6 +147,19 @@ def _build_fallback_configs(config: ModelConfig, *, primary_model_name: str) -> 
     return deduped
 
 
+def _is_missing_api_key_error(exc: Exception) -> bool:
+    message = str(exc or "").strip().lower()
+    if not message:
+        return False
+    return (
+        "api key" in message
+        or "api_key" in message
+        or "未配置可用 api key" in message
+        or "must be set" in message
+        or "not found" in message
+    )
+
+
 class UnifiedModelLoader:
     """
     模型加载的“中央调度室”
@@ -177,7 +190,10 @@ class UnifiedModelLoader:
             loader_func = service_router.get(service, load_openai_compatible_model)
             return loader_func(config)
         except Exception as e:
-            log.error(f"加载模型失败 - 服务: {service}, 模型: {model_name}, 错误详情: {str(e)}")
+            if _is_missing_api_key_error(e):
+                log.warning(f"⚠️ 预热跳过: 模型 {model_name} 对应的 API Key 未配置。")
+            else:
+                log.error(f"加载模型失败 - 服务: {service}, 模型: {model_name}, 错误详情: {str(e)}")
             raise RuntimeError(f"模型加载失败({service}): {model_name}") from e
 
     @classmethod
@@ -195,7 +211,10 @@ class UnifiedModelLoader:
             loader_func = service_router.get(service, load_openai_embeddings)
             return loader_func(config)
         except Exception as e:
-            log.error(f"加载嵌入模型失败 - 服务: {service}, 模型: {embedding_model}, 错误: {str(e)}")
+            if _is_missing_api_key_error(e):
+                log.warning(f"⚠️ 预热跳过: Embedding 模型 {embedding_model} 对应的 API Key 未配置。")
+            else:
+                log.error(f"加载嵌入模型失败 - 服务: {service}, 模型: {embedding_model}, 错误: {str(e)}")
             raise RuntimeError(f"嵌入模型加载失败({service}): {embedding_model}") from e
 
 

@@ -42,10 +42,27 @@ def _enrich_ws_event(
     enriched = dict(event or {})
     event_type = str(enriched.get("type") or "").strip()
     payload = enriched.get("payload") if isinstance(enriched.get("payload"), dict) else {}
+    payload_meta = payload.get("meta") if isinstance(payload.get("meta"), dict) else {}
+    run_id = str(
+        enriched.get("run_id")
+        or payload.get("run_id")
+        or payload_meta.get("run_id")
+        or ""
+    ).strip()
+    request_id = str(
+        enriched.get("request_id")
+        or payload.get("request_id")
+        or payload_meta.get("request_id")
+        or ""
+    ).strip()
 
     enriched["session_id"] = session_id
     enriched.setdefault("sequence", sequence)
     enriched.setdefault("timestamp", enriched.get("timestamp") or payload.get("timestamp") or _utc_now_iso())
+    if run_id:
+        enriched["run_id"] = run_id
+    if request_id:
+        enriched["request_id"] = request_id
 
     if event_type == "message":
         enriched.setdefault("status", "streaming")
@@ -60,6 +77,8 @@ def _enrich_ws_event(
             enriched.setdefault("node", payload.get("node") or payload.get("node_name") or payload.get("agent_name") or "")
             enriched.setdefault("workflow_status", payload.get("status") or "info")
         enriched.setdefault("status", "running")
+    elif event_type == "approval_required":
+        enriched.setdefault("status", "waiting_approval")
     elif event_type == "error":
         enriched.setdefault("status", "error")
     elif event_type == "done":
@@ -85,11 +104,35 @@ def _build_ws_request(
     anonymous: bool,
 ) -> StreamChatRequest:
     request_payload = dict(payload)
+    payload_session_id = str(request_payload.get("session_id") or "").strip()
+    if payload_session_id and payload_session_id != session_id:
+        raise ValueError("WebSocket 会话ID与请求体中的 session_id 不一致。")
     request_payload["session_id"] = session_id
     req = StreamChatRequest(**request_payload)
     if anonymous and req.user_model_id is not None:
         raise ValueError("匿名 WebSocket 不支持 user_model_id。")
     return req
+
+
+def _build_safe_ws_error_message(exc: Exception) -> str:
+    text = str(exc or "").strip()
+    lowered = text.lower()
+    if any(marker in text for marker in ("当前未绑定可用模型", "当前选择的模型配置", "模型配置缺少", "当前模型配置缺少", "请先在设置中")):
+        return text
+    if "timeout" in lowered or "超时" in text:
+        return "请求超时，请稍后重试。"
+    if any(marker in lowered for marker in ("connectionerror", "operationalerror", "psycopg2", "connection to server at", "host is down", "network")):
+        return "服务暂时不可用，请稍后再试。"
+    return "系统内部服务暂时不可用，请稍后再试。"
+
+
+def _build_safe_ws_request_error_message(exc: Exception) -> str:
+    text = str(exc or "").strip()
+    if "匿名 websocket 不支持 user_model_id" in text.lower():
+        return "匿名 WebSocket 不支持 user_model_id。"
+    if "session_id" in text.lower() and "不一致" in text:
+        return "当前会话状态已过期，请刷新会话后重试。"
+    return "请求参数有误，请检查输入后重试。"
 
 
 async def _enqueue_stream_events(
@@ -128,7 +171,7 @@ async def _enqueue_stream_events(
         log.exception(f"WebSocket 后台流任务异常: session_id={session_id}, error={exc}")
         event_sequence += 1
         await event_queue.put(_enrich_ws_event(
-            {"type": "error", "message": str(exc), "status": "error"},
+            {"type": "error", "message": _build_safe_ws_error_message(exc), "status": "error"},
             session_id=session_id,
             sequence=event_sequence,
         ))
@@ -147,6 +190,15 @@ def _is_websocket_connected(websocket: WebSocket) -> bool:
         websocket.application_state == WebSocketState.CONNECTED
         and websocket.client_state == WebSocketState.CONNECTED
     )
+
+
+async def _safe_send_ws_json(websocket: WebSocket, event: dict[str, Any]) -> bool:
+    if not _is_websocket_connected(websocket):
+        return False
+    if websocket.client_state != WebSocketState.CONNECTED:
+        return False
+    await websocket.send_json(event)
+    return True
 
 
 async def _cancel_stream_task(
@@ -183,7 +235,11 @@ async def _websocket_sender_loop(
             return
 
         try:
-            await websocket.send_json(event)
+            if await _safe_send_ws_json(websocket, event):
+                continue
+            await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
+            stream_task_holder["stream_task"] = None
+            return
         except WebSocketDisconnect:
             await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
             stream_task_holder["stream_task"] = None
@@ -245,7 +301,9 @@ async def _websocket_receiver_loop(
                     anonymous=anonymous,
                 )
             except Exception as exc:
-                await event_queue.put({"type": "error", "message": str(exc)})
+                await event_queue.put(
+                    {"type": "error", "message": _build_safe_ws_request_error_message(exc)}
+                )
                 continue
 
             stream_task_holder["stream_task"] = asyncio.create_task(
@@ -317,7 +375,10 @@ async def _serve_websocket_chat(
         log.exception(f"WebSocket 聊天异常: session_id={session_id}, error={exc}")
         if _is_websocket_connected(websocket):
             with contextlib.suppress(Exception):
-                await websocket.send_json({"type": "error", "message": str(exc)})
+                await _safe_send_ws_json(
+                    websocket,
+                    {"type": "error", "message": _build_safe_ws_error_message(exc)},
+                )
     finally:
         await _cancel_stream_task(stream_task_holder.get("stream_task"), session_id=session_id)
         stream_task_holder["stream_task"] = None
