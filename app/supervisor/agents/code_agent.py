@@ -364,7 +364,7 @@ def _format_generated_code_reply(
     elif not execution_requested:
         preface = f"按你的要求，我先给你整理了一个 {display_name} 示例："
 
-    return f"{preface}\n\n```{language}\n{cleaned_code}\n```"
+    return f"{preface}\n\n{cleaned_code}".strip()
 
 
 def _latest_human_text(messages: List[BaseMessage]) -> str:

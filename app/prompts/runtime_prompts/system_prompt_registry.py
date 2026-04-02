@@ -69,7 +69,9 @@ class SystemPromptRegistry:
         tool_catalog: Sequence[dict] | None = None,
         skill_prompts: Sequence[str] | None = None,
         skill_names: Sequence[str] | None = None,
+        memory_block: str = "",
         dynamic_blocks: Iterable[str] | None = None,
+        runtime_notes: Iterable[str] | None = None,
         extra_static_blocks: Iterable[str] | None = None,
     ) -> List[RuntimePromptBlock]:
         static_blocks = [
@@ -81,16 +83,34 @@ class SystemPromptRegistry:
             self._build_skill_rules(skill_prompts=skill_prompts, skill_names=skill_names),
         ]
         normalized_dynamic_blocks = self._normalize_blocks(dynamic_blocks)
+        normalized_runtime_notes = self._normalize_blocks(runtime_notes)
 
         blocks = [
-            RuntimePromptBlock(segment="static", content="\n\n".join(static_blocks).strip()),
-            RuntimePromptBlock(segment="config", content="\n\n".join(config_blocks).strip()),
+            RuntimePromptBlock(segment="static", content="\n\n".join(static_blocks).strip(), boundary="cacheable"),
+            RuntimePromptBlock(segment="config", content="\n\n".join(config_blocks).strip(), boundary="cacheable"),
         ]
+        if str(memory_block or "").strip():
+            blocks.append(
+                RuntimePromptBlock(
+                    segment="memory",
+                    content=str(memory_block).strip(),
+                    boundary="volatile",
+                )
+            )
         if normalized_dynamic_blocks:
             blocks.append(
                 RuntimePromptBlock(
                     segment="dynamic",
                     content="\n\n".join(normalized_dynamic_blocks).strip(),
+                    boundary="volatile",
+                )
+            )
+        if normalized_runtime_notes:
+            blocks.append(
+                RuntimePromptBlock(
+                    segment="runtime_notes",
+                    content="\n\n".join(normalized_runtime_notes).strip(),
+                    boundary="compact_boundary",
                 )
             )
         return [block for block in blocks if block.content]
@@ -102,7 +122,9 @@ class SystemPromptRegistry:
         tool_catalog: Sequence[dict] | None = None,
         skill_prompts: Sequence[str] | None = None,
         skill_names: Sequence[str] | None = None,
+        memory_block: str = "",
         dynamic_blocks: Iterable[str] | None = None,
+        runtime_notes: Iterable[str] | None = None,
         extra_static_blocks: Iterable[str] | None = None,
     ):
         config = model_config or {}
@@ -111,7 +133,9 @@ class SystemPromptRegistry:
             tool_catalog=tool_catalog,
             skill_prompts=skill_prompts,
             skill_names=skill_names,
+            memory_block=memory_block,
             dynamic_blocks=dynamic_blocks,
+            runtime_notes=runtime_notes,
             extra_static_blocks=extra_static_blocks,
         )
         provider_family = resolve_provider_family(

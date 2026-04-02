@@ -104,7 +104,15 @@ class AgentStreamBus:
             self._callbacks.pop(key, None)
             self._streamed_agents.pop(key, None)
 
-    def publish(self, run_id: str, agent_name: str, content: str) -> None:
+    def publish(
+        self,
+        run_id: str,
+        agent_name: str,
+        content: str,
+        *,
+        task_id: str = "",
+        body_stream: bool = False,
+    ) -> None:
         """
         发布实时内容。
 
@@ -147,6 +155,8 @@ class AgentStreamBus:
                     "run_id": key,
                     "agent_name": agent,
                     "content": text,
+                    "task_id": str(task_id or "").strip(),
+                    "body_stream": bool(body_stream),
                 }
             )
         except Exception:
@@ -182,4 +192,3 @@ class AgentStreamBus:
 
 # 全局唯一的实时流总线实例
 live_stream_bus = AgentStreamBus()
-

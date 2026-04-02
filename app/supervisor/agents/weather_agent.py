@@ -1,7 +1,7 @@
 import re
 from typing import Annotated, List, TypedDict
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, StateGraph, add_messages
@@ -125,6 +125,11 @@ class WeatherAgent(BaseAgent):
                 return city_val
         return ""
 
+    @staticmethod
+    def _has_recent_tool_result(messages: List[BaseMessage], *, window: int = 6) -> bool:
+        recent_messages = list(messages or [])[-max(1, window):]
+        return any(isinstance(message_item, ToolMessage) for message_item in recent_messages)
+
     async def _model_node(self, state: WeatherAgentState, config: RunnableConfig):
         loop_count = int(state.get("tool_loop_count", 0) or 0)
         if loop_count >= AGENT_LOOP_CONFIG.weather_max_tool_loops:
@@ -155,6 +160,26 @@ class WeatherAgent(BaseAgent):
                     )
                 )
             )
+
+        if self._has_recent_tool_result(source_messages):
+            summary_prompt = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        (
+                            f"{ToolsPrompt.WEATHER_SYSTEM}"
+                            "你已经拿到天气工具返回结果，现在只能基于现有结果直接总结，"
+                            "禁止再次调用天气工具。"
+                        ),
+                    ),
+                    MessagesPlaceholder(variable_name="messages"),
+                ]
+            )
+            summary_prompt_value = summary_prompt.invoke({"messages": focused_messages})
+            ai_msg = await self.llm.ainvoke(summary_prompt_value.messages, config=config)
+            if not isinstance(ai_msg, AIMessage):
+                ai_msg = AIMessage(content=str(getattr(ai_msg, "content", "") or ai_msg or ""))
+            return {"tool_loop_count": loop_count + 1, "messages": [ai_msg]}
 
         llm_with_tools = runtime_tool_registry.bind_tools(self.llm, self.tools)
         response = await (self.prompt | llm_with_tools).ainvoke({"messages": focused_messages}, config=config)

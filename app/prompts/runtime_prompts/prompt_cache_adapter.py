@@ -13,6 +13,7 @@ class RuntimePromptBlock:
 
     segment: str
     content: str
+    boundary: str = "volatile"
 
 
 class PromptCacheAdapter:
@@ -25,7 +26,11 @@ class PromptCacheAdapter:
         provider_family: str,
     ) -> List[SystemMessage]:
         normalized_blocks = [
-            RuntimePromptBlock(segment=str(block.segment), content=str(block.content or "").strip())
+            RuntimePromptBlock(
+                segment=str(block.segment),
+                content=str(block.content or "").strip(),
+                boundary=str(getattr(block, "boundary", "volatile") or "volatile"),
+            )
             for block in (blocks or [])
             if str(getattr(block, "content", "") or "").strip()
         ]
@@ -36,7 +41,7 @@ class PromptCacheAdapter:
         messages: list[SystemMessage] = []
         for block in normalized_blocks:
             additional_kwargs = {}
-            if family == "anthropic" and block.segment in {"static", "config"}:
+            if family == "anthropic" and block.boundary == "cacheable":
                 additional_kwargs["cache_control"] = {"type": "ephemeral"}
             messages.append(
                 SystemMessage(

@@ -105,6 +105,8 @@ from models.schemas.supervisor_schemas import (
     RequestAnalysisDecision,
 )
 from prompts.runtime_prompts.system_prompt_registry import system_prompt_registry
+from runtime.tasks import runtime_task_dispatcher
+from runtime.workers import runtime_worker_registry
 from services.route_metrics_service import route_metrics_service
 from services.agent_stream_bus import agent_stream_bus
 from services.request_cancellation_service import request_cancellation_service
@@ -373,7 +375,16 @@ def _looks_like_holter_request(text: str) -> bool:
         return False
 
     keywords = SUPERVISOR_KEYWORDS[SupervisorKeywordGroup.HOLTER_DOMAIN]
-    return any(k in t for k in keywords)
+    if any(k in t for k in keywords):
+        return True
+
+    # 兼容用户把 Holter 写成“浩特/浩特/霍特/霍尔特”等口语或误写，
+    # 但需要同时出现业务语义，避免把“呼和浩特”这类地名误判为云柚业务。
+    alias_patterns = (
+        r"(?:浩特|霍特|霍尔特)(?:有人使用|有使用|使用|报告|状态|记录|数据|贴片|心电|上传|审核)",
+        r"(?<!呼和)浩特(?:有人使用|有使用|使用|报告|状态|记录|数据|贴片|心电|上传|审核)",
+    )
+    return any(re.search(pattern, t) for pattern in alias_patterns)
 
 
 def _looks_like_weather_request(text: str) -> bool:
@@ -860,6 +871,7 @@ def _run_agent_to_completion(
         model: BaseChatModel,
         config: RunnableConfig,
         session_id: str = "",
+        task_id: str = "",
         history_messages: Optional[List[BaseMessage]] = None,
         context_slots: Optional[Dict[str, Any]] = None,
         context_summary: str = "",
@@ -916,12 +928,21 @@ def _run_agent_to_completion(
         session_id=session_id or config.get("configurable", {}).get("thread_id", ""),
         subgraph_id=agent_name, llm_config=llm_config or {},
         state={
+            "task_id": str(task_id or "").strip(),
             "messages": history_messages or [],
             "context_slots": context_slots or {},
             "context_summary": context_summary or "",
             "current_task": effective_user_input,
         },
     )
+    runtime_worker = runtime_worker_registry.get_worker(agent_name, req)
+    if runtime_worker is not None:
+        with request_cancellation_service.bind_request(request_id):
+            worker_response = _run_async_in_new_loop(runtime_worker.run(req, config=config))
+        elapsed_ms = int((time.perf_counter() - started_at) * 1000)
+        log.info(f"⏱️ RuntimeWorker[{runtime_worker.worker_name}] 完成，耗时: {elapsed_ms}ms")
+        return worker_response
+
     agent_instance = agent_classes[agent_name].cls(req)
 
     final_response = None
@@ -1044,29 +1065,23 @@ def _build_failure_summary_prompt(
 # ==================== Tier-2: Planner -> Dispatch -> Send(worker) -> Reduce ====================
 def dispatch_node(state: GraphState, config: RunnableConfig) -> dict:
     """串行弹夹调度：只弹出下一任务，不再在此节点结算上一轮执行结果。"""
-    plan = [str(item or "").strip() for item in list(state.get("plan") or []) if str(item or "").strip()]
-    task_list = [dict(task) for task in list(state.get("task_list") or [])]
+    dispatch_result = runtime_task_dispatcher.dispatch_next(
+        plan=list(state.get("plan") or []),
+        task_list=[dict(task) for task in list(state.get("task_list") or [])],
+        resolve_agent=_resolve_forced_specialist_agent,
+    )
+    plan = dispatch_result["plan"]
+    task_list = dispatch_result["task_list"]
     task_results = dict(state.get("task_results") or {})
 
-    next_task = ""
-    next_task_id = ""
-    next_task_agent = ""
-    if plan:
-        next_task = plan.pop(0)
-        for task in task_list:
-            if str(task.get("status") or "").strip() == TaskStatus.PENDING.value:
-                next_task_id = str(task.get("id") or "").strip()
-                task["status"] = TaskStatus.DISPATCHED.value
-                next_task_agent = str(task.get("agent") or "").strip() or _resolve_forced_specialist_agent(next_task)
-                if next_task_agent:
-                    task["agent"] = next_task_agent
-                break
+    next_task = dispatch_result["next_task"]
+    next_task_id = dispatch_result["next_task_id"]
+    next_task_agent = dispatch_result["next_task_agent"]
 
     if next_task_id:
         log.info(f"Dispatch: next task [{next_task_id}] -> {next_task} (agent={next_task_agent or 'pending_route'})")
     else:
         log.info("Dispatch: no remaining tasks, main loop will end.")
-        next_task = "END_TASK"
 
     return {
         "plan": plan,
@@ -1378,6 +1393,7 @@ async def worker_node(
                 model,
                 config,
                 state.get("session_id") or "",
+                task_id,
                 history_messages,
                 state.get("context_slots") or {},
                 state.get("context_summary") or "",
@@ -2230,6 +2246,7 @@ async def single_agent_node(
                 model,
                 config,
                 state.get("session_id") or "",
+                "",
                 history_messages,
                 state.get("context_slots") or {},
                 state.get("context_summary") or "",

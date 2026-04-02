@@ -10,9 +10,11 @@ from common.utils.date_utils import get_agent_date_context
 from common.utils.history_compressor import compress_history_messages
 from config.runtime_settings import AGENT_LOOP_CONFIG
 from harness.context.context_budget import ContextBudget
+from harness.context.governor import runtime_context_governor
 from harness.memory.memory_models import MemorySnippet
 from harness.memory.memory_service import runtime_memory_service
 from harness.types import RunContext
+from prompts.runtime_prompts.prompt_cache_adapter import RuntimePromptBlock
 from prompts.runtime_prompts.system_prompt_registry import system_prompt_registry
 from tools.runtime_tools.tool_registry import runtime_tool_registry
 
@@ -166,23 +168,15 @@ class RuntimeContextBuilder:
         )
         memory_block = runtime_memory_service.render_memory_block(memory_snippets)
         prompt_tool_catalog = self._filter_prompt_tool_catalog(run_context.model_config)
-
-        messages: List[BaseMessage] = list(system_prompt_registry.build_runtime_messages(
-            model_config=run_context.model_config,
-            tool_catalog=prompt_tool_catalog,
-            skill_prompts=run_context.model_config.get("skill_prompt_blocks") or [],
-            skill_names=run_context.model_config.get("selected_skill_names") or [],
-            dynamic_blocks=[
-                get_agent_date_context(),
-                run_context.context_summary,
-                memory_block,
-                (
-                    f"当前绑定工作目录: {run_context.model_config.get('workspace_root')}"
-                    if str(run_context.model_config.get("workspace_root") or "").strip()
-                    else ""
-                ),
-            ],
-        ))
+        dynamic_blocks = [
+            get_agent_date_context(),
+            run_context.context_summary,
+            (
+                f"当前绑定工作目录: {run_context.model_config.get('workspace_root')}"
+                if str(run_context.model_config.get("workspace_root") or "").strip()
+                else ""
+            ),
+        ]
 
         filtered_history, total_raw_count = self._filter_relevant_history(
             history_messages=history_messages,
@@ -195,14 +189,60 @@ class RuntimeContextBuilder:
             max_tokens=max_tokens,
             max_chars=max_chars,
         )
+        runtime_notes = [
+            "上下文装配策略: static/config/memory/dynamic 四层提示前缀 + recent history + compact boundary。",
+            (
+                f"历史压缩结果: raw={total_raw_count}, "
+                f"filtered={len(filtered_history)}, compressed={len(compressed_history)}"
+            ),
+        ]
+        prompt_blocks = list(system_prompt_registry.render_global_prompt_blocks(
+            model_config=run_context.model_config,
+            tool_catalog=prompt_tool_catalog,
+            skill_prompts=run_context.model_config.get("skill_prompt_blocks") or [],
+            skill_names=run_context.model_config.get("selected_skill_names") or [],
+            memory_block=memory_block,
+            dynamic_blocks=dynamic_blocks,
+            runtime_notes=runtime_notes,
+        ))
+
+        messages: List[BaseMessage] = list(system_prompt_registry.build_runtime_messages(
+            model_config=run_context.model_config,
+            tool_catalog=prompt_tool_catalog,
+            skill_prompts=run_context.model_config.get("skill_prompt_blocks") or [],
+            skill_names=run_context.model_config.get("selected_skill_names") or [],
+            memory_block=memory_block,
+            dynamic_blocks=dynamic_blocks,
+            runtime_notes=runtime_notes,
+        ))
         messages.extend(compressed_history)
         messages.append(HumanMessage(content=run_context.user_input))
 
+        context_layers = [
+            layer.to_dict()
+            for layer in runtime_context_governor.describe_layers(
+                prompt_blocks=prompt_blocks,
+                filtered_history=filtered_history,
+                compressed_history=compressed_history,
+                memory_count=len(memory_snippets),
+                dynamic_blocks=dynamic_blocks,
+            )
+        ]
+        compact_boundary = {
+            "triggered": len(compressed_history) <= len(filtered_history),
+            "raw_history_count": total_raw_count,
+            "filtered_history_count": len(filtered_history),
+            "compressed_history_count": len(compressed_history),
+        }
         context_meta = {
             "history_message_count": total_raw_count,
             "filtered_history_count": len(filtered_history),
             "compressed_history_count": len(compressed_history),
             "memory_count": len(memory_snippets),
+            "history_strategy": "recent+relevance+compression",
+            "prompt_segments": [block.segment for block in prompt_blocks if isinstance(block, RuntimePromptBlock)],
+            "compact_boundary": compact_boundary,
+            "context_layers": context_layers,
             "estimated_tokens": sum(
                 ContextBudget.estimate_token_budget(getattr(message, "content", ""))
                 for message in messages
