@@ -8,10 +8,11 @@ from langchain_core.runnables import RunnableConfig
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 from prompts.prompt_loader import load_prompt_template
+from runtime.tasks import runtime_task_planner
 from supervisor.state import GraphState
 from supervisor.supervisor_rule_support import split_query_clauses
 from config.constants.workflow_constants import RouteStrategy, TaskStatus
-from config.runtime_settings import WORKFLOW_MAX_REPLANS
+from config.runtime_settings import ROUTER_POLICY_CONFIG, WORKFLOW_MAX_REPLANS
 from common.utils.custom_logger import get_logger
 
 log = get_logger(__name__)
@@ -69,7 +70,7 @@ class Plan(BaseModel):
 
 class PlannerNode:
     SIMPLE_REQUEST_CONNECTOR_RE = re.compile(
-        r"(?:然后|接着|并且|以及|同时|顺便|后面|随后|再|\band\b|\bthen\b|(?<![A-Za-z0-9])和(?![A-Za-z0-9]))",
+        r"(?:然后|接着|并且|以及|同时|顺便|后面|随后|再|\band\b|\bthen\b)",
         flags=re.IGNORECASE,
     )
 
@@ -336,6 +337,10 @@ class PlannerNode:
         return not PlannerNode.SIMPLE_REQUEST_CONNECTOR_RE.search(text)
 
     @staticmethod
+    def _planner_llm_enabled() -> bool:
+        return bool(getattr(ROUTER_POLICY_CONFIG, "planner_llm_fallback_enabled", False))
+
+    @staticmethod
     async def planner_node(state: GraphState, model: BaseChatModel, config: RunnableConfig) -> dict:
         """Planner 节点：使用 fast model 异步拆解原子步骤列表。"""
         user_text = PlannerNode._latest_user_text(state)
@@ -356,41 +361,48 @@ class PlannerNode:
 
         if replan_reason:
             replan_payload = PlannerNode._build_replan_payload(state, user_text)
-            planner_source = "llm_replan"
-            prompt = ChatPromptTemplate.from_messages(
-                [
-                    ("system", PlannerNode._replan_system_prompt()),
-                    (
-                        "user",
-                        "用户原始目标：\n{original_user_request}\n\n"
-                        "已完成步骤结果：\n{completed_results}\n\n"
-                        "尚未完成目标：\n{remaining_goals}\n\n"
-                        "当前失败原因：\n{replan_reason}\n\n"
-                        "只返回剩余步骤 JSON。",
-                    ),
-                ]
-            )
-            try:
-                plan_result, planner_usage = await PlannerNode._invoke_plan(
-                    prompt=prompt,
-                    model=model,
-                    inputs={
-                        "original_user_request": replan_payload["original_user_request"],
-                        "completed_results": replan_payload["completed_results"],
-                        "remaining_goals": replan_payload["remaining_goals"],
-                        "replan_reason": replan_payload["replan_reason"],
-                    },
-                    config=config,
+            if PlannerNode._planner_llm_enabled():
+                planner_source = "llm_replan"
+                prompt = ChatPromptTemplate.from_messages(
+                    [
+                        ("system", PlannerNode._replan_system_prompt()),
+                        (
+                            "user",
+                            "用户原始目标：\n{original_user_request}\n\n"
+                            "已完成步骤结果：\n{completed_results}\n\n"
+                            "尚未完成目标：\n{remaining_goals}\n\n"
+                            "当前失败原因：\n{replan_reason}\n\n"
+                            "只返回剩余步骤 JSON。",
+                        ),
+                    ]
                 )
-                steps = PlannerNode._normalize_steps(
-                    PlannerNode._plan_steps_from_payload(plan_result),
-                    "\n".join(replan_payload["remaining_goals"]),
-                )
-                if not steps:
-                    raise ValueError("planner replan returned empty steps")
-            except Exception as exc:
-                planner_source = "fallback_replan"
-                log.warning(f"Planner replan failed, fallback to remaining goals: {exc}")
+                try:
+                    plan_result, planner_usage = await PlannerNode._invoke_plan(
+                        prompt=prompt,
+                        model=model,
+                        inputs={
+                            "original_user_request": replan_payload["original_user_request"],
+                            "completed_results": replan_payload["completed_results"],
+                            "remaining_goals": replan_payload["remaining_goals"],
+                            "replan_reason": replan_payload["replan_reason"],
+                        },
+                        config=config,
+                    )
+                    steps = PlannerNode._normalize_steps(
+                        PlannerNode._plan_steps_from_payload(plan_result),
+                        "\n".join(replan_payload["remaining_goals"]),
+                    )
+                    if not steps:
+                        raise ValueError("planner replan returned empty steps")
+                except Exception as exc:
+                    planner_source = "fallback_replan"
+                    log.warning(f"Planner replan failed, fallback to remaining goals: {exc}")
+                    steps = PlannerNode._normalize_steps(
+                        list(replan_payload["remaining_goals"]),
+                        replan_payload["original_user_request"],
+                    )
+            else:
+                planner_source = "fallback_replan_disabled_llm"
                 steps = PlannerNode._normalize_steps(
                     list(replan_payload["remaining_goals"]),
                     replan_payload["original_user_request"],
@@ -417,32 +429,36 @@ class PlannerNode:
                 for index, step in enumerate(steps)
             ]
         else:
-            prompt = ChatPromptTemplate.from_messages(
-                [
-                    ("system", PlannerNode._system_prompt()),
-                    ("user", "用户请求：\n{user_input}\n\n只返回 JSON。"),
-                ]
-            )
+            if PlannerNode._planner_llm_enabled():
+                prompt = ChatPromptTemplate.from_messages(
+                    [
+                        ("system", PlannerNode._system_prompt()),
+                        ("user", "用户请求：\n{user_input}\n\n只返回 JSON。"),
+                    ]
+                )
 
-            planner_source = "llm"
-            try:
-                plan_result, planner_usage = await PlannerNode._invoke_plan(
-                    prompt=prompt,
-                    model=model,
-                    inputs={
-                        "user_input": user_text,
-                    },
-                    config=config,
-                )
-                steps = PlannerNode._normalize_steps(
-                    PlannerNode._plan_steps_from_payload(plan_result),
-                    user_text,
-                )
-                if not steps:
-                    raise ValueError("planner returned empty steps")
-            except Exception as exc:
-                planner_source = "fallback_split"
-                log.warning(f"Planner structured output failed, fallback to rule split: {exc}")
+                planner_source = "llm"
+                try:
+                    plan_result, planner_usage = await PlannerNode._invoke_plan(
+                        prompt=prompt,
+                        model=model,
+                        inputs={
+                            "user_input": user_text,
+                        },
+                        config=config,
+                    )
+                    steps = PlannerNode._normalize_steps(
+                        PlannerNode._plan_steps_from_payload(plan_result),
+                        user_text,
+                    )
+                    if not steps:
+                        raise ValueError("planner returned empty steps")
+                except Exception as exc:
+                    planner_source = "fallback_split"
+                    log.warning(f"Planner structured output failed, fallback to rule split: {exc}")
+                    steps = PlannerNode._fallback_steps(user_text)
+            else:
+                planner_source = "rule_split_disabled_llm"
                 steps = PlannerNode._fallback_steps(user_text)
             task_list = [
                 PlannerNode._build_task_record(f"t{index + 1}", step)
@@ -457,6 +473,13 @@ class PlannerNode:
         memory["completed_step_results"] = PlannerNode._collect_completed_step_results(state)
         if planner_usage:
             memory["planner_usage"] = planner_usage
+        memory["runtime_task_plan"] = runtime_task_planner.build_plan(
+            steps=steps,
+            task_list=task_list,
+            source=planner_source,
+            replan_reason=replan_reason,
+            planner_usage=planner_usage or {},
+        ).to_dict()
 
         log.info(f"⏱️ Planner [{planner_source}] 耗时: {elapsed_ms}ms, steps={steps}")
         return {

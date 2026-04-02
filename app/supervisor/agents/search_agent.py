@@ -333,6 +333,34 @@ class SearchAgent(BaseAgent):
             for marker in ("信息", "公开", "工商", "股东", "法人", "官网", "关系", "背景", "资料")
         )
 
+    @staticmethod
+    def _has_recent_tool_result(messages: List[BaseMessage], *, window: int = 6) -> bool:
+        return any(isinstance(msg, ToolMessage) for msg in messages[-window:])
+
+    @staticmethod
+    def _allows_followup_search(user_text: str) -> bool:
+        normalized = str(user_text or "").strip().lower()
+        if not normalized:
+            return False
+        followup_markers = (
+            "然后",
+            "接着",
+            "并且",
+            "以及",
+            "同时",
+            "顺便",
+            "另外",
+            "再帮我",
+            "再查",
+            "继续查",
+            "进一步",
+            "分别",
+            "逐个",
+            "对比",
+            "比较",
+        )
+        return any(marker in normalized for marker in followup_markers)
+
     def _build_forced_tool_call(self, query: str) -> AIMessage:
         tool_name = str(getattr(self.tools[0], "name", "") or "tavily_search_tool").strip()
         synthesized_tool_call = {
@@ -400,6 +428,7 @@ class SearchAgent(BaseAgent):
 
         source_messages = list(state.get("messages", []) or [])
         current_task = str(state.get("current_task") or "").strip()
+        user_text = current_task or self._latest_human_text(source_messages)
         focused_messages = list(source_messages)
         if current_task and current_task != "END_TASK":
             focused_messages.append(HumanMessage(content=f"系统指令：请专注执行当前子任务 -> {current_task}"))
@@ -411,6 +440,23 @@ class SearchAgent(BaseAgent):
                 "messages": [AIMessage(content=SEARCH_TOOL_FAILURE_MESSAGE)],
             }
 
+        if self._has_recent_tool_result(source_messages) and not self._allows_followup_search(user_text):
+            log.info("SearchAgent 检测到已存在首轮搜索结果，改为直接总结，禁止继续检索。")
+            summarize_messages = list(focused_messages)
+            summarize_messages.append(
+                HumanMessage(
+                    content=(
+                        "请仅基于当前已有工具结果直接回答用户问题。"
+                        "禁止再次调用搜索工具或任何其他工具；若证据不足，请明确说明是基于现有结果的总结。"
+                    )
+                )
+            )
+            summarize_prompt_value = self.prompt.invoke({"messages": summarize_messages})
+            ai_msg = await self.llm.ainvoke(summarize_prompt_value.messages, config=config)
+            if not isinstance(ai_msg, AIMessage):
+                ai_msg = AIMessage(content=str(getattr(ai_msg, "content", "") or ai_msg or ""))
+            return {"tool_loop_count": loop_count + 1, "messages": [ai_msg]}
+
         # 调用 LLM，可能返回搜索工具调用或直接回答
         llm_with_tools = runtime_tool_registry.bind_tools(self.llm, self.tools)
         chain = self.prompt | llm_with_tools
@@ -418,7 +464,6 @@ class SearchAgent(BaseAgent):
 
         # 如果 LLM 直接生成回答（未调用工具），检测主题是否跑偏
         if isinstance(ai_msg, AIMessage) and not getattr(ai_msg, "tool_calls", None):
-            user_text = current_task or self._latest_human_text(source_messages)
             answer_text = ai_msg.content if isinstance(ai_msg.content, str) else str(ai_msg.content or "")
 
             # 检测主题跑偏：房产问题误答天气
@@ -456,7 +501,7 @@ class SearchAgent(BaseAgent):
             should_force_tool_call = (
                 not getattr(ai_msg, "tool_calls", None)
                 and self._requires_live_search(user_text)
-                and not any(isinstance(msg, ToolMessage) for msg in source_messages[-4:])
+                and not self._has_recent_tool_result(source_messages, window=4)
             )
             if should_force_tool_call:
                 log.info("SearchAgent 命中实时检索强制规则，补发 tavily_search_tool 调用。")

@@ -38,11 +38,10 @@ from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
 )
-from langgraph.types import Command
 
 from harness.graph_runner_core import rule_handle
+from runtime.langgraph import checkpoint_bridge, langgraph_supervisor_shell, resume_bridge
 from supervisor.graph_state import AgentRequest
-from supervisor.supervisor import create_graph as create_supervisor_graph
 from common.llm.unified_loader import create_model_from_config
 from tools.rag.vector_store import vector_store_service
 from supervisor.registry import agent_classes
@@ -80,8 +79,10 @@ from harness.core.workflow_event_bus import (
 )
 from harness.context.context_builder import runtime_context_builder
 from harness.hooks.hook_manager import runtime_hook_manager
+from runtime.tools import runtime_tool_orchestrator
 from tools.runtime_tools.search_gateway import search_gateway
 from tools.runtime_tools.tool_registry import runtime_tool_registry
+from runtime.query import QueryState, runtime_engine
 from harness.workspace.manager import workspace_manager
 from services.request_cancellation_service import request_cancellation_service
 from common.utils.assistant_text_sanitizer import strip_internal_execution_noise
@@ -210,6 +211,26 @@ class GraphRunner:
         # SessionPool 可以在后台预热 Supervisor 实例
         # 编译完成后通过这个事件通知等待中的线程
         self._supervisor_build_events: Dict[str, threading.Event] = {}
+        self._runtime_engine = runtime_engine
+
+    def _initialize_query_runtime(
+            self,
+            run_context,
+            *,
+            executor_name: str = "",
+    ) -> QueryState:
+        resolved_executor_name = str(executor_name or self._runtime_engine.LEGACY_EXECUTOR_NAME).strip()
+        return self._runtime_engine.bootstrap_query(
+            run_context,
+            executor_name=resolved_executor_name,
+        )
+
+    @staticmethod
+    def _attach_query_runtime_meta(run_context, query_state: QueryState) -> None:
+        runtime_session_manager.attach_meta(
+            run_context,
+            query_runtime=query_state.to_dict(),
+        )
 
     # ------------------------------------------------------------------ #
     #  Workflow 事件工具                                                   #
@@ -282,8 +303,22 @@ class GraphRunner:
         else:
             normalized_agents = set()
 
+        streamed_task_result_ids = state.get("streamed_task_result_ids")
+        if isinstance(streamed_task_result_ids, set):
+            normalized_task_ids = streamed_task_result_ids
+        elif isinstance(streamed_task_result_ids, (list, tuple, set)):
+            normalized_task_ids = {
+                str(item).strip()
+                for item in streamed_task_result_ids
+                if str(item or "").strip()
+            }
+        else:
+            normalized_task_ids = set()
+
         state["direct_body_agents"] = normalized_agents
+        state["streamed_task_result_ids"] = normalized_task_ids
         state["orchestrated"] = bool(state.get("orchestrated"))
+        state["partial_task_body_emitted"] = bool(state.get("partial_task_body_emitted"))
         return state
 
     @classmethod
@@ -464,7 +499,43 @@ class GraphRunner:
             _, _, single_body = sections[0].partition("\n")
             return single_body.strip() or sections[0]
 
-        return "## 已整理的任务结果\n\n" + "\n\n".join(sections)
+        return "## 已完成的任务结果\n\n" + "\n\n".join(sections)
+
+    @classmethod
+    def _build_incremental_task_result_block(
+            cls,
+            *,
+            task_id: str,
+            task_title: str,
+            task_result: str,
+            execution_state: Optional[Dict[str, Any]],
+    ) -> str:
+        """把单个子任务结果格式化成可直接追加到主消息区的正文块。"""
+        stream_state = cls._ensure_execution_state(execution_state)
+        emitted_task_ids = stream_state.get("streamed_task_result_ids", set())
+        dedupe_key = str(task_id or task_title or "").strip()
+        if dedupe_key and dedupe_key in emitted_task_ids:
+            return ""
+
+        visible_text = cls._format_user_visible_text(task_result)
+        if not visible_text or visible_text in {WORKER_CANCELLED_RESULT, WORKER_PENDING_APPROVAL_RESULT}:
+            return ""
+
+        title = re.split(r"[。！？!?；;\n]", str(task_title or "").strip())[0].strip()
+        title = title or "子任务结果"
+        if len(title) > 36:
+            title = title[:36].rstrip("，,。；;：: ") + "..."
+
+        next_index = len(emitted_task_ids) + 1
+        block_prefix = ""
+        if not stream_state.get("partial_task_body_emitted"):
+            block_prefix = "## 已完成的任务结果\n\n"
+            stream_state["partial_task_body_emitted"] = True
+
+        if dedupe_key:
+            emitted_task_ids.add(dedupe_key)
+
+        return f"{block_prefix}### {next_index}. {title}\n{visible_text}".strip()
 
     @classmethod
     def _build_workflow_event(
@@ -605,7 +676,7 @@ class GraphRunner:
                 graph = pooled
             else:
                 log.info(f"首次编译 Supervisor 图，config_key={cache_key[:8]}...")
-                graph = create_supervisor_graph(model_config)
+                graph = langgraph_supervisor_shell.compile_supervisor(model_config)
                 # 编译完成后通知池注册该配置，下次 refill 时预热备用实例
                 session_pool.register_config(model_config)
 
@@ -704,7 +775,18 @@ class GraphRunner:
                 is_resume=True,
                 request_id=request_id,
             )
+            resume_query_state = self._initialize_query_runtime(
+                resume_context,
+                executor_name=self._runtime_engine.RESUME_EXECUTOR_NAME,
+            )
             runtime_session_manager.register_run(resume_context)
+            resume_query_state = self._runtime_engine.mark_running(resume_query_state)
+            self._attach_query_runtime_meta(resume_context, resume_query_state)
+            runtime_session_manager.attach_meta(
+                resume_context,
+                langgraph_shell=langgraph_supervisor_shell.describe(effective_config),
+                checkpoint_bridge=checkpoint_bridge.describe_run(resume_context),
+            )
 
             # 处理恢复流程并返回流式结果
             async for chunk in self._handle_resume_stream_async(
@@ -742,7 +824,13 @@ class GraphRunner:
         rule_result = self._try_rule_intercept(user_input)
         if rule_result is not None:
             # 规则命中，直接返回结果，不进入图执行
+            query_state = self._initialize_query_runtime(
+                run_context,
+                executor_name=self._runtime_engine.RULE_INTERCEPT_EXECUTOR_NAME,
+            )
             runtime_session_manager.register_run(run_context)
+            query_state = self._runtime_engine.mark_running(query_state)
+            self._attach_query_runtime_meta(run_context, query_state)
             runtime_session_manager.attach_meta(run_context, request_id=run_context.request_id)
             for chunk in rule_handle(
                 self,
@@ -754,6 +842,12 @@ class GraphRunner:
                 run_id=run_id,
             ):
                 yield chunk
+            query_state = self._runtime_engine.finalize_query(
+                query_state,
+                status="completed",
+                final_text=rule_result[1],
+            )
+            self._attach_query_runtime_meta(run_context, query_state)
             return
 
         # response_start 必须在任何内容之前发出，让前端进入流式接收模式
@@ -775,12 +869,28 @@ class GraphRunner:
             )
         )
 
+        query_state = self._initialize_query_runtime(run_context)
         runtime_session_manager.register_run(run_context)
+        query_state = self._runtime_engine.mark_running(query_state)
+        self._attach_query_runtime_meta(run_context, query_state)
         runtime_session_manager.attach_meta(run_context, request_id=run_context.request_id)
+        runtime_session_manager.attach_meta(
+            run_context,
+            langgraph_shell=langgraph_supervisor_shell.describe(effective_config),
+            checkpoint_bridge=checkpoint_bridge.describe_run(run_context),
+        )
 
         workspace_meta = workspace_manager.prepare_run_workspace(run_context)
-        tool_registry_stats = runtime_tool_registry.build_tool_stats(runtime_profile.get("dynamic_tool_catalog"))
-        tool_catalog = runtime_tool_registry.build_tool_catalog(runtime_profile.get("dynamic_tool_catalog"))
+        tool_runtime_snapshot = runtime_tool_orchestrator.capability_snapshot(
+            run_context=run_context,
+            dynamic_tool_catalog=runtime_profile.get("dynamic_tool_catalog"),
+        )
+        tool_registry_stats = tool_runtime_snapshot.get("tool_stats") or runtime_tool_registry.build_tool_stats(
+            runtime_profile.get("dynamic_tool_catalog")
+        )
+        tool_catalog = tool_runtime_snapshot.get("tool_catalog") or runtime_tool_registry.build_tool_catalog(
+            runtime_profile.get("dynamic_tool_catalog")
+        )
         effective_config["resolved_tool_catalog"] = tool_catalog
         run_context.model_config["resolved_tool_catalog"] = tool_catalog
         search_capability = search_gateway.capability_snapshot()
@@ -805,6 +915,8 @@ class GraphRunner:
             run_context,
             workspace=workspace_meta,
             tool_registry_stats=tool_registry_stats,
+            tool_runtime_snapshot=tool_runtime_snapshot,
+            mode_profile=tool_runtime_snapshot.get("mode_profile") or {},
             search_capability=search_capability,
             runtime_profile={
                 "selected_skill_ids": effective_config.get("selected_skill_ids") or [],
@@ -906,6 +1018,21 @@ class GraphRunner:
             self._build_workflow_event(
                 session_id=session_id,
                 run_id=run_id,
+                phase="runtime_mode_ready",
+                title="运行模式能力边界已确认",
+                summary=(
+                    f"当前模式 {tool_runtime_snapshot.get('mode_profile', {}).get('run_mode', 'cloud')}，"
+                    f"已启用 {tool_runtime_snapshot.get('mode_profile', {}).get('tool_count', 0)} 项工具能力"
+                ),
+                status="completed",
+                role="system",
+                meta={"mode_profile": tool_runtime_snapshot.get("mode_profile") or {}},
+            )
+        )
+        yield self._fmt_workflow_event(
+            self._build_workflow_event(
+                session_id=session_id,
+                run_id=run_id,
                 phase="tool_registry_ready",
                 title="运行时工具与外部能力已装载",
                 summary=f"已登记 {tool_registry_stats.get('total', 0)} 项工具能力",
@@ -913,6 +1040,7 @@ class GraphRunner:
                 role="system",
                 meta={
                     "tool_registry_stats": tool_registry_stats,
+                    "tool_runtime_snapshot": tool_runtime_snapshot,
                     "tool_catalog": tool_catalog,
                     "search_capability": search_capability,
                 },
@@ -974,6 +1102,7 @@ class GraphRunner:
                 graph_config=graph_config,
                 run_context=run_context,
                 effective_config=effective_config,
+                query_state=query_state,
         ):
             yield chunk
 
@@ -1220,6 +1349,7 @@ class GraphRunner:
             graph_config: Dict[str, Any],
             run_context,
             effective_config: Dict[str, Any],
+            query_state: QueryState,
     ) -> AsyncGenerator[str, None]:
         """
         直接消费 LangGraph 的异步流，并穿插处理日志/实时流旁路事件。
@@ -1537,12 +1667,21 @@ class GraphRunner:
 
         if cancelled_emitted:
             runtime_session_manager.cancel_run(run_context, summary="运行已取消")
+            query_state = self._runtime_engine.finalize_query(query_state, status="cancelled")
         elif interrupt_emitted and not error_emitted:
             runtime_session_manager.mark_interrupted(
                 run_context,
                 phase="awaiting_approval",
                 summary="运行已暂停，等待老板批示",
                 title="运行暂停等待审批",
+            )
+            query_state = self._runtime_engine.finalize_query(query_state, status="interrupted")
+        elif error_emitted:
+            query_state = self._runtime_engine.finalize_query(
+                query_state,
+                status="failed",
+                final_text=final_answer,
+                error="graph_runtime_failed",
             )
         elif not error_emitted:
             runtime_session_manager.mark_completed(
@@ -1551,6 +1690,13 @@ class GraphRunner:
                 summary="运行已完成",
                 title="运行完成",
             )
+            query_state = self._runtime_engine.finalize_query(
+                query_state,
+                status="completed",
+                final_text=final_answer,
+            )
+
+        self._attach_query_runtime_meta(run_context, query_state)
 
         runtime_session_manager.attach_meta(
             run_context,
@@ -1641,6 +1787,8 @@ class GraphRunner:
         if not visible_content:
             return []
         source_agent = str(payload.get("agent_name") or "").strip()
+        source_task_id = str(payload.get("task_id") or "").strip()
+        explicit_body_stream = bool(payload.get("body_stream"))
         stream_state = cls._ensure_execution_state(execution_state)
         direct_body_agents = stream_state.get("direct_body_agents", set())
         allow_direct_agent_body_stream = (
@@ -1648,6 +1796,9 @@ class GraphRunner:
             and source_agent
             and source_agent in direct_body_agents
         )
+        if explicit_body_stream and source_task_id:
+            stream_state["streamed_task_result_ids"].add(source_task_id)
+            stream_state["partial_task_body_emitted"] = True
         role = cls._workflow_role_for_agent(source_agent)
         phase = "direct_response_streaming" if role == "supervisor" else "worker_streaming"
         title = (
@@ -1671,17 +1822,18 @@ class GraphRunner:
                         status="active",
                         role=role,
                         agent_name=source_agent,
-                        task_id=str(payload.get("task_id") or ""),
+                        task_id=source_task_id,
                         meta={
                             "preview": visible_content[:160],
                             "first_stream": first_stream,
+                            "body_stream": explicit_body_stream,
                         },
                     )
                 )
             )
         # 只有 supervisor/aggregator 的直接答复允许进入主正文流；
         # 但如果当前是“顶层直接指派给某个专业 Agent”，则允许该 Agent 正文直出。
-        if role == "supervisor" or allow_direct_agent_body_stream:
+        if role == "supervisor" or allow_direct_agent_body_stream or explicit_body_stream:
             workflow_chunks.append(
                 cls._fmt_sse(
                     SseEventType.STREAM.value,
@@ -1689,6 +1841,7 @@ class GraphRunner:
                     extra_payload={
                         "node": source_agent,
                         "agent_name": source_agent,
+                        "task_id": source_task_id,
                         "body_stream": True,
                     },
                 )
@@ -2392,6 +2545,7 @@ class GraphRunner:
                 node_val=node_val,
                 session_id=session_id,
                 run_id=run_id,
+                execution_state=stream_state,
             )
 
             # ── Interrupt 提取 ──────────────────────────────────────────
@@ -2527,6 +2681,7 @@ class GraphRunner:
                     trim=True,
                 )
                 is_orchestrated = bool(stream_state.get("orchestrated"))
+                partial_task_body_emitted = bool(stream_state.get("partial_task_body_emitted"))
                 direct_body_agents = stream_state.get("direct_body_agents", set())
                 is_top_level_direct_chat = (
                     not is_orchestrated
@@ -2628,7 +2783,7 @@ class GraphRunner:
                     elif live_streamed_agents and source_agent_name in live_streamed_agents:
                         should_emit = False
                 can_emit_to_body = (
-                    (node_name == "aggregator_node" and bool(metadata.get("force_emit")))
+                    (node_name == "aggregator_node" and bool(metadata.get("force_emit")) and not partial_task_body_emitted)
                     or is_top_level_direct_chat
                     or is_top_level_direct_agent
                 )
@@ -2682,6 +2837,7 @@ class GraphRunner:
             node_val: Any,
             session_id: str,
             run_id: str,
+            execution_state: Optional[Dict[str, Any]] = None,
     ) -> Generator[str, None, None]:
         """
         为各路由/规划节点生成可读的 thinking 日志事件。
@@ -2902,6 +3058,26 @@ class GraphRunner:
                         "usage": worker_item.get("usage"),
                     },
                 )
+                if (error_text or result_text) and result_text not in {WORKER_PENDING_APPROVAL_RESULT, WORKER_CANCELLED_RESULT}:
+                    body_block = GraphRunner._build_incremental_task_result_block(
+                        task_id=task_id,
+                        task_title=str(worker_item.get("task") or agent_name or task_id or "子任务结果"),
+                        task_result=error_text or result_text,
+                        execution_state=execution_state,
+                    )
+                    if body_block:
+                        yield GraphRunner._fmt_sse(
+                            SseEventType.STREAM.value,
+                            body_block,
+                            extra_payload={
+                                "node": str(agent_name or "worker"),
+                                "agent_name": agent_name,
+                                "task_id": task_id,
+                                "body_stream": True,
+                                "partial_task_result": True,
+                                "usage": worker_item.get("usage"),
+                            },
+                        )
             return
 
         if node_name == "reflection_node" and "reflection_source" in node_val:
@@ -3094,7 +3270,7 @@ class GraphRunner:
             "subgraph_thread_id": approval.get("subgraph_thread_id"),
             "checkpoint_id": approval.get("checkpoint_id"),
             "checkpoint_ns": approval.get("checkpoint_ns"),
-            "command": Command(resume=decision),
+            "command": resume_bridge.build_resume_command(decision),
         }
 
     async def _handle_resume_async(
